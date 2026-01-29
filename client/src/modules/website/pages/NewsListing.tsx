@@ -1,17 +1,39 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, Calendar, ChevronLeft, ChevronRight,
-  Grid3X3, List, Search, User, Clock, ArrowLeft
+  Grid3X3, List, Search, User, Clock, ArrowLeft, Loader2
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getAllNews } from "@/Api/Api";
+import { toast } from "react-hot-toast";
 
 const ITEMS_PER_PAGE = 8;
 
 type ViewMode = "list" | "grid";
+
+// News Item Type
+interface NewsItem {
+  id: number;
+  category: string;
+  title: string;
+  description: string;
+  dateBadge: string;
+  badgeType: string;
+  ctaText: string;
+  ctaLink: string;
+  imageUrl: string;
+  active: boolean;
+  newsDate: string | null;
+  slug: string | null;
+  longDesc: string | null;
+  authorName: string | null;
+  authorDescription: string | null;
+  readTime: string | null;
+  tags: string | null;
+}
 
 // Breadcrumb Component with Schema
 interface BreadcrumbItem {
@@ -59,28 +81,67 @@ const Breadcrumb = ({ items }: { items: BreadcrumbItem[] }) => {
 };
 
 export default function NewsListing() {
-  const { items, title } = siteContent.text.news;
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  const categories = ["all", "Hotel", "Restaurant", "Events", "Awards"];
 
   const breadcrumbItems: BreadcrumbItem[] = [
     { name: "Home", url: "/" },
     { name: "News", url: "/news" }
   ];
 
+  // Fetch news from API
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllNews({ page: 0, size: 100 });
+      console.log("News API response:", response);
+
+      let newsData: NewsItem[] = [];
+      const source = response?.data ? response.data : response;
+
+      if (source?.content && Array.isArray(source.content)) {
+        newsData = source.content;
+      } else if (Array.isArray(source)) {
+        newsData = source;
+      }
+
+      // Filter only active news
+      const activeNews = newsData.filter(news => news.active);
+      setNewsItems(activeNews);
+    } catch (error) {
+      console.error("Failed to fetch news:", error);
+      toast.error("Failed to load news articles");
+      setNewsItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get unique categories from news items
+  const categories = useMemo(() => {
+    const cats = new Set(newsItems.map(item => item.badgeType).filter(Boolean));
+    return ["all", ...Array.from(cats)];
+  }, [newsItems]);
+
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    return newsItems.filter((item) => {
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === "all" || true;
+      const matchesCategory = 
+        selectedCategory === "all" || 
+        item.badgeType === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [items, searchQuery, selectedCategory]);
+  }, [newsItems, searchQuery, selectedCategory]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const currentItems = filteredItems.slice(
@@ -123,6 +184,26 @@ export default function NewsListing() {
     return pages;
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+  };
+
+  const getCategoryBadgeColor = (category: string) => {
+    const colors: Record<string, string> = {
+      Hotel: "bg-blue-600",
+      Restaurant: "bg-orange-600",
+      Event: "bg-purple-600",
+      Awards: "bg-green-600"
+    };
+    return colors[category] || "bg-gray-600";
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
@@ -136,7 +217,7 @@ export default function NewsListing() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-border">
             {/* Title & Count */}
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl md:text-3xl font-serif font-bold">{title}</h1>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold">News & Press</h1>
               <span className="px-3 py-1 bg-secondary text-sm rounded-full text-muted-foreground">
                 {filteredItems.length} {filteredItems.length === 1 ? "article" : "articles"}
               </span>
@@ -164,7 +245,7 @@ export default function NewsListing() {
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat === "all" ? "All" : cat}
+                    {cat === "all" ? "All Categories" : cat}
                   </option>
                 ))}
               </select>
@@ -196,18 +277,32 @@ export default function NewsListing() {
           </div>
 
           {/* Active Filters */}
-          {searchQuery && (
-            <div className="flex items-center gap-2 mb-6">
-              <span className="text-sm text-muted-foreground">Searching:</span>
-              <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full flex items-center gap-2">
-                "{searchQuery}"
-                <button onClick={() => handleSearch("")} className="hover:text-primary/70">×</button>
-              </span>
+          {(searchQuery || selectedCategory !== "all") && (
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
+              {searchQuery && (
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full flex items-center gap-2">
+                  Searching: "{searchQuery}"
+                  <button onClick={() => handleSearch("")} className="hover:text-primary/70">×</button>
+                </span>
+              )}
+              {selectedCategory !== "all" && (
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full flex items-center gap-2">
+                  Category: {selectedCategory}
+                  <button onClick={() => handleCategoryChange("all")} className="hover:text-primary/70">×</button>
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={32} className="animate-spin text-primary" />
             </div>
           )}
 
           {/* No Results */}
-          {filteredItems.length === 0 && (
+          {!loading && filteredItems.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary flex items-center justify-center">
                 <Search className="w-8 h-8 text-muted-foreground" />
@@ -224,27 +319,34 @@ export default function NewsListing() {
           )}
 
           {/* Articles */}
-          {filteredItems.length > 0 && (
+          {!loading && filteredItems.length > 0 && (
             <>
               {viewMode === "list" ? (
                 <div className="space-y-4">
                   {currentItems.map((item) => (
                     <Link
-                      to={`/news/${item.slug}`}
-                      key={item.slug}
+                      to={`/news/${item.id}`} key={item.id}
                       className="group flex flex-col sm:flex-row bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                     >
                       {/* Image */}
                       <div className="relative w-full sm:w-48 md:w-56 lg:w-64 flex-shrink-0 aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
-                        <OptimizedImage
-                          {...item.image}
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         <div className="absolute top-2 left-2">
-                          <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow">
-                            Hotel
+                          <span className={`px-2 py-0.5 ${getCategoryBadgeColor(item.badgeType)} text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow`}>
+                            {item.badgeType}
                           </span>
                         </div>
+                        {item.category && (
+                          <div className="absolute top-2 right-2">
+                            <span className="px-2 py-0.5 bg-black/70 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
+                              {item.category}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -253,16 +355,20 @@ export default function NewsListing() {
                         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-2">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-primary" />
-                            {item.date}
+                            {formatDate(item.newsDate || item.dateBadge)}
                           </span>
-                          <span className="hidden sm:flex items-center gap-1">
-                            <User className="w-3 h-3 text-primary" />
-                            Kennedia Team
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-primary" />
-                            5 min
-                          </span>
+                          {item.authorName && (
+                            <span className="hidden sm:flex items-center gap-1">
+                              <User className="w-3 h-3 text-primary" />
+                              {item.authorName}
+                            </span>
+                          )}
+                          {item.readTime && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-primary" />
+                              {item.readTime}
+                            </span>
+                          )}
                         </div>
 
                         {/* Title */}
@@ -277,18 +383,20 @@ export default function NewsListing() {
 
                         {/* Footer */}
                         <div className="flex items-center justify-between mt-auto">
-                          <div className="hidden md:flex items-center gap-1.5">
-                            {["Hospitality", "Luxury"].map((tag) => (
-                              <span
-                                key={tag}
-                                className="px-2 py-0.5 bg-secondary text-[10px] rounded-full text-muted-foreground"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                          <span className="flex items-center text-sm font-semibold text-primary">
-                            Read More
+                          {item.tags && (
+                            <div className="hidden md:flex items-center gap-1.5">
+                              {item.tags.split(',').slice(0, 2).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="px-2 py-0.5 bg-secondary text-[10px] rounded-full text-muted-foreground"
+                                >
+                                  #{tag.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <span className="flex items-center text-sm font-semibold text-primary ml-auto">
+                            {item.ctaText || "Read More"}
                             <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                           </span>
                         </div>
@@ -301,28 +409,33 @@ export default function NewsListing() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                   {currentItems.map((item) => (
                     <Link
-                      to={`/news/${item.slug}`}
-                      key={item.slug}
+                      to={`/news/${item.slug || item.id}`}
+                      key={item.id}
                       className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="relative aspect-[4/3] overflow-hidden">
-                        <OptimizedImage
-                          {...item.image}
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute top-2 left-2">
-                          <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow">
-                            Hotel
+                          <span className={`px-2 py-0.5 ${getCategoryBadgeColor(item.badgeType)} text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow`}>
+                            {item.badgeType}
                           </span>
                         </div>
                       </div>
                       <div className="p-4 flex flex-col flex-1">
                         <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
                           <Calendar className="w-3 h-3 text-primary" />
-                          {item.date}
-                          <span className="mx-0.5">•</span>
-                          <Clock className="w-3 h-3 text-primary" />
-                          5 min
+                          {formatDate(item.newsDate || item.dateBadge)}
+                          {item.readTime && (
+                            <>
+                              <span className="mx-0.5">•</span>
+                              <Clock className="w-3 h-3 text-primary" />
+                              {item.readTime}
+                            </>
+                          )}
                         </div>
                         <h3 className="text-sm font-serif font-bold leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2">
                           {item.title}
@@ -331,7 +444,7 @@ export default function NewsListing() {
                           {item.description}
                         </p>
                         <div className="flex items-center text-xs font-semibold text-primary mt-auto">
-                          Read Story
+                          {item.ctaText || "Read Story"}
                           <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
                         </div>
                       </div>
