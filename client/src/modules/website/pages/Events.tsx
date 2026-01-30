@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, MapPin, Clock, ArrowRight, X, Users, GlassWater, Sparkles, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, MapPin, Clock, ArrowRight, Users, GlassWater, Sparkles, Loader2 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getEvents } from "@/Api/Api";
+import { getEventsUpdated } from "@/Api/Api";
 
-// Event Navigation Items (Kept as requested)
 const EVENT_NAV_ITEMS = [
   { type: 'link', label: 'WEDDINGS', key: 'weddings', href: '#collection' },
   { type: 'link', label: 'CORPORATE', key: 'corporate', href: '#collection' },
@@ -17,9 +17,9 @@ const EVENT_NAV_ITEMS = [
 const categories = ["All Categories", "Music & Dining", "Celebration", "Culinary", "Community"];
 
 export default function Events() {
+  const navigate = useNavigate();
   const [eventList, setEventList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
@@ -27,9 +27,9 @@ export default function Events() {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await getEvents({});
-        // Mapping the "content" array from your specific API response format
-        const data = response?.content || response?.data?.content || [];
+        const response = await getEventsUpdated({});
+        // Mapping from your API response structure [ { id, title, image: { url } ... } ]
+        const data = response?.data || response || [];
         setEventList(data);
       } catch (error) {
         console.error("Failed to fetch events:", error);
@@ -40,9 +40,8 @@ export default function Events() {
     fetchEvents();
   }, []);
 
-  // Use event images for Hero if available, otherwise fallback to a default
   const HERO_IMAGES = eventList.length > 0 
-    ? eventList.slice(0, 3).map(e => ({ src: e.imageUrl, alt: e.title }))
+    ? eventList.slice(0, 3).map(e => ({ src: e.image?.url, alt: e.title }))
     : [{ src: "/images/placeholder.jpg", alt: "Events" }];
 
   useEffect(() => {
@@ -53,9 +52,8 @@ export default function Events() {
     return () => clearInterval(timer);
   }, [HERO_IMAGES.length]);
 
-  // Filtering Logic (mapping 'category' which might be dynamic or default)
   const filteredEvents = eventList.filter(event => {
-    const eventCat = event.category || "Music & Dining";
+    const eventCat = event.typeName || "Music & Dining";
     return selectedCategory === "All Categories" || eventCat === selectedCategory;
   });
 
@@ -170,17 +168,17 @@ export default function Events() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    onClick={() => setSelectedEvent(event)}
+                    onClick={() => navigate(`/events/${event.id}`)}
                     className="group cursor-pointer bg-card rounded-lg overflow-hidden border border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   >
                     <div className="relative h-64 overflow-hidden">
                       <OptimizedImage
-                        src={event.imageUrl}
+                        src={event.image?.url}
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute top-4 left-4 bg-primary/90 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm shadow-sm">
-                        {event.category || "General"}
+                        {event.typeName || "General"}
                       </div>
                     </div>
 
@@ -207,9 +205,9 @@ export default function Events() {
                         {event.description}
                       </p>
 
-                      <button className="w-full py-3 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest group-hover:bg-primary group-hover:text-primary-foreground transition-colors rounded flex items-center justify-center">
-                        {event.ctaText || "Event Details"}
-                      </button>
+                      <div className="w-full py-3 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest group-hover:bg-primary group-hover:text-primary-foreground transition-colors rounded flex items-center justify-center">
+                        View Details <ArrowRight className="w-4 h-4 ml-2" />
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -224,7 +222,7 @@ export default function Events() {
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6">
           <div className="order-2 md:order-1 relative h-[500px] w-full rounded-lg overflow-hidden">
             <OptimizedImage
-              src={eventList[0]?.imageUrl || "/images/placeholder.jpg"}
+              src={eventList[0]?.image?.url || "/images/placeholder.jpg"}
               alt="Weddings"
               className="w-full h-full object-cover"
             />
@@ -249,78 +247,6 @@ export default function Events() {
           </div>
         </div>
       </section>
-
-      {/* Magnified Detail Modal */}
-      <AnimatePresence>
-        {selectedEvent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedEvent(null)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-            >
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-background/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-background transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="relative aspect-[21/9] overflow-hidden">
-                <OptimizedImage
-                  src={selectedEvent.imageUrl}
-                  alt={selectedEvent.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur px-3 py-1 rounded-full">
-                  <span className="text-xs font-bold text-primary-foreground uppercase tracking-widest">{selectedEvent.category || "General"}</span>
-                </div>
-              </div>
-
-              <div className="p-8">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-4xl font-serif text-foreground mb-4">{selectedEvent.title}</h2>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-muted-foreground">
-                        <Calendar className="w-4 h-4 mr-2 text-primary" />
-                        <span className="text-sm font-bold uppercase tracking-wide text-foreground">{formatDate(selectedEvent.eventDate)}</span>
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <MapPin className="w-4 h-4 mr-2 text-primary" />
-                        <span className="text-sm uppercase tracking-wide">{selectedEvent.locationName}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-lg text-muted-foreground/80 font-light leading-relaxed mb-8">
-                  {selectedEvent.description}
-                </p>
-
-                <a 
-                  href={selectedEvent.ctaLink} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="w-full bg-primary text-primary-foreground py-4 rounded flex items-center justify-center hover:bg-primary/90 transition-colors uppercase tracking-widest text-xs font-bold no-underline"
-                >
-                  {selectedEvent.ctaText || "RSVP to Event"}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Footer />
     </div>

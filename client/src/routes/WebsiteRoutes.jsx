@@ -57,12 +57,12 @@ const WebsiteRoutes = [
   <Route key="news-listing" path="/news" element={<NewsListing />} />,
   <Route key="news-details" path="/news/:id" element={<NewsDetails />} />,
 
-  // 404
-  <Route key="not-found" path="*" element={<NotFound />} />,
   // Hotel Detail Pages
   <Route key="hotel-news-details" path="/hotel/news/:slug" element={<HotelNewsDetails />} />,
   <Route key="hotel-offer-details" path="/hotel/offers/:id" element={<HotelOfferDetails />} />,
   <Route key="checkout" path="/checkout" element={<Checkout />} />,
+
+  <Route key="not-found" path="*" element={<NotFound />} />,
 ];
 
 export default WebsiteRoutes;

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, MapPin, Loader2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getEvents } from "@/Api/Api";
+import { getEventsUpdated } from "@/Api/Api";
 
 // Swiper for Carousel logic
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -22,13 +22,16 @@ const STYLE_CONFIG = {
   cardRadius: "rounded-xl",
 } as const;
 
+// Interface exactly matching your API response
 interface ApiEvent {
   id: number;
   title: string;
   locationName: string;
   eventDate: string;
   description: string;
-  imageUrl: string;
+  image: {
+    url: string;
+  };
   ctaText: string;
 }
 
@@ -44,27 +47,18 @@ export default function EventsSection() {
   const fetchEventData = async () => {
     try {
       setLoading(true);
+      const response = await getEventsUpdated({});
 
-      // API call (safe even if params are optional)
-      const response = await getEvents({});
+      // Extract array regardless of wrapper
+      const rawEvents = Array.isArray(response?.data) 
+        ? response.data 
+        : Array.isArray(response) 
+        ? response 
+        : [];
 
-      /**
-       * Supported response shapes:
-       * 1. response.data.content  (paginated)
-       * 2. response.content       (direct list)
-       */
-      const rawEvents = response?.data?.content || response?.content || [];
-
-      if (!Array.isArray(rawEvents)) {
-        console.warn("Events API returned unexpected format:", response);
-        setApiEvents([]);
-        return;
-      }
-
-      // 🔁 Sort so latest events come first
+      // Sort: Latest events first
       const sortedEvents = [...rawEvents].sort(
-        (a, b) =>
-          new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+        (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
       );
 
       setApiEvents(sortedEvents);
@@ -78,9 +72,7 @@ export default function EventsSection() {
 
   const uniqueLocations = [
     "All Locations",
-    ...Array.from(
-      new Set(apiEvents.map((event) => event.locationName).filter(Boolean)),
-    ),
+    ...Array.from(new Set(apiEvents.map((event) => event.locationName).filter(Boolean))),
   ];
 
   const filteredEvents =
@@ -112,13 +104,9 @@ export default function EventsSection() {
             modules={[Autoplay, Pagination]}
             spaceBetween={20}
             slidesPerView={1}
-            // Auto-scroll logic: only scrolls if more than 3
             autoplay={
               filteredEvents.length > 3
-                ? {
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }
+                ? { delay: 3000, disableOnInteraction: false }
                 : false
             }
             pagination={
@@ -128,9 +116,8 @@ export default function EventsSection() {
             }
             breakpoints={{
               768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 }, // Strictly 3 cards in a row
+              1024: { slidesPerView: 3 },
             }}
-            // Disable swiping if 3 or fewer cards
             allowTouchMove={filteredEvents.length > 3}
             className="pb-12"
           >
@@ -150,10 +137,6 @@ export default function EventsSection() {
   );
 }
 
-// ============================================================================
-// UI COMPONENTS (Kept Original Styling)
-// ============================================================================
-
 function SectionHeader({
   title,
   viewAllLink,
@@ -164,9 +147,7 @@ function SectionHeader({
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-          {title}
-        </h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{title}</h2>
         <div className="h-0.5 w-16 bg-primary" />
       </div>
       <div className="flex items-center gap-4">
@@ -177,9 +158,7 @@ function SectionHeader({
             className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
           >
             {uniqueLocations.map((loc: string) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
+              <option key={loc} value={loc}>{loc}</option>
             ))}
           </select>
           <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -209,17 +188,19 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       transition={{ delay: index * 0.08, duration: 0.4 }}
       className="group relative"
     >
-      <Link to={'#'} className="block">
+      <Link to={ROUTES.eventDetail(event.id)} className="block">
         <div
           className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-500`}
         >
+          {/* Dynamic Image mapping from nested image object */}
           <OptimizedImage
-            src={event.imageUrl}
+            src={event.image?.url || ""}
             alt={event.title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
 
+          {/* Date Badge */}
           <div className="absolute top-3 right-3 bg-primary shadow-xl border border-white/20">
             <div className="flex items-center gap-1.5 px-3 py-1.5">
               <Calendar className="w-3.5 h-3.5 text-white" />
@@ -234,12 +215,15 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               <MapPin className="w-3 h-3" />
               <span>{event.locationName}</span>
             </div>
+            
             <h3 className="text-lg font-bold mb-1.5 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
               {event.title}
             </h3>
+            
             <p className="text-xs text-white/90 mb-3 line-clamp-2 leading-relaxed drop-shadow-md">
               {event.description}
             </p>
+            
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-white px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg">
               Details <ArrowRight className="w-3 h-3" />
             </div>

@@ -99,6 +99,9 @@ export const updateNewsById = (id, data) => API.put(`api/v1/news/${id}`, data);
 
 // property 
 export const createPropertyListing = (data) =>API.post("api/v1/property-listings", data);
+export const GetAllPropertyListing = () =>API.get("api/v1/property-listings");
+export const getPropertyListingMedia = (propertyListingId) =>API.get(`api/v1/property-listings/${propertyListingId}/media`);
+
 export const createAmenityFeature = (data) =>API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>API.get("api/v1/admin/amenities-features");
 
