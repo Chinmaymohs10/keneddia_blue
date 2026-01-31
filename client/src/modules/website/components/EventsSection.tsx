@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Calendar, ArrowRight, MapPin, Loader2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getEventsUpdated } from "@/Api/Api";
-
+import { siteContent } from "@/data/siteContent";
 // Swiper for Carousel logic
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -24,7 +24,7 @@ const STYLE_CONFIG = {
 
 // Interface exactly matching your API response
 interface ApiEvent {
-  id: number;
+  id: number | string;
   title: string;
   locationName: string;
   eventDate: string;
@@ -36,7 +36,21 @@ interface ApiEvent {
 }
 
 export default function EventsSection() {
-  const [apiEvents, setApiEvents] = useState<ApiEvent[]>([]);
+  // 1. Transform static data to ApiEvent format for immediate fallback
+  const fallbackEvents: ApiEvent[] = (siteContent.text.events?.items || []).map((item: any, index: number) => ({
+    id: item.slug || `static-${index}`,
+    title: item.title,
+    locationName: item.location,
+    eventDate: item.date, // Note: Static date is "Dec 25, 2025", JS Date can parse this
+    description: item.description,
+    image: {
+      url: item.image?.src || ""
+    },
+    ctaText: "Details"
+  }));
+
+  // 2. Initialize state with fallback data immediately
+  const [apiEvents, setApiEvents] = useState<ApiEvent[]>(fallbackEvents);
   const [loading, setLoading] = useState(true);
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
@@ -56,15 +70,17 @@ export default function EventsSection() {
         ? response 
         : [];
 
-      // Sort: Latest events first
-      const sortedEvents = [...rawEvents].sort(
-        (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
-      );
-
-      setApiEvents(sortedEvents);
+      if (rawEvents.length > 0) {
+        // Sort: Latest events first
+        const sortedEvents = [...rawEvents].sort(
+          (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+        );
+        // 3. Replace fallback with actual API data
+        setApiEvents(sortedEvents);
+      }
     } catch (error) {
       console.error("Failed to fetch events:", error);
-      setApiEvents([]);
+      // Fallback data remains in state if API fails
     } finally {
       setLoading(false);
     }
@@ -80,23 +96,16 @@ export default function EventsSection() {
       ? apiEvents
       : apiEvents.filter((event) => event.locationName === selectedLocation);
 
-  if (loading) {
-    return (
-      <div className="py-24 flex justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <section id="events" className="py-12 bg-background overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         <SectionHeader
-          title="Upcoming Events"
+          title={siteContent.text.events?.title || "Upcoming Events"}
           viewAllLink={ROUTES.allEvents}
           selectedLocation={selectedLocation}
           setSelectedLocation={setSelectedLocation}
           uniqueLocations={uniqueLocations}
+          isLoading={loading} // Pass loading state to show subtle indicator
         />
 
         {filteredEvents.length > 0 ? (
@@ -118,7 +127,7 @@ export default function EventsSection() {
               768: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
-            allowTouchMove={filteredEvents.length > 3}
+            allowTouchMove={filteredEvents.length > 1}
             className="pb-12"
           >
             {filteredEvents.map((event, index) => (
@@ -143,12 +152,16 @@ function SectionHeader({
   selectedLocation,
   setSelectedLocation,
   uniqueLocations,
+  isLoading,
 }: any) {
   return (
     <div className="flex items-center justify-between mb-8">
-      <div>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{title}</h2>
-        <div className="h-0.5 w-16 bg-primary" />
+      <div className="flex items-center gap-4">
+        <div>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{title}</h2>
+          <div className="h-0.5 w-16 bg-primary" />
+        </div>
+        {isLoading && <Loader2 className="w-5 h-5 animate-spin text-primary mt-2" />}
       </div>
       <div className="flex items-center gap-4">
         <div className="relative hidden sm:block">
@@ -175,10 +188,14 @@ function SectionHeader({
 }
 
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
-  const formattedDate = new Date(event.eventDate).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-  });
+  // Parsing date string to formatted date
+  const dateObj = new Date(event.eventDate);
+  const formattedDate = isNaN(dateObj.getTime()) 
+    ? event.eventDate // Fallback to raw string if parsing fails (for static "Dec 25, 2025")
+    : dateObj.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+      });
 
   return (
     <motion.div
@@ -192,7 +209,6 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
         <div
           className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-500`}
         >
-          {/* Dynamic Image mapping from nested image object */}
           <OptimizedImage
             src={event.image?.url || ""}
             alt={event.title}

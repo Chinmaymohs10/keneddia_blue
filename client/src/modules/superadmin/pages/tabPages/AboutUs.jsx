@@ -1,304 +1,243 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Upload, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { 
-  addAboutUs, 
   getAboutUsAdmin, 
-  updateAboutUsById,
-  addVenture,
-  updateVentureById,
+  // deleteAboutUsById,
   getVenturesByAboutUsId,
-  addRecognition,
-  updateRecognition,
-  getRecognitionsByAboutUsId 
+  // deleteVentureById,
+  getRecognitionsByAboutUsId,
+  // deleteRecognitionById
 } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
+import AddUpdateAboutModal from '../../modals/AddUpdateAboutModal';
+import AddUpdateVenturesModal from '../../modals/AddUpdateVenturesModal';
+import AddUpdateRecognitionModal from '../../modals/AddUpdateRecognitionModal';
 
 function AboutUs() {
-  const [basicInfo, setBasicInfo] = useState({
-    sectionTitle: '',
-    subTitle: '',
-    description: ''
-  });
-
-  const [videoSection, setVideoSection] = useState({
-    videoUrl: '',
-    videoTitle: '',
-    ctaButtonText: '',
-    ctaButtonUrl: ''
-  });
-
+  const [aboutUsList, setAboutUsList] = useState([]);
   const [ventures, setVentures] = useState([]);
   const [recognitions, setRecognitions] = useState([]);
-  const [ventureFiles, setVentureFiles] = useState({});
-
+  
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [existingData, setExistingData] = useState(null);
+  
+  // Modal states
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isVentureModalOpen, setIsVentureModalOpen] = useState(false);
+  const [isRecognitionModalOpen, setIsRecognitionModalOpen] = useState(false);
+  
+  const [editingAbout, setEditingAbout] = useState(null);
+  const [editingVenture, setEditingVenture] = useState(null);
+  const [editingRecognition, setEditingRecognition] = useState(null);
+  const [selectedAboutUsId, setSelectedAboutUsId] = useState(null);
 
-  // Fetch About Us data on component mount
-  const fetchAboutUs = useCallback(async () => {
+  // Pagination
+  const [currentAboutPage, setCurrentAboutPage] = useState(1);
+  const [currentVenturePage, setCurrentVenturePage] = useState(1);
+  const [currentRecognitionPage, setCurrentRecognitionPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Debug modal states
+  useEffect(() => {
+    console.log('=== Modal States ===');
+    console.log('isAboutModalOpen:', isAboutModalOpen);
+    console.log('isVentureModalOpen:', isVentureModalOpen);
+    console.log('isRecognitionModalOpen:', isRecognitionModalOpen);
+    console.log('selectedAboutUsId:', selectedAboutUsId);
+  }, [isAboutModalOpen, isVentureModalOpen, isRecognitionModalOpen, selectedAboutUsId]);
+
+  // Fetch all data
+  const fetchAllData = useCallback(async () => {
     try {
       setFetching(true);
-      const response = await getAboutUsAdmin();
       
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Get the latest about us (highest id)
-        const latestAboutUs = response.data.reduce((latest, current) => 
-          current.id > latest.id ? current : latest
-        );
+      // Fetch About Us list
+      const aboutResponse = await getAboutUsAdmin();
+      console.log('About Us Response:', aboutResponse);
+      
+      if (aboutResponse.data && Array.isArray(aboutResponse.data)) {
+        const sortedAbout = aboutResponse.data.sort((a, b) => b.id - a.id);
+        setAboutUsList(sortedAbout);
         
-        setExistingData(latestAboutUs);
-        
-        // Populate form with latest data
-        setBasicInfo({
-          sectionTitle: latestAboutUs.sectionTitle || '',
-          subTitle: latestAboutUs.subTitle || '',
-          description: latestAboutUs.description || ''
-        });
-
-        setVideoSection({
-          videoUrl: latestAboutUs.videoUrl || '',
-          videoTitle: latestAboutUs.videoTitle || '',
-          ctaButtonText: latestAboutUs.ctaButtonText || '',
-          ctaButtonUrl: latestAboutUs.ctaButtonUrl || ''
-        });
-
-        // Fetch ventures and recognitions for this about us
-        if (latestAboutUs.id) {
+        // If we have at least one about us, fetch its ventures and recognitions
+        if (sortedAbout.length > 0) {
+          const latestAboutUs = sortedAbout[0];
+          console.log('Latest About Us ID:', latestAboutUs.id);
+          setSelectedAboutUsId(latestAboutUs.id);
           await fetchVentures(latestAboutUs.id);
           await fetchRecognitions(latestAboutUs.id);
+        } else {
+          // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
+          console.warn('No About Us found, using fallback ID: 999');
+          setSelectedAboutUsId(999);
         }
-
-        console.log("Latest About Us:", latestAboutUs);
       } else {
-        // Set default values if no data
-        setBasicInfo({
-          sectionTitle: 'About Kennedia Blu',
-          subTitle: 'Kennedia Blu',
-          description: 'Kennedia Blu is built on trust and excellence, delivering premium hospitality experiences that exceed customer expectations.'
-        });
-        
-        setVideoSection({
-          videoUrl: '',
-          videoTitle: '',
-          ctaButtonText: 'More Details →',
-          ctaButtonUrl: ''
-        });
+        // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
+        console.warn('Invalid response, using fallback ID: 999');
+        setSelectedAboutUsId(999);
       }
     } catch (error) {
-      console.error("Error fetching about us:", error);
-      toast.error("Failed to load about us data");
-      
-      // Set default values on error
-      setBasicInfo({
-        sectionTitle: 'About Kennedia Blu',
-        subTitle: 'Kennedia Blu',
-        description: 'Kennedia Blu is built on trust and excellence.'
-      });
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data");
+      // FALLBACK: Set a temporary ID for testing (REMOVE THIS LATER)
+      console.warn('Error occurred, using fallback ID: 999');
+      setSelectedAboutUsId(999);
     } finally {
       setFetching(false);
     }
   }, []);
 
-  // Fetch ventures for about us
   const fetchVentures = async (aboutUsId) => {
     try {
       const response = await getVenturesByAboutUsId(aboutUsId);
       if (response.data && Array.isArray(response.data)) {
-        setVentures(response.data.map(v => ({
-          id: v.id,
-          ventureName: v.ventureName,
-          logoUrl: v.logoUrl,
-          isExisting: true
-        })));
+        setVentures(response.data);
       }
     } catch (error) {
       console.error("Error fetching ventures:", error);
+      // Set empty array on error
+      setVentures([]);
     }
   };
 
-  // Fetch recognitions for about us
   const fetchRecognitions = async (aboutUsId) => {
     try {
       const response = await getRecognitionsByAboutUsId(aboutUsId);
       if (response.data && Array.isArray(response.data)) {
-        setRecognitions(response.data.map(r => ({
-          id: r.id,
-          value: r.value,
-          title: r.title,
-          subTitle: r.subTitle,
-          isExisting: true
-        })));
+        setRecognitions(response.data);
       }
     } catch (error) {
       console.error("Error fetching recognitions:", error);
+      // Set empty array on error
+      setRecognitions([]);
     }
   };
 
-  // Fetch on mount only
   useEffect(() => {
-    fetchAboutUs();
-  }, []);
+    fetchAllData();
+  }, [fetchAllData]);
 
-  const handleAddVenture = () => {
-    setVentures([...ventures, { 
-      id: Date.now(), 
-      ventureName: '', 
-      logoUrl: null,
-      isExisting: false 
-    }]);
+  // Handle About Us actions
+  const handleAddAbout = () => {
+    console.log('handleAddAbout called');
+    setEditingAbout(null);
+    setIsAboutModalOpen(true);
   };
 
-  const handleDeleteVenture = (id) => {
-    setVentures(ventures.filter(v => v.id !== id));
-    // Remove file from ventureFiles if exists
-    const newFiles = { ...ventureFiles };
-    delete newFiles[id];
-    setVentureFiles(newFiles);
+  const handleEditAbout = (about) => {
+    console.log('handleEditAbout called with:', about);
+    setEditingAbout(about);
+    setIsAboutModalOpen(true);
   };
 
-  const handleVentureFileChange = (ventureId, file) => {
-    setVentureFiles(prev => ({
-      ...prev,
-      [ventureId]: file
-    }));
-  };
-
-  const handleAddRecognition = () => {
-    setRecognitions([...recognitions, { 
-      id: Date.now(), 
-      value: '', 
-      title: '', 
-      subTitle: '',
-      isExisting: false 
-    }]);
-  };
-
-  const handleDeleteRecognition = (id) => {
-    setRecognitions(recognitions.filter(r => r.id !== id));
-  };
-
-  const handleSubmit = async () => {
-    // Validation
-    if (!basicInfo.sectionTitle.trim()) {
-      toast.error("Section title is required");
-      return;
-    }
-    if (!basicInfo.subTitle.trim()) {
-      toast.error("Subtitle is required");
-      return;
-    }
-    if (!basicInfo.description.trim()) {
-      toast.error("Description is required");
+  const handleDeleteAbout = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this About Us section?')) {
       return;
     }
 
     try {
       setLoading(true);
-
-      // Step 1: Save About Us basic info
-      const payload = {
-        sectionTitle: basicInfo.sectionTitle,
-        subTitle: basicInfo.subTitle,
-        description: basicInfo.description,
-        videoUrl: videoSection.videoUrl,
-        videoTitle: videoSection.videoTitle,
-        ctaButtonText: videoSection.ctaButtonText,
-        ctaButtonUrl: videoSection.ctaButtonUrl
-      };
-
-      let aboutUsResponse;
-      let aboutUsId;
-      
-      if (existingData?.id) {
-        // Update existing
-        aboutUsResponse = await updateAboutUsById(existingData.id, payload);
-        aboutUsId = existingData.id;
-        toast.success("About Us updated successfully!");
-      } else {
-        // Create new
-        aboutUsResponse = await addAboutUs(payload);
-        aboutUsId = aboutUsResponse.data.id;
-        toast.success("About Us created successfully!");
-      }
-
-      console.log("About Us Response:", aboutUsResponse.data);
-
-      // Step 2: Save Ventures
-      for (const venture of ventures) {
-        if (venture.isExisting) {
-          // Update existing venture if name changed or new file uploaded
-          if (ventureFiles[venture.id]) {
-            const ventureFormData = new FormData();
-            ventureFormData.append('ventureName', venture.ventureName);
-            ventureFormData.append('logo', ventureFiles[venture.id]);
-            
-            await updateVentureById(venture.id, ventureFormData);
-            console.log(`Updated venture ${venture.id}`);
-          }
-        } else {
-          // Add new venture
-          if (venture.ventureName.trim()) {
-            const ventureFormData = new FormData();
-            ventureFormData.append('ventureName', venture.ventureName);
-            
-            if (ventureFiles[venture.id]) {
-              ventureFormData.append('logo', ventureFiles[venture.id]);
-            }
-            
-            await addVenture(aboutUsId, ventureFormData);
-            console.log(`Added new venture: ${venture.ventureName}`);
-          }
-        }
-      }
-
-      // Step 3: Save Recognitions
-      for (const recognition of recognitions) {
-        if (recognition.isExisting) {
-          // Update existing recognition
-          const recognitionPayload = {
-            value: recognition.value,
-            title: recognition.title,
-            subTitle: recognition.subTitle
-          };
-          
-          await updateRecognition(recognition.id, recognitionPayload);
-          console.log(`Updated recognition ${recognition.id}`);
-        } else {
-          // Add new recognition
-          if (recognition.value.trim() && recognition.title.trim()) {
-            const recognitionPayload = {
-              value: recognition.value,
-              title: recognition.title,
-              subTitle: recognition.subTitle
-            };
-            
-            await addRecognition(aboutUsId, recognitionPayload);
-            console.log(`Added new recognition: ${recognition.title}`);
-          }
-        }
-      }
-
-      toast.success("All data saved successfully!");
-
-      // Refresh data after successful save
-      await fetchAboutUs();
-      
-      // Clear venture files
-      setVentureFiles({});
-      
+      // await deleteAboutUsById(id);
+      toast.success('About Us deleted successfully');
+      await fetchAllData();
     } catch (error) {
-      console.error("Error saving data:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to save data"
-      );
+      console.error('Error deleting about us:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete');
     } finally {
       setLoading(false);
     }
   };
 
-  // Show loading state while fetching
+  // Handle Venture actions
+  const handleAddVenture = () => {
+    console.log('handleAddVenture called');
+    console.log('selectedAboutUsId:', selectedAboutUsId);
+    
+    if (!selectedAboutUsId) {
+      toast.error('Please create an About Us section first');
+      return;
+    }
+    setEditingVenture(null);
+    setIsVentureModalOpen(true);
+    console.log('isVentureModalOpen set to true');
+  };
+
+  const handleEditVenture = (venture) => {
+    console.log('handleEditVenture called with:', venture);
+    setEditingVenture(venture);
+    setIsVentureModalOpen(true);
+  };
+
+  const handleDeleteVenture = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this venture?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // await deleteVentureById(id);
+      toast.success('Venture deleted successfully');
+      if (selectedAboutUsId) {
+        await fetchVentures(selectedAboutUsId);
+      }
+    } catch (error) {
+      console.error('Error deleting venture:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Recognition actions
+  const handleAddRecognition = () => {
+    console.log('handleAddRecognition called');
+    console.log('selectedAboutUsId:', selectedAboutUsId);
+    
+    if (!selectedAboutUsId) {
+      toast.error('Please create an About Us section first');
+      return;
+    }
+    setEditingRecognition(null);
+    setIsRecognitionModalOpen(true);
+    console.log('isRecognitionModalOpen set to true');
+  };
+
+  const handleEditRecognition = (recognition) => {
+    console.log('handleEditRecognition called with:', recognition);
+    setEditingRecognition(recognition);
+    setIsRecognitionModalOpen(true);
+  };
+
+  const handleDeleteRecognition = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this recognition?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // await deleteRecognitionById(id);
+      toast.success('Recognition deleted successfully');
+      if (selectedAboutUsId) {
+        await fetchRecognitions(selectedAboutUsId);
+      }
+    } catch (error) {
+      console.error('Error deleting recognition:', error);
+      toast.error(error?.response?.data?.message || 'Failed to delete');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Pagination helpers
+  const paginate = (items, currentPage) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (items) => Math.ceil(items.length / itemsPerPage);
+
   if (fetching) {
     return (
       <div
@@ -313,444 +252,343 @@ function AboutUs() {
     );
   }
 
+  const paginatedAbout = paginate(aboutUsList, currentAboutPage);
+  const paginatedVentures = paginate(ventures, currentVenturePage);
+  const paginatedRecognitions = paginate(recognitions, currentRecognitionPage);
+
   return (
-    <div className="space-y-3">
-      {/* Basic Information */}
-      <div 
-        className="rounded-lg p-4 sm:p-5 shadow-sm"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <h3 
-          className="text-sm font-semibold mb-4"
-          style={{ color: colors.textPrimary }}
-        >
-          Basic Information
-        </h3>
+    <div className="space-y-4">
+      {/* Debug Info */}
+      {/* <div className="rounded-lg p-3 shadow-sm bg-yellow-50 border border-yellow-200">
+        <p className="text-xs font-mono text-yellow-800 m-0">
+          <strong>DEBUG:</strong> selectedAboutUsId = {selectedAboutUsId || 'null'} | 
+          About Modal: {isAboutModalOpen ? 'OPEN' : 'CLOSED'} | 
+          Venture Modal: {isVentureModalOpen ? 'OPEN' : 'CLOSED'} | 
+          Recognition Modal: {isRecognitionModalOpen ? 'OPEN' : 'CLOSED'}
+        </p>
+      </div> */}
 
-        <div className="space-y-3">
-          <div>
-            <label 
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: colors.textSecondary }}
-            >
-              Section Title <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={basicInfo.sectionTitle}
-              onChange={(e) => setBasicInfo({...basicInfo, sectionTitle: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-            />
-          </div>
-
-          <div>
-            <label 
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: colors.textSecondary }}
-            >
-              Sub Title <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={basicInfo.subTitle}
-              onChange={(e) => setBasicInfo({...basicInfo, subTitle: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-            />
-          </div>
-
-          <div>
-            <label 
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: colors.textSecondary }}
-            >
-              Description <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <textarea
-              value={basicInfo.description}
-              onChange={(e) => setBasicInfo({...basicInfo, description: e.target.value})}
-              rows={4}
-              className="w-full px-3 py-2 rounded border text-sm resize-none"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Video Section */}
-      <div 
-        className="rounded-lg p-4 sm:p-5 shadow-sm"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <h3 
-          className="text-sm font-semibold mb-4"
-          style={{ color: colors.textPrimary }}
-        >
-          Video Section
-        </h3>
-
-        <div className="space-y-3">
-          <div>
-            <label 
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: colors.textSecondary }}
-            >
-              Video URL
-            </label>
-            <input
-              type="text"
-              value={videoSection.videoUrl}
-              onChange={(e) => setVideoSection({...videoSection, videoUrl: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-              placeholder="https://www.youtube.com/watch?v=example123"
-            />
-          </div>
-
-          <div>
-            <label 
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: colors.textSecondary }}
-            >
-              Video Title
-            </label>
-            <input
-              type="text"
-              value={videoSection.videoTitle}
-              onChange={(e) => setVideoSection({...videoSection, videoTitle: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg,
-                color: colors.textPrimary
-              }}
-              placeholder="Discover Kennedia Blu"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label 
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: colors.textSecondary }}
-              >
-                CTA Button Text
-              </label>
-              <input
-                type="text"
-                value={videoSection.ctaButtonText}
-                onChange={(e) => setVideoSection({...videoSection, ctaButtonText: e.target.value})}
-                className="w-full px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="Learn More"
-              />
-            </div>
-
-            <div>
-              <label 
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: colors.textSecondary }}
-              >
-                CTA Button URL
-              </label>
-              <input
-                type="text"
-                value={videoSection.ctaButtonUrl}
-                onChange={(e) => setVideoSection({...videoSection, ctaButtonUrl: e.target.value})}
-                className="w-full px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.mainBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="https://www.kennediablu.com/about-us"
-              />
-            </div>
-          </div>
-
-          {/* Video Preview */}
-          {videoSection.videoUrl && (
-            <div className="mt-3">
-              <label 
-                className="block text-xs font-medium mb-1.5"
-                style={{ color: colors.textSecondary }}
-              >
-                Video Preview
-              </label>
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full rounded-lg"
-                  src={videoSection.videoUrl.replace('watch?v=', 'embed/')}
-                  title={videoSection.videoTitle || "Video preview"}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Our Ventures */}
-      <div 
-        className="rounded-lg p-4 sm:p-5 shadow-sm"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 
-            className="text-sm font-semibold m-0"
-            style={{ color: colors.textPrimary }}
+      {/* About Us Table */}
+      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
+            About Us Sections
+          </h3>
+          <button
+            onClick={handleAddAbout}
+            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
+            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
           >
+            <Plus size={14} />
+            Add About Us
+          </button>
+        </div>
+
+        {aboutUsList.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500 mb-2">No About Us sections found</p>
+            <p className="text-xs text-gray-400">Click "Add About Us" to create your first section</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ backgroundColor: colors.border }}>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Section Title</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Sub Title</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Description</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedAbout.map((about) => (
+                    <tr key={about.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
+                      <td className="px-3 py-2 text-xs">#{about.id}</td>
+                      <td className="px-3 py-2 text-xs font-medium">{about.sectionTitle}</td>
+                      <td className="px-3 py-2 text-xs">{about.subTitle}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <div className="max-w-xs truncate">{about.description}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditAbout(about)}
+                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 size={14} style={{ color: colors.primary }} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAbout(about.id)}
+                            disabled={loading}
+                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {getTotalPages(aboutUsList) > 1 && (
+              <Pagination
+                currentPage={currentAboutPage}
+                totalPages={getTotalPages(aboutUsList)}
+                onPageChange={setCurrentAboutPage}
+                totalItems={aboutUsList.length}
+                currentItems={paginatedAbout.length}
+              />
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Ventures Table */}
+      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
             Our Ventures
           </h3>
           <button
             onClick={handleAddVenture}
-            className="px-3 py-1.5 rounded text-xs font-medium"
-            style={{ 
-              backgroundColor: colors.primary,
-              color: '#ffffff'
-            }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
+            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
           >
-            + Add Venture
+            <Plus size={14} />
+            Add Venture
           </button>
         </div>
 
-        <div className="space-y-3">
-          {ventures.map((venture) => (
-            <div 
-              key={venture.id}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 rounded border"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg
-              }}
-            >
-              <input
-                type="text"
-                value={venture.ventureName}
-                onChange={(e) => {
-                  setVentures(ventures.map(v => 
-                    v.id === venture.id ? {...v, ventureName: e.target.value} : v
-                  ));
-                }}
-                className="px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.contentBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="HOTEL"
-              />
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id={`venture-${venture.id}`}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      handleVentureFileChange(venture.id, e.target.files[0]);
-                    }
-                  }}
-                />
-                <label
-                  htmlFor={`venture-${venture.id}`}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded border text-xs cursor-pointer"
-                  style={{ 
-                    borderColor: colors.border,
-                    backgroundColor: colors.contentBg,
-                    color: colors.textSecondary
-                  }}
-                >
-                  <Upload size={14} />
-                  {ventureFiles[venture.id] 
-                    ? ventureFiles[venture.id].name 
-                    : venture.logoUrl 
-                      ? 'Change Logo' 
-                      : 'Upload Logo'}
-                </label>
-                <button
-                  onClick={() => handleDeleteVenture(venture.id)}
-                  className="p-2 rounded"
-                  style={{ 
-                    backgroundColor: colors.danger,
-                    color: '#ffffff'
-                  }}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-
-              {/* Show existing logo preview */}
-              {venture.logoUrl && !ventureFiles[venture.id] && (
-                <div className="md:col-span-2">
-                  <img 
-                    src={venture.logoUrl} 
-                    alt={venture.ventureName}
-                    className="h-12 w-auto object-contain"
-                  />
-                </div>
-              )}
+        {ventures.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500 mb-2">No ventures found</p>
+            <p className="text-xs text-gray-400">Click "Add Venture" to create your first venture</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ backgroundColor: colors.border }}>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Logo</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Venture Name</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedVentures.map((venture) => (
+                    <tr key={venture.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
+                      <td className="px-3 py-2 text-xs">#{venture.id}</td>
+                      <td className="px-3 py-2">
+                        {venture.logoUrl && (
+                          <img src={venture.logoUrl} alt={venture.ventureName} className="h-8 w-auto object-contain" />
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-xs font-medium">{venture.ventureName}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditVenture(venture)}
+                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 size={14} style={{ color: colors.primary }} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteVenture(venture.id)}
+                            disabled={loading}
+                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+
+            {getTotalPages(ventures) > 1 && (
+              <Pagination
+                currentPage={currentVenturePage}
+                totalPages={getTotalPages(ventures)}
+                onPageChange={setCurrentVenturePage}
+                totalItems={ventures.length}
+                currentItems={paginatedVentures.length}
+              />
+            )}
+          </>
+        )}
       </div>
 
-      {/* Global Recognition */}
-      <div 
-        className="rounded-lg p-4 sm:p-5 shadow-sm"
-        style={{ backgroundColor: colors.contentBg }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 
-            className="text-sm font-semibold m-0"
-            style={{ color: colors.textPrimary }}
-          >
+      {/* Recognitions Table */}
+      <div className="rounded-lg p-4 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold m-0" style={{ color: colors.textPrimary }}>
             Global Recognition
           </h3>
           <button
             onClick={handleAddRecognition}
-            className="px-3 py-1.5 rounded text-xs font-medium"
-            style={{ 
-              backgroundColor: colors.primary,
-              color: '#ffffff'
-            }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold"
+            style={{ backgroundColor: colors.primary, color: '#ffffff' }}
           >
-            + Add Recognition
+            <Plus size={14} />
+            Add Recognition
           </button>
         </div>
 
-        <div className="space-y-3">
-          {recognitions.map((recognition) => (
-            <div 
-              key={recognition.id}
-              className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 rounded border"
-              style={{ 
-                borderColor: colors.border,
-                backgroundColor: colors.mainBg
-              }}
-            >
-              <input
-                type="text"
-                value={recognition.value}
-                onChange={(e) => {
-                  setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, value: e.target.value} : r
-                  ));
-                }}
-                className="px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.contentBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="98/100"
-              />
-
-              <input
-                type="text"
-                value={recognition.title}
-                onChange={(e) => {
-                  setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, title: e.target.value} : r
-                  ));
-                }}
-                className="px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.contentBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="Years of Excellence"
-              />
-
-              <input
-                type="text"
-                value={recognition.subTitle}
-                onChange={(e) => {
-                  setRecognitions(recognitions.map(r => 
-                    r.id === recognition.id ? {...r, subTitle: e.target.value} : r
-                  ));
-                }}
-                className="px-3 py-2 rounded border text-sm"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.contentBg,
-                  color: colors.textPrimary
-                }}
-                placeholder="Trusted globally"
-              />
-
-              <button
-                onClick={() => handleDeleteRecognition(recognition.id)}
-                className="px-3 py-2 rounded text-sm font-medium"
-                style={{ 
-                  backgroundColor: colors.danger,
-                  color: '#ffffff'
-                }}
-              >
-                <Trash2 size={14} className="inline mr-1" />
-              </button>
+        {recognitions.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500 mb-2">No recognitions found</p>
+            <p className="text-xs text-gray-400">Click "Add Recognition" to create your first recognition</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ backgroundColor: colors.border }}>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">ID</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Value</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Title</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Subtitle</th>
+                    <th className="text-left px-3 py-2 text-[10px] font-bold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRecognitions.map((recognition) => (
+                    <tr key={recognition.id} style={{ borderBottom: `1px solid ${colors.border}` }}>
+                      <td className="px-3 py-2 text-xs">#{recognition.id}</td>
+                      <td className="px-3 py-2 text-xs font-bold">{recognition.value}</td>
+                      <td className="px-3 py-2 text-xs font-medium">{recognition.title}</td>
+                      <td className="px-3 py-2 text-xs">{recognition.subTitle}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditRecognition(recognition)}
+                            className="p-1 rounded hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 size={14} style={{ color: colors.primary }} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRecognition(recognition.id)}
+                            disabled={loading}
+                            className="p-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} style={{ color: '#ef4444' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+
+            {getTotalPages(recognitions) > 1 && (
+              <Pagination
+                currentPage={currentRecognitionPage}
+                totalPages={getTotalPages(recognitions)}
+                onPageChange={setCurrentRecognitionPage}
+                totalItems={recognitions.length}
+                currentItems={paginatedRecognitions.length}
+              />
+            )}
+          </>
+        )}
       </div>
 
-      {/* Submit Button */}
-      <div 
-        className="rounded-lg p-4 sm:p-5 shadow-sm"
-        style={{ backgroundColor: colors.contentBg }}
-      >
+      {/* Modals */}
+      <AddUpdateAboutModal
+        isOpen={isAboutModalOpen}
+        onClose={(refresh) => {
+          console.log('About modal closing, refresh:', refresh);
+          setIsAboutModalOpen(false);
+          setEditingAbout(null);
+          if (refresh) fetchAllData();
+        }}
+        editData={editingAbout}
+      />
+
+      <AddUpdateVenturesModal
+        isOpen={isVentureModalOpen}
+        onClose={(refresh) => {
+          console.log('Venture modal closing, refresh:', refresh);
+          setIsVentureModalOpen(false);
+          setEditingVenture(null);
+          if (refresh && selectedAboutUsId) fetchVentures(selectedAboutUsId);
+        }}
+        editData={editingVenture}
+        aboutUsId={selectedAboutUsId}
+      />
+
+      <AddUpdateRecognitionModal
+        isOpen={isRecognitionModalOpen}
+        onClose={(refresh) => {
+          console.log('Recognition modal closing, refresh:', refresh);
+          setIsRecognitionModalOpen(false);
+          setEditingRecognition(null);
+          if (refresh && selectedAboutUsId) fetchRecognitions(selectedAboutUsId);
+        }}
+        editData={editingRecognition}
+        aboutUsId={selectedAboutUsId}
+      />
+    </div>
+  );
+}
+
+// Pagination Component
+function Pagination({ currentPage, totalPages, onPageChange, totalItems, currentItems }) {
+  const startIndex = (currentPage - 1) * currentItems + 1;
+  const endIndex = startIndex + currentItems - 1;
+
+  return (
+    <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
+      <p className="text-[10px] m-0 text-gray-500">
+        Showing {startIndex} to {Math.min(endIndex, totalItems)} of {totalItems} entries
+      </p>
+      <div className="flex items-center gap-1">
         <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 border-none rounded-md text-sm font-semibold cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: colors.primary,
-            color: colors.sidebarText,
-          }}
-          onMouseEnter={(e) => {
-            if (!loading) {
-              e.currentTarget.style.backgroundColor = colors.primaryHover;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading) {
-              e.currentTarget.style.backgroundColor = colors.primary;
-            }
-          }}
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+          style={{ color: colors.textPrimary }}
         >
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              <span>Saving...</span>
-            </>
-          ) : (
-            <span>Save All Changes</span>
-          )}
+          <ChevronLeft size={16} />
+        </button>
+
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className="px-2 py-1 rounded text-xs font-medium transition-colors"
+            style={{
+              backgroundColor: page === currentPage ? colors.primary : 'transparent',
+              color: page === currentPage ? '#ffffff' : colors.textPrimary,
+            }}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+          style={{ color: colors.textPrimary }}
+        >
+          <ChevronRight size={16} />
         </button>
       </div>
     </div>

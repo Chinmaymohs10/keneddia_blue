@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin, Clock, Loader2 } from "lucide-react";
+import { ArrowRight, Tag, ChevronLeft, ChevronRight, MapPin, Clock, Loader2, ExternalLink } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
@@ -22,7 +22,6 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
       const now = Date.now();
       const expiryTime = new Date(expiresAt).getTime();
 
-      // Check if the expiry date is valid
       if (isNaN(expiryTime)) {
         console.warn('Invalid expiry date:', expiresAt);
         return;
@@ -30,21 +29,18 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string | Date }) {
 
       const difference = expiryTime - now;
 
-      // If expired
       if (difference <= 0) {
         setIsExpired(true);
         setTimeLeft("Expired");
         return;
       }
 
-      // Calculate time components
       const totalSeconds = Math.floor(difference / 1000);
       const days = Math.floor(totalSeconds / (60 * 60 * 24));
       const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
       const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
       const seconds = totalSeconds % 60;
 
-      // Format display based on time remaining
       if (days > 0) {
         setTimeLeft(`${days}d ${hours}h`);
       } else if (hours > 0) {
@@ -84,6 +80,7 @@ interface ApiOffer {
   description: string;
   couponCode: string;
   ctaText: string;
+  ctaLink?: string; // Added field
   availableHours: string;
   propertyId: number;
   propertyName: string;
@@ -115,6 +112,7 @@ const transformOffer = (apiOffer: ApiOffer) => {
     description: apiOffer.description,
     couponCode: apiOffer.couponCode,
     ctaText: apiOffer.ctaText || 'View Offer',
+    ctaLink: apiOffer.ctaLink || '', // Added field
     availableHours: apiOffer.availableHours,
     location: apiOffer.locationName,
     propertyName: apiOffer.propertyName,
@@ -129,10 +127,28 @@ const transformOffer = (apiOffer: ApiOffer) => {
   };
 };
 
+// Check if image is Instagram banner size (1080x1080)
+const isInstagramBanner = (image: any) => {
+  return image && image.width === 1080 && image.height === 1080;
+};
+
+// Fallback offers for skeleton/initial state
+const getFallbackOffers = () => {
+  if (siteContent.text.dailyOffers?.offers) {
+    return siteContent.text.dailyOffers.offers;
+  }
+  
+  return [
+    { id: 1, title: '', description: '', couponCode: '', location: '', image: null },
+    { id: 2, title: '', description: '', couponCode: '', location: '', image: null },
+    { id: 3, title: '', description: '', couponCode: '', location: '', image: null },
+  ];
+};
+
 export default function DailyOffers() {
   const { dailyOffers } = siteContent.text;
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [offers, setOffers] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>(getFallbackOffers());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
@@ -150,9 +166,6 @@ export default function DailyOffers() {
           size: 100
         });
 
-        console.log('Daily Offers API Response:', response);
-
-        // Handle different response structures
         let offersData: ApiOffer[] = [];
         
         if (response.data?.data?.offers) {
@@ -165,19 +178,15 @@ export default function DailyOffers() {
           offersData = response.data;
         }
 
-        // Filter only active offers and transform
         const activeOffers = offersData
           .filter((offer: ApiOffer) => offer.isActive)
           .map(transformOffer);
 
-        // Reverse to show latest first
         setOffers(activeOffers.reverse());
         
       } catch (err) {
         console.error('Error fetching daily offers:', err);
         setError(true);
-        
-        // Fallback to static content if API fails
         if (dailyOffers?.offers) {
           setOffers(dailyOffers.offers);
         }
@@ -189,21 +198,14 @@ export default function DailyOffers() {
     fetchOffers();
   }, []);
 
-  // Extract unique locations from fetched offers
   const uniqueLocations = ["All Locations", ...Array.from(new Set(offers.map((offer: any) => offer.location).filter(Boolean)))];
 
   const filteredOffers = selectedLocation === "All Locations"
     ? offers
     : offers.filter((offer: any) => offer.location === selectedLocation);
 
-  // Get category from property type or infer from content
   const getCategory = (offer: any) => {
-    // Use property type if available
-    if (offer.propertyType) {
-      return offer.propertyType;
-    }
-    
-    // Fallback to inference
+    if (offer.propertyType) return offer.propertyType;
     const text = ((offer.title || '') + " " + (offer.description || '')).toLowerCase();
     if (text.includes("dining") || text.includes("meal") || text.includes("restaurant") || text.includes("dinner")) return "Restaurant";
     if (text.includes("cafe") || text.includes("coffee") || text.includes("tea")) return "Cafe";
@@ -211,41 +213,15 @@ export default function DailyOffers() {
     return "Hotel";
   };
 
-  const handlePrev = () => {
-    if (swiperInstance) {
-      swiperInstance.slidePrev();
-    }
-  };
+  const handlePrev = () => swiperInstance?.slidePrev();
+  const handleNext = () => swiperInstance?.slideNext();
 
-  const handleNext = () => {
-    if (swiperInstance) {
-      swiperInstance.slideNext();
-    }
-  };
-
-  // Show loading state
-  if (loading) {
-    return (
-      <section className="relative w-full bg-muted py-10 overflow-hidden">
-        <div className="container mx-auto px-6 lg:px-12">
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="text-sm text-muted-foreground">Loading offers...</span>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // Don't render if no offers
-  if (!offers || offers.length === 0) {
-    return null;
-  }
+  if (!offers || offers.length === 0) return null;
 
   return (
     <section className="relative w-full bg-muted py-10 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
-        {/* Section Header - Compact */}
+        {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-serif text-foreground">
@@ -254,44 +230,23 @@ export default function DailyOffers() {
             <div className="w-12 h-0.5 bg-primary mt-2" />
           </div>
 
-          {/* Custom Navigation Controls & Filter */}
           <div className="flex items-center gap-3">
-            {/* Location Filter */}
             {uniqueLocations.length > 1 && (
               <div className="relative hidden sm:block">
                 <select
                   value={selectedLocation}
                   onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer outline-none shadow-sm hover:border-primary/50 transition-colors"
+                  className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none shadow-sm transition-colors"
                 >
                   {uniqueLocations.map((loc) => (
-                    <option key={String(loc)} value={String(loc)}>
-                      {String(loc)}
-                    </option>
+                    <option key={String(loc)} value={String(loc)}>{String(loc)}</option>
                   ))}
                 </select>
                 <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               </div>
             )}
-
-            {uniqueLocations.length > 1 && (
-              <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
-            )}
-
-            <button
-              onClick={handlePrev}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
-              aria-label="Previous Slide"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all z-10 relative cursor-pointer"
-              aria-label="Next Slide"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            <button onClick={handlePrev} className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all"><ChevronLeft size={16} /></button>
+            <button onClick={handleNext} className="w-8 h-8 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white transition-all"><ChevronRight size={16} /></button>
           </div>
         </div>
 
@@ -313,89 +268,91 @@ export default function DailyOffers() {
           >
             {filteredOffers.map((offer: any, index: number) => {
               const category = getCategory(offer);
+              const isIGBanner = isInstagramBanner(offer.image);
 
               return (
-                <SwiperSlide key={offer.id || index} className="h-full">
-                  <div className="group relative bg-card border border-border rounded-xl overflow-hidden h-full hover:border-primary/50 transition-colors duration-300 flex flex-col">
-                    {/* Image Aspect 300x250ish */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                      {offer.image?.src ? (
-                        <img
-                          src={offer.image.src}
-                          alt={offer.image.alt || offer.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/api/placeholder/400/300';
-                          }}
-                        />
-                      ) : offer.image ? (
-                        <OptimizedImage
-                          {...offer.image}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                          <Tag className="w-12 h-12 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      
-                      {/* Category Badge */}
-                      <div className="absolute top-3 left-3 flex gap-2">
-                        <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
-                          {category}
-                        </span>
-                      </div>
-
-                      {/* Countdown Timer Badge - Top Right */}
-                      {offer.expiresAt && (
-                        <div className="absolute top-3 right-3">
-                          <CountdownTimer expiresAt={offer.expiresAt} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content - Compact */}
-                    <div className="p-4 flex flex-col gap-3 flex-grow">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                          {offer.title}
-                        </h3>
-                        {offer.location && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                            <MapPin className="w-3 h-3" />
-                            <span className="whitespace-nowrap">{offer.location}</span>
-                          </div>
+                <SwiperSlide key={offer.id || index} className="h-auto">
+                  {/* flex-col h-full fix applied here */}
+                  <div className={`group relative bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300 flex flex-col h-full`}>
+                    
+                    {isIGBanner ? (
+                      <div className="relative w-full aspect-square overflow-hidden bg-muted">
+                        {offer.image?.src && (
+                          <img
+                            src={offer.image.src}
+                            alt={offer.image.alt || offer.title}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
                         )}
+                        {offer.expiresAt && <div className="absolute top-3 right-3"><CountdownTimer expiresAt={offer.expiresAt} /></div>}
                       </div>
-
-                      {/* Property Name */}
-                      {offer.propertyName && (
-                        <div className="text-xs text-muted-foreground">
-                          at <span className="font-medium text-foreground">{offer.propertyName}</span>
+                    ) : (
+                      <>
+                        <div className="relative aspect-[4/3] overflow-hidden bg-muted flex-shrink-0">
+                          {offer.image?.src ? (
+                            <img
+                              src={offer.image.src}
+                              alt={offer.image.alt || offer.title}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-muted">
+                              <Tag className="w-12 h-12 text-muted-foreground/30" />
+                            </div>
+                          )}
+                          <div className="absolute top-3 left-3">
+                            <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
+                              {category}
+                            </span>
+                          </div>
+                          {offer.expiresAt && <div className="absolute top-3 right-3"><CountdownTimer expiresAt={offer.expiresAt} /></div>}
                         </div>
-                      )}
 
-                      {/* Available Hours - if any */}
-                      {offer.availableHours && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          <span>{offer.availableHours}</span>
-                        </div>
-                      )}
+                        {/* Content Section - flex-1 pushes footer down */}
+                        <div className="p-4 flex flex-col flex-1 gap-2.5">
+                          <div className="flex justify-between items-start gap-2">
+                            <h3 className="text-lg font-serif font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                              {offer.title}
+                            </h3>
+                            {offer.location && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                                <MapPin className="w-3 h-3" />
+                                <span className="whitespace-nowrap">{offer.location}</span>
+                              </div>
+                            )}
+                          </div>
 
-                      <div className="mt-auto pt-2 flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">
-                          Code: <span className="font-mono text-foreground font-medium">{offer.couponCode || 'N/A'}</span>
+                          {offer.propertyName && <div className="text-xs text-muted-foreground">at <span className="font-medium text-foreground">{offer.propertyName}</span></div>}
+                          {offer.availableHours && <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Clock className="w-3 h-3" /><span>{offer.availableHours}</span></div>}
+
+                          {/* Footer with CTA Placeholder and Code */}
+                          <div className="mt-auto pt-4 border-t border-border space-y-3">
+                            <div className="text-xs text-muted-foreground">
+                              Code: <span className="font-mono text-foreground font-medium">{offer.couponCode || 'N/A'}</span>
+                            </div>
+
+                            {/* CTA Link Placeholder Logic */}
+                            {offer.ctaLink ? (
+                              <Link 
+                                to={offer.ctaLink} 
+                                target="_blank"
+                                className="w-full bg-primary text-primary-foreground py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                              >
+                                {offer.ctaText}
+                                <ExternalLink size={12} />
+                              </Link>
+                            ) : (
+                              <button 
+                                disabled
+                                className="w-full bg-muted text-muted-foreground py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-not-allowed opacity-70"
+                              >
+                                {offer.ctaText}
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        {/* <Link 
-                          to={`/#`} 
-                          className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline"
-                        >
-                          {offer.ctaText || 'View Offer'}
-                          <ArrowRight className="w-3 h-3" />
-                        </Link> */}
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                 </SwiperSlide>
               );
