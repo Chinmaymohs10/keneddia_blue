@@ -23,7 +23,7 @@ export const createRole = (data) => API.post("api/v1/roles", data);
 export const getAllRoles = () => API.get("api/v1/showAll");
 
 export const uploadMedia = (formData) => API.post("api/v1/media/upload", formData);
-export const PropertyUploadMedia = (formData) => API.post("api/v1/upload-media", formData);
+export const PropertyUploadMedia = (formData) => API.post("api/v1/property-listings/upload-media", formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 
 export const createUser = (data) => API.post("api/v1/users/create", data);
@@ -97,7 +97,8 @@ export const createNews = (data) => API.post("api/v1/news/create", data);
 export const getAllNews = ({ category = "PRESS", page = 0, size = 10 }) => API.get("api/v1/news/showAll", { params: { category, page, size } });
 export const updateNewsById = (id, data) => API.put(`api/v1/news/${id}`, data);
 
-// property 
+// properties
+export const createPropertyByType = (typeName, data) =>API.post(`api/v1/properties/add/${typeName}`, data);
 export const createPropertyListing = (data) =>API.post("api/v1/property-listings", data);
 export const GetAllPropertyListing = () =>API.get("api/v1/property-listings");
 export const getPropertyListingMedia = (propertyListingId) =>API.get(`api/v1/property-listings/${propertyListingId}/media`);

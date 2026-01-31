@@ -265,7 +265,7 @@ const Breadcrumb = ({ items }: { items: BreadcrumbItem[] }) => {
 };
 
 // ============================================
-// ARTICLE IMAGE GRID COMPONENT
+// ARTICLE IMAGE GRID COMPONENT (30% reduced height)
 // ============================================
 interface ArticleImage {
   src: string;
@@ -278,7 +278,7 @@ const ArticleImageGrid = ({ images, category }: { images: ArticleImage[]; catego
 
   if (images.length === 1) {
     return (
-      <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-lg mb-10 group">
+      <div className="relative w-full max-h-[400px] h-full rounded-2xl overflow-hidden shadow-lg group">
         <span className="absolute top-4 left-4 z-10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full shadow-lg">
           {category}
         </span>
@@ -295,7 +295,7 @@ const ArticleImageGrid = ({ images, category }: { images: ArticleImage[]; catego
     : "grid-cols-2 md:grid-cols-4";
 
   return (
-    <div className="mb-10">
+    <div className="mb-6">
       <div className={`grid ${gridClass} gap-4`}>
         {images.map((img, index) => (
           <div 
@@ -364,8 +364,8 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
   const currentProperty = properties[currentIndex];
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-      <div className="relative aspect-[4/3] overflow-hidden">
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm h-full max-h-[400px] flex flex-col">
+      <div className="relative flex-1 overflow-hidden">
         {properties.map((property, i) => (
           <div 
             key={property.id} 
@@ -833,8 +833,21 @@ export default function HotelNewsDetails() {
             </div>
           </header>
 
-          {/* Full-Width Article Image(s) - Below Heading */}
-          <ArticleImageGrid images={newsImages} category={category} />
+          {/* NEW LAYOUT: Image (70% width) + Properties Slider (30% width) - Equal Heights */}
+          <div className="grid grid-cols-1 lg:grid-cols-[70%_30%] gap-6 mb-10">
+            {/* Left: Article Image */}
+            <div className="h-full">
+              <ArticleImageGrid images={newsImages} category={category} />
+            </div>
+
+            {/* Right: Properties Slider */}
+            <div className="lg:pl-2 h-full flex flex-col">
+              <h4 className="font-serif font-bold text-lg mb-4 px-1">Explore Our Properties</h4>
+              <div className="flex-1">
+                <PropertiesSlider properties={HOTEL_PROPERTIES} />
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12">
 
@@ -892,12 +905,6 @@ export default function HotelNewsDetails() {
 
             {/* RIGHT: Sidebar */}
             <aside className="lg:sticky lg:top-28 h-fit space-y-8">
-              {/* Properties Slider */}
-              <div>
-                <h4 className="font-serif font-bold text-lg mb-4 px-1">Explore Our Properties</h4>
-                <PropertiesSlider properties={HOTEL_PROPERTIES} />
-              </div>
-
               {/* Author Card - Desktop Only */}
               <div className="hidden lg:block">
                 <AuthorProfileCard author={author} />

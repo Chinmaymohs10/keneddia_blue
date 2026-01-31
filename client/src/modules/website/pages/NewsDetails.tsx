@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Calendar, Clock,
   Facebook, Twitter, Linkedin, Mail,
   ChevronLeft, ChevronRight,
-  MapPin, Loader2, Send, MessageCircle, ExternalLink
+  MapPin, Loader2, Send, MessageCircle, ExternalLink, Star
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -31,6 +31,145 @@ interface NewsItem {
   ctaLink?: string;
   ctaText?: string;
 }
+
+// ============================================
+// PROPERTIES DATA
+// ============================================
+interface Property {
+  id: string;
+  name: string;
+  location: string;
+  image: string;
+  rating: number;
+  link: string;
+  highlights: string[];
+}
+
+const HOTEL_PROPERTIES: Property[] = [
+  {
+    id: "kennedia-blu-maldives",
+    name: "Kennedia Blu Maldives",
+    location: "North Malé Atoll, Maldives",
+    image: "/images/hotels/maldives.jpg",
+    rating: 5,
+    link: "/hotels/kennedia-blu-maldives",
+    highlights: ["Overwater Villas", "Private Beach", "Spa & Wellness"]
+  },
+  {
+    id: "kennedia-grand-paris",
+    name: "Kennedia Grand Paris",
+    location: "8th Arrondissement, Paris",
+    image: "/images/hotels/paris.jpg",
+    rating: 5,
+    link: "/hotels/kennedia-grand-paris",
+    highlights: ["Eiffel Tower Views", "Michelin Restaurant", "Art Collection"]
+  },
+  {
+    id: "kennedia-resort-bali",
+    name: "Kennedia Resort Bali",
+    location: "Ubud, Bali, Indonesia",
+    image: "/images/hotels/bali.jpg",
+    rating: 5,
+    link: "/hotels/kennedia-resort-bali",
+    highlights: ["Rice Terrace Views", "Yoga Retreat", "Infinity Pool"]
+  },
+  {
+    id: "kennedia-palace-dubai",
+    name: "Kennedia Palace Dubai",
+    location: "Palm Jumeirah, Dubai",
+    image: "/images/hotels/dubai.jpg",
+    rating: 5,
+    link: "/hotels/kennedia-palace-dubai",
+    highlights: ["Private Beach", "Rooftop Bar", "Butler Service"]
+  }
+];
+
+// ============================================
+// PROPERTIES SLIDER COMPONENT
+// ============================================
+const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev === properties.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [properties.length]);
+
+  const currentProperty = properties[currentIndex];
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm h-full max-h-[400px] flex flex-col">
+      <div className="relative flex-1 overflow-hidden">
+        {properties.map((property, i) => (
+          <div 
+            key={property.id} 
+            className={`absolute inset-0 transition-opacity duration-700 ${i === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <img src={property.image} alt={property.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          </div>
+        ))}
+        
+        {/* Property Info Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <div className="flex items-center gap-1 mb-1">
+            {[...Array(currentProperty.rating)].map((_, i) => (
+              <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+            ))}
+          </div>
+          <h4 className="font-serif font-bold text-lg">{currentProperty.name}</h4>
+          <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+            <MapPin className="w-3 h-3" /> {currentProperty.location}
+          </p>
+        </div>
+
+        {/* Navigation Arrows */}
+        <button 
+          onClick={() => setCurrentIndex(i => i === 0 ? properties.length - 1 : i - 1)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/40 transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4 text-white" />
+        </button>
+        <button 
+          onClick={() => setCurrentIndex(i => i === properties.length - 1 ? 0 : i + 1)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/40 transition-colors"
+        >
+          <ChevronRight className="w-4 h-4 text-white" />
+        </button>
+      </div>
+
+      {/* Highlights */}
+      <div className="p-4 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {currentProperty.highlights.map((highlight, i) => (
+            <span key={i} className="text-[10px] px-2 py-1 bg-primary/10 text-primary rounded-full">
+              {highlight}
+            </span>
+          ))}
+        </div>
+        <Link 
+          to={currentProperty.link}
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+        >
+          Explore Property <ExternalLink className="w-4 h-4" />
+        </Link>
+      </div>
+
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5 pb-4">
+        {properties.map((_, i) => (
+          <button 
+            key={i}
+            onClick={() => setCurrentIndex(i)}
+            className={`w-2 h-2 rounded-full transition-colors ${i === currentIndex ? 'bg-primary' : 'bg-border'}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // ============================================
 // SUB-COMPONENTS
@@ -178,9 +317,23 @@ export default function NewsDetails() {
             </div>
           </header>
 
-          <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-xl mb-12">
-            <img src={newsItem.imageUrl} alt={newsItem.title} className="w-full h-full object-cover" />
-            <div className="absolute top-4 left-4 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase">{newsItem.badgeType}</div>
+          {/* NEW LAYOUT: Image (70% width) + Properties Slider (30% width) */}
+          <div className="grid grid-cols-1 lg:grid-cols-[70%_30%] gap-6 mb-10">
+            {/* Left: Article Image */}
+            <div className="h-full">
+              <div className="relative w-full max-h-[400px] h-full rounded-2xl overflow-hidden shadow-xl group">
+                <img src={newsItem.imageUrl} alt={newsItem.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute top-4 left-4 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase">{newsItem.badgeType}</div>
+              </div>
+            </div>
+
+            {/* Right: Properties Slider */}
+            <div className="lg:pl-2 h-full flex flex-col">
+              <h4 className="font-serif font-bold text-lg mb-4 px-1">Explore Our Properties</h4>
+              <div className="flex-1">
+                <PropertiesSlider properties={HOTEL_PROPERTIES} />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-16">
