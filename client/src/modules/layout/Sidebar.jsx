@@ -1,5 +1,5 @@
 // Sidebar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { colors } from "../../lib/colors/colors";
 import {
@@ -21,10 +21,18 @@ import {
   ChevronRight,
 } from "lucide-react";
 import AuthService from "../auth/authService";
-function Sidebar({ role = "admin", isOpen, onToggle }) {
+
+function Sidebar({ isOpen, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // Get user data from session/local storage on mount
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    setCurrentUser(user);
+  }, []);
 
   // Role-based menu items
   const getMenuItemsByRole = (userRole) => {
@@ -34,7 +42,7 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
       { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },
       { icon: Users, label: "Manage Users", path: "/ManageUsers" },
-      { icon: BarChart3, label: "Analytics", path: "/Analytics" },
+      // { icon: BarChart3, label: "Analytics", path: "/Analytics" },
       {
         icon: Building2,
         label: "Hotel",
@@ -47,42 +55,42 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
           { name: "Pricing", path: "/Hotel/Pricing" },
         ],
       },
-      {
-        icon: Coffee,
-        label: "Cafe",
-        path: "/Cafe",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Menu", path: "/Cafe/Menu" },
-          { name: "Orders", path: "/Cafe/Orders" },
-          { name: "Tables", path: "/Cafe/Tables" },
-          { name: "Inventory", path: "/Cafe/Inventory" },
-        ],
-      },
-      {
-        icon: UtensilsCrossed,
-        label: "Restaurant",
-        path: "/Restaurant",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Menu", path: "/Restaurant/Menu" },
-          { name: "Reservations", path: "/Restaurant/Reservations" },
-          { name: "Orders", path: "/Restaurant/Orders" },
-          { name: "Kitchen", path: "/Restaurant/Kitchen" },
-        ],
-      },
-      {
-        icon: Wine,
-        label: "Wine & Dine",
-        path: "/WineDine",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Wine List", path: "/WineDine/WineList" },
-          { name: "Packages", path: "/WineDine/Packages" },
-          { name: "Events", path: "/WineDine/Events" },
-        ],
-      },
-      { icon: FileText, label: "Reports", path: "/Reports" },
+      // {
+      //   icon: Coffee,
+      //   label: "Cafe",
+      //   path: "/Cafe",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Menu", path: "/Cafe/Menu" },
+      //     { name: "Orders", path: "/Cafe/Orders" },
+      //     { name: "Tables", path: "/Cafe/Tables" },
+      //     { name: "Inventory", path: "/Cafe/Inventory" },
+      //   ],
+      // },
+      // {
+      //   icon: UtensilsCrossed,
+      //   label: "Restaurant",
+      //   path: "/Restaurant",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Menu", path: "/Restaurant/Menu" },
+      //     { name: "Reservations", path: "/Restaurant/Reservations" },
+      //     { name: "Orders", path: "/Restaurant/Orders" },
+      //     { name: "Kitchen", path: "/Restaurant/Kitchen" },
+      //   ],
+      // },
+      // {
+      //   icon: Wine,
+      //   label: "Wine & Dine",
+      //   path: "/WineDine",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Wine List", path: "/WineDine/WineList" },
+      //     { name: "Packages", path: "/WineDine/Packages" },
+      //     { name: "Events", path: "/WineDine/Events" },
+      //   ],
+      // },
+      // { icon: FileText, label: "Reports", path: "/Reports" },
     ];
 
     const adminMenus = [
@@ -99,44 +107,46 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
           { name: "Bookings", path: "/Hotel/Bookings" },
         ],
       },
-      {
-        icon: Coffee,
-        label: "Cafe",
-        path: "/Cafe",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Menu", path: "/Cafe/Menu" },
-          { name: "Orders", path: "/Cafe/Orders" },
-          { name: "Tables", path: "/Cafe/Tables" },
-        ],
-      },
-      {
-        icon: UtensilsCrossed,
-        label: "Restaurant",
-        path: "/Restaurant",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Menu", path: "/Restaurant/Menu" },
-          { name: "Reservations", path: "/Restaurant/Reservations" },
-          { name: "Orders", path: "/Restaurant/Orders" },
-        ],
-      },
-      {
-        icon: Wine,
-        label: "Wine & Dine",
-        path: "/WineDine",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Wine List", path: "/WineDine/WineList" },
-          { name: "Events", path: "/WineDine/Events" },
-        ],
-      },
+      // {
+      //   icon: Coffee,
+      //   label: "Cafe",
+      //   path: "/Cafe",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Menu", path: "/Cafe/Menu" },
+      //     { name: "Orders", path: "/Cafe/Orders" },
+      //     { name: "Tables", path: "/Cafe/Tables" },
+      //   ],
+      // },
+      // {
+      //   icon: UtensilsCrossed,
+      //   label: "Restaurant",
+      //   path: "/Restaurant",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Menu", path: "/Restaurant/Menu" },
+      //     { name: "Reservations", path: "/Restaurant/Reservations" },
+      //     { name: "Orders", path: "/Restaurant/Orders" },
+      //   ],
+      // },
+      // {
+      //   icon: Wine,
+      //   label: "Wine & Dine",
+      //   path: "/WineDine",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Wine List", path: "/WineDine/WineList" },
+      //     { name: "Events", path: "/WineDine/Events" },
+      //   ],
+      // },
     ];
 
-    return userRole === "superadmin" ? superAdminMenus : adminMenus;
+    return userRole === "ROLE_SUPERADMIN" ? superAdminMenus : adminMenus;
   };
 
-  const menuItems = getMenuItemsByRole(role);
+  // Determine user role and get menu items
+  const userRole = currentUser?.roleName || "ROLE_ADMIN";
+  const menuItems = getMenuItemsByRole(userRole);
 
   const toggleMenu = (label) => {
     setExpandedMenus((prev) => ({
@@ -164,11 +174,17 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
   };
 
   const getRoleBadge = (userRole) => {
-    return userRole === "superadmin" ? "Super Admin" : "Admin";
+    return userRole === "ROLE_SUPERADMIN" ? "Super Admin" : "Admin";
   };
 
   const getRoleBadgeColor = (userRole) => {
-    return userRole === "superadmin" ? colors.primary : colors.info;
+    return userRole === "ROLE_SUPERADMIN" ? colors.primary : colors.info;
+  };
+
+  // Get display name (fallback to username if name is not available)
+  const getDisplayName = () => {
+    if (!currentUser) return "Guest";
+    return currentUser.name || currentUser.userName || "User";
   };
 
   return (
@@ -237,21 +253,23 @@ function Sidebar({ role = "admin", isOpen, onToggle }) {
               className="text-sm font-medium mt-0.5 truncate"
               style={{ color: colors.sidebarText }}
             >
-              Balaram Sikdar
+              {getDisplayName()}
             </div>
             <div
               className="text-[10px] font-medium mt-1 px-2 py-0.5 rounded inline-block"
               style={{
-                backgroundColor: getRoleBadgeColor(role) + "20",
-                color: getRoleBadgeColor(role),
+                backgroundColor: getRoleBadgeColor(userRole) + "20",
+                color: getRoleBadgeColor(userRole),
               }}
             >
-              {getRoleBadge(role)}
+              {getRoleBadge(userRole)}
             </div>
           </div>
           <div
             className="w-2 h-2 rounded-full absolute top-6 right-5"
-            style={{ backgroundColor: colors.success }}
+            style={{ 
+              backgroundColor: currentUser?.isActive ? colors.success : colors.textSecondary 
+            }}
           ></div>
         </div>
 

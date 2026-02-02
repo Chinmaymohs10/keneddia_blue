@@ -19,6 +19,165 @@ import {
   getAllPropertyCategories,
 } from "@/Api/Api";
 
+import PropertyDetail from "./PropertyDetail";
+
+// Static fallback data
+const STATIC_PROPERTIES = [
+  {
+    id: 1,
+    propertyName: "Grand Plaza Hotel",
+    address: "123 Main Street",
+    area: "Downtown",
+    locationName: "New Delhi",
+    pincode: "110001",
+    propertyTypes: ["Hotel", "Restaurant"],
+    propertyCategories: ["Luxury", "Business", "Premium"],
+    assignedAdminName: "John Doe",
+    assignedAdminId: "ADM001",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: true
+  },
+  {
+    id: 2,
+    propertyName: "Sunset Cafe",
+    address: "456 Beach Road",
+    area: "Seaside",
+    locationName: "Mumbai",
+    pincode: "400001",
+    propertyTypes: ["Cafe"],
+    propertyCategories: ["Casual Dining", "Outdoor Seating"],
+    assignedAdminName: "Jane Smith",
+    assignedAdminId: "ADM002",
+    parentPropertyName: "Grand Plaza Hotel",
+    parentPropertyId: 1,
+    isActive: true
+  },
+  {
+    id: 3,
+    propertyName: "Royal Banquet Hall",
+    address: "789 Garden Avenue",
+    area: "Green Park",
+    locationName: "Bangalore",
+    pincode: "560001",
+    propertyTypes: ["Banquet Hall"],
+    propertyCategories: ["Events", "Weddings", "Corporate"],
+    assignedAdminName: "Mike Johnson",
+    assignedAdminId: "ADM003",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: true
+  },
+  {
+    id: 4,
+    propertyName: "Wellness Spa Resort",
+    address: "321 Hill Road",
+    area: "Mountain View",
+    locationName: "Manali",
+    pincode: "175131",
+    propertyTypes: ["Hotel", "Spa"],
+    propertyCategories: ["Wellness", "Luxury", "Resort"],
+    assignedAdminName: "Sarah Williams",
+    assignedAdminId: "ADM004",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: false
+  },
+  {
+    id: 5,
+    propertyName: "Downtown Bistro",
+    address: "567 Central Plaza",
+    area: "City Center",
+    locationName: "Pune",
+    pincode: "411001",
+    propertyTypes: ["Restaurant"],
+    propertyCategories: ["Fine Dining", "Italian Cuisine"],
+    assignedAdminName: "Robert Brown",
+    assignedAdminId: "ADM005",
+    parentPropertyName: "Grand Plaza Hotel",
+    parentPropertyId: 1,
+    isActive: true
+  },
+  {
+    id: 6,
+    propertyName: "Luxury Apartments",
+    address: "890 Skyline Drive",
+    area: "Tech Park",
+    locationName: "Hyderabad",
+    pincode: "500001",
+    propertyTypes: ["Apartment"],
+    propertyCategories: ["Residential", "Luxury", "Furnished"],
+    assignedAdminName: "Emily Davis",
+    assignedAdminId: "ADM006",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: true
+  },
+  {
+    id: 7,
+    propertyName: "Beachside Lounge",
+    address: "234 Ocean View",
+    area: "Coastal Area",
+    locationName: "Goa",
+    pincode: "403001",
+    propertyTypes: ["Lounge", "Bar"],
+    propertyCategories: ["Entertainment", "Nightlife"],
+    assignedAdminName: "David Wilson",
+    assignedAdminId: "ADM007",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: true
+  },
+  {
+    id: 8,
+    propertyName: "Heritage Palace",
+    address: "678 Royal Street",
+    area: "Old City",
+    locationName: "Jaipur",
+    pincode: "302001",
+    propertyTypes: ["Hotel", "Heritage Property"],
+    propertyCategories: ["Heritage", "Luxury", "Cultural"],
+    assignedAdminName: "Lisa Anderson",
+    assignedAdminId: "ADM008",
+    parentPropertyName: null,
+    parentPropertyId: null,
+    isActive: true
+  }
+];
+
+const STATIC_PROPERTY_TYPES = [
+  { id: 1, typeName: "Hotel", isActive: true },
+  { id: 2, typeName: "Restaurant", isActive: true },
+  { id: 3, typeName: "Cafe", isActive: true },
+  { id: 4, typeName: "Banquet Hall", isActive: true },
+  { id: 5, typeName: "Spa", isActive: true },
+  { id: 6, typeName: "Apartment", isActive: true },
+  { id: 7, typeName: "Lounge", isActive: false },
+  { id: 8, typeName: "Bar", isActive: true },
+  { id: 9, typeName: "Heritage Property", isActive: true }
+];
+
+const STATIC_PROPERTY_CATEGORIES = [
+  { id: 1, categoryName: "Luxury", isActive: true },
+  { id: 2, categoryName: "Business", isActive: true },
+  { id: 3, categoryName: "Premium", isActive: true },
+  { id: 4, categoryName: "Casual Dining", isActive: true },
+  { id: 5, categoryName: "Outdoor Seating", isActive: true },
+  { id: 6, categoryName: "Events", isActive: true },
+  { id: 7, categoryName: "Weddings", isActive: true },
+  { id: 8, categoryName: "Corporate", isActive: true },
+  { id: 9, categoryName: "Wellness", isActive: true },
+  { id: 10, categoryName: "Resort", isActive: true },
+  { id: 11, categoryName: "Fine Dining", isActive: true },
+  { id: 12, categoryName: "Italian Cuisine", isActive: false },
+  { id: 13, categoryName: "Residential", isActive: true },
+  { id: 14, categoryName: "Furnished", isActive: true },
+  { id: 15, categoryName: "Entertainment", isActive: true },
+  { id: 16, categoryName: "Nightlife", isActive: true },
+  { id: 17, categoryName: "Heritage", isActive: true },
+  { id: 18, categoryName: "Cultural", isActive: true }
+];
+
 function ManageProperties() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
@@ -31,16 +190,19 @@ function ManageProperties() {
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  
+  // State for PropertyDetail view
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
-  // Data states
-  const [properties, setProperties] = useState([]);
-  const [propertyTypes, setPropertyTypes] = useState([]);
-  const [propertyCategories, setPropertyCategories] = useState([]);
+  // Data states - Initialize with static data
+  const [properties, setProperties] = useState(STATIC_PROPERTIES);
+  const [propertyTypes, setPropertyTypes] = useState(STATIC_PROPERTY_TYPES);
+  const [propertyCategories, setPropertyCategories] = useState(STATIC_PROPERTY_CATEGORIES);
 
   // Loading states
-  const [loadingProperties, setLoadingProperties] = useState(true);
-  const [loadingTypes, setLoadingTypes] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingProperties, setLoadingProperties] = useState(false);
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,10 +216,18 @@ function ManageProperties() {
     try {
       const response = await getAllProperties();
       const data = response?.data || response;
-      setProperties(Array.isArray(data) ? data : []);
+      
+      // If API returns data, use it; otherwise keep static data
+      if (data && Array.isArray(data) && data.length > 0) {
+        setProperties(data);
+      } else {
+        console.log("Using static properties data (API returned empty or failed)");
+        // Keep existing static data
+      }
     } catch (error) {
       console.error("Error fetching properties:", error);
-      setProperties([]);
+      console.log("Using static properties data (API error)");
+      // Keep existing static data
     } finally {
       setLoadingProperties(false);
     }
@@ -68,10 +238,18 @@ function ManageProperties() {
     try {
       const response = await getPropertyTypes();
       const data = response?.data || response;
-      setPropertyTypes(Array.isArray(data) ? data : []);
+      
+      // If API returns data, use it; otherwise keep static data
+      if (data && Array.isArray(data) && data.length > 0) {
+        setPropertyTypes(data);
+      } else {
+        console.log("Using static property types data (API returned empty or failed)");
+        // Keep existing static data
+      }
     } catch (error) {
       console.error("Error fetching property types:", error);
-      setPropertyTypes([]);
+      console.log("Using static property types data (API error)");
+      // Keep existing static data
     } finally {
       setLoadingTypes(false);
     }
@@ -82,10 +260,18 @@ function ManageProperties() {
     try {
       const response = await getAllPropertyCategories();
       const data = response?.data || response;
-      setPropertyCategories(Array.isArray(data) ? data : []);
+      
+      // If API returns data, use it; otherwise keep static data
+      if (data && Array.isArray(data) && data.length > 0) {
+        setPropertyCategories(data);
+      } else {
+        console.log("Using static property categories data (API returned empty or failed)");
+        // Keep existing static data
+      }
     } catch (error) {
       console.error("Error fetching property categories:", error);
-      setPropertyCategories([]);
+      console.log("Using static property categories data (API error)");
+      // Keep existing static data
     } finally {
       setLoadingCategories(false);
     }
@@ -128,13 +314,14 @@ function ManageProperties() {
         (p) =>
           p.propertyName?.toLowerCase().includes(lowerSearch) ||
           p.address?.toLowerCase().includes(lowerSearch) ||
-          p.location?.locationName?.toLowerCase().includes(lowerSearch),
+          p.location?.locationName?.toLowerCase().includes(lowerSearch) ||
+          p.locationName?.toLowerCase().includes(lowerSearch)
       );
     }
 
     if (typeFilter !== "All Types") {
-      filtered = filtered.filter(
-        (p) => p.propertyType?.toLowerCase() === typeFilter.toLowerCase(),
+      filtered = filtered.filter((p) => 
+        p.propertyTypes?.some(type => type.toLowerCase() === typeFilter.toLowerCase())
       );
     }
 
@@ -165,10 +352,11 @@ function ManageProperties() {
   ];
 
   const handleDeleteProperty = (propertyId) => {
-    // TODO: Implement delete API call
-    console.log("Delete property:", propertyId);
+    // Remove from static data for now
+    setProperties(properties.filter(p => p.id !== propertyId));
     setShowDeleteConfirm(null);
-    // fetchProperties();
+    // TODO: Implement actual delete API call when backend is ready
+    console.log("Delete property:", propertyId);
   };
 
   const refreshAllData = () => {
@@ -179,7 +367,21 @@ function ManageProperties() {
 
   return (
     <Layout role="superadmin" showActions={false}>
+      {selectedProperty ? (
+        <PropertyDetail 
+            property={selectedProperty} 
+            onBack={() => setSelectedProperty(null)} 
+        />
+      ) : (
+      <>
       <div className="h-full overflow-y-auto">
+        {/* Debug Banner - Remove this later */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+          <p className="text-xs text-yellow-800 font-medium">
+            ⚠️ Using static data - API integration pending. Remove static data constants when backend is ready.
+          </p>
+        </div>
+
         {/* Main Properties Section */}
         <div className="bg-white rounded-lg shadow-sm mb-6">
           {/* Header */}
@@ -330,7 +532,6 @@ function ManageProperties() {
             </div>
           </div>
 
-          {/* Properties Table */}
           {/* Properties Table */}
           <div className="overflow-x-auto min-h-[400px]">
             {loadingProperties ? (
@@ -544,7 +745,10 @@ function ManageProperties() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                          <button 
+                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            onClick={() => setSelectedProperty(property)}
+                          >
                             <Edit2
                               size={16}
                               style={{ color: colors.primary }}
@@ -844,6 +1048,8 @@ function ManageProperties() {
             setShowAddCategoryModal(false);
           }}
         />
+      )}
+      </>
       )}
     </Layout>
   );
