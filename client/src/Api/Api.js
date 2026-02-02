@@ -75,8 +75,8 @@ export const addProperty = (type, data) =>
   API.post(`api/v1/properties/add/${type}`, data);
 export const getAllProperties = () => API.get("api/v1/properties/showAll");
 
-export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>
-  API.get("api/v1/hero-sections/paginated", { params: { page, size } });
+// export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>
+//   API.get("api/v1/hero-sections/paginated", { params: { page, size } });
 export const createOrUpdateHeroSection = (formData) =>
   API.post("api/v1/hero-sections/bulk", formData);
 export const getHeroSection = () => API.get("api/v1/hero-sections");
@@ -169,5 +169,41 @@ export const createAmenityFeature = (data) =>
   API.post("api/v1/admin/amenities-features", data);
 export const getAllAmenityFeatures = () =>
   API.get("api/v1/admin/amenities-features");
+
+
+// ===============================
+// HERO SECTION (V2)
+// ===============================
+
+// Upload hero media (bulk upload – images/videos)
+export const uploadHeroMediaBulk = (formData) =>
+  API.post("api/v1/media/bulk", formData);
+
+// Create hero section
+export const createHeroSection = (data) =>
+  API.post("api/v1/hero-sections/create", data);
+
+// Get all hero sections (paginated, DESC order)
+export const getHeroSectionsPaginated = ({ page = 0, size = 10 }) =>
+  API.get("api/v1/hero-sections/paginated/all", {
+    params: { page, size },
+  });
+
+// Update hero section by ID
+export const updateHeroSectionById = (id, data) =>
+  API.put(`api/v1/hero-sections/${id}`, data);
+
+// Activate / Deactivate hero section
+export const toggleHeroSectionActive = (id, active) =>
+  API.patch(`api/v1/hero-sections/${id}/active`, null, {
+    params: { active },
+  });
+
+// Show / Hide hero section on homepage
+export const toggleHeroSectionHomepage = (id, show) =>
+  API.patch(`api/v1/hero-sections/${id}/homepage`, null, {
+    params: { show },
+  });
+
 
 export default API;

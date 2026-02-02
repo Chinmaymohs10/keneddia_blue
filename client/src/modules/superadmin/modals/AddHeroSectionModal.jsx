@@ -3,6 +3,11 @@ import React, { useState, useEffect } from "react";
 import { colors } from "@/lib/colors/colors";
 import { Upload, X, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
+import {
+  uploadHeroMediaBulk,
+  createHeroSection,
+  updateHeroSectionById,
+} from "@/Api/Api";
 
 function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   const [formData, setFormData] = useState({
@@ -10,37 +15,52 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     subTitle: "",
     ctaText: "",
     active: true,
+    showOnHomepage: false,
   });
 
   const [backgroundMedia, setBackgroundMedia] = useState({
-    theme: "ALL", // ALL, LIGHT, DARK
-    lightFile: null,
-    lightPreview: null,
-    lightMediaType: "IMAGE",
-    darkFile: null,
-    darkPreview: null,
-    darkMediaType: "IMAGE",
-    allFile: null,
-    allPreview: null,
-    allMediaType: "IMAGE",
+    theme: "ALL", // ALL, SPLIT
+    // For ALL theme
+    allFiles: [], // Array of files
+    allPreviews: [], // Array of preview URLs
+    allMediaTypes: [], // Array of media types
+    allMediaIds: [], // Array of uploaded media IDs (for edit mode)
+
+    // For SPLIT theme
+    lightFiles: [],
+    lightPreviews: [],
+    lightMediaTypes: [],
+    lightMediaIds: [],
+
+    darkFiles: [],
+    darkPreviews: [],
+    darkMediaTypes: [],
+    darkMediaIds: [],
   });
 
   const [subMedia, setSubMedia] = useState({
     theme: "ALL",
-    lightFile: null,
-    lightPreview: null,
-    lightMediaType: "IMAGE",
-    darkFile: null,
-    darkPreview: null,
-    darkMediaType: "IMAGE",
-    allFile: null,
-    allPreview: null,
-    allMediaType: "IMAGE",
+    allFiles: [],
+    allPreviews: [],
+    allMediaTypes: [],
+    allMediaIds: [],
+
+    lightFiles: [],
+    lightPreviews: [],
+    lightMediaTypes: [],
+    lightMediaIds: [],
+
+    darkFiles: [],
+    darkPreviews: [],
+    darkMediaTypes: [],
+    darkMediaIds: [],
   });
 
   const [showPreview, setShowPreview] = useState(true);
-  const [previewTheme, setPreviewTheme] = useState("LIGHT"); // LIGHT or DARK
+  const [previewTheme, setPreviewTheme] = useState("LIGHT");
   const [loading, setLoading] = useState(false);
+  const [currentBackgroundIndex, setCurrentBackgroundIndex] = useState(0);
+  const [currentSubIndex, setCurrentSubIndex] = useState(0);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -50,33 +70,42 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         subTitle: "",
         ctaText: "",
         active: true,
+        showOnHomepage: false,
       });
       setBackgroundMedia({
         theme: "ALL",
-        lightFile: null,
-        lightPreview: null,
-        lightMediaType: "IMAGE",
-        darkFile: null,
-        darkPreview: null,
-        darkMediaType: "IMAGE",
-        allFile: null,
-        allPreview: null,
-        allMediaType: "IMAGE",
+        allFiles: [],
+        allPreviews: [],
+        allMediaTypes: [],
+        allMediaIds: [],
+        lightFiles: [],
+        lightPreviews: [],
+        lightMediaTypes: [],
+        lightMediaIds: [],
+        darkFiles: [],
+        darkPreviews: [],
+        darkMediaTypes: [],
+        darkMediaIds: [],
       });
       setSubMedia({
         theme: "ALL",
-        lightFile: null,
-        lightPreview: null,
-        lightMediaType: "IMAGE",
-        darkFile: null,
-        darkPreview: null,
-        darkMediaType: "IMAGE",
-        allFile: null,
-        allPreview: null,
-        allMediaType: "IMAGE",
+        allFiles: [],
+        allPreviews: [],
+        allMediaTypes: [],
+        allMediaIds: [],
+        lightFiles: [],
+        lightPreviews: [],
+        lightMediaTypes: [],
+        lightMediaIds: [],
+        darkFiles: [],
+        darkPreviews: [],
+        darkMediaTypes: [],
+        darkMediaIds: [],
       });
       setShowPreview(true);
       setPreviewTheme("LIGHT");
+      setCurrentBackgroundIndex(0);
+      setCurrentSubIndex(0);
     }
   }, [isOpen]);
 
@@ -88,38 +117,59 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
         subTitle: editData.subTitle || "",
         ctaText: editData.ctaText || "",
         active: editData.active ?? true,
+        showOnHomepage: editData.showOnHomepage ?? false,
       });
 
-      // Set background media
-      if (editData.backgroundPreview) {
-        setBackgroundMedia({
+      // Set background media from edit data
+      if (
+        editData.backgroundMediaAll &&
+        editData.backgroundMediaAll.length > 0
+      ) {
+        setBackgroundMedia((prev) => ({
+          ...prev,
           theme: "ALL",
-          allPreview: editData.backgroundPreview,
-          allMediaType: editData.backgroundMediaType || "IMAGE",
-          allFile: null,
-          lightFile: null,
-          lightPreview: null,
-          lightMediaType: "IMAGE",
-          darkFile: null,
-          darkPreview: null,
-          darkMediaType: "IMAGE",
-        });
+          allPreviews: editData.backgroundMediaAll.map((m) => m.url),
+          allMediaTypes: editData.backgroundMediaAll.map((m) => m.mediaType),
+          allMediaIds: editData.backgroundMediaAll.map((m) => m.id),
+        }));
+      } else if (
+        editData.backgroundMediaLight &&
+        editData.backgroundMediaDark
+      ) {
+        setBackgroundMedia((prev) => ({
+          ...prev,
+          theme: "SPLIT",
+          lightPreviews: editData.backgroundMediaLight.map((m) => m.url),
+          lightMediaTypes: editData.backgroundMediaLight.map(
+            (m) => m.mediaType,
+          ),
+          lightMediaIds: editData.backgroundMediaLight.map((m) => m.id),
+          darkPreviews: editData.backgroundMediaDark.map((m) => m.url),
+          darkMediaTypes: editData.backgroundMediaDark.map((m) => m.mediaType),
+          darkMediaIds: editData.backgroundMediaDark.map((m) => m.id),
+        }));
       }
 
-      // Set sub media
-      if (editData.subPreview) {
-        setSubMedia({
+      // Set sub media from edit data
+      if (editData.subMediaAll && editData.subMediaAll.length > 0) {
+        setSubMedia((prev) => ({
+          ...prev,
           theme: "ALL",
-          allPreview: editData.subPreview,
-          allMediaType: editData.subMediaType || "IMAGE",
-          allFile: null,
-          lightFile: null,
-          lightPreview: null,
-          lightMediaType: "IMAGE",
-          darkFile: null,
-          darkPreview: null,
-          darkMediaType: "IMAGE",
-        });
+          allPreviews: editData.subMediaAll.map((m) => m.url),
+          allMediaTypes: editData.subMediaAll.map((m) => m.mediaType),
+          allMediaIds: editData.subMediaAll.map((m) => m.id),
+        }));
+      } else if (editData.subMediaLight && editData.subMediaDark) {
+        setSubMedia((prev) => ({
+          ...prev,
+          theme: "SPLIT",
+          lightPreviews: editData.subMediaLight.map((m) => m.url),
+          lightMediaTypes: editData.subMediaLight.map((m) => m.mediaType),
+          lightMediaIds: editData.subMediaLight.map((m) => m.id),
+          darkPreviews: editData.subMediaDark.map((m) => m.url),
+          darkMediaTypes: editData.subMediaDark.map((m) => m.mediaType),
+          darkMediaIds: editData.subMediaDark.map((m) => m.id),
+        }));
       }
     }
   }, [editData, isOpen]);
@@ -128,105 +178,126 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (mediaType, theme, file, isBackground = true) => {
-    if (!file) return;
+  const handleMultipleFilesChange = (
+    mediaType,
+    theme,
+    files,
+    isBackground = true,
+  ) => {
+    if (!files || files.length === 0) return;
 
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
+    const filesArray = Array.from(files);
+    const newPreviews = [];
+    const newMediaTypes = [];
+    const newFiles = [];
 
-    if (!isImage && !isVideo) {
-      toast.error("Please select a valid image or video file");
-      return;
-    }
+    filesArray.forEach((file) => {
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
 
-    const fileMediaType = isImage ? "IMAGE" : "VIDEO";
-    const previewUrl = URL.createObjectURL(file);
+      if (!isImage && !isVideo) {
+        toast.error("Please select valid image or video files");
+        return;
+      }
+
+      newFiles.push(file);
+      newPreviews.push(URL.createObjectURL(file));
+      newMediaTypes.push(isImage ? "IMAGE" : "VIDEO");
+    });
+
+    if (newFiles.length === 0) return;
 
     const setter = isBackground ? setBackgroundMedia : setSubMedia;
 
     if (theme === "LIGHT") {
       setter((prev) => ({
         ...prev,
-        lightFile: file,
-        lightPreview: previewUrl,
-        lightMediaType: fileMediaType,
+        lightFiles: [...prev.lightFiles, ...newFiles],
+        lightPreviews: [...prev.lightPreviews, ...newPreviews],
+        lightMediaTypes: [...prev.lightMediaTypes, ...newMediaTypes],
       }));
     } else if (theme === "DARK") {
       setter((prev) => ({
         ...prev,
-        darkFile: file,
-        darkPreview: previewUrl,
-        darkMediaType: fileMediaType,
+        darkFiles: [...prev.darkFiles, ...newFiles],
+        darkPreviews: [...prev.darkPreviews, ...newPreviews],
+        darkMediaTypes: [...prev.darkMediaTypes, ...newMediaTypes],
       }));
     } else {
       setter((prev) => ({
         ...prev,
-        allFile: file,
-        allPreview: previewUrl,
-        allMediaType: fileMediaType,
+        allFiles: [...prev.allFiles, ...newFiles],
+        allPreviews: [...prev.allPreviews, ...newPreviews],
+        allMediaTypes: [...prev.allMediaTypes, ...newMediaTypes],
       }));
     }
   };
 
-  const removeMedia = (theme, isBackground = true) => {
+  const removeMediaAtIndex = (theme, index, isBackground = true) => {
     const setter = isBackground ? setBackgroundMedia : setSubMedia;
 
     if (theme === "LIGHT") {
       setter((prev) => ({
         ...prev,
-        lightFile: null,
-        lightPreview: null,
-        lightMediaType: "IMAGE",
+        lightFiles: prev.lightFiles.filter((_, i) => i !== index),
+        lightPreviews: prev.lightPreviews.filter((_, i) => i !== index),
+        lightMediaTypes: prev.lightMediaTypes.filter((_, i) => i !== index),
+        lightMediaIds: prev.lightMediaIds.filter((_, i) => i !== index),
       }));
     } else if (theme === "DARK") {
       setter((prev) => ({
         ...prev,
-        darkFile: null,
-        darkPreview: null,
-        darkMediaType: "IMAGE",
+        darkFiles: prev.darkFiles.filter((_, i) => i !== index),
+        darkPreviews: prev.darkPreviews.filter((_, i) => i !== index),
+        darkMediaTypes: prev.darkMediaTypes.filter((_, i) => i !== index),
+        darkMediaIds: prev.darkMediaIds.filter((_, i) => i !== index),
       }));
     } else {
       setter((prev) => ({
         ...prev,
-        allFile: null,
-        allPreview: null,
-        allMediaType: "IMAGE",
+        allFiles: prev.allFiles.filter((_, i) => i !== index),
+        allPreviews: prev.allPreviews.filter((_, i) => i !== index),
+        allMediaTypes: prev.allMediaTypes.filter((_, i) => i !== index),
+        allMediaIds: prev.allMediaIds.filter((_, i) => i !== index),
       }));
     }
   };
 
   const handleThemeChange = (newTheme, isBackground = true) => {
     const setter = isBackground ? setBackgroundMedia : setSubMedia;
-    const currentMedia = isBackground ? backgroundMedia : subMedia;
-
-    // Clear media when switching themes to avoid confusion
-    if (currentMedia.theme !== newTheme) {
-      setter({
-        theme: newTheme,
-        lightFile: null,
-        lightPreview: null,
-        lightMediaType: "IMAGE",
-        darkFile: null,
-        darkPreview: null,
-        darkMediaType: "IMAGE",
-        allFile: null,
-        allPreview: null,
-        allMediaType: "IMAGE",
-      });
-    }
+    setter((prev) => ({
+      ...prev,
+      theme: newTheme,
+      // Clear files when switching themes
+      allFiles: [],
+      allPreviews: [],
+      allMediaTypes: [],
+      lightFiles: [],
+      lightPreviews: [],
+      lightMediaTypes: [],
+      darkFiles: [],
+      darkPreviews: [],
+      darkMediaTypes: [],
+    }));
   };
 
   const validateForm = () => {
     // Background media is required
     if (backgroundMedia.theme === "ALL") {
-      if (!backgroundMedia.allFile && !backgroundMedia.allPreview) {
+      if (
+        backgroundMedia.allPreviews.length === 0 &&
+        backgroundMedia.allMediaIds.length === 0
+      ) {
         toast.error("Background media is required");
         return false;
       }
     } else {
-      // If LIGHT or DARK theme selected, both are required
-      const hasLight = backgroundMedia.lightFile || backgroundMedia.lightPreview;
-      const hasDark = backgroundMedia.darkFile || backgroundMedia.darkPreview;
+      const hasLight =
+        backgroundMedia.lightPreviews.length > 0 ||
+        backgroundMedia.lightMediaIds.length > 0;
+      const hasDark =
+        backgroundMedia.darkPreviews.length > 0 ||
+        backgroundMedia.darkMediaIds.length > 0;
 
       if (!hasLight || !hasDark) {
         toast.error("Both Light and Dark theme background media are required");
@@ -234,18 +305,37 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       }
     }
 
-    // Sub media validation (if theme is SPLIT, both are required)
-    if (subMedia.theme !== "ALL") {
-      const hasLight = subMedia.lightFile || subMedia.lightPreview;
-      const hasDark = subMedia.darkFile || subMedia.darkPreview;
-
-      if ((hasLight && !hasDark) || (!hasLight && hasDark)) {
-        toast.error("If using theme-specific sub media, both Light and Dark are required");
-        return false;
-      }
-    }
-
     return true;
+  };
+
+  const uploadMediaFiles = async (files) => {
+    if (files.length === 0) return [];
+
+    const formData = new FormData();
+
+    // Determine mediaType from first file
+    const firstFile = files[0];
+    const isImage = firstFile.type.startsWith("image/");
+    const mediaType = isImage ? "IMAGE" : "VIDEO";
+
+    // Append all files with key 'files' (not 'media')
+    files.forEach((file) => {
+      formData.append("files", file); // ✅ Correct key name
+    });
+
+    // Append mediaType
+    formData.append("mediaType", mediaType); // ✅ Add mediaType
+
+    try {
+      const response = await uploadHeroMediaBulk(formData);
+      if (response.success && response.data) {
+        return response.data; // Array of { id, mediaType, url }
+      }
+      return [];
+    } catch (error) {
+      console.error("Media upload error:", error);
+      throw error;
+    }
   };
 
   const handleSubmit = async () => {
@@ -255,164 +345,319 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
 
     try {
       setLoading(true);
-      const payload = new FormData();
 
-      // Add text fields (optional)
-      if (formData.mainTitle) payload.append("heroSections[0].mainTitle", formData.mainTitle);
-      if (formData.subTitle) payload.append("heroSections[0].subTitle", formData.subTitle);
-      if (formData.ctaText) payload.append("heroSections[0].ctaText", formData.ctaText);
-      payload.append("heroSections[0].active", String(formData.active));
+      // Step 1: Collect all files that need to be uploaded
+      const allFilesToUpload = [
+        ...backgroundMedia.allFiles,
+        ...backgroundMedia.lightFiles,
+        ...backgroundMedia.darkFiles,
+        ...subMedia.allFiles,
+        ...subMedia.lightFiles,
+        ...subMedia.darkFiles,
+      ];
 
-      // Handle background media
-      if (backgroundMedia.theme === "ALL") {
-        payload.append("heroSections[0].backgroundMediaType", backgroundMedia.allMediaType);
-        payload.append("heroSections[0].backgroundTheme", "ALL");
+      let uploadedMedia = [];
 
-        if (backgroundMedia.allFile) {
-          payload.append("backgroundMedia[0]", backgroundMedia.allFile);
-        } else if (backgroundMedia.allPreview && backgroundMedia.allPreview.startsWith("http")) {
-          const response = await fetch(backgroundMedia.allPreview);
-          const blob = await response.blob();
-          const filename = backgroundMedia.allPreview.split("/").pop() || "background-all";
-          const file = new File([blob], filename, { type: blob.type });
-          payload.append("backgroundMedia[0]", file);
+      // Step 2: Upload media if there are new files
+      if (allFilesToUpload.length > 0) {
+        // Separate files by type (API requires same type per request)
+        const imageFiles = allFilesToUpload.filter((f) =>
+          f.type.startsWith("image/"),
+        );
+        const videoFiles = allFilesToUpload.filter((f) =>
+          f.type.startsWith("video/"),
+        );
+
+        // Upload images
+        if (imageFiles.length > 0) {
+          try {
+            const imageFormData = new FormData();
+            imageFiles.forEach((file) => {
+              imageFormData.append("files", file);
+            });
+            imageFormData.append("mediaType", "IMAGE");
+
+            console.log(`Uploading ${imageFiles.length} images...`);
+            const imageResponse = await uploadHeroMediaBulk(imageFormData);
+
+            // ✅ Handle both {success, data: [...]} and direct array [...] formats
+            const responseData = imageResponse?.data || imageResponse;
+            if (Array.isArray(responseData) && responseData.length > 0) {
+              uploadedMedia.push(...responseData);
+              console.log(
+                `✅ Uploaded ${responseData.length} images`,
+                responseData,
+              );
+            } else {
+              console.warn("No images returned from API");
+            }
+          } catch (error) {
+            console.error("Image upload failed:", error);
+            throw new Error("Failed to upload images");
+          }
         }
+
+        // Upload videos
+        if (videoFiles.length > 0) {
+          try {
+            const videoFormData = new FormData();
+            videoFiles.forEach((file) => {
+              videoFormData.append("files", file);
+            });
+            videoFormData.append("mediaType", "VIDEO");
+
+            console.log(`Uploading ${videoFiles.length} videos...`);
+            const videoResponse = await uploadHeroMediaBulk(videoFormData);
+
+            // ✅ Handle both {success, data: [...]} and direct array [...] formats
+            const responseData = videoResponse?.data || videoResponse;
+            if (Array.isArray(responseData) && responseData.length > 0) {
+              uploadedMedia.push(...responseData);
+              console.log(
+                `✅ Uploaded ${responseData.length} videos`,
+                responseData,
+              );
+            } else {
+              console.warn("No videos returned from API");
+            }
+          } catch (error) {
+            console.error("Video upload failed:", error);
+            throw new Error("Failed to upload videos");
+          }
+        }
+      }
+
+      console.log("=== All Uploaded Media ===");
+      console.log(JSON.stringify(uploadedMedia, null, 2));
+
+      // Step 3: Map uploaded media IDs back to their original file positions
+      // Create arrays to track which files came from which category
+      const fileCategories = [];
+
+      // Track background ALL files
+      backgroundMedia.allFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "backgroundAll",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Track background LIGHT files
+      backgroundMedia.lightFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "backgroundLight",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Track background DARK files
+      backgroundMedia.darkFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "backgroundDark",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Track sub ALL files
+      subMedia.allFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "subAll",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Track sub LIGHT files
+      subMedia.lightFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "subLight",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Track sub DARK files
+      subMedia.darkFiles.forEach((file) => {
+        fileCategories.push({
+          file,
+          category: "subDark",
+          type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+        });
+      });
+
+      // Map uploaded media back to files
+      const uploadedIdsByCategory = {
+        backgroundAll: [],
+        backgroundLight: [],
+        backgroundDark: [],
+        subAll: [],
+        subLight: [],
+        subDark: [],
+      };
+
+      // ✅ Separate uploaded media by type - API returns 'type' not 'mediaType'
+      const uploadedImages = uploadedMedia.filter((m) => m.type === "IMAGE");
+      const uploadedVideos = uploadedMedia.filter((m) => m.type === "VIDEO");
+
+      let imageIndex = 0;
+      let videoIndex = 0;
+
+      // ✅ Match each file to its uploaded media ID - use 'mediaId' not 'id'
+      fileCategories.forEach(({ category, type }) => {
+        if (type === "IMAGE") {
+          if (imageIndex < uploadedImages.length) {
+            uploadedIdsByCategory[category].push(
+              uploadedImages[imageIndex].mediaId,
+            );
+            imageIndex++;
+          }
+        } else {
+          if (videoIndex < uploadedVideos.length) {
+            uploadedIdsByCategory[category].push(
+              uploadedVideos[videoIndex].mediaId,
+            );
+            videoIndex++;
+          }
+        }
+      });
+
+      console.log("=== Uploaded IDs by Category ===");
+      console.log(JSON.stringify(uploadedIdsByCategory, null, 2));
+
+      // Step 4: Combine existing media IDs with newly uploaded ones
+      const backgroundAllIds = [
+        ...backgroundMedia.allMediaIds,
+        ...uploadedIdsByCategory.backgroundAll,
+      ];
+
+      const backgroundLightIds = [
+        ...backgroundMedia.lightMediaIds,
+        ...uploadedIdsByCategory.backgroundLight,
+      ];
+
+      const backgroundDarkIds = [
+        ...backgroundMedia.darkMediaIds,
+        ...uploadedIdsByCategory.backgroundDark,
+      ];
+
+      const subAllIds = [
+        ...subMedia.allMediaIds,
+        ...uploadedIdsByCategory.subAll,
+      ];
+
+      const subLightIds = [
+        ...subMedia.lightMediaIds,
+        ...uploadedIdsByCategory.subLight,
+      ];
+
+      const subDarkIds = [
+        ...subMedia.darkMediaIds,
+        ...uploadedIdsByCategory.subDark,
+      ];
+
+      // Step 5: Build the hero section payload
+      const payload = {
+        mainTitle: formData.mainTitle || null,
+        subTitle: formData.subTitle || null,
+        ctaText: formData.ctaText || null,
+        backgroundAll: backgroundMedia.theme === "ALL" ? backgroundAllIds : [],
+        backgroundLight:
+          backgroundMedia.theme === "SPLIT" ? backgroundLightIds : [],
+        backgroundDark:
+          backgroundMedia.theme === "SPLIT" ? backgroundDarkIds : [],
+        subAll: subMedia.theme === "ALL" ? subAllIds : [],
+        subLight: subMedia.theme === "SPLIT" ? subLightIds : [],
+        subDark: subMedia.theme === "SPLIT" ? subDarkIds : [],
+        showOnHomepage: formData.showOnHomepage,
+        active: formData.active,
+      };
+
+      console.log("=== Hero Section Payload ===");
+      console.log(JSON.stringify(payload, null, 2));
+
+      // Step 6: Create or update hero section
+      if (editData?.id) {
+        await updateHeroSectionById(editData.id, payload);
+        toast.success("Hero section updated successfully!");
       } else {
-        // Light and Dark themes
-        payload.append("heroSections[0].backgroundTheme", "SPLIT");
-
-        // Light background
-        payload.append("heroSections[0].backgroundMediaType_LIGHT", backgroundMedia.lightMediaType);
-        if (backgroundMedia.lightFile) {
-          payload.append("backgroundMedia_LIGHT[0]", backgroundMedia.lightFile);
-        } else if (backgroundMedia.lightPreview && backgroundMedia.lightPreview.startsWith("http")) {
-          const response = await fetch(backgroundMedia.lightPreview);
-          const blob = await response.blob();
-          const filename = backgroundMedia.lightPreview.split("/").pop() || "background-light";
-          const file = new File([blob], filename, { type: blob.type });
-          payload.append("backgroundMedia_LIGHT[0]", file);
-        }
-
-        // Dark background
-        payload.append("heroSections[0].backgroundMediaType_DARK", backgroundMedia.darkMediaType);
-        if (backgroundMedia.darkFile) {
-          payload.append("backgroundMedia_DARK[0]", backgroundMedia.darkFile);
-        } else if (backgroundMedia.darkPreview && backgroundMedia.darkPreview.startsWith("http")) {
-          const response = await fetch(backgroundMedia.darkPreview);
-          const blob = await response.blob();
-          const filename = backgroundMedia.darkPreview.split("/").pop() || "background-dark";
-          const file = new File([blob], filename, { type: blob.type });
-          payload.append("backgroundMedia_DARK[0]", file);
-        }
+        await createHeroSection(payload);
+        toast.success("Hero section created successfully!");
       }
 
-      // Handle sub media (optional)
-      if (subMedia.theme === "ALL" && (subMedia.allFile || subMedia.allPreview)) {
-        payload.append("heroSections[0].subMediaType", subMedia.allMediaType);
-        payload.append("heroSections[0].subTheme", "ALL");
-
-        if (subMedia.allFile) {
-          payload.append("subMedia[0]", subMedia.allFile);
-        } else if (subMedia.allPreview && subMedia.allPreview.startsWith("http")) {
-          const response = await fetch(subMedia.allPreview);
-          const blob = await response.blob();
-          const filename = subMedia.allPreview.split("/").pop() || "sub-all";
-          const file = new File([blob], filename, { type: blob.type });
-          payload.append("subMedia[0]", file);
-        }
-      } else if (subMedia.theme !== "ALL" && ((subMedia.lightFile || subMedia.lightPreview) && (subMedia.darkFile || subMedia.darkPreview))) {
-        payload.append("heroSections[0].subTheme", "SPLIT");
-
-        // Light sub media
-        if (subMedia.lightFile || subMedia.lightPreview) {
-          payload.append("heroSections[0].subMediaType_LIGHT", subMedia.lightMediaType);
-          if (subMedia.lightFile) {
-            payload.append("subMedia_LIGHT[0]", subMedia.lightFile);
-          } else if (subMedia.lightPreview && subMedia.lightPreview.startsWith("http")) {
-            const response = await fetch(subMedia.lightPreview);
-            const blob = await response.blob();
-            const filename = subMedia.lightPreview.split("/").pop() || "sub-light";
-            const file = new File([blob], filename, { type: blob.type });
-            payload.append("subMedia_LIGHT[0]", file);
-          }
-        }
-
-        // Dark sub media
-        if (subMedia.darkFile || subMedia.darkPreview) {
-          payload.append("heroSections[0].subMediaType_DARK", subMedia.darkMediaType);
-          if (subMedia.darkFile) {
-            payload.append("subMedia_DARK[0]", subMedia.darkFile);
-          } else if (subMedia.darkPreview && subMedia.darkPreview.startsWith("http")) {
-            const response = await fetch(subMedia.darkPreview);
-            const blob = await response.blob();
-            const filename = subMedia.darkPreview.split("/").pop() || "sub-dark";
-            const file = new File([blob], filename, { type: blob.type });
-            payload.append("subMedia_DARK[0]", file);
-          }
-        }
+      // Step 7: Trigger parent refresh and close modal
+      if (onSuccess) {
+        await onSuccess();
       }
 
-      // Log payload for debugging
-      console.log("=== FormData Payload ===");
-      for (let pair of payload.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
-      await onSuccess(payload);
-
-      toast.success(editData ? "Hero section updated successfully!" : "Hero section created successfully!");
       onClose();
     } catch (error) {
       console.error("Error saving hero section:", error);
-      toast.error(error?.response?.data?.message || "Failed to save hero section");
+
+      // More specific error messages
+      if (error.message === "Failed to upload images") {
+        toast.error("Failed to upload images. Please try again.");
+      } else if (error.message === "Failed to upload videos") {
+        toast.error("Failed to upload videos. Please try again.");
+      } else if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to save hero section. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
-
   if (!isOpen) return null;
 
   // Get preview background based on current theme
-  const getPreviewBackground = () => {
+  const getPreviewBackgrounds = () => {
     if (backgroundMedia.theme === "ALL") {
-      return backgroundMedia.allPreview;
+      return backgroundMedia.allPreviews;
     }
-    // Show based on preview theme toggle
     if (previewTheme === "LIGHT") {
-      return backgroundMedia.lightPreview;
+      return backgroundMedia.lightPreviews;
     }
-    return backgroundMedia.darkPreview;
+    return backgroundMedia.darkPreviews;
   };
 
-  const getPreviewBackgroundType = () => {
+  const getPreviewBackgroundTypes = () => {
     if (backgroundMedia.theme === "ALL") {
-      return backgroundMedia.allMediaType;
+      return backgroundMedia.allMediaTypes;
     }
     if (previewTheme === "LIGHT") {
-      return backgroundMedia.lightMediaType;
+      return backgroundMedia.lightMediaTypes;
     }
-    return backgroundMedia.darkMediaType;
+    return backgroundMedia.darkMediaTypes;
   };
 
-  const getPreviewSubMedia = () => {
+  const getPreviewSubMedias = () => {
     if (subMedia.theme === "ALL") {
-      return subMedia.allPreview;
+      return subMedia.allPreviews;
     }
     if (previewTheme === "LIGHT") {
-      return subMedia.lightPreview;
+      return subMedia.lightPreviews;
     }
-    return subMedia.darkPreview;
+    return subMedia.darkPreviews;
   };
 
-  const getPreviewSubMediaType = () => {
+  const getPreviewSubMediaTypes = () => {
     if (subMedia.theme === "ALL") {
-      return subMedia.allMediaType;
+      return subMedia.allMediaTypes;
     }
     if (previewTheme === "LIGHT") {
-      return subMedia.lightMediaType;
+      return subMedia.lightMediaTypes;
     }
-    return subMedia.darkMediaType;
+    return subMedia.darkMediaTypes;
   };
+
+  const previewBackgrounds = getPreviewBackgrounds();
+  const previewBackgroundTypes = getPreviewBackgroundTypes();
+  const currentBackground = previewBackgrounds[currentBackgroundIndex] || null;
+  const currentBackgroundType =
+    previewBackgroundTypes[currentBackgroundIndex] || "IMAGE";
 
   return (
     <div
@@ -470,7 +715,9 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 <input
                   type="text"
                   value={formData.mainTitle}
-                  onChange={(e) => handleInputChange("mainTitle", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("mainTitle", e.target.value)
+                  }
                   placeholder="e.g., Where Luxury Meets Experience"
                   className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
                   style={{
@@ -497,7 +744,9 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 <input
                   type="text"
                   value={formData.subTitle}
-                  onChange={(e) => handleInputChange("subTitle", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("subTitle", e.target.value)
+                  }
                   placeholder="e.g., KENNEDIA BLU GROUP"
                   className="px-3 py-2.5 border rounded-md text-sm outline-none transition-colors"
                   style={{
@@ -542,7 +791,10 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
               </div>
 
               {/* Background Media Section */}
-              <div className="flex flex-col gap-3 p-4 rounded-md" style={{ backgroundColor: colors.border }}>
+              <div
+                className="flex flex-col gap-3 p-4 rounded-md"
+                style={{ backgroundColor: colors.border }}
+              >
                 <div className="flex items-center justify-between">
                   <label
                     className="text-[13px] font-semibold"
@@ -566,33 +818,55 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 </div>
 
                 {backgroundMedia.theme === "ALL" ? (
-                  <MediaUpload
+                  <MultiMediaUpload
                     label="Background Media (All Themes)"
-                    file={backgroundMedia.allFile}
-                    preview={backgroundMedia.allPreview}
-                    mediaType={backgroundMedia.allMediaType}
-                    onFileChange={(file) => handleFileChange("background", "ALL", file, true)}
-                    onRemove={() => removeMedia("ALL", true)}
+                    previews={backgroundMedia.allPreviews}
+                    mediaTypes={backgroundMedia.allMediaTypes}
+                    onFilesChange={(files) =>
+                      handleMultipleFilesChange(
+                        "background",
+                        "ALL",
+                        files,
+                        true,
+                      )
+                    }
+                    onRemove={(index) => removeMediaAtIndex("ALL", index, true)}
                     required={true}
                   />
                 ) : (
                   <>
-                    <MediaUpload
+                    <MultiMediaUpload
                       label="Background Media (Light Theme)"
-                      file={backgroundMedia.lightFile}
-                      preview={backgroundMedia.lightPreview}
-                      mediaType={backgroundMedia.lightMediaType}
-                      onFileChange={(file) => handleFileChange("background", "LIGHT", file, true)}
-                      onRemove={() => removeMedia("LIGHT", true)}
+                      previews={backgroundMedia.lightPreviews}
+                      mediaTypes={backgroundMedia.lightMediaTypes}
+                      onFilesChange={(files) =>
+                        handleMultipleFilesChange(
+                          "background",
+                          "LIGHT",
+                          files,
+                          true,
+                        )
+                      }
+                      onRemove={(index) =>
+                        removeMediaAtIndex("LIGHT", index, true)
+                      }
                       required={true}
                     />
-                    <MediaUpload
+                    <MultiMediaUpload
                       label="Background Media (Dark Theme)"
-                      file={backgroundMedia.darkFile}
-                      preview={backgroundMedia.darkPreview}
-                      mediaType={backgroundMedia.darkMediaType}
-                      onFileChange={(file) => handleFileChange("background", "DARK", file, true)}
-                      onRemove={() => removeMedia("DARK", true)}
+                      previews={backgroundMedia.darkPreviews}
+                      mediaTypes={backgroundMedia.darkMediaTypes}
+                      onFilesChange={(files) =>
+                        handleMultipleFilesChange(
+                          "background",
+                          "DARK",
+                          files,
+                          true,
+                        )
+                      }
+                      onRemove={(index) =>
+                        removeMediaAtIndex("DARK", index, true)
+                      }
                       required={true}
                     />
                   </>
@@ -600,7 +874,10 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
               </div>
 
               {/* Sub Media Section */}
-              <div className="flex flex-col gap-3 p-4 rounded-md" style={{ backgroundColor: colors.border }}>
+              <div
+                className="flex flex-col gap-3 p-4 rounded-md"
+                style={{ backgroundColor: colors.border }}
+              >
                 <div className="flex items-center justify-between">
                   <label
                     className="text-[13px] font-semibold"
@@ -624,56 +901,89 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 </div>
 
                 {subMedia.theme === "ALL" ? (
-                  <MediaUpload
+                  <MultiMediaUpload
                     label="Sub Media (All Themes)"
-                    file={subMedia.allFile}
-                    preview={subMedia.allPreview}
-                    mediaType={subMedia.allMediaType}
-                    onFileChange={(file) => handleFileChange("sub", "ALL", file, false)}
-                    onRemove={() => removeMedia("ALL", false)}
+                    previews={subMedia.allPreviews}
+                    mediaTypes={subMedia.allMediaTypes}
+                    onFilesChange={(files) =>
+                      handleMultipleFilesChange("sub", "ALL", files, false)
+                    }
+                    onRemove={(index) =>
+                      removeMediaAtIndex("ALL", index, false)
+                    }
                     required={false}
                   />
                 ) : (
                   <>
-                    <MediaUpload
+                    <MultiMediaUpload
                       label="Sub Media (Light Theme)"
-                      file={subMedia.lightFile}
-                      preview={subMedia.lightPreview}
-                      mediaType={subMedia.lightMediaType}
-                      onFileChange={(file) => handleFileChange("sub", "LIGHT", file, false)}
-                      onRemove={() => removeMedia("LIGHT", false)}
+                      previews={subMedia.lightPreviews}
+                      mediaTypes={subMedia.lightMediaTypes}
+                      onFilesChange={(files) =>
+                        handleMultipleFilesChange("sub", "LIGHT", files, false)
+                      }
+                      onRemove={(index) =>
+                        removeMediaAtIndex("LIGHT", index, false)
+                      }
                       required={false}
                     />
-                    <MediaUpload
+                    <MultiMediaUpload
                       label="Sub Media (Dark Theme)"
-                      file={subMedia.darkFile}
-                      preview={subMedia.darkPreview}
-                      mediaType={subMedia.darkMediaType}
-                      onFileChange={(file) => handleFileChange("sub", "DARK", file, false)}
-                      onRemove={() => removeMedia("DARK", false)}
+                      previews={subMedia.darkPreviews}
+                      mediaTypes={subMedia.darkMediaTypes}
+                      onFilesChange={(files) =>
+                        handleMultipleFilesChange("sub", "DARK", files, false)
+                      }
+                      onRemove={(index) =>
+                        removeMediaAtIndex("DARK", index, false)
+                      }
                       required={false}
                     />
                   </>
                 )}
               </div>
 
-              {/* Active Checkbox */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="active"
-                  checked={formData.active}
-                  onChange={(e) => handleInputChange("active", e.target.checked)}
-                  className="w-4 h-4 cursor-pointer"
-                  style={{ accentColor: colors.primary }}
-                />
-                <label
-                  htmlFor="active"
-                  className="text-[13px] font-medium cursor-pointer"
-                  style={{ color: colors.textSecondary }}
-                >
-                  Set as Active
-                </label>
+              {/* Checkboxes */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="active"
+                    checked={formData.active}
+                    onChange={(e) =>
+                      handleInputChange("active", e.target.checked)
+                    }
+                    className="w-4 h-4 cursor-pointer"
+                    style={{ accentColor: colors.primary }}
+                  />
+                  <label
+                    htmlFor="active"
+                    className="text-[13px] font-medium cursor-pointer"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    Set as Active
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="showOnHomepage"
+                    checked={formData.showOnHomepage}
+                    onChange={(e) =>
+                      handleInputChange("showOnHomepage", e.target.checked)
+                    }
+                    className="w-4 h-4 cursor-pointer"
+                    style={{ accentColor: colors.primary }}
+                  />
+                  <label
+                    htmlFor="showOnHomepage"
+                    className="text-[13px] font-medium cursor-pointer"
+                    style={{ color: colors.textSecondary }}
+                  >
+                    Show on Homepage
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -684,18 +994,30 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                   className="text-base font-semibold m-0"
                   style={{ color: colors.textPrimary }}
                 >
-                  Preview
+                  Preview{" "}
+                  {previewBackgrounds.length > 1 &&
+                    `(${currentBackgroundIndex + 1}/${previewBackgrounds.length})`}
                 </h3>
                 <div className="flex items-center gap-2">
                   {/* Theme Toggle for Preview */}
-                  {(backgroundMedia.theme === "SPLIT" || subMedia.theme === "SPLIT") && (
-                    <div className="flex items-center gap-1 p-1 rounded-md" style={{ backgroundColor: colors.border }}>
+                  {(backgroundMedia.theme === "SPLIT" ||
+                    subMedia.theme === "SPLIT") && (
+                    <div
+                      className="flex items-center gap-1 p-1 rounded-md"
+                      style={{ backgroundColor: colors.border }}
+                    >
                       <button
                         onClick={() => setPreviewTheme("LIGHT")}
                         className="px-3 py-1 border-none rounded text-xs font-medium cursor-pointer transition-colors"
                         style={{
-                          backgroundColor: previewTheme === "LIGHT" ? colors.primary : "transparent",
-                          color: previewTheme === "LIGHT" ? colors.sidebarText : colors.textPrimary,
+                          backgroundColor:
+                            previewTheme === "LIGHT"
+                              ? colors.primary
+                              : "transparent",
+                          color:
+                            previewTheme === "LIGHT"
+                              ? colors.sidebarText
+                              : colors.textPrimary,
                         }}
                       >
                         Light
@@ -704,8 +1026,14 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                         onClick={() => setPreviewTheme("DARK")}
                         className="px-3 py-1 border-none rounded text-xs font-medium cursor-pointer transition-colors"
                         style={{
-                          backgroundColor: previewTheme === "DARK" ? colors.primary : "transparent",
-                          color: previewTheme === "DARK" ? colors.sidebarText : colors.textPrimary,
+                          backgroundColor:
+                            previewTheme === "DARK"
+                              ? colors.primary
+                              : "transparent",
+                          color:
+                            previewTheme === "DARK"
+                              ? colors.sidebarText
+                              : colors.textPrimary,
                         }}
                       >
                         Dark
@@ -716,8 +1044,12 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                     onClick={() => setShowPreview(!showPreview)}
                     className="flex items-center gap-2 px-3 py-1.5 border-none rounded-md text-xs font-medium cursor-pointer transition-colors"
                     style={{
-                      backgroundColor: showPreview ? colors.primary : colors.border,
-                      color: showPreview ? colors.sidebarText : colors.textPrimary,
+                      backgroundColor: showPreview
+                        ? colors.primary
+                        : colors.border,
+                      color: showPreview
+                        ? colors.sidebarText
+                        : colors.textPrimary,
                     }}
                   >
                     {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -733,11 +1065,11 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                     style={{ backgroundColor: "#1a1a2e" }}
                   >
                     {/* Background Media */}
-                    {getPreviewBackground() ? (
+                    {currentBackground ? (
                       <>
-                        {getPreviewBackgroundType() === "VIDEO" ? (
+                        {currentBackgroundType === "VIDEO" ? (
                           <video
-                            key={getPreviewBackground()}
+                            key={currentBackground}
                             autoPlay
                             loop
                             muted
@@ -745,13 +1077,13 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                             className="absolute inset-0 w-full h-full object-cover"
                             style={{ filter: "brightness(0.7)" }}
                           >
-                            <source src={getPreviewBackground()} type="video/mp4" />
+                            <source src={currentBackground} type="video/mp4" />
                           </video>
                         ) : (
                           <div
                             className="absolute inset-0 w-full h-full bg-cover bg-center"
                             style={{
-                              backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${getPreviewBackground()}')`,
+                              backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('${currentBackground}')`,
                             }}
                           />
                         )}
@@ -760,21 +1092,56 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                       <div
                         className="absolute inset-0 w-full h-full"
                         style={{
-                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          background:
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                         }}
                       />
                     )}
 
+                    {/* Navigation arrows for multiple backgrounds */}
+                    {previewBackgrounds.length > 1 && (
+                      <>
+                        <button
+                          onClick={() =>
+                            setCurrentBackgroundIndex((prev) =>
+                              prev === 0
+                                ? previewBackgrounds.length - 1
+                                : prev - 1,
+                            )
+                          }
+                          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white border-none cursor-pointer"
+                        >
+                          ←
+                        </button>
+                        <button
+                          onClick={() =>
+                            setCurrentBackgroundIndex(
+                              (prev) => (prev + 1) % previewBackgrounds.length,
+                            )
+                          }
+                          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white border-none cursor-pointer"
+                        >
+                          →
+                        </button>
+                      </>
+                    )}
+
                     {/* Theme Indicator Badge */}
-                    {(backgroundMedia.theme === "SPLIT" || subMedia.theme === "SPLIT") && (
+                    {(backgroundMedia.theme === "SPLIT" ||
+                      subMedia.theme === "SPLIT") && (
                       <div
                         className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-medium z-20"
                         style={{
-                          backgroundColor: previewTheme === "LIGHT" ? "rgba(255,255,255,0.9)" : "rgba(0,0,0,0.9)",
+                          backgroundColor:
+                            previewTheme === "LIGHT"
+                              ? "rgba(255,255,255,0.9)"
+                              : "rgba(0,0,0,0.9)",
                           color: previewTheme === "LIGHT" ? "#000" : "#fff",
                         }}
                       >
-                        {previewTheme === "LIGHT" ? "☀️ Light Theme" : "🌙 Dark Theme"}
+                        {previewTheme === "LIGHT"
+                          ? "☀️ Light Theme"
+                          : "🌙 Dark Theme"}
                       </div>
                     )}
 
@@ -814,7 +1181,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                   </div>
 
                   {/* Sub Media Preview */}
-                  {getPreviewSubMedia() && (
+                  {getPreviewSubMedias().length > 0 && (
                     <div className="mt-4">
                       <p
                         className="text-xs font-medium mb-2"
@@ -822,23 +1189,28 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                       >
                         Sub Media Preview:
                       </p>
-                      <div className="rounded-md overflow-hidden">
-                        {getPreviewSubMediaType() === "IMAGE" ? (
-                          <img
-                            src={getPreviewSubMedia()}
-                            alt="Sub media"
-                            className="w-full h-40 object-cover"
-                          />
-                        ) : (
-                          <video
-                            key={getPreviewSubMedia()}
-                            controls
-                            className="w-full h-40 object-cover"
-                            playsInline
+                      <div className="grid grid-cols-2 gap-2">
+                        {getPreviewSubMedias().map((preview, index) => (
+                          <div
+                            key={index}
+                            className="rounded-md overflow-hidden"
                           >
-                            <source src={getPreviewSubMedia()} type="video/mp4" />
-                          </video>
-                        )}
+                            {getPreviewSubMediaTypes()[index] === "IMAGE" ? (
+                              <img
+                                src={preview}
+                                alt={`Sub media ${index + 1}`}
+                                className="w-full h-32 object-cover"
+                              />
+                            ) : (
+                              <video
+                                src={preview}
+                                controls
+                                className="w-full h-32 object-cover"
+                                playsInline
+                              />
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -854,17 +1226,21 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                   className="text-xs m-0 mb-2"
                   style={{ color: colors.textSecondary }}
                 >
-                  <strong>💡 Theme Selection Guide:</strong>
+                  <strong>💡 Guide:</strong>
                 </p>
-                <ul className="text-xs m-0 pl-4" style={{ color: colors.textSecondary }}>
+                <ul
+                  className="text-xs m-0 pl-4"
+                  style={{ color: colors.textSecondary }}
+                >
                   <li className="mb-1">
-                    <strong>All Themes:</strong> Use the same media for both light and dark themes
+                    Multiple media supported - upload several images/videos
                   </li>
                   <li className="mb-1">
-                    <strong>Separate for Light & Dark:</strong> Upload different media optimized for each theme. Both are required.
+                    Theme selection: Same media for all themes or separate for
+                    light/dark
                   </li>
                   <li>
-                    <strong>Text Fields:</strong> Optional - leave empty if your video/image contains all info
+                    Text fields optional - use if media doesn't contain all info
                   </li>
                 </ul>
               </div>
@@ -931,8 +1307,15 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   );
 }
 
-// Media Upload Component
-function MediaUpload({ label, file, preview, mediaType, onFileChange, onRemove, required }) {
+// Multi Media Upload Component
+function MultiMediaUpload({
+  label,
+  previews,
+  mediaTypes,
+  onFilesChange,
+  onRemove,
+  required,
+}) {
   const inputId = `media-${label.replace(/\s/g, "-").toLowerCase()}`;
 
   return (
@@ -944,81 +1327,80 @@ function MediaUpload({ label, file, preview, mediaType, onFileChange, onRemove, 
         {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
       </label>
 
-      {preview ? (
-        <div
-          className="flex items-center gap-3 p-3 border rounded-md"
-          style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}
-        >
-          {mediaType === "IMAGE" ? (
-            <img
-              src={preview}
-              alt={label}
-              className="w-16 h-16 object-cover rounded"
-            />
-          ) : (
-            <video src={preview} className="w-16 h-16 object-cover rounded" muted />
-          )}
-          <div className="flex-1">
-            <p
-              className="text-xs font-medium m-0"
-              style={{ color: colors.textPrimary }}
+      {/* Display uploaded media */}
+      {previews.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          {previews.map((preview, index) => (
+            <div
+              key={index}
+              className="relative group border rounded-md overflow-hidden"
+              style={{
+                borderColor: colors.border,
+                backgroundColor: colors.contentBg,
+              }}
             >
-              {mediaType}
-            </p>
-            {file && (
-              <p
-                className="text-[10px] m-0"
-                style={{ color: colors.textSecondary }}
+              {mediaTypes[index] === "IMAGE" ? (
+                <img
+                  src={preview}
+                  alt={`${label} ${index + 1}`}
+                  className="w-full h-24 object-cover"
+                />
+              ) : (
+                <video
+                  src={preview}
+                  className="w-full h-24 object-cover"
+                  muted
+                />
+              )}
+              <button
+                onClick={() => onRemove(index)}
+                className="absolute top-1 right-1 p-1 border-none rounded-full cursor-pointer transition-opacity opacity-0 group-hover:opacity-100"
+                style={{ backgroundColor: "rgba(239, 68, 68, 0.9)" }}
               >
-                {file.name}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onRemove}
-            className="p-1.5 border-none rounded cursor-pointer transition-colors"
-            style={{ backgroundColor: "transparent" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#fee";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            <X size={16} style={{ color: "#ef4444" }} />
-          </button>
-        </div>
-      ) : (
-        <div>
-          <input
-            type="file"
-            id={inputId}
-            accept="image/*,video/*"
-            onChange={(e) => onFileChange(e.target.files[0])}
-            className="hidden"
-          />
-          <label
-            htmlFor={inputId}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-dashed rounded-md text-xs font-medium cursor-pointer transition-colors"
-            style={{
-              borderColor: colors.border,
-              color: colors.textSecondary,
-              backgroundColor: colors.contentBg,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = colors.primary;
-              e.currentTarget.style.color = colors.primary;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = colors.border;
-              e.currentTarget.style.color = colors.textSecondary;
-            }}
-          >
-            <Upload size={16} />
-            <span>Choose Media</span>
-          </label>
+                <X size={12} style={{ color: "#fff" }} />
+              </button>
+              <div
+                className="absolute bottom-0 left-0 right-0 px-1 py-0.5 text-[9px] font-medium text-center"
+                style={{ backgroundColor: "rgba(0,0,0,0.7)", color: "#fff" }}
+              >
+                {mediaTypes[index]}
+              </div>
+            </div>
+          ))}
         </div>
       )}
+
+      {/* Upload button */}
+      <div>
+        <input
+          type="file"
+          id={inputId}
+          accept="image/*,video/*"
+          multiple
+          onChange={(e) => onFilesChange(e.target.files)}
+          className="hidden"
+        />
+        <label
+          htmlFor={inputId}
+          className="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-dashed rounded-md text-xs font-medium cursor-pointer transition-colors"
+          style={{
+            borderColor: colors.border,
+            color: colors.textSecondary,
+            backgroundColor: colors.contentBg,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = colors.primary;
+            e.currentTarget.style.color = colors.primary;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.color = colors.textSecondary;
+          }}
+        >
+          <Upload size={16} />
+          <span>{previews.length > 0 ? "Add More Media" : "Choose Media"}</span>
+        </label>
+      </div>
     </div>
   );
 }
