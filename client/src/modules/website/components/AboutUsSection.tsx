@@ -50,9 +50,9 @@ interface AboutUsData {
   ctaButtonText: string;
   ctaButtonUrl: string;
   isActive: boolean;
-  media?: MediaItem[]; // Array from API response
-  ventures?: Venture[]; // Nested in newer responses
-  recognitions?: Recognition[]; // Nested in newer responses
+  media?: MediaItem[];
+  ventures?: Venture[];
+  recognitions?: Recognition[];
 }
 
 /* --- Helper --- */
@@ -66,16 +66,8 @@ const getYouTubeEmbedUrl = (url: string) => {
   const videoId = match?.[1];
   if (!videoId) return url;
 
-  return `https://www.youtube.com/embed/${videoId}
-    ?autoplay=1
-    &mute=1
-    &playsinline=1
-    &loop=1
-    &playlist=${videoId}
-    &controls=0
-    &rel=0
-    &modestbranding=1
-  `.replace(/\s+/g, "");
+  // Added mute=1 (required for autoplay) and enablejsapi=1
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&enablejsapi=1`.replace(/\s+/g, "");
 };
 
 export default function AboutUsSection() {
@@ -85,7 +77,6 @@ export default function AboutUsSection() {
   const [recognitions, setRecognitions] = useState<Recognition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initial Fetch: About Us Section (Ensuring LATEST record)
   const fetchAboutUs = async () => {
     try {
       setIsLoading(true);
@@ -93,7 +84,6 @@ export default function AboutUsSection() {
       const data = response?.data || response;
 
       if (Array.isArray(data) && data.length > 0) {
-        // Sort by ID descending and pick the top one (e.g., ID 12)
         const latestData = [...data].sort((a, b) => b.id - a.id)[0];
         setAboutUsData(latestData);
       }
@@ -104,7 +94,6 @@ export default function AboutUsSection() {
     }
   };
 
-  // Secondary Fetch: Handles ventures/recognitions from direct API or nested response
   const fetchRelatedData = async (id: number) => {
     try {
       const [venturesRes, recognitionsRes] = await Promise.all([
@@ -125,13 +114,11 @@ export default function AboutUsSection() {
 
   useEffect(() => {
     if (aboutUsData?.id) {
-      // If data has nested arrays, use them; otherwise fetch separately
       if (aboutUsData.ventures && aboutUsData.ventures.length > 0) {
         setVentures(aboutUsData.ventures);
       } else {
         fetchRelatedData(aboutUsData.id);
       }
-
       if (aboutUsData.recognitions && aboutUsData.recognitions.length > 0) {
         setRecognitions(aboutUsData.recognitions);
       }
@@ -139,17 +126,13 @@ export default function AboutUsSection() {
   }, [aboutUsData]);
 
   // Construct dynamic carousel items
-  const mediaItems = [];
-
-  // 1. Add Main Video from videoUrl
+  const mediaItems: { type: string; src: string }[] = [];
   if (aboutUsData?.videoUrl) {
     mediaItems.push({
       type: "video",
       src: getYouTubeEmbedUrl(aboutUsData.videoUrl),
     });
   }
-
-  // 2. Add multiple images/videos from the media array in response
   if (aboutUsData?.media && aboutUsData.media.length > 0) {
     aboutUsData.media.forEach((m) => {
       mediaItems.push({
@@ -158,11 +141,20 @@ export default function AboutUsSection() {
       });
     });
   }
-
-  // Fallback if no media exists
   if (mediaItems.length === 0) {
     mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
   }
+
+  // --- NEW: Auto Carousel Scroll Logic ---
+  useEffect(() => {
+    if (mediaItems.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
+    }, 5000); // Scrolls every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [mediaItems.length]);
 
   if (isLoading)
     return (
@@ -179,7 +171,8 @@ export default function AboutUsSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
           {/* Left Column: Media Showcase Carousel */}
           <div className="relative group flex flex-col">
-            <div className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10 min-h-[400px]">
+            {/* FIX: Use aspect-video to maintain a fixed frame size */}
+            <div className="relative flex-1 aspect-video md:aspect-auto md:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentMediaIndex}
@@ -187,7 +180,7 @@ export default function AboutUsSection() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.5 }}
-                  className="w-full h-full"
+                  className="w-full h-full absolute inset-0"
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
                     <iframe
@@ -230,10 +223,10 @@ export default function AboutUsSection() {
                   <button
                     key={index}
                     onClick={() => setCurrentMediaIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       currentMediaIndex === index
                         ? "bg-primary w-8"
-                        : "bg-muted-foreground/30"
+                        : "bg-muted-foreground/30 w-2"
                     }`}
                   />
                 ))}

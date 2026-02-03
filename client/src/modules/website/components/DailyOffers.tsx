@@ -130,6 +130,7 @@ export default function DailyOffers() {
             description: o.description,
             couponCode: o.couponCode,
             ctaText: o.ctaText || "View Offer",
+            ctaLink: o.ctaUrl || o.ctaLink || null, // Capture the link
             expiresAt: o.expiresAt,
             propertyType: o.propertyTypeName || "Hotel",
             image: o.image?.url
@@ -165,7 +166,6 @@ export default function DailyOffers() {
   return (
     <section className="bg-muted py-10">
       <div className="container mx-auto px-6">
-        {/* HEADER & NAVIGATION */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-serif">
             {dailyOffers?.title || "Daily Offers"}
@@ -186,7 +186,6 @@ export default function DailyOffers() {
           </div>
         </div>
 
-        {/* SWIPER CAROUSEL */}
         <Swiper
           modules={[Navigation, Autoplay]}
           slidesPerView={1}
@@ -194,22 +193,20 @@ export default function DailyOffers() {
           breakpoints={{
             640: { slidesPerView: 2 },
             768: { slidesPerView: 3 },
-            1200: { slidesPerView: 4 }, // Updated: Shows 4 cards on desktop width
+            1200: { slidesPerView: 4 },
           }}
           autoplay={{ delay: 5000 }}
           onSwiper={setSwiper}
         >
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
+            const isClickable = !!offer.ctaLink;
 
             return (
               <SwiperSlide key={offer.id || i}>
-                {/* ADJUSTED HEIGHT: Reduced from 580px to 520px 
-                  to prevent narrow cards from looking too tall.
-                */}
-                <div className="h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm">
+                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative">
                   
-                  {/* IMAGE SECTION - Reduced height for non-banners */}
+                  {/* IMAGE SECTION */}
                   <div
                     className={`relative overflow-hidden ${
                       isBanner ? "flex-1" : "h-[280px]"
@@ -227,18 +224,43 @@ export default function DailyOffers() {
                       </div>
                     )}
 
-                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded">
+                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10">
                       {offer.propertyType}
                     </div>
 
                     {offer.expiresAt && (
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 z-10">
                         <CountdownTimer expiresAt={offer.expiresAt} />
+                      </div>
+                    )}
+
+                    {/* BANNER HOVER CTA */}
+                    {isBanner && (
+                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 z-20">
+                        {isClickable ? (
+                          <a
+                            href={offer.ctaLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-white text-black py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-white/90 transition-colors"
+                          >
+                            {offer.ctaText}
+                            <ExternalLink size={12} />
+                          </a>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full bg-white/60 text-black/50 py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {offer.ctaText}
+                            <ExternalLink size={12} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
 
-                  {/* CONTENT SECTION (Hidden for banner-style images) */}
+                  {/* CONTENT SECTION (Standard format) */}
                   {!isBanner && (
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight">
@@ -255,13 +277,26 @@ export default function DailyOffers() {
                             {offer.couponCode}
                           </span>
                         </div>
-                        <button
-                          disabled
-                          className="w-full bg-muted/80 py-2 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {offer.ctaText}
-                          <ExternalLink size={12} />
-                        </button>
+                        
+                        {isClickable ? (
+                          <a
+                            href={offer.ctaLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-primary text-primary-foreground py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                          >
+                            {offer.ctaText}
+                            <ExternalLink size={12} />
+                          </a>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full bg-muted/80 py-2 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {offer.ctaText}
+                            <ExternalLink size={12} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
