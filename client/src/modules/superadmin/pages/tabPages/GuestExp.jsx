@@ -1,24 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Upload, ChevronLeft, ChevronRight, Loader2, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Trash2, Video, ImageIcon } from 'lucide-react';
 import { 
-  addGuestExperienceSection,
   getGuestExperienceSection,
-  addGuestExperienceItem,
-  updateGuestExperienceItem 
+  deleteGuestExperience
 } from '@/Api/Api';
 import { toast } from 'react-hot-toast';
 
 function GuestExp() {
-  const [sectionHeader, setSectionHeader] = useState({
-    sectionTag: 'GUEST EXPERIENCES',
-    title: 'Moments of Excellence'
-  });
-
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [existingSectionId, setExistingSectionId] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,21 +21,15 @@ function GuestExp() {
       setFetching(true);
       const response = await getGuestExperienceSection();
       
-      const responseData = response.data?.data || response.data;
-      const items = responseData?.content || [];
+      /** * REFACTORED: Handling direct array response.
+       * The API returns [ {...}, {...} ], so we use response.data directly.
+       */
+      const items = Array.isArray(response.data) ? response.data : [];
       
-      if (responseData) {
-        setExistingSectionId(responseData.id);
-        setExperiences(items.map(item => ({
-          ...item,
-          isActive: true // Mock status
-        })));
-      }
+      setExperiences(items);
     } catch (error) {
       console.error("Error fetching guest experience:", error);
-      if (error.response?.status !== 404) {
-        toast.error("Failed to load guest experience data");
-      }
+      toast.error("Failed to load guest experience data");
     } finally {
       setFetching(false);
     }
@@ -52,6 +38,22 @@ function GuestExp() {
   useEffect(() => {
     fetchGuestExperience();
   }, [fetchGuestExperience]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this experience?")) return;
+    
+    try {
+      setLoading(true);
+      await deleteGuestExperience(id);
+      toast.success("Experience deleted successfully");
+      fetchGuestExperience(); // Refresh the list
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete experience");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Pagination Logic
   const totalPages = Math.ceil(experiences.length / itemsPerPage);
@@ -62,50 +64,10 @@ function GuestExp() {
 
   return (
     <div className="space-y-6">
-      {/* Section Header */}
-      {/* <div className="rounded-lg p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
-        <h3 className="text-sm font-semibold mb-4" style={{ color: colors.textPrimary }}>Section Header</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: colors.textSecondary }}>Section Tag</label>
-            <input
-              type="text"
-              value={sectionHeader.sectionTag}
-              onChange={(e) => setSectionHeader({...sectionHeader, sectionTag: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ borderColor: colors.border, backgroundColor: colors.mainBg, color: colors.textPrimary }}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: colors.textSecondary }}>Title</label>
-            <input
-              type="text"
-              value={sectionHeader.title}
-              onChange={(e) => setSectionHeader({...sectionHeader, title: e.target.value})}
-              className="w-full px-3 py-2 rounded border text-sm"
-              style={{ borderColor: colors.border, backgroundColor: colors.mainBg, color: colors.textPrimary }}
-            />
-          </div>
-        </div>
-        <button
-          className="px-4 py-2 rounded-md text-sm font-semibold text-white transition-opacity disabled:opacity-50"
-          style={{ backgroundColor: colors.primary }}
-          disabled={loading}
-        >
-          Save Header
-        </button>
-      </div> */}
-
       {/* Experiences Table */}
       <div className="rounded-lg shadow-sm overflow-hidden" style={{ backgroundColor: colors.contentBg }}>
-        <div className="p-5 flex items-center justify-between border-b" style={{ borderColor: colors.border }}>
+        <div className="p-5 border-b" style={{ borderColor: colors.border }}>
           <h3 className="text-sm font-semibold" style={{ color: colors.textPrimary }}>Guest Experiences List</h3>
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <Plus size={14} /> Add New
-          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -115,69 +77,69 @@ function GuestExp() {
                 <th className="p-4 text-xs font-semibold uppercase" style={{ color: colors.textSecondary }}>Media</th>
                 <th className="p-4 text-xs font-semibold uppercase" style={{ color: colors.textSecondary }}>Details</th>
                 <th className="p-4 text-xs font-semibold uppercase" style={{ color: colors.textSecondary }}>Author</th>
-                <th className="p-4 text-xs font-semibold uppercase text-center" style={{ color: colors.textSecondary }}>Status</th>
                 <th className="p-4 text-xs font-semibold uppercase text-right" style={{ color: colors.textSecondary }}>Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ divideColor: colors.border }}>
               {fetching ? (
                 <tr>
-                  <td colSpan="5" className="p-10 text-center">
+                  <td colSpan="4" className="p-10 text-center">
                     <Loader2 className="animate-spin mx-auto mb-2" style={{ color: colors.primary }} />
                     <span className="text-sm" style={{ color: colors.textSecondary }}>Fetching experiences...</span>
                   </td>
                 </tr>
-              ) : currentExperiences.map((exp) => (
-                <tr key={exp.id} className="hover:bg-black/5 transition-colors">
-                  <td className="p-4">
-                    <div className="w-16 h-12 rounded bg-gray-200 overflow-hidden border" style={{ borderColor: colors.border }}>
-                      {exp.imageUrl ? (
-                        <img src={exp.imageUrl} alt="" className="w-full h-full object-cover" />
-                      ) : exp.videoUrl ? (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-800 text-[10px] text-white">VIDEO</div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">NA</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm font-medium" style={{ color: colors.textPrimary }}>{exp.title}</div>
-                    <div className="text-xs line-clamp-1 max-w-[200px]" style={{ color: colors.textSecondary }}>{exp.description}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm" style={{ color: colors.textPrimary }}>{exp.author}</div>
-                  </td>
-                  <td className="p-4 text-center">
-                    {/* Disable/Enable Action Button (Disabled for now) */}
-                    <button 
-                      disabled 
-                      className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider opacity-50 cursor-not-allowed border"
-                      style={{ 
-                        backgroundColor: exp.isActive ? `${colors.primary}15` : '#fee2e2', 
-                        color: exp.isActive ? colors.primary : '#ef4444',
-                        borderColor: exp.isActive ? colors.primary : '#ef4444'
-                      }}
-                    >
-                      {exp.isActive ? 'Enabled' : 'Disabled'}
-                    </button>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-1.5 rounded hover:bg-gray-100" style={{ color: colors.textSecondary }} title="Edit">
-                        <Edit2 size={14} />
-                      </button>
-                      <button className="p-1.5 rounded hover:bg-red-50" style={{ color: '#ef4444' }} title="Delete">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+              ) : currentExperiences.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="p-10 text-center text-sm" style={{ color: colors.textSecondary }}>
+                    No experiences found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                currentExperiences.map((exp) => (
+                  <tr key={exp.id} className="hover:bg-black/5 transition-colors">
+                    <td className="p-4">
+                      <div className="w-16 h-12 rounded bg-gray-200 overflow-hidden border flex items-center justify-center" style={{ borderColor: colors.border }}>
+                        {exp.videoUrl ? (
+                          <div className="w-full h-full bg-slate-800 flex items-center justify-center relative">
+                            <Video size={16} className="text-white opacity-70" />
+                            <span className="absolute bottom-0.5 right-1 text-[8px] text-white font-bold">MP4</span>
+                          </div>
+                        ) : exp.imageUrl ? (
+                          <img src={exp.imageUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon size={16} className="text-gray-400" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm font-medium" style={{ color: colors.textPrimary }}>{exp.title}</div>
+                      <div className="text-xs line-clamp-1 max-w-[300px]" style={{ color: colors.textSecondary }}>
+                        {exp.description}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm font-medium" style={{ color: colors.textPrimary }}>{exp.author}</div>
+                      <div className="text-[10px]" style={{ color: colors.textSecondary }}>{exp.authorEmail || 'No Email'}</div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button 
+                        onClick={() => handleDelete(exp.id)}
+                        disabled={loading}
+                        className="p-2 rounded hover:bg-red-50 transition-colors disabled:opacity-50" 
+                        style={{ color: '#ef4444' }} 
+                        title="Delete Experience"
+                      >
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Footer / Pagination */}
+        {/* Pagination */}
         <div className="p-4 flex items-center justify-between border-t" style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}>
           <span className="text-xs" style={{ color: colors.textSecondary }}>
             Showing {currentExperiences.length} of {experiences.length} items
