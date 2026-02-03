@@ -71,6 +71,46 @@ export default function QuickBooking() {
     setLocation(city);
     setLocationOpen(false);
   };
+  const RESAVENUE_CONFIG = {
+    baseUrl: "https://bookings.resavenue.com/resBooking4/searchRooms",
+    defaultRegCode: "TXGZ0113",
+    dateFormat: "dd/MM/yyyy",
+  };
+
+  const generateResAvenueUrl = ({
+    checkIn,
+    checkOut,
+    adults,
+    regCode = RESAVENUE_CONFIG.defaultRegCode,
+  }: {
+    checkIn?: Date;
+    checkOut?: Date;
+    adults: number;
+    regCode?: string;
+  }) => {
+    if (!checkIn || !checkOut) return null;
+
+    const arrDate = format(checkIn, RESAVENUE_CONFIG.dateFormat);
+    const depDate = format(checkOut, RESAVENUE_CONFIG.dateFormat);
+
+    const params = new URLSearchParams({
+      targetTemplate: "4",
+      regCode,
+      curr: "INR",
+
+      // legacy-required fields (MUST MATCH HTML)
+      arrDate,
+      depDate,
+      arr_date: arrDate,
+      dep_date: depDate,
+
+      // optional but safe
+      adult_1: String(adults ?? 1),
+    });
+
+    return `${RESAVENUE_CONFIG.baseUrl}?${params.toString()}`;
+  };
+
 
   const handleCheckInSelect = (date: Date | undefined) => {
     setCheckIn(date);
@@ -101,28 +141,29 @@ export default function QuickBooking() {
     }
 
     if (filtered.length === 1) {
-      handleBook(filtered[0]);
+      handleBook(filtered[0]); // now redirects externally
     } else {
       setSearchResults(filtered);
     }
   };
 
+
   const handleBook = (hotel: Hotel) => {
-    navigate(`/hotels/${hotel.city}`, {
-      state: {
-        hotelId: hotel.id,
-        hotelSlug: hotel.id,
-        city: hotel.city,
-        selectedDates: {
-          checkIn: checkIn ? format(checkIn, "yyyy-MM-dd") : "",
-          checkOut: checkOut ? format(checkOut, "yyyy-MM-dd") : "",
-        },
-        guests: guests.adults + guests.children,
-        rooms: guests.rooms,
-        guestsDetails: guests,
-      },
+    const bookingUrl = generateResAvenueUrl({
+      checkIn,
+      checkOut,
+      adults: guests.adults,
+      regCode: hotel.regCode || RESAVENUE_CONFIG.defaultRegCode,
     });
+
+    if (!bookingUrl) {
+      console.warn("Booking URL not generated. Missing dates.");
+      return;
+    }
+
+    window.open(bookingUrl, "_blank", "noopener,noreferrer");
   };
+
 
   // Pagination Logic
   const totalPages = Math.ceil(searchResults.length / ITEMS_PER_PAGE);
