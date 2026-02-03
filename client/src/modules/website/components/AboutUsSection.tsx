@@ -8,14 +8,14 @@ import {
   Wine,
   Loader2,
   Video,
-  Image as ImageIcon
+  Image as ImageIcon,
 } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { 
-  getAboutUsAdmin, 
-  getVenturesByAboutUsId, 
-  getPublicRecognitionsByAboutUsId 
+import {
+  getAboutUsAdmin,
+  getVenturesByAboutUsId,
+  getPublicRecognitionsByAboutUsId,
 } from "@/Api/Api";
 
 /* --- Interfaces --- */
@@ -58,10 +58,24 @@ interface AboutUsData {
 /* --- Helper --- */
 const getYouTubeEmbedUrl = (url: string) => {
   if (!url) return "";
-  const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  const videoId = videoIdMatch ? videoIdMatch[1] : null;
-  // Optimized for autoplay/mute background rendering
-  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&rel=0` : url;
+
+  const match = url.match(
+    /(?:youtube\.com\/(?:.*v=|v\/|embed\/)|youtu\.be\/)([^"&?\/\s]{11})/,
+  );
+
+  const videoId = match?.[1];
+  if (!videoId) return url;
+
+  return `https://www.youtube.com/embed/${videoId}
+    ?autoplay=1
+    &mute=1
+    &playsinline=1
+    &loop=1
+    &playlist=${videoId}
+    &controls=0
+    &rel=0
+    &modestbranding=1
+  `.replace(/\s+/g, "");
 };
 
 export default function AboutUsSection() {
@@ -77,7 +91,7 @@ export default function AboutUsSection() {
       setIsLoading(true);
       const response = await getAboutUsAdmin();
       const data = response?.data || response;
-      
+
       if (Array.isArray(data) && data.length > 0) {
         // Sort by ID descending and pick the top one (e.g., ID 12)
         const latestData = [...data].sort((a, b) => b.id - a.id)[0];
@@ -95,7 +109,7 @@ export default function AboutUsSection() {
     try {
       const [venturesRes, recognitionsRes] = await Promise.all([
         getVenturesByAboutUsId(id),
-        getPublicRecognitionsByAboutUsId(id)
+        getPublicRecognitionsByAboutUsId(id),
       ]);
 
       if (venturesRes?.data) setVentures(venturesRes.data);
@@ -126,12 +140,12 @@ export default function AboutUsSection() {
 
   // Construct dynamic carousel items
   const mediaItems = [];
-  
+
   // 1. Add Main Video from videoUrl
   if (aboutUsData?.videoUrl) {
-    mediaItems.push({ 
-      type: "video", 
-      src: getYouTubeEmbedUrl(aboutUsData.videoUrl) 
+    mediaItems.push({
+      type: "video",
+      src: getYouTubeEmbedUrl(aboutUsData.videoUrl),
     });
   }
 
@@ -140,7 +154,7 @@ export default function AboutUsSection() {
     aboutUsData.media.forEach((m) => {
       mediaItems.push({
         type: m.type === "VIDEO" ? "video" : "image",
-        src: m.type === "VIDEO" ? getYouTubeEmbedUrl(m.url) : m.url
+        src: m.type === "VIDEO" ? getYouTubeEmbedUrl(m.url) : m.url,
       });
     });
   }
@@ -150,11 +164,12 @@ export default function AboutUsSection() {
     mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
   }
 
-  if (isLoading) return (
-    <div className="py-20 flex justify-center">
+  if (isLoading)
+    return (
+      <div className="py-20 flex justify-center">
         <Loader2 className="animate-spin text-primary" />
-    </div>
-  );
+      </div>
+    );
 
   return (
     <section className="py-10 md:py-20 bg-background relative overflow-hidden">
@@ -162,7 +177,6 @@ export default function AboutUsSection() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
-          
           {/* Left Column: Media Showcase Carousel */}
           <div className="relative group flex flex-col">
             <div className="relative flex-1 rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10 min-h-[400px]">
@@ -177,13 +191,15 @@ export default function AboutUsSection() {
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
                     <iframe
-                      width="100%"
-                      height="100%"
+                      key={`video-player-${currentMediaIndex}`}
                       src={mediaItems[currentMediaIndex].src}
                       title={aboutUsData?.videoTitle || "Brand Video"}
-                      className="w-full h-full object-cover aspect-video pointer-events-none"
-                      allow="autoplay; encrypted-media"
+                      className="w-full h-full object-cover"
+                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                       allowFullScreen
+                      loading="eager"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      style={{ border: 0 }}
                     />
                   ) : (
                     <img
@@ -198,7 +214,11 @@ export default function AboutUsSection() {
               {/* Overlay Indicators */}
               <div className="absolute top-4 left-4 z-20">
                 <div className="bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 text-white">
-                    {mediaItems[currentMediaIndex].type === "video" ? <Video size={16}/> : <ImageIcon size={16}/>}
+                  {mediaItems[currentMediaIndex].type === "video" ? (
+                    <Video size={16} />
+                  ) : (
+                    <ImageIcon size={16} />
+                  )}
                 </div>
               </div>
             </div>
@@ -211,7 +231,9 @@ export default function AboutUsSection() {
                     key={index}
                     onClick={() => setCurrentMediaIndex(index)}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      currentMediaIndex === index ? "bg-primary w-8" : "bg-muted-foreground/30"
+                      currentMediaIndex === index
+                        ? "bg-primary w-8"
+                        : "bg-muted-foreground/30"
                     }`}
                   />
                 ))}
@@ -240,12 +262,15 @@ export default function AboutUsSection() {
               </h4>
               <div className="flex flex-wrap gap-8">
                 {ventures.map((venture) => (
-                  <div key={venture.id} className="flex flex-col items-center space-y-3 group cursor-pointer">
+                  <div
+                    key={venture.id}
+                    className="flex flex-col items-center space-y-3 group cursor-pointer"
+                  >
                     <div className="w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1 overflow-hidden">
-                      <img 
-                        src={venture.logoUrl} 
-                        alt={venture.ventureName} 
-                        className="w-10 h-10 object-contain rounded-full" 
+                      <img
+                        src={venture.logoUrl}
+                        alt={venture.ventureName}
+                        className="w-10 h-10 object-contain rounded-full"
                       />
                     </div>
                     <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
