@@ -164,8 +164,11 @@ export const updateGuestExperienceItem = (id, formData) =>
   API.put(`api/v1/guest-experience/${id}`, formData);
 
 //our presence section
-// v1/our-presence
-export const getOurPresenceSection = () =>API.get("/api/v1/our-presence");
+// our-presence/admin/items
+export const AddOurPresenceSectionItems = (data) =>API.post("api/v1/our-presence/admin/items",data);
+export const UpdateOurPresenceSectionHeaders = (id,data) =>API.put(`api/v1/our-presence/admin/section`,data);
+export const getOurPresenceSection = () =>API.get("api/v1/our-presence");
+export const updateOurPresenceSectionItemsById = (id,formData) =>API.post(`api/v1/our-presence/admin/items/${id}`);
 
 
 export const createOrUpdateOurPropertiesSection = (data) =>

@@ -69,6 +69,7 @@ interface ApiHeroItem {
   mainTitle: string;
   subTitle: string | null;
   ctaText: string | null;
+  ctaLink: string | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
   backgroundDark: MediaItem[];
@@ -87,6 +88,7 @@ interface HeroSlide {
   title: string;
   subtitle: string;
   cta?: string;
+  ctaLink?: string | null;
   fallbackMedia?: any;
   fallbackThumbnail?: any;
 }
@@ -100,7 +102,7 @@ const generateDataHash = (items: ApiHeroItem[]): string => {
   return items
     .map(
       (item) =>
-        `${item.id}-${item.mainTitle}-${item.backgroundAll.length}-${item.subAll.length}`,
+        `${item.id}-${item.mainTitle}-${item.ctaText}-${item.ctaLink}-${item.backgroundAll.length}-${item.subAll.length}`,
     )
     .join("|");
 };
@@ -205,7 +207,8 @@ const transformApiDataToSlides = (
       thumbnail: thumbnailUrl,
       title: item.mainTitle || `Discover Amazing Places ${index + 1}`,
       subtitle: item.subTitle || "Book your next experience",
-      cta: item.ctaText || "Explore",
+      cta: item.ctaText, // ❌ don’t auto-fallback to "Explore"
+      ctaLink: item.ctaLink ?? null,
       fallbackMedia: defaultSlides[index % defaultSlides.length].media,
       fallbackThumbnail: defaultSlides[index % defaultSlides.length].thumbnail,
     };
@@ -526,10 +529,23 @@ export default function Hero() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
-                      onClick={handleScrollToBusiness}
-                      className="group relative px-6 py-2.5 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 font-semibold text-sm rounded-full shadow-[0_4px_16px_rgba(251,191,36,0.35)] overflow-hidden transition-all duration-500 ease-out hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer flex items-center gap-2 border border-amber-300/40"
+                      disabled={!slide.ctaLink} // Disable if link is missing
+                      onClick={() => {
+                        if (!slide.ctaLink) return;
+                        window.location.href = slide.ctaLink;
+                      }}
+                      className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border 
+      ${
+        !slide.ctaLink
+          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"
+      }`}
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                      {/* Shine effect only for active buttons */}
+                      {slide.ctaLink && (
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                      )}
+
                       <span className="relative z-10">{slide.cta}</span>
                     </motion.button>
                   )}
