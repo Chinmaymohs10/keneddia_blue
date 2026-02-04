@@ -416,7 +416,7 @@ function OurPresence() {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <button
+                    {/* <button
                       onClick={() => handleDeleteTile(tile.id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors"
                       style={{ 
@@ -427,7 +427,7 @@ function OurPresence() {
                     >
                       <Trash2 size={14} />
                       Delete
-                    </button>
+                    </button> */}
                     
                     {tile.isExisting ? (
                       <button
