@@ -3,7 +3,7 @@ import { MapPin, Star, Award, Users, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { siteContent } from "@/data/siteContent";
-import { getAllLocations } from "@/Api/Api";
+import { getAllLocations, getOurPresenceSection } from "@/Api/Api";
 
 interface LocationData {
   id: number;
@@ -11,6 +11,18 @@ interface LocationData {
   country: string;
   state: string;
   isActive: boolean;
+}
+
+interface PresenceSectionData {
+  sectionTitle: string;
+  sectionSubtitle: string;
+  items: {
+    id: number;
+    title: string;
+    subtitle: string;
+    icon: string;
+    displayOrder: number;
+  }[];
 }
 
 const fallbackLocations = [
@@ -24,7 +36,7 @@ const fallbackLocations = [
   { state: "Goa", city: "Panaji" },
 ];
 
-const highlights = [
+const fallbackHighlights = [
   {
     icon: Sparkles,
     title: "Curated Experiences",
@@ -47,21 +59,42 @@ const highlights = [
   },
 ];
 
+// Icon mapping helper
+const getIconComponent = (iconName: string) => {
+  const iconMap: { [key: string]: any } = {
+    sparkle: Sparkles,
+    sparkles: Sparkles,
+    award: Award,
+    users: Users,
+    star: Star,
+    mappin: MapPin,
+    trendingup: TrendingUp,
+  };
+  return iconMap[iconName.toLowerCase()] || Sparkles;
+};
+
 export default function GlobalPresence() {
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(fallbackLocations);
   const [isLoading, setIsLoading] = useState(true);
+  const [sectionData, setSectionData] = useState<PresenceSectionData>({
+    sectionTitle: "Our Presence",
+    sectionSubtitle: "Luxury Hospitality Across India",
+    items: [],
+  });
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const res = await getAllLocations();
-        console.log("Locations API full response:", res);
-        console.log("Locations API data:", res.data);
 
-        if (res?.data && Array.isArray(res.data)) {
+        // Fetch locations
+        const locationsRes = await getAllLocations();
+        console.log("Locations API full response:", locationsRes);
+        console.log("Locations API data:", locationsRes.data);
+
+        if (locationsRes?.data && Array.isArray(locationsRes.data)) {
           // Filter only active locations and map to the format we need
-          const activeLocations = res.data
+          const activeLocations = locationsRes.data
             .filter((location: LocationData) => location.isActive)
             .map((location: LocationData) => ({
               state: location.state,
@@ -73,15 +106,54 @@ export default function GlobalPresence() {
             setLocations(activeLocations);
           }
         }
+
+        // Fetch presence section data
+        const presenceRes = await getOurPresenceSection();
+        console.log("Presence Section API response:", presenceRes);
+
+        if (presenceRes?.data) {
+          // Use API items if available, otherwise use fallback highlights
+          const items = presenceRes.data.items && presenceRes.data.items.length > 0
+            ? presenceRes.data.items
+            : fallbackHighlights.map((item, index) => ({
+                id: index + 1,
+                title: item.title,
+                subtitle: item.description,
+                icon: 'sparkles',
+                displayOrder: index + 1,
+              }));
+
+          setSectionData({
+            sectionTitle: presenceRes.data.sectionTitle || "Our Presence",
+            sectionSubtitle: presenceRes.data.sectionSubtitle || "Luxury Hospitality Across India",
+            items: items,
+          });
+        } else {
+          // If API fails, use fallback data
+          setSectionData({
+            sectionTitle: "Our Presence",
+            sectionSubtitle: "Luxury Hospitality Across India",
+            items: fallbackHighlights.map((item, index) => ({
+              id: index + 1,
+              title: item.title,
+              subtitle: item.description,
+              icon: 'sparkles',
+              displayOrder: index + 1,
+            })),
+          });
+        }
       } catch (error) {
-        console.error("Error fetching locations:", error);
-        // Keep fallback locations on error
+        console.error("Error fetching data:", error);
+        // Keep fallback data on error
       } finally {
         setIsLoading(false);
       }
     };
-    fetchLocations();
+    fetchData();
   }, []);
+
+  // Sort items by displayOrder
+  const sortedItems = [...sectionData.items].sort((a, b) => a.displayOrder - b.displayOrder);
 
   return (
     <section className="py-16 md:py-20 bg-secondary/20 relative overflow-hidden">
@@ -102,7 +174,7 @@ export default function GlobalPresence() {
             viewport={{ once: true }}
             className="text-primary text-xs font-bold uppercase tracking-[0.25em] mb-3 block"
           >
-            Our Presence
+            {sectionData.sectionTitle}
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -111,7 +183,7 @@ export default function GlobalPresence() {
             transition={{ delay: 0.1 }}
             className="text-3xl md:text-4xl font-serif text-foreground mb-4 leading-tight"
           >
-            Luxury Hospitality Across India
+            {sectionData.sectionSubtitle}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -169,30 +241,34 @@ export default function GlobalPresence() {
 
           {/* Value Propositions - Focus on Quality */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {highlights.map((highlight, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="bg-card/30 backdrop-blur-sm border border-primary/10 rounded-lg p-5 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <highlight.icon className="w-5 h-5 text-primary" />
+            {sortedItems.map((item, index) => {
+              const IconComponent = getIconComponent(item.icon);
+              
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className="bg-card/30 backdrop-blur-sm border border-primary/10 rounded-lg p-5 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <IconComponent className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {item.subtitle}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <h4 className="text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-                      {highlight.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {highlight.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 

@@ -1,52 +1,50 @@
-// HomePageDashboard.jsx - Updated to pass role
 import React, { useState } from 'react';
-import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
+import { colors } from '@/lib/colors/colors';
 import { 
   Home, 
-  DollarSign, 
-  Building, 
-  Info, 
+  Tag, 
   Building2, 
+  Info, 
+  Gift, 
   Calendar, 
   Newspaper, 
-  Star,
-  Briefcase
+  Star 
 } from 'lucide-react';
-import HeroSection from '../tabPages/HeroSection';
-import DailyOffers from '../tabPages/DailyOffers';
-import OurPresence from '../tabPages/OurPresence';
-import AboutUs from '../tabPages/AboutUs';
-import KennediaGroup from '../tabPages/KennediaGroup';
-import UpcomingEvents from '../tabPages/UpcomingEvents';
-import NewsPress from '../tabPages/NewsPress';
-import GuestExp from '../tabPages/GuestExp';
-import Careers from '../tabPages/Careers';
-function HomePageDashboard() {
+import HeroSectionTab from './tabs/HeroSectionTab';
+import QuickOfferTab from './tabs/QuickOfferTab';
+import OurCollectionTab from './tabs/OurCollectionTab';
+import AboutHotelTab from './tabs/AboutHotelTab';
+import HotelOffersTab from './tabs/HotelOffersTab';
+import EventsCelebrations from './tabs/EventsCelebrations';
+import NewsSectionTab from './tabs/NewsSectionTab';
+import GuestExperienceTab from './tabs/GuestExperienceTab';
+
+function HotelHomepage() {
   const [activeTab, setActiveTab] = useState('hero');
   
   // Get user role from context/props/store
   const userRole = 'superadmin'; // or 'admin'
 
   const tabs = [
-    { id: 'hero', label: 'Hero Section', icon: Home, component: HeroSection },
-    { id: 'offers', label: 'Daily Offers', icon: DollarSign, component: DailyOffers },
-    { id: 'about', label: 'About Us', icon: Info, component: AboutUs },
-    { id: 'kennedia', label: 'Kennedia Group', icon: Building2, component: KennediaGroup },
-    { id: 'events', label: 'Upcoming Events', icon: Calendar, component: UpcomingEvents },
-    { id: 'news', label: 'News & Press', icon: Newspaper, component: NewsPress },
-    { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
-    { id: 'presence', label: 'Our Prsence', icon: Building, component: OurPresence },
-    // { id: 'careers', label: 'Careers', icon: Briefcase, component: Careers }
+    { id: 'hero', label: 'Hero Section', icon: Home, component: HeroSectionTab },
+    { id: 'quickoffer', label: 'Quick Offer', icon: Tag, component: QuickOfferTab },
+    { id: 'collection', label: 'Our Collection', icon: Building2, component: OurCollectionTab },
+    { id: 'about', label: 'About Hotel', icon: Info, component: AboutHotelTab },
+    { id: 'offers', label: 'Hotel Offers', icon: Gift, component: HotelOffersTab },
+    { id: 'events', label: 'Events & Celebrations', icon: Calendar, component: EventsCelebrations },
+    { id: 'news', label: 'News Section', icon: Newspaper, component: NewsSectionTab },
+    { id: 'guest', label: 'Guest Experience', icon: Star, component: GuestExperienceTab }
   ];
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HeroSection;
+  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HeroSectionTab;
 
   return (
     <Layout 
-      title="Home Page Management"
+      title="Hotel Homepage Management"
       subtitle="Control what visitors see on your hotel's homepage"
-      Layout role="superadmin" showActions={false}
+      role="superadmin"
+      showActions={false}
     >
       <div className="flex flex-col h-full">
         {/* Tab Navigation */}
@@ -97,4 +95,4 @@ function HomePageDashboard() {
   );
 }
 
-export default HomePageDashboard;
+export default HotelHomepage;

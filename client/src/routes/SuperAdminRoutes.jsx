@@ -19,6 +19,7 @@ import Rooms from '@/modules/superadmin/pages/Hotel/Rooms';
 import Amenities from '@/modules/superadmin/pages/Hotel/Amenities';
 import Bookings from '@/modules/superadmin/pages/Hotel/Bookings';
 import Pricing from '@/modules/superadmin/pages/Hotel/Pricing';
+import HotelHomepage from '@/modules/superadmin/pages/Hotel/HotelHomepage';
 
 // Cafe Module
 import Cafe from '@/modules/superadmin/pages/Cafe/Cafe';
@@ -115,6 +116,15 @@ const SuperAdminRoutes = [
     element={
       <ProtectedRoute>
         <Hotel />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="super-admin-hotel-homepage"
+    path="/Hotel-homepage"
+    element={
+      <ProtectedRoute>
+        <HotelHomepage />
       </ProtectedRoute>
     }
   />,

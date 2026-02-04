@@ -49,7 +49,7 @@ function Sidebar({ isOpen, onToggle }) {
         path: "/Hotel",
         hasSubmenu: true,
         submenu: [
-          { name: "Rooms", path: "/Hotel/Rooms" },
+          { name: "Homepage", path: "/Hotel-homepage" },
           { name: "Amenities", path: "/Hotel/Amenities" },
           { name: "Bookings", path: "/Hotel/Bookings" },
           { name: "Pricing", path: "/Hotel/Pricing" },

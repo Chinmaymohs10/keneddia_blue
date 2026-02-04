@@ -163,6 +163,11 @@ export const addGuestExperienceItem = (formData) =>
 export const updateGuestExperienceItem = (id, formData) =>
   API.put(`api/v1/guest-experience/${id}`, formData);
 
+//our presence section
+// v1/our-presence
+export const getOurPresenceSection = () =>API.get("/api/v1/our-presence");
+
+
 export const createOrUpdateOurPropertiesSection = (data) =>
   API.post("api/v1/our-properties/section", data);
 export const getOurPropertiesSection = () =>

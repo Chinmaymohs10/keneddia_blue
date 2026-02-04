@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -52,7 +53,8 @@ export default function PropertiesSection() {
     media: [{ url: p.image.src }],
   }));
 
-  const [apiProperties, setApiProperties] = useState<ApiProperty[]>(fallbackData);
+  const [apiProperties, setApiProperties] =
+    useState<ApiProperty[]>(fallbackData);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
@@ -98,9 +100,51 @@ export default function PropertiesSection() {
 
   const filteredProperties = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
-    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
+    const matchType =
+      selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
+  const RESAVENUE_CONFIG = {
+    baseUrl: "https://bookings.resavenue.com/resBooking4/searchRooms",
+    defaultRegCode: "TXGZ0113",
+    dateFormat: "dd/MM/yyyy",
+  };
+
+  const generateResAvenueUrl = ({
+    checkIn,
+    checkOut,
+    adults = 2,
+    regCode = RESAVENUE_CONFIG.defaultRegCode,
+  }: {
+    checkIn?: Date;
+    checkOut?: Date;
+    adults?: number;
+    regCode?: string;
+  }) => {
+    // fallback dates (same behavior as legacy HTML)
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+
+    const arr = checkIn || today;
+    const dep = checkOut || nextDay;
+
+    const arrDate = format(arr, RESAVENUE_CONFIG.dateFormat);
+    const depDate = format(dep, RESAVENUE_CONFIG.dateFormat);
+
+    const params = new URLSearchParams({
+      targetTemplate: "4",
+      regCode,
+      curr: "INR",
+      arrDate,
+      depDate,
+      arr_date: arrDate,
+      dep_date: depDate,
+      adult_1: String(adults),
+    });
+
+    return `${RESAVENUE_CONFIG.baseUrl}?${params.toString()}`;
+  };
 
   // Helper function to create URL slug from city name
   const getCitySlug = (city: string) => city.toLowerCase().replace(/\s+/g, "-");
@@ -113,13 +157,16 @@ export default function PropertiesSection() {
   useEffect(() => {
     if (filteredProperties.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev >= filteredProperties.length - 1 ? 0 : prev + 1));
+      setActiveIndex((prev) =>
+        prev >= filteredProperties.length - 1 ? 0 : prev + 1,
+      );
     }, 8000);
     return () => clearInterval(interval);
   }, [filteredProperties.length]);
 
   const activeProperty = filteredProperties[activeIndex];
-  const nextProperty = filteredProperties[(activeIndex + 1) % filteredProperties.length];
+  const nextProperty =
+    filteredProperties[(activeIndex + 1) % filteredProperties.length];
 
   const handleShare = async (property: ApiProperty) => {
     const shareData = {
@@ -135,6 +182,20 @@ export default function PropertiesSection() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+  const handleExternalBook = (property: ApiProperty) => {
+    try {
+      const bookingUrl = generateResAvenueUrl({
+        regCode: RESAVENUE_CONFIG.defaultRegCode,
+        adults: 2,
+      });
+
+      console.log("Redirecting to:", bookingUrl);
+
+      window.open(bookingUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      console.error("Booking redirect failed:", e);
     }
   };
 
@@ -162,7 +223,9 @@ export default function PropertiesSection() {
               </h2>
               <div className="w-12 md:w-16 h-0.5 bg-primary rounded-full" />
             </div>
-            {loading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
+            {loading && (
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -240,7 +303,10 @@ export default function PropertiesSection() {
 
                         <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                           {filteredProperties.map((_, idx) => (
-                            <div key={idx} className="flex flex-col items-start gap-1">
+                            <div
+                              key={idx}
+                              className="flex flex-col items-start gap-1"
+                            >
                               <span
                                 className={`text-[10px] md:text-xs font-medium ${idx === activeIndex ? "text-white" : "text-white/40"}`}
                               >
@@ -271,7 +337,9 @@ export default function PropertiesSection() {
                         <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
                           <div className="flex items-center text-white/90">
                             <MapPin className="w-3.5 md:w-4 h-3.5 md:h-4 mr-1.5 md:mr-2" />
-                            <span className="text-xs md:text-sm font-medium">{property.city}</span>
+                            <span className="text-xs md:text-sm font-medium">
+                              {property.city}
+                            </span>
                           </div>
                           {property.rating && (
                             <div className="flex items-center gap-1 md:gap-1.5 bg-white/20 backdrop-blur-sm px-2 md:px-3 py-1 md:py-1.5 rounded-full">
@@ -303,7 +371,11 @@ export default function PropertiesSection() {
                   {filteredProperties.length > 1 && index === activeIndex && (
                     <div
                       className="hidden md:block absolute bottom-4 lg:bottom-6 right-4 lg:right-6 group cursor-pointer"
-                      onClick={() => setActiveIndex((activeIndex + 1) % filteredProperties.length)}
+                      onClick={() =>
+                        setActiveIndex(
+                          (activeIndex + 1) % filteredProperties.length,
+                        )
+                      }
                     >
                       <div className="relative w-16 h-16 lg:w-24 lg:h-24 rounded-full overflow-hidden border-2 lg:border-4 border-white/30 shadow-xl transition-transform duration-300 group-hover:scale-110">
                         <OptimizedImage
@@ -312,7 +384,9 @@ export default function PropertiesSection() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-white text-[10px] lg:text-xs font-semibold">Next</span>
+                          <span className="text-white text-[10px] lg:text-xs font-semibold">
+                            Next
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -346,18 +420,24 @@ export default function PropertiesSection() {
                         Base Price
                       </p>
                       <p className="text-lg font-bold text-foreground">
-                        {activeProperty.price ? `₹${activeProperty.price.toLocaleString()}` : "N/A"}
+                        {activeProperty.price
+                          ? `₹${activeProperty.price.toLocaleString()}`
+                          : "N/A"}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2 pt-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground uppercase tracking-tight">GST</span>
+                      <span className="text-muted-foreground uppercase tracking-tight">
+                        GST
+                      </span>
                       <span className="font-medium text-destructive">N/A</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground uppercase tracking-tight">Discount</span>
+                      <span className="text-muted-foreground uppercase tracking-tight">
+                        Discount
+                      </span>
                       <span className="font-medium text-destructive">N/A</span>
                     </div>
 
@@ -366,10 +446,14 @@ export default function PropertiesSection() {
                         Total Amount
                       </span>
                       <span className="text-xl lg:text-2xl font-bold text-primary">
-                        {activeProperty.price ? `₹${activeProperty.price.toLocaleString()}` : "N/A"}
+                        {activeProperty.price
+                          ? `₹${activeProperty.price.toLocaleString()}`
+                          : "N/A"}
                         {activeProperty.price && (
                           <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                            {activeProperty.propertyType === "Hotel" ? "/night" : "/person"}
+                            {activeProperty.propertyType === "Hotel"
+                              ? "/night"
+                              : "/person"}
                           </span>
                         )}
                       </span>
@@ -382,35 +466,44 @@ export default function PropertiesSection() {
                     Top Amenities
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {activeProperty.amenities?.slice(0, 4).map((amenity, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                        <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary rounded-full flex-shrink-0" />
-                        <span className="truncate">{amenity}</span>
-                      </div>
-                    ))}
+                    {activeProperty.amenities
+                      ?.slice(0, 4)
+                      .map((amenity, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground"
+                        >
+                          <div className="w-1 md:w-1.5 h-1 md:h-1.5 bg-primary rounded-full flex-shrink-0" />
+                          <span className="truncate">{amenity}</span>
+                        </div>
+                      ))}
                   </div>
                 </div>
 
                 <div className="pt-5">
                   <div className="space-y-2 md:space-y-3">
                     {(() => {
-                      const btn = getActionButtonText(activeProperty.propertyType);
+                      const btn = getActionButtonText(
+                        activeProperty.propertyType,
+                      );
                       return (
                         <>
-                          <Link
-                            to={getPropertyDetailUrl(activeProperty)}
+                          <button
+                            onClick={() => handleExternalBook(activeProperty)}
                             className="w-full py-2 md:py-2.5 lg:py-3 bg-primary text-primary-foreground font-bold uppercase tracking-wider rounded-lg hover:bg-primary/90 transition-all shadow-md flex items-center justify-center gap-2 text-xs md:text-sm"
                           >
-                            {btn.primary} <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4" />
-                          </Link>
-                          {btn.secondary && (
-                            <Link
-                              to={getPropertyDetailUrl(activeProperty)}
-                              className="w-full py-2 md:py-2.5 lg:py-3 bg-background border-2 border-primary text-primary font-bold uppercase tracking-wider rounded-lg hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
+                            {btn.primary}{" "}
+                            <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4" />
+                          </button>
+
+                          {/* {btn.secondary && (
+                            <button
+                              onClick={() => handleExternalBook(activeProperty)}
+                              className="w-full py-2 md:py-2.5 lg:py-3 bg-background border-2 border-primary text-primary ..."
                             >
-                              {btn.secondary} <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4" />
-                            </Link>
-                          )}
+                              {btn.secondary} <ArrowRight />
+                            </button>
+                          )} */}
                         </>
                       );
                     })()}
@@ -429,7 +522,9 @@ export default function PropertiesSection() {
           </div>
         ) : (
           <div className="text-center py-20 bg-secondary/10 rounded-xl border border-dashed border-primary/20">
-            <p className="text-muted-foreground">No matching properties found.</p>
+            <p className="text-muted-foreground">
+              No matching properties found.
+            </p>
           </div>
         )}
       </div>
