@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import { colors } from "@/lib/colors/colors";
-import { Plus, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { createOrUpdateKennediaGroup, getKennediaGroup } from '@/Api/Api';
-import { toast } from 'react-hot-toast';
+import { Plus, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { createOrUpdateKennediaGroup, getKennediaGroup } from "@/Api/Api";
+import { toast } from "react-hot-toast";
 
 function KennediaGroup() {
   const [headerSettings, setHeaderSettings] = useState({
-    mainTitle: '',
-    subTitle: ''
+    mainTitle: "",
+    subTitle: "",
   });
 
   const [centerLogoSettings, setCenterLogoSettings] = useState({
-    logoText: '',
-    logoSubText: ''
+    logoText: "",
+    logoSubText: "",
   });
 
   const [businessDivisions, setBusinessDivisions] = useState([]);
@@ -26,38 +26,40 @@ function KennediaGroup() {
     try {
       setFetching(true);
       const response = await getKennediaGroup();
-      
+
       if (response.data) {
         // Handle both single object and array responses
-        const data = Array.isArray(response.data) 
-          ? response.data[0] 
+        const data = Array.isArray(response.data)
+          ? response.data[0]
           : response.data;
-        
+
         if (data) {
           setExistingData(data);
-          
+
           // Populate header settings
           setHeaderSettings({
-            mainTitle: data.mainTitle || '',
-            subTitle: data.subTitle || ''
+            mainTitle: data.mainTitle || "",
+            subTitle: data.subTitle || "",
           });
 
           // Populate center logo settings
           setCenterLogoSettings({
-            logoText: data.logoText || '',
-            logoSubText: data.logoSubText || ''
+            logoText: data.logoText || "",
+            logoSubText: data.logoSubText || "",
           });
 
           // Populate business divisions
           if (data.divisions && Array.isArray(data.divisions)) {
-            setBusinessDivisions(data.divisions.map(div => ({
-              id: div.id || Date.now() + Math.random(),
-              icon: div.icon || '',
-              title: div.title || '',
-              description: div.description || '',
-              displayOrder: div.displayOrder || 1,
-              isExisting: true
-            })));
+            setBusinessDivisions(
+              data.divisions.map((div) => ({
+                id: div.id || Date.now() + Math.random(),
+                icon: div.icon || "",
+                title: div.title || "",
+                description: div.description || "",
+                displayOrder: div.displayOrder || 1,
+                isExisting: true,
+              })),
+            );
           }
 
           console.log("Kennedia Group Data:", data);
@@ -65,13 +67,13 @@ function KennediaGroup() {
       } else {
         // Set default values if no data
         setHeaderSettings({
-          mainTitle: 'Kennedia Group',
-          subTitle: 'A Diverse ecosystem of luxury hospitality brands'
+          mainTitle: "Kennedia Group",
+          subTitle: "A Diverse ecosystem of luxury hospitality brands",
         });
-        
+
         setCenterLogoSettings({
-          logoText: 'KB',
-          logoSubText: 'Group'
+          logoText: "KB",
+          logoSubText: "Group",
         });
       }
     } catch (error) {
@@ -80,16 +82,16 @@ function KennediaGroup() {
       if (error.response?.status !== 404) {
         toast.error("Failed to load Kennedia Group data");
       }
-      
+
       // Set default values on error
       setHeaderSettings({
-        mainTitle: 'Kennedia Group',
-        subTitle: 'A Diverse ecosystem of luxury hospitality brands'
+        mainTitle: "Kennedia Group",
+        subTitle: "A Diverse ecosystem of luxury hospitality brands",
       });
-      
+
       setCenterLogoSettings({
-        logoText: 'KB',
-        logoSubText: 'Group'
+        logoText: "KB",
+        logoSubText: "Group",
       });
     } finally {
       setFetching(false);
@@ -101,47 +103,55 @@ function KennediaGroup() {
   }, []);
 
   const handleAddDivision = () => {
+    if (businessDivisions.length >= 5) {
+      toast.error("You can only add up to 5 business divisions");
+      return;
+    }
     const newDivision = {
       id: Date.now(),
-      icon: '',
-      title: '',
-      description: '',
+      icon: "",
+      title: "",
+      description: "",
       displayOrder: businessDivisions.length + 1,
-      isExisting: false
+      isExisting: false,
     };
     setBusinessDivisions([...businessDivisions, newDivision]);
   };
 
   const handleDeleteDivision = (id) => {
-    setBusinessDivisions(businessDivisions.filter(d => d.id !== id));
+    setBusinessDivisions(businessDivisions.filter((d) => d.id !== id));
   };
 
   const handleDivisionChange = (id, field, value) => {
-    setBusinessDivisions(businessDivisions.map(d => 
-      d.id === id ? { ...d, [field]: value } : d
-    ));
+    setBusinessDivisions(
+      businessDivisions.map((d) =>
+        d.id === id ? { ...d, [field]: value } : d,
+      ),
+    );
   };
 
   const handleMoveDivision = (index, direction) => {
     if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === businessDivisions.length - 1)
+      (direction === "up" && index === 0) ||
+      (direction === "down" && index === businessDivisions.length - 1)
     ) {
       return;
     }
 
     const newDivisions = [...businessDivisions];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
     // Swap divisions
-    [newDivisions[index], newDivisions[targetIndex]] = 
-    [newDivisions[targetIndex], newDivisions[index]];
-    
+    [newDivisions[index], newDivisions[targetIndex]] = [
+      newDivisions[targetIndex],
+      newDivisions[index],
+    ];
+
     // Update display orders
     newDivisions.forEach((div, idx) => {
       div.displayOrder = idx + 1;
     });
-    
+
     setBusinessDivisions(newDivisions);
   };
 
@@ -194,26 +204,25 @@ function KennediaGroup() {
         subTitle: headerSettings.subTitle,
         logoText: centerLogoSettings.logoText,
         logoSubText: centerLogoSettings.logoSubText,
-        divisions: businessDivisions.map(div => ({
+        divisions: businessDivisions.map((div) => ({
           icon: div.icon,
           title: div.title,
           description: div.description,
-          displayOrder: div.displayOrder
-        }))
+          displayOrder: div.displayOrder,
+        })),
       };
 
       const response = await createOrUpdateKennediaGroup(payload);
-      
+
       toast.success("Kennedia Group saved successfully!");
       console.log("Response:", response.data);
 
       // Refresh data after successful save
       await fetchKennediaGroup();
-      
     } catch (error) {
       console.error("Error saving Kennedia Group:", error);
       toast.error(
-        error.response?.data?.message || "Failed to save Kennedia Group"
+        error.response?.data?.message || "Failed to save Kennedia Group",
       );
     } finally {
       setLoading(false);
@@ -228,8 +237,14 @@ function KennediaGroup() {
         style={{ backgroundColor: colors.contentBg }}
       >
         <div className="flex flex-col items-center gap-3">
-          <Loader2 size={32} className="animate-spin" style={{ color: colors.primary }} />
-          <p style={{ color: colors.textSecondary }}>Loading Kennedia Group data...</p>
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: colors.primary }}
+          />
+          <p style={{ color: colors.textSecondary }}>
+            Loading Kennedia Group data...
+          </p>
         </div>
       </div>
     );
@@ -238,11 +253,11 @@ function KennediaGroup() {
   return (
     <div className="space-y-3">
       {/* Header Settings */}
-      <div 
+      <div
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
-        <h3 
+        <h3
           className="text-sm font-semibold mb-4"
           style={{ color: colors.textPrimary }}
         >
@@ -251,7 +266,7 @@ function KennediaGroup() {
 
         <div className="space-y-3">
           <div>
-            <label 
+            <label
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
@@ -260,19 +275,24 @@ function KennediaGroup() {
             <input
               type="text"
               value={headerSettings.mainTitle}
-              onChange={(e) => setHeaderSettings({...headerSettings, mainTitle: e.target.value})}
+              onChange={(e) =>
+                setHeaderSettings({
+                  ...headerSettings,
+                  mainTitle: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
+              style={{
                 borderColor: colors.border,
                 backgroundColor: colors.mainBg,
-                color: colors.textPrimary
+                color: colors.textPrimary,
               }}
               placeholder="Kennedia Group"
             />
           </div>
 
           <div>
-            <label 
+            <label
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
@@ -281,12 +301,17 @@ function KennediaGroup() {
             <input
               type="text"
               value={headerSettings.subTitle}
-              onChange={(e) => setHeaderSettings({...headerSettings, subTitle: e.target.value})}
+              onChange={(e) =>
+                setHeaderSettings({
+                  ...headerSettings,
+                  subTitle: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
+              style={{
                 borderColor: colors.border,
                 backgroundColor: colors.mainBg,
-                color: colors.textPrimary
+                color: colors.textPrimary,
               }}
               placeholder="A Diverse ecosystem of luxury hospitality brands"
             />
@@ -295,11 +320,11 @@ function KennediaGroup() {
       </div>
 
       {/* Center Logo Settings */}
-      <div 
+      <div
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
-        <h3 
+        <h3
           className="text-sm font-semibold mb-4"
           style={{ color: colors.textPrimary }}
         >
@@ -308,7 +333,7 @@ function KennediaGroup() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label 
+            <label
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
@@ -317,19 +342,24 @@ function KennediaGroup() {
             <input
               type="text"
               value={centerLogoSettings.logoText}
-              onChange={(e) => setCenterLogoSettings({...centerLogoSettings, logoText: e.target.value})}
+              onChange={(e) =>
+                setCenterLogoSettings({
+                  ...centerLogoSettings,
+                  logoText: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
+              style={{
                 borderColor: colors.border,
                 backgroundColor: colors.mainBg,
-                color: colors.textPrimary
+                color: colors.textPrimary,
               }}
               placeholder="KB"
             />
           </div>
 
           <div>
-            <label 
+            <label
               className="block text-xs font-medium mb-1.5"
               style={{ color: colors.textSecondary }}
             >
@@ -338,12 +368,17 @@ function KennediaGroup() {
             <input
               type="text"
               value={centerLogoSettings.logoSubText}
-              onChange={(e) => setCenterLogoSettings({...centerLogoSettings, logoSubText: e.target.value})}
+              onChange={(e) =>
+                setCenterLogoSettings({
+                  ...centerLogoSettings,
+                  logoSubText: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 rounded border text-sm"
-              style={{ 
+              style={{
                 borderColor: colors.border,
                 backgroundColor: colors.mainBg,
-                color: colors.textPrimary
+                color: colors.textPrimary,
               }}
               placeholder="Group"
             />
@@ -352,12 +387,12 @@ function KennediaGroup() {
       </div>
 
       {/* Business Divisions */}
-      <div 
+      <div
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 
+          <h3
             className="text-sm font-semibold m-0"
             style={{ color: colors.textPrimary }}
           >
@@ -365,10 +400,11 @@ function KennediaGroup() {
           </h3>
           <button
             onClick={handleAddDivision}
+            disabled={businessDivisions.length >= 5}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-            style={{ 
+            style={{
               backgroundColor: colors.primary,
-              color: '#ffffff'
+              color: "#ffffff",
             }}
           >
             <Plus size={16} />
@@ -377,7 +413,7 @@ function KennediaGroup() {
         </div>
 
         {businessDivisions.length === 0 ? (
-          <div 
+          <div
             className="text-center py-8 text-sm"
             style={{ color: colors.textSecondary }}
           >
@@ -389,14 +425,14 @@ function KennediaGroup() {
               <div
                 key={division.id}
                 className="rounded-lg p-4 border"
-                style={{ 
+                style={{
                   backgroundColor: colors.mainBg,
-                  borderColor: colors.border
+                  borderColor: colors.border,
                 }}
               >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <label 
+                    <label
                       className="block text-xs font-medium mb-1.5"
                       style={{ color: colors.textSecondary }}
                     >
@@ -405,19 +441,25 @@ function KennediaGroup() {
                     <input
                       type="text"
                       value={division.icon}
-                      onChange={(e) => handleDivisionChange(division.id, 'icon', e.target.value)}
+                      onChange={(e) =>
+                        handleDivisionChange(
+                          division.id,
+                          "icon",
+                          e.target.value,
+                        )
+                      }
                       className="w-full px-2.5 py-1.5 rounded border text-sm"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
                         backgroundColor: colors.contentBg,
-                        color: colors.textPrimary
+                        color: colors.textPrimary,
                       }}
                       placeholder="HOTEL"
                     />
                   </div>
 
                   <div>
-                    <label 
+                    <label
                       className="block text-xs font-medium mb-1.5"
                       style={{ color: colors.textSecondary }}
                     >
@@ -426,19 +468,25 @@ function KennediaGroup() {
                     <input
                       type="text"
                       value={division.title}
-                      onChange={(e) => handleDivisionChange(division.id, 'title', e.target.value)}
+                      onChange={(e) =>
+                        handleDivisionChange(
+                          division.id,
+                          "title",
+                          e.target.value,
+                        )
+                      }
                       className="w-full px-2.5 py-1.5 rounded border text-sm"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
                         backgroundColor: colors.contentBg,
-                        color: colors.textPrimary
+                        color: colors.textPrimary,
                       }}
                       placeholder="Hotels & Resorts"
                     />
                   </div>
 
                   <div>
-                    <label 
+                    <label
                       className="block text-xs font-medium mb-1.5"
                       style={{ color: colors.textSecondary }}
                     >
@@ -447,19 +495,25 @@ function KennediaGroup() {
                     <input
                       type="text"
                       value={division.description}
-                      onChange={(e) => handleDivisionChange(division.id, 'description', e.target.value)}
+                      onChange={(e) =>
+                        handleDivisionChange(
+                          division.id,
+                          "description",
+                          e.target.value,
+                        )
+                      }
                       className="w-full px-2.5 py-1.5 rounded border text-sm"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
                         backgroundColor: colors.contentBg,
-                        color: colors.textPrimary
+                        color: colors.textPrimary,
                       }}
                       placeholder="Luxury stays globally"
                     />
                   </div>
 
                   <div>
-                    <label 
+                    <label
                       className="block text-xs font-medium mb-1.5"
                       style={{ color: colors.textSecondary }}
                     >
@@ -468,12 +522,18 @@ function KennediaGroup() {
                     <input
                       type="number"
                       value={division.displayOrder}
-                      onChange={(e) => handleDivisionChange(division.id, 'displayOrder', parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        handleDivisionChange(
+                          division.id,
+                          "displayOrder",
+                          parseInt(e.target.value) || 1,
+                        )
+                      }
                       className="w-full px-2.5 py-1.5 rounded border text-sm"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
                         backgroundColor: colors.contentBg,
-                        color: colors.textPrimary
+                        color: colors.textPrimary,
                       }}
                       placeholder="1"
                       min="1"
@@ -481,32 +541,41 @@ function KennediaGroup() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: colors.border }}>
+                <div
+                  className="flex items-center justify-between mt-3 pt-3 border-t"
+                  style={{ borderColor: colors.border }}
+                >
                   {/* Reorder buttons */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleMoveDivision(index, 'up')}
+                      onClick={() => handleMoveDivision(index, "up")}
                       disabled={index === 0}
                       className="p-1.5 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
-                        backgroundColor: colors.contentBg
+                        backgroundColor: colors.contentBg,
                       }}
                       title="Move up"
                     >
-                      <ChevronLeft size={16} style={{ color: colors.textSecondary }} />
+                      <ChevronLeft
+                        size={16}
+                        style={{ color: colors.textSecondary }}
+                      />
                     </button>
                     <button
-                      onClick={() => handleMoveDivision(index, 'down')}
+                      onClick={() => handleMoveDivision(index, "down")}
                       disabled={index === businessDivisions.length - 1}
                       className="p-1.5 rounded border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ 
+                      style={{
                         borderColor: colors.border,
-                        backgroundColor: colors.contentBg
+                        backgroundColor: colors.contentBg,
                       }}
                       title="Move down"
                     >
-                      <ChevronRight size={16} style={{ color: colors.textSecondary }} />
+                      <ChevronRight
+                        size={16}
+                        style={{ color: colors.textSecondary }}
+                      />
                     </button>
                   </div>
 
@@ -514,9 +583,9 @@ function KennediaGroup() {
                   <button
                     onClick={() => handleDeleteDivision(division.id)}
                     className="px-3 py-1.5 rounded text-xs font-medium transition-colors"
-                    style={{ 
+                    style={{
                       backgroundColor: colors.danger,
-                      color: '#ffffff'
+                      color: "#ffffff",
                     }}
                   >
                     <Trash2 size={14} className="inline mr-1" />
@@ -530,7 +599,7 @@ function KennediaGroup() {
       </div>
 
       {/* Submit Button */}
-      <div 
+      <div
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
@@ -559,7 +628,9 @@ function KennediaGroup() {
               <span>Saving...</span>
             </>
           ) : (
-            <span>{existingData ? 'Update Kennedia Group' : 'Save Kennedia Group'}</span>
+            <span>
+              {existingData ? "Update Kennedia Group" : "Save Kennedia Group"}
+            </span>
           )}
         </button>
       </div>
