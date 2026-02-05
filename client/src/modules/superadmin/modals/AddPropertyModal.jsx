@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { X, Upload, Building2, MapPin, Star, Users, DollarSign, Tag, Plus, Sparkles, Image as ImageIcon, Loader2, Trash2, CheckCircle2, Link as LinkIcon, Info } from "lucide-react";
+import { 
+  X, Upload, Building2, MapPin, DollarSign, Tag, 
+  Plus, Sparkles, Image as ImageIcon, Loader2, 
+  CheckCircle2, Info, ChevronRight, Save, Percent 
+} from "lucide-react";
 import { colors } from "@/lib/colors/colors";
 import {
-  getAllProperties,
   getPropertyTypes,
   getAllLocations,
   getUsersPaginated,
   createPropertyListing,
-  createAmenityFeature,
   getAllAmenityFeatures,
   PropertyUploadMedia,
   createPropertyByType
@@ -15,14 +17,13 @@ import {
 import { toast } from "react-hot-toast";
 
 function AddPropertyModal({ onClose, onSuccess }) {
-  const [currentStep, setCurrentStep] = useState(1); // 1: Base Property, 2: Listing Details, 3: Media
-  const [createdPropertyListingId, setCreatedPropertyListingId] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // --- STEP 1: Parent Property State ---
+  // --- STEP 1: Base Property State ---
   const [parentData, setParentData] = useState({
     propertyName: "",
-    propertyTypeIds: "", // Used to get typeName and then passed in array
+    propertyTypeIds: "",
     propertyCategoryIds: [1],
     address: "",
     area: "",
@@ -34,28 +35,23 @@ function AddPropertyModal({ onClose, onSuccess }) {
     isActive: true
   });
 
-  // --- STEP 2: Listing Details State ---
+  // --- STEP 2: Listing Details State (Updated with GST/Discount) ---
   const [listingData, setListingData] = useState({
-    propertyId: "",
-    assignedAdminId: "",
-    propertyName: "",
-    propertyType: "",
-    city: "",
     mainHeading: "",
     subTitle: "",
     fullAddress: "",
     tagline: "",
     rating: null,
     capacity: null,
-    price: "",
+    price: "",           // Base Price
+    gstPercentage: 18,    // Default GST
+    discountAmount: 0,   // Flat Discount
     amenitiesAndFeaturesIds: [],
     isActive: true
   });
 
-  // --- STEP 3: Media States ---
+  // --- STEP 3: Media State ---
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [mediaUrls, setMediaUrls] = useState([""]);
-  const [uploadingMedia, setUploadingMedia] = useState(false);
 
   // --- Dropdown States ---
   const [propertyTypes, setPropertyTypes] = useState([]);
@@ -85,246 +81,252 @@ function AddPropertyModal({ onClose, onSuccess }) {
     }
   };
 
-  // --- Handle Step 1: Create Base Property ---
-  const handleParentSubmit = async (e) => {
-    e.preventDefault();
-    
-    const selectedTypeObj = propertyTypes.find(t => t.id.toString() === parentData.propertyTypeIds.toString());
-    
-    if (!parentData.propertyName || !selectedTypeObj || !parentData.locationId) {
-      toast.error("Please fill all required fields");
-      return;
+  // --- Real-time Price Calculation ---
+  const calculateTotal = () => {
+    const base = parseFloat(listingData.price) || 0;
+    const gst = (base * (parseFloat(listingData.gstPercentage) || 0)) / 100;
+    const disc = parseFloat(listingData.discountAmount) || 0;
+    return (base + gst - disc).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  };
+
+  // --- Final Submission Chain ---
+  const handleFinalSubmit = async () => {
+    // Basic Validation
+    if (!parentData.propertyName || !parentData.propertyTypeIds || !parentData.locationId) {
+      setCurrentStep(1);
+      return toast.error("Please fill required fields in Base Info");
     }
-
-    setLoading(true);
-    try {
-      // API Format: createPropertyByType(typeName, data)
-      const typeName = selectedTypeObj.typeName; 
-      const payload = {
-        propertyName: parentData.propertyName,
-        propertyTypeIds: [parseInt(parentData.propertyTypeIds)],
-        propertyCategoryIds: parentData.propertyCategoryIds,
-        address: parentData.address,
-        area: parentData.area,
-        pincode: parentData.pincode,
-        locationId: parseInt(parentData.locationId),
-        assignedAdminId: parseInt(parentData.assignedAdminId),
-        parentPropertyId: null,
-        childPropertyIds: null,
-        isActive: true
-      };
-
-      const res = await createPropertyByType(typeName, payload);
-      const newBaseProperty = res?.data || res;
-      
-      toast.success(`${typeName} Property Created!`);
-
-      // AUTO-POPULATE Step 2
-      const selectedLoc = locations.find(l => l.id.toString() === parentData.locationId.toString());
-
-      setListingData(prev => ({
-        ...prev,
-        propertyId: newBaseProperty.id,
-        propertyName: parentData.propertyName,
-        assignedAdminId: parentData.assignedAdminId,
-        fullAddress: parentData.address,
-        city: selectedLoc?.locationName || "",
-        propertyType: typeName,
-        mainHeading: parentData.propertyName
-      }));
-
+    if (!listingData.mainHeading || !listingData.price) {
       setCurrentStep(2);
-    } catch (err) {
-      toast.error("Failed to create property");
-    } finally {
-      setLoading(false);
+      return toast.error("Please fill required fields in Listing Details");
     }
-  };
 
-  // --- Handle Step 2: Create Listing ---
-  const handleListingSubmit = async (e) => {
-    e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading("Creating property portfolio...");
+
     try {
-      const payload = {
-        ...listingData,
-        propertyId: parseInt(listingData.propertyId),
-        assignedAdminId: parseInt(listingData.assignedAdminId),
-        price: parseFloat(listingData.price),
-        rating: listingData.rating ? parseFloat(listingData.rating) : null,
-        capacity: listingData.capacity ? parseInt(listingData.capacity) : null,
+      // 1. Create Base Property
+      const selectedTypeObj = propertyTypes.find(t => t.id.toString() === parentData.propertyTypeIds.toString());
+      const typeName = selectedTypeObj.typeName;
+      
+      const parentPayload = {
+        ...parentData,
+        propertyTypeIds: [parseInt(parentData.propertyTypeIds)],
+        locationId: parseInt(parentData.locationId),
+        assignedAdminId: parseInt(parentData.assignedAdminId)
       };
 
-      const response = await createPropertyListing(payload);
-      setCreatedPropertyListingId(response?.data?.id || response?.id);
-      
-      toast.success("Listing details saved");
-      setCurrentStep(3);
+      const parentRes = await createPropertyByType(typeName, parentPayload);
+      const newPropertyId = parentRes?.data?.id || parentRes?.id;
+
+      // 2. Create Listing
+      const listingPayload = {
+        ...listingData,
+        propertyId: newPropertyId,
+        assignedAdminId: parseInt(parentData.assignedAdminId),
+        price: parseFloat(listingData.price),
+        gstPercentage: parseFloat(listingData.gstPercentage),
+        discountAmount: parseFloat(listingData.discountAmount),
+      };
+
+      const listingRes = await createPropertyListing(listingPayload);
+      const newListingId = listingRes?.data?.id || listingRes?.id;
+
+      // 3. Upload Media
+      if (selectedFiles.length > 0) {
+        const formData = new FormData();
+        formData.append('propertyListingId', newListingId);
+        formData.append('mediaType', 'IMAGE');
+        selectedFiles.forEach(file => formData.append('files', file));
+        await PropertyUploadMedia(formData);
+      }
+
+      toast.success("Property Setup Successfully!", { id: toastId });
+      onSuccess();
+      onClose();
     } catch (err) {
-      toast.error("Failed to create listing");
+      console.error(err);
+      toast.error("Process failed. Please check inputs.", { id: toastId });
     } finally {
       setLoading(false);
-    }
-  };
-
-  // --- Media Upload Logic (Step 3) ---
-  const handleMediaUpload = async () => {
-    setUploadingMedia(true);
-    try {
-      const formData = new FormData();
-      formData.append('propertyListingId', createdPropertyListingId);
-      formData.append('mediaType', 'IMAGE');
-      selectedFiles.forEach(file => formData.append('files', file));
-
-      await PropertyUploadMedia(formData);
-      toast.success("Setup Complete!");
-      onSuccess();
-    } catch (err) {
-      toast.error("Media upload failed");
-    } finally {
-      setUploadingMedia(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" style={{ backgroundColor: colors.contentBg }}>
+      <div className="rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col bg-white">
         
         {/* Header */}
-        <div className="p-6 border-b flex items-center justify-between bg-white">
+        <div className="p-6 border-b flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold" style={{ color: colors.textPrimary }}>
-              {currentStep === 1 ? "1. Create Base Property" : currentStep === 2 ? "2. Add Listing Details" : "3. Upload Media"}
-            </h2>
+            <h2 className="text-xl font-bold text-gray-800">Add New Property</h2>
+            <p className="text-xs text-gray-500">Configure your property listing across all tabs</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X size={20} /></button>
         </div>
 
-        {/* Step Indicator */}
-        <div className="flex border-b bg-gray-50">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className={`flex-1 text-center py-3 text-xs font-bold uppercase tracking-widest ${currentStep === step ? 'border-b-2 text-primary bg-white' : 'text-gray-400'}`} style={{ borderBottomColor: currentStep === step ? colors.primary : 'transparent', color: currentStep === step ? colors.primary : '' }}>
-              Step {step}
-            </div>
+        {/* Clickable Tabs */}
+        <div className="flex px-6 bg-gray-50 border-b overflow-x-auto scrollbar-hide">
+          {[
+            { id: 1, label: "Base Info", icon: <Building2 size={16} /> },
+            { id: 2, label: "Listing Details", icon: <Sparkles size={16} /> },
+            { id: 3, label: "Gallery", icon: <ImageIcon size={16} /> }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setCurrentStep(tab.id)}
+              className={`flex items-center gap-2 px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap flex-shrink-0 ${
+                currentStep === tab.id ? 'border-primary text-primary bg-white' : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}
+              style={{ borderBottomColor: currentStep === tab.id ? colors.primary : 'transparent', color: currentStep === tab.id ? colors.primary : '' }}
+            >
+              {tab.icon} {tab.label}
+            </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* STEP 1 */}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-8">
+          
+          {/* STEP 1: BASE INFO */}
           {currentStep === 1 && (
-            <form onSubmit={handleParentSubmit} className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Property Name *</label>
-                <input type="text" className="w-full px-4 py-2 border rounded-lg" value={parentData.propertyName} onChange={e => setParentData({...parentData, propertyName: e.target.value})} placeholder="Grand Palace" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Property Name *</label>
+                <input type="text" className="w-full px-4 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary" value={parentData.propertyName} onChange={e => setParentData({...parentData, propertyName: e.target.value})} placeholder="e.g. Grand Palace Hotel" />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Property Type *</label>
-                <select className="w-full px-4 py-2 border rounded-lg" value={parentData.propertyTypeIds} onChange={e => setParentData({...parentData, propertyTypeIds: e.target.value})}>
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Type *</label>
+                <select className="w-full px-4 py-2.5 border rounded-xl outline-none" value={parentData.propertyTypeIds} onChange={e => setParentData({...parentData, propertyTypeIds: e.target.value})}>
                   <option value="">Select Type</option>
                   {propertyTypes.map(t => <option key={t.id} value={t.id}>{t.typeName}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Location *</label>
-                <select className="w-full px-4 py-2 border rounded-lg" value={parentData.locationId} onChange={e => setParentData({...parentData, locationId: e.target.value})}>
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Location *</label>
+                <select className="w-full px-4 py-2.5 border rounded-xl outline-none" value={parentData.locationId} onChange={e => setParentData({...parentData, locationId: e.target.value})}>
                   <option value="">Select Location</option>
                   {locations.map(l => <option key={l.id} value={l.id}>{l.locationName}</option>)}
                 </select>
               </div>
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Address</label>
-                <input type="text" className="w-full px-4 py-2 border rounded-lg" value={parentData.address} onChange={e => setParentData({...parentData, address: e.target.value})} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Area</label>
-                <input type="text" className="w-full px-4 py-2 border rounded-lg" value={parentData.area} onChange={e => setParentData({...parentData, area: e.target.value})} />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Pincode</label>
-                <input type="text" className="w-full px-4 py-2 border rounded-lg" value={parentData.pincode} onChange={e => setParentData({...parentData, pincode: e.target.value})} />
-              </div>
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Admin</label>
-                <select className="w-full px-4 py-2 border rounded-lg" value={parentData.assignedAdminId} onChange={e => setParentData({...parentData, assignedAdminId: e.target.value})}>
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Admin</label>
+                <select className="w-full px-4 py-2.5 border rounded-xl outline-none" value={parentData.assignedAdminId} onChange={e => setParentData({...parentData, assignedAdminId: e.target.value})}>
                   <option value="">Select Admin</option>
                   {admins.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
-              <div className="col-span-2 flex justify-end mt-4">
-                <button type="submit" disabled={loading} className="px-8 py-3 bg-primary text-white font-bold rounded-lg flex items-center gap-2" style={{ backgroundColor: colors.primary }}>
-                  {loading ? <Loader2 className="animate-spin" /> : "Create Property & Next"}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* STEP 2 */}
-          {currentStep === 2 && (
-            <form onSubmit={handleListingSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-5">
-                <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg flex gap-3">
-                  <Info className="text-blue-500" size={20} />
-                  <p className="text-xs text-blue-700">Property Details linked. Now add listing specifics.</p>
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Main Heading *</label>
-                  <input type="text" className="w-full px-4 py-2 border rounded-lg" value={listingData.mainHeading} onChange={e => setListingData({...listingData, mainHeading: e.target.value})} />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Tagline *</label>
-                  <textarea className="w-full px-4 py-2 border rounded-lg h-20 resize-none" value={listingData.tagline} onChange={e => setListingData({...listingData, tagline: e.target.value})} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Price *</label>
-                     <input type="number" className="w-full px-4 py-2 border rounded-lg" value={listingData.price} onChange={e => setListingData({...listingData, price: e.target.value})} />
-                   </div>
-                   <div>
-                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Rating</label>
-                     <input type="number" step="0.1" className="w-full px-4 py-2 border rounded-lg" value={listingData.rating || ""} onChange={e => setListingData({...listingData, rating: e.target.value})} />
-                   </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <label className="text-xs font-bold uppercase text-gray-500 mb-4 block">Amenities</label>
-                <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2">
-                   {availableAmenities.map(a => (
-                     <button type="button" key={a.id} onClick={() => {
-                        const ids = listingData.amenitiesAndFeaturesIds.includes(a.id) 
-                            ? listingData.amenitiesAndFeaturesIds.filter(id => id !== a.id)
-                            : [...listingData.amenitiesAndFeaturesIds, a.id];
-                        setListingData({...listingData, amenitiesAndFeaturesIds: ids});
-                     }} className={`p-2.5 rounded-lg border text-left text-xs font-medium transition-all ${listingData.amenitiesAndFeaturesIds.includes(a.id) ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 border-gray-200'}`} style={listingData.amenitiesAndFeaturesIds.includes(a.id) ? { backgroundColor: colors.primary } : {}}>
-                       {a.name}
-                     </button>
-                   ))}
-                </div>
-              </div>
-
-              <div className="col-span-2 flex justify-end mt-4 pt-6 border-t">
-                <button type="submit" disabled={loading} className="px-8 py-3 bg-primary text-white font-bold rounded-lg flex items-center gap-2" style={{ backgroundColor: colors.primary }}>
-                   {loading ? <Loader2 className="animate-spin" /> : "Next: Media"}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* STEP 3 */}
-          {currentStep === 3 && (
-            <div className="max-w-4xl mx-auto space-y-6">
-               <div className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center hover:border-primary/50 transition-all cursor-pointer" onClick={() => document.getElementById('media-inp').click()}>
-                  <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                  <p className="text-sm font-bold text-gray-600">Select Media for Listing #{createdPropertyListingId}</p>
-                  <input id="media-inp" type="file" multiple className="hidden" onChange={e => setSelectedFiles(Array.from(e.target.files))} />
-               </div>
-               <div className="flex justify-end gap-3 mt-8">
-                  <button onClick={handleMediaUpload} disabled={uploadingMedia} className="px-8 py-2 bg-primary text-white font-bold rounded-lg" style={{ backgroundColor: colors.primary }}>
-                    {uploadingMedia ? "Uploading..." : "Finish Setup"}
-                  </button>
-               </div>
             </div>
           )}
+
+          {/* STEP 2: LISTING DETAILS (Updated Pricing Section) */}
+          {currentStep === 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto animate-in fade-in duration-300">
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Main Heading *</label>
+                <input type="text" className="w-full px-4 py-2.5 border rounded-xl outline-none focus:border-primary" value={listingData.mainHeading} onChange={e => setListingData({...listingData, mainHeading: e.target.value})} placeholder="Luxurious Suite with View" />
+              </div>
+
+              {/* Pricing breakdown card */}
+              <div className="md:col-span-2 bg-blue-50/50 p-6 rounded-2xl border border-blue-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Base Price (₹) *</label>
+                  <div className="relative">
+                    <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="number" className="w-full pl-9 pr-4 py-2 border rounded-lg focus:border-blue-500 outline-none" value={listingData.price} onChange={e => setListingData({...listingData, price: e.target.value})} placeholder="0.00" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">GST (%)</label>
+                  <div className="relative">
+                    <Percent size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="number" className="w-full pl-9 pr-4 py-2 border rounded-lg focus:border-blue-500 outline-none" value={listingData.gstPercentage} onChange={e => setListingData({...listingData, gstPercentage: e.target.value})} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Discount (₹)</label>
+                  <div className="relative">
+                    <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="number" className="w-full pl-9 pr-4 py-2 border rounded-lg focus:border-blue-500 outline-none" value={listingData.discountAmount} onChange={e => setListingData({...listingData, discountAmount: e.target.value})} />
+                  </div>
+                </div>
+                <div className="md:col-span-3 pt-4 border-t border-blue-100 flex items-center justify-between">
+                   <span className="text-xs font-bold uppercase text-blue-600">Final Price (Incl. GST)</span>
+                   <span className="text-xl font-black text-gray-900">₹{calculateTotal()}</span>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase mb-1 block">Amenities</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 h-40 overflow-y-auto pr-2 bg-gray-50 p-4 rounded-xl border">
+                  {availableAmenities.map(a => (
+                    <button key={a.id} type="button" onClick={() => {
+                      const ids = listingData.amenitiesAndFeaturesIds.includes(a.id) 
+                        ? listingData.amenitiesAndFeaturesIds.filter(id => id !== a.id)
+                        : [...listingData.amenitiesAndFeaturesIds, a.id];
+                      setListingData({...listingData, amenitiesAndFeaturesIds: ids});
+                    }} className={`p-2 rounded-lg border text-left text-[10px] font-bold transition-all ${listingData.amenitiesAndFeaturesIds.includes(a.id) ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`} style={listingData.amenitiesAndFeaturesIds.includes(a.id) ? { backgroundColor: colors.primary, borderColor: colors.primary } : {}}>
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: GALLERY */}
+          {currentStep === 3 && (
+            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+               <div className="border-2 border-dashed border-gray-200 rounded-3xl p-16 text-center hover:bg-gray-50 transition-all cursor-pointer group" onClick={() => document.getElementById('media-inp').click()}>
+                  <Upload size={48} className="mx-auto text-gray-300 mb-4 group-hover:text-primary transition-colors" />
+                  <p className="text-sm font-bold text-gray-600">Select property photos to upload</p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG or WebP supported</p>
+                  <input id="media-inp" type="file" multiple className="hidden" onChange={e => setSelectedFiles(Array.from(e.target.files))} />
+               </div>
+               
+               {selectedFiles.length > 0 && (
+                 <div className="flex flex-wrap gap-2">
+                    {selectedFiles.map((file, i) => (
+                      <div key={i} className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-bold rounded-full border border-primary/10 flex items-center gap-2">
+                        {file.name}
+                        <button onClick={() => setSelectedFiles(selectedFiles.filter((_, idx) => idx !== i))}><X size={12}/></button>
+                      </div>
+                    ))}
+                 </div>
+               )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t bg-white flex justify-between items-center">
+          <button 
+            disabled={currentStep === 1} 
+            onClick={() => setCurrentStep(prev => prev - 1)}
+            className="px-6 py-2 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl disabled:opacity-30"
+          >
+            Previous
+          </button>
+          
+          <div className="flex gap-3">
+            {currentStep < 3 ? (
+              <button 
+                onClick={() => setCurrentStep(prev => prev + 1)}
+                className="px-8 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-black transition-all"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            ) : (
+              <button 
+                onClick={handleFinalSubmit} 
+                disabled={loading}
+                className="px-10 py-2.5 text-white text-sm font-bold rounded-xl flex items-center gap-2 shadow-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                style={{ backgroundColor: colors.primary }}
+              >
+                {loading ? <Loader2 className="animate-spin" /> : <><Save size={18} /> Finish Setup</>}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
