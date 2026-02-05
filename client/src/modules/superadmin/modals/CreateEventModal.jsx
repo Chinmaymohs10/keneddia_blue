@@ -84,28 +84,8 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         setUploadMethod("url");
       }
     } else if (isOpen) {
-      // Auto-populate with test data when creating new event
-      const today = new Date();
-      const futureDate = new Date(today.setDate(today.getDate() + 30));
-      const formattedDate = futureDate.toISOString().split("T")[0];
-
-      setFormData({
-        title: "Summer Wine Festival DISCO",
-        slug: "summer-wine-festival-disco",
-        locationId: "1",
-        propertyTypeId: "3", // Wine & Dine
-        eventDate: formattedDate,
-        description: "Wine tasting event",
-        longDesc: "This is a sample long description intended for testing purposes. Join us for an exclusive wine tasting experience featuring premium selections from renowned vineyards.",
-        status: "ACTIVE",
-        ctaText: "Book Now",
-        ctaLink: "https://example.com/",
-        active: true,
-      });
-      setImagePreview("https://imgs.search.brave.com/xj_hjNYnKJ8MgJlEHsLXPvkr4xU0c3TmVQBsYm2nKZU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTMw/NzIwNTg4OS9waG90/by93aW5lLXRhc3Rp/bmcuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPVQtSjBRa1BB/dGRsdzBOdjdVSUY5/SWtJSW5Ub2RCQlVl/OFlYTjNtQU1WQ2M9");
-      setImageUrl("https://imgs.search.brave.com/xj_hjNYnKJ8MgJlEHsLXPvkr4xU0c3TmVQBsYm2nKZU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTMw/NzIwNTg4OS9waG90/by93aW5lLXRhc3Rp/bmcuanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPVQtSjBRa1BB/dGRsdzBOdjdVSUY5/SWtJSW5Ub2RCQlVl/OFlYTjNtQU1WQ2M9");
-      setUploadMethod("url");
-      setSelectedFile(null);
+      // Clear form when creating new event
+      clearForm();
     }
   }, [editingEvent, isOpen]);
 

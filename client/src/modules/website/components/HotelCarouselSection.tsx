@@ -16,11 +16,10 @@ import {
   Tag,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { GetAllPropertyListing, getPropertyListingMedia } from "@/Api/Api";
+import { GetAllPropertyDetails } from "@/Api/Api";
 
 // Custom CSS for Leaflet popups
 const customPopupStyles = `
@@ -41,34 +40,48 @@ const customPopupStyles = `
   }
 `;
 
-const mapApiHotelToUI = (hotel: any, media: any[]) => {
-  const basePrice = hotel.price || 0;
-  const discount = hotel.discountAmount || 0;
-  const gstPercent = hotel.gstPercentage || 0;
+// Map API response to UI format
+const mapApiToHotelUI = (item: any) => {
+  const parent = item.propertyResponseDTO;
+  const listing =
+    item.propertyListingResponseDTOS?.find((l: any) => l.isActive) ||
+    item.propertyListingResponseDTOS?.[0];
 
+  const basePrice = listing?.price || 0;
+  const discount = listing?.discountAmount || 0;
+  const gstPercent = listing?.gstPercentage || 0;
   const discountPercent =
     basePrice > 0 ? Math.round((discount / basePrice) * 100) : 0;
 
+  // Create unique ID combining propertyId and listingId to avoid duplicates
+  const uniqueId = listing?.id 
+    ? `${parent?.id}-${listing.id}` 
+    : `property-${parent?.id}`;
+
   return {
-    id: hotel.id || "N/A",
-    name: hotel.propertyName || hotel.mainHeading || "N/A",
-    location: hotel.fullAddress || "N/A",
-    city: hotel.city || "N/A",
-    type: hotel.propertyType || "Hotel",
+    id: uniqueId,
+    propertyId: parent?.id,
+    listingId: listing?.id,
+    name: parent?.propertyName || listing?.mainHeading || "N/A",
+    location: listing?.fullAddress || parent?.address || "N/A",
+    city: parent?.locationName || "N/A",
+    type: listing?.propertyType || parent?.propertyTypes?.[0] || "Hotel",
 
     image: {
-      src: media?.[0]?.url || "",
-      alt: hotel.propertyName || "Hotel Image",
+      src: listing?.media?.[0]?.url || "",
+      alt: parent?.propertyName || "Hotel Image",
     },
 
-    rating: hotel.rating || "N/A",
+    rating: listing?.rating || null,
     reviews: 0,
-    description: hotel.tagline || hotel.subTitle || "N/A",
+    description: listing?.tagline || listing?.subTitle || "N/A",
     amenities:
-      hotel.amenities && hotel.amenities.length > 0 ? hotel.amenities : ["N/A"],
+      listing?.amenities && listing.amenities.length > 0
+        ? listing.amenities
+        : ["N/A"],
 
-    rooms: hotel.capacity || "N/A",
-    capacity: hotel.capacity || "N/A",
+    rooms: listing?.capacity || "N/A",
+    capacity: listing?.capacity || "N/A",
 
     pricing: {
       basePrice,
@@ -82,9 +95,12 @@ const mapApiHotelToUI = (hotel: any, media: any[]) => {
     checkOut: "11:00 AM",
 
     coordinates: {
-      lat: hotel.latitude || 20.5937,
-      lng: hotel.longitude || 78.9629,
+      lat: parent?.latitude || 20.5937,
+      lng: parent?.longitude || 78.9629,
     },
+
+    isActive: parent?.isActive,
+    hasListing: item.propertyListingResponseDTOS?.length > 0,
   };
 };
 
@@ -97,16 +113,6 @@ if (typeof document !== "undefined") {
     document.head.appendChild(styleEl);
   }
 }
-
-const cities = [
-  "All Cities",
-  "Mumbai",
-  "Bengaluru",
-  "Delhi",
-  "Kolkata",
-  "Hyderabad",
-  "Chennai",
-];
 
 // Helper function to calculate prices
 const calculatePricing = (pricing: any) => {
@@ -157,9 +163,11 @@ function PriceBreakdown({
               <span className="text-xs text-muted-foreground line-through">
                 ₹{calculated.basePrice.toLocaleString("en-IN")}
               </span>
-              <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
-                {pricing.discountPercent}% OFF
-              </span>
+              {pricing.discountPercent > 0 && (
+                <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                  {pricing.discountPercent}% OFF
+                </span>
+              )}
             </div>
             <div className="text-right">
               <p className="text-xl font-bold text-primary">
@@ -198,9 +206,11 @@ function PriceBreakdown({
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground flex items-center gap-1">
               {pricing.discountLabel}
-              <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
-                {pricing.discountPercent}%
-              </span>
+              {pricing.discountPercent > 0 && (
+                <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                  {pricing.discountPercent}%
+                </span>
+              )}
             </span>
             <span className="font-medium text-green-600">
               - ₹{calculated.discount.toLocaleString("en-IN")}
@@ -273,8 +283,6 @@ export default function HotelCarouselSection() {
 
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [checkInDate] = useState("");
-  const [checkOutDate] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [hotels, setHotels] = useState<any[]>([]);
@@ -284,36 +292,32 @@ export default function HotelCarouselSection() {
     const fetchHotels = async () => {
       try {
         setLoading(true);
-        const res = await GetAllPropertyListing();
-        const list = res.data || res;
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data || response;
 
-        if (!Array.isArray(list)) return;
+        if (!Array.isArray(rawData)) return;
 
-        // 1. Filter only type "Hotel" and active status
-        const hotelList = list.filter(
-          (h) => h.isActive && h.propertyType?.toLowerCase() === "hotel",
-        );
+        // Map API response to UI format
+        const mappedHotels = rawData
+          .map((item: any) => mapApiToHotelUI(item))
+          .filter((hotel: any) => {
+            // Filter only active hotels with listings and type "Hotel"
+            return (
+              hotel.isActive &&
+              hotel.hasListing &&
+              hotel.type?.toLowerCase() === "hotel"
+            );
+          });
 
-        // 2. Fetch media ONLY for those filtered hotels
-        const mappedHotels = await Promise.all(
-          hotelList.map(async (hotel) => {
-            try {
-              const mediaRes = await getPropertyListingMedia(hotel.id);
-              const media = mediaRes.data || mediaRes || [];
-              return mapApiHotelToUI(hotel, media);
-            } catch {
-              return mapApiHotelToUI(hotel, []);
-            }
-          }),
-        );
+        // Extract unique cities from locationName
         const uniqueCities = Array.from(
-          new Set(mappedHotels.map((h) => h.city).filter(Boolean)),
-        );
+          new Set(mappedHotels.map((h: any) => h.city).filter(Boolean))
+        ) as string[];
 
-        // Optional: sort alphabetically
+        // Sort alphabetically
         uniqueCities.sort((a, b) => a.localeCompare(b));
 
-        // prepend "All Cities"
+        // Prepend "All Cities"
         setCities(["All Cities", ...uniqueCities]);
 
         setHotels(mappedHotels);
@@ -331,7 +335,7 @@ export default function HotelCarouselSection() {
   const getCitySlug = (city: string) => city.toLowerCase().replace(/\s+/g, "-");
 
   const getHotelDetailUrl = (hotel: any) =>
-    `/hotels/${getCitySlug(hotel.city)}/${hotel.id}`;
+    `/hotels/${getCitySlug(hotel.city)}/${hotel.listingId || hotel.propertyId}`;
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredHotels.length <= 1)
@@ -339,25 +343,21 @@ export default function HotelCarouselSection() {
 
     const interval = setInterval(() => {
       setActiveIndex((prev) =>
-        prev === filteredHotels.length - 1 ? 0 : prev + 1,
+        prev === filteredHotels.length - 1 ? 0 : prev + 1
       );
     }, 5000);
     return () => clearInterval(interval);
   }, [viewMode, isPaused, filteredHotels.length]);
 
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [filteredHotels]);
-
   const handlePrev = () => {
     setActiveIndex((prev) =>
-      prev === 0 ? filteredHotels.length - 1 : prev - 1,
+      prev === 0 ? filteredHotels.length - 1 : prev - 1
     );
   };
 
   const handleNext = () => {
     setActiveIndex((prev) =>
-      prev === filteredHotels.length - 1 ? 0 : prev + 1,
+      prev === filteredHotels.length - 1 ? 0 : prev + 1
     );
   };
 
@@ -367,6 +367,8 @@ export default function HotelCarouselSection() {
     } else {
       setFilteredHotels(hotels.filter((hotel) => hotel.city === selectedCity));
     }
+    // Reset activeIndex when filter changes
+    setActiveIndex(0);
   }, [selectedCity, hotels]);
 
   if (loading) {
@@ -394,6 +396,20 @@ export default function HotelCarouselSection() {
   }
 
   const activeHotel = filteredHotels[activeIndex];
+  
+  // Safety check - if activeHotel is undefined, reset index
+  if (!activeHotel) {
+    return (
+      <section className="py-6">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+            Loading hotels...
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const activePricing = calculatePricing(activeHotel.pricing);
 
   const getVisibleCards = () => {
@@ -540,7 +556,7 @@ export default function HotelCarouselSection() {
 
                       return (
                         <div
-                          key={hotel.id}
+                          key={`${position}-${hotel.id}`}
                           className={`absolute transition-all duration-700 ease-out ${
                             isCenter
                               ? "z-30 scale-100 opacity-100"
@@ -569,7 +585,7 @@ export default function HotelCarouselSection() {
                                     <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
                                       <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                                       <span className="text-xs font-bold text-gray-900">
-                                        {hotel.rating}
+                                        {hotel.rating || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -628,7 +644,7 @@ export default function HotelCarouselSection() {
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-yellow-50 rounded-full border border-yellow-200">
                           <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                           <span className="text-xs font-bold text-yellow-900">
-                            {activeHotel.rating}
+                            {activeHotel.rating || "N/A"}
                           </span>
                         </div>
                       </div>
@@ -660,7 +676,7 @@ export default function HotelCarouselSection() {
                               <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                               <span className="line-clamp-1">{amenity}</span>
                             </div>
-                          ),
+                          )
                         )}
                       </div>
                     </div>
@@ -721,7 +737,7 @@ export default function HotelCarouselSection() {
                         <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg">
                           <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                           <span className="text-xs font-bold text-gray-900">
-                            {activeHotel.rating}
+                            {activeHotel.rating || "N/A"}
                           </span>
                         </div>
                         <div className="bg-primary/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-lg">
@@ -883,7 +899,7 @@ export default function HotelCarouselSection() {
                                   <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full">
                                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
                                     <span className="text-xs font-bold">
-                                      {hotel.rating}
+                                      {hotel.rating || "N/A"}
                                     </span>
                                   </div>
                                 </div>

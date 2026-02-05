@@ -73,8 +73,6 @@ export const getHeroSection = () => API.get("api/v1/hero-sections");
 
 export const addAboutUs = (payload) => {
   const formData = new FormData();
-
-  // data → stringified JSON (MANDATORY)
   formData.append(
     "data",
     JSON.stringify({
@@ -88,8 +86,6 @@ export const addAboutUs = (payload) => {
       ctaButtonUrl: payload.ctaButtonUrl,
     }),
   );
-
-  // files → multipart
   if (payload.files && payload.files.length > 0) {
     payload.files.forEach((file) => {
       formData.append("files", file);
@@ -353,5 +349,32 @@ export const getRoomsByPropertyId = (propertyId) =>
   API.get(`api/v1/rooms/property/${propertyId}`);
 export const deleteOrDeactivateRoom = (roomId) =>
   API.delete(`api/v1/rooms/${roomId}`);
+
+//hotel homepage items
+export const HotelAddAboutUs = (payload) => {
+  const formData = new FormData();
+  formData.append(
+    "data",
+    JSON.stringify({
+      sectionTitle: payload.sectionTitle,
+      subTitle: payload.subTitle,
+      description: payload.description,
+      videoUrl: payload.videoUrl,
+      videoTitle: payload.videoTitle,
+      mediaUrls: payload.mediaUrls || [],
+      ctaButtonText: payload.ctaButtonText,
+      ctaButtonUrl: payload.ctaButtonUrl,
+    }),
+  );
+  if (payload.files && payload.files.length > 0) {
+    payload.files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  return API.post("api/v1/admin/about-us", formData);
+};
+export const searchRooms = (payload) =>API.post("api/v1/rooms/search", payload);
+
 
 export default API;
