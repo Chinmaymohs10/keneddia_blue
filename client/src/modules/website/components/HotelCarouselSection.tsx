@@ -43,10 +43,15 @@ const customPopupStyles = `
 
 const mapApiHotelToUI = (hotel: any, media: any[]) => {
   const basePrice = hotel.price || 0;
+  const discount = hotel.discountAmount || 0;
+  const gstPercent = hotel.gstPercentage || 0;
+
+  const discountPercent =
+    basePrice > 0 ? Math.round((discount / basePrice) * 100) : 0;
 
   return {
     id: hotel.id || "N/A",
-    name: hotel.propertyName || "N/A",
+    name: hotel.propertyName || hotel.mainHeading || "N/A",
     location: hotel.fullAddress || "N/A",
     city: hotel.city || "N/A",
     type: hotel.propertyType || "Hotel",
@@ -67,10 +72,10 @@ const mapApiHotelToUI = (hotel: any, media: any[]) => {
 
     pricing: {
       basePrice,
-      discount: 0,
-      discountPercent: 0,
-      discountLabel: "Standard Price",
-      gstPercent: 12,
+      discount,
+      discountPercent,
+      discountLabel: discount > 0 ? "Discount" : "Standard Price",
+      gstPercent,
     },
 
     checkIn: "2:00 PM",

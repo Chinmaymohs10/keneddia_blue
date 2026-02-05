@@ -38,7 +38,7 @@ const aspectRatioMatches = (
   width: number,
   height: number,
   targetRatio: string,
-  tolerance = 0.01
+  tolerance = 0.01,
 ) => {
   const [tw, th] = targetRatio.split(":").map(Number);
   return Math.abs(width / height - tw / th) <= tolerance;
@@ -49,7 +49,7 @@ const detectBanner = (image: any) => {
   const rule = MEDIA_DETECTION_RULES.instagramBannerReel;
 
   const exactMatch = rule.allowedDimensions.some(
-    (d) => d.width === image.width && d.height === image.height
+    (d) => d.width === image.width && d.height === image.height,
   );
 
   const ratioMatch =
@@ -89,9 +89,11 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
 
   return (
     // Change: Expired card shows in red background
-    <div className={`flex items-center gap-1 px-2.5 py-1 text-white text-[10px] font-bold rounded-full shadow-md ${
-      isExpired ? "bg-red-600" : "bg-black/70"
-    }`}>
+    <div
+      className={`flex items-center gap-1 px-2.5 py-1 text-white text-[10px] font-bold rounded-full shadow-md ${
+        isExpired ? "bg-red-600" : "bg-black/70"
+      }`}
+    >
       <Clock className="w-3 h-3" />
       {label}
     </div>
@@ -121,13 +123,13 @@ export default function DailyOffers() {
         const list = Array.isArray(rawData)
           ? rawData
           : Array.isArray(rawData.content)
-          ? rawData.content
-          : [];
+            ? rawData.content
+            : [];
 
         const active = list.filter(
           (o: any) =>
             o.isActive &&
-            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation)
+            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation),
         );
 
         setOffers(
@@ -148,7 +150,7 @@ export default function DailyOffers() {
                   alt: o.title,
                 }
               : null,
-          }))
+          })),
         );
       } catch (err) {
         console.error("Offer fetch failed", err);
@@ -178,13 +180,13 @@ export default function DailyOffers() {
             {dailyOffers?.title || "Daily Offers"}
           </h2>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => swiper?.slidePrev()}
               className="p-2 rounded-full hover:bg-white/50 transition-colors"
             >
               <ChevronLeft size={20} />
             </button>
-            <button 
+            <button
               onClick={() => swiper?.slideNext()}
               className="p-2 rounded-full hover:bg-white/50 transition-colors"
             >
@@ -212,7 +214,6 @@ export default function DailyOffers() {
             return (
               <SwiperSlide key={offer.id || i}>
                 <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
-                  
                   {/* IMAGE SECTION */}
                   <div
                     className={`relative overflow-hidden ${
@@ -271,8 +272,10 @@ export default function DailyOffers() {
                   {!isBanner && (
                     <div className="p-4 flex flex-col flex-1">
                       {/* Change: Theme-based hover colors for title */}
-                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 
-                        text-foreground group-hover:text-red-600 dark:group-hover:text-yellow-400">
+                      <h3
+                        className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 
+                        text-foreground group-hover:text-red-600 dark:group-hover:text-yellow-400"
+                      >
                         {offer.title}
                       </h3>
                       <p className="text-[11px] text-muted-foreground italic line-clamp-2 mt-2">
@@ -281,13 +284,18 @@ export default function DailyOffers() {
 
                       <div className="mt-auto pt-3 border-t border-muted">
                         {/* Change: High-visibility code line */}
-                        <div className="text-[11px] mb-3 flex justify-between items-center bg-muted/50 p-2 rounded-md border border-dashed border-primary/20">
-                          <span className="text-muted-foreground font-medium uppercase">Promo Code:</span>
+                        <div className="text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20">
+                          <span className="text-muted-foreground font-medium uppercase whitespace-nowrap">
+                            Promo Code
+                          </span>
+
+                          <span className="text-muted-foreground">:</span>
+
                           <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
                             {offer.couponCode}
                           </span>
                         </div>
-                        
+
                         {/* Change: Red Claim Now button */}
                         {isClickable ? (
                           <a

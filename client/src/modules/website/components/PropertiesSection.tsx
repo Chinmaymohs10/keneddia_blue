@@ -32,6 +32,8 @@ interface ApiProperty {
   amenities: string[];
   isActive: boolean;
   media: any[];
+  gstPercentage?: number; // ✅ ADD
+  discountAmount?: number; // ✅ ADD
 }
 
 export default function PropertiesSection() {
@@ -147,11 +149,14 @@ export default function PropertiesSection() {
   };
 
   // Helper function to create URL slug from city name
-  const getCitySlug = (city: string) => city.toLowerCase().replace(/\s+/g, "-");
+  const getCitySlug = (city?: string | null) => {
+    if (!city || typeof city !== "string") return "unknown-city";
+    return city.trim().toLowerCase().replace(/\s+/g, "-");
+  };
 
-  // Helper function to generate property detail URL with both city and propertyId
   const getPropertyDetailUrl = (property: ApiProperty) => {
-    return `/hotels/${getCitySlug(property.city)}/${property.id}`;
+    const citySlug = getCitySlug(property.city);
+    return `/hotels/${citySlug}/${property.id}`;
   };
 
   useEffect(() => {
@@ -209,6 +214,29 @@ export default function PropertiesSection() {
       default:
         return { primary: "Book Now", secondary: null };
     }
+  };
+  const calculatePricing = (property?: ApiProperty) => {
+    if (!property || !property.price) {
+      return {
+        gstAmount: 0,
+        discount: 0,
+        total: 0,
+      };
+    }
+
+    const basePrice = property.price;
+    const discount = property.discountAmount || 0;
+    const gstRate = property.gstPercentage || 0;
+
+    const priceAfterDiscount = Math.max(basePrice - discount, 0);
+    const gstAmount = (priceAfterDiscount * gstRate) / 100;
+    const total = priceAfterDiscount + gstAmount;
+
+    return {
+      gstAmount,
+      discount,
+      total,
+    };
   };
 
   return (
@@ -427,38 +455,52 @@ export default function PropertiesSection() {
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground uppercase tracking-tight">
-                        GST
-                      </span>
-                      <span className="font-medium text-destructive">N/A</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground uppercase tracking-tight">
-                        Discount
-                      </span>
-                      <span className="font-medium text-destructive">N/A</span>
-                    </div>
+                  {(() => {
+                    const { gstAmount, discount, total } =
+                      calculatePricing(activeProperty);
 
-                    <div className="flex justify-between items-center pt-2 mt-2 border-t border-dashed border-border">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">
-                        Total Amount
-                      </span>
-                      <span className="text-xl lg:text-2xl font-bold text-primary">
-                        {activeProperty.price
-                          ? `₹${activeProperty.price.toLocaleString()}`
-                          : "N/A"}
-                        {activeProperty.price && (
-                          <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                            {activeProperty.propertyType === "Hotel"
-                              ? "/night"
-                              : "/person"}
+                    return (
+                      <>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground uppercase tracking-tight">
+                            Discount
                           </span>
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                          <span className="font-medium text-green-600">
+                            {discount > 0
+                              ? `-₹${discount.toLocaleString()}`
+                              : "—"}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground uppercase tracking-tight">
+                            GST ({activeProperty.gstPercentage || 0}%)
+                          </span>
+                          <span className="font-medium text-muted-foreground">
+                            {gstAmount > 0
+                              ? `₹${gstAmount.toLocaleString()}`
+                              : "—"}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2 mt-2 border-t border-dashed border-border">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                            Total Amount
+                          </span>
+                          <span className="text-xl lg:text-2xl font-bold text-primary">
+                            {total > 0 ? `₹${total.toLocaleString()}` : "N/A"}
+                            {activeProperty.price && (
+                              <span className="text-[10px] text-muted-foreground font-normal ml-1">
+                                {activeProperty.propertyType === "Hotel"
+                                  ? "/night"
+                                  : "/person"}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="py-4 border-b border-border">
