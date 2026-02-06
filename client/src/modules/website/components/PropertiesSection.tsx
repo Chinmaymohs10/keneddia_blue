@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   MapPin,
@@ -10,10 +9,11 @@ import {
   Mail,
   Loader2,
   Share2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
-import { properties as staticProperties } from "@/data/properties";
 import { toast } from "react-hot-toast";
 
 interface ApiProperty {
@@ -37,7 +37,6 @@ interface ApiProperty {
   discountAmount?: number;
 }
 
-// Create a separate component for each carousel item to avoid closure issues
 const CarouselItem = ({
   property,
   isActive,
@@ -48,24 +47,7 @@ const CarouselItem = ({
   onShare: (property: ApiProperty) => void;
 }) => {
   const navigate = useNavigate();
-  
-  const handleExploreClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const targetUrl = `/hotels/${property.propertyId}`;
-    
-    console.log("🎯 EXPLORE CLICK - START", {
-      timestamp: new Date().toISOString(),
-      listingId: property.listingId,
-      propertyId: property.propertyId,
-      mainHeading: property.mainHeading,
-      targetUrl: targetUrl,
-      isActive: isActive,
-    });
-    
-    navigate(targetUrl);
-    
-    console.log("🎯 EXPLORE CLICK - NAVIGATING TO:", targetUrl);
-  };
+  const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
 
   return (
     <div
@@ -73,46 +55,61 @@ const CarouselItem = ({
         isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
       }`}
     >
-      <OptimizedImage
-        src={property.media?.[0]?.url || ""}
-        alt={property.propertyName}
-        className="w-full h-full object-cover"
-      />
+      {imageUrl ? (
+        <OptimizedImage
+          src={imageUrl}
+          alt={property.propertyName || "Property"}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+          <Building2 className="w-24 h-24 text-gray-400" />
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
       <div className="absolute inset-0 flex items-center px-8 lg:px-12">
         <div className="max-w-xl text-white">
           <button
             onClick={() => onShare(property)}
-            className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20"
+            className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors"
           >
             <Share2 className="w-4 h-4" />
           </button>
-          <p className="text-white/90 text-sm mb-4 line-clamp-2">
-            {property.tagline}
-          </p>
+          
+          {property.tagline && (
+            <p className="text-white/90 text-sm mb-4 line-clamp-2 italic font-light tracking-wide">
+              {property.tagline}
+            </p>
+          )}
+
           <h1 className="text-3xl lg:text-5xl font-serif mb-4 leading-tight">
-            {property.mainHeading}
-            <br />
-            <span className="italic font-light">{property.subTitle}</span>
+            {property.propertyName}
+            {property.mainHeading && (
+               <span className="block italic font-light text-xl lg:text-2xl mt-1 opacity-80">
+                {property.mainHeading}
+              </span>
+            )}
           </h1>
+
           <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center">
-              <MapPin className="w-4 h-4 mr-2" />
-              {property.city}
+            <div className="flex items-center text-sm font-medium">
+              <MapPin className="w-4 h-4 mr-2 text-primary" />
+              {property.city || "N/A"}
             </div>
             {property.rating && (
-              <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="font-bold">{property.rating}</span>
+                <span className="font-bold text-sm">{property.rating.toFixed(1)}</span>
               </div>
             )}
           </div>
+
           <button
-            onClick={handleExploreClick}
-            className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group cursor-pointer"
+            onClick={() => navigate(`/hotels/${property.propertyId}`)}
+            className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group"
           >
             Explore Now
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-all">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-primary transition-all">
               <ArrowRight size={20} />
             </div>
           </button>
@@ -123,110 +120,66 @@ const CarouselItem = ({
 };
 
 export default function PropertiesSection() {
-  const fallbackData: ApiProperty[] = staticProperties.map((p) => ({
-    id: p.id,
-    propertyId: p.id,
-    listingId: p.id,
-    propertyName: p.headline1,
-    propertyType: p.type,
-    city: p.city,
-    mainHeading: p.headline1,
-    subTitle: p.headline2,
-    fullAddress: p.location,
-    tagline: p.tagline,
-    rating: parseFloat(p.rating),
-    capacity: parseInt(p.capacity) || 0,
-    price: parseInt(p.price.replace(/[^0-9]/g, "")) || 0,
-    amenities: p.amenities,
-    isActive: true,
-    media: [{ url: p.image.src }],
-  }));
-
-  const [apiProperties, setApiProperties] = useState<ApiProperty[]>(fallbackData);
+  const [apiProperties, setApiProperties] = useState<ApiProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Mock searchData and selectedRoomId for the booking function
+  // In your real code, these likely come from a context or state
+  const [searchData] = useState({
+    checkIn: new Date(),
+    checkOut: new Date(new Date().setDate(new Date().getDate() + 1)),
+    adults: 2,
+    children: 0,
+    rooms: 1,
+  });
+  const [selectedRoomId] = useState("default-room");
 
   useEffect(() => {
     const fetchFullPropertyData = async () => {
       try {
         setLoading(true);
         const response = await GetAllPropertyDetails();
-        const rawData = response?.data || response;
+        const rawData = response?.data?.data || response?.data || [];
 
         if (Array.isArray(rawData)) {
-          const formattedProperties: ApiProperty[] = rawData.flatMap((item: any) => {
+          const formatted = rawData.flatMap((item: any) => {
             const parent = item.propertyResponseDTO;
             const listings = item.propertyListingResponseDTOS || [];
 
-            if (listings.length === 0) {
-              return [
-                {
-                  id: parent?.id,
-                  propertyId: parent?.id,
-                  listingId: parent?.id,
-                  propertyName: parent?.propertyName || "Unnamed Property",
-                  propertyType: parent?.propertyTypes?.[0] || "Property",
-                  city: parent?.locationName || "Unknown",
-                  mainHeading: parent?.propertyName || "Unnamed Property",
-                  subTitle: "",
-                  fullAddress: parent?.address || "",
-                  tagline: "",
-                  rating: null,
-                  capacity: null,
-                  price: 0,
-                  gstPercentage: 0,
-                  discountAmount: 0,
-                  amenities: [],
-                  isActive: parent?.isActive ?? false,
-                  media: [],
-                },
-              ];
-            }
+            if (!parent?.isActive) return [];
 
-            return listings.map((listing: any) => ({
-              id: listing.id,
-              propertyId: parent?.id,
-              listingId: listing.id,
-              propertyName: parent?.propertyName || "Unnamed Property",
-              propertyType: listing?.propertyType || parent?.propertyTypes?.[0] || "Property",
-              city: parent?.locationName || "Unknown",
-              mainHeading: listing?.mainHeading || parent?.propertyName,
-              subTitle: listing?.subTitle || "",
-              fullAddress: listing?.fullAddress || parent?.address || "",
-              tagline: listing?.tagline || "",
-              rating: listing?.rating || null,
-              capacity: listing?.capacity || null,
-              price: listing?.price || 0,
-              gstPercentage: listing?.gstPercentage || 0,
-              discountAmount: listing?.discountAmount || 0,
-              amenities: listing?.amenities || [],
-              isActive: (parent?.isActive && listing?.isActive) ?? false,
-              media: listing?.media || [],
-            }));
+            return listings
+              .filter((l: any) => l.isActive)
+              .map((l: any) => ({
+                id: l.id,
+                propertyId: parent.id, // Fixed: correctly mapping parent propertyId
+                listingId: l.id,
+                propertyName: parent.propertyName || "Unnamed Property",
+                propertyType: l.propertyType || parent.propertyTypes?.[0] || "Property",
+                city: parent.locationName,
+                mainHeading: l.mainHeading || "", 
+                subTitle: l.subTitle || "",
+                fullAddress: l.fullAddress || parent.address,
+                tagline: l.tagline || "",
+                rating: l.rating,
+                capacity: l.capacity,
+                price: l.price,
+                gstPercentage: l.gstPercentage,
+                discountAmount: l.discountAmount,
+                amenities: l.amenities || [],
+                isActive: true,
+                media: l.media || [],
+              }));
           });
-
-          console.log("=== FINAL FLATTENED PROPERTIES ===");
-          console.table(
-            formattedProperties.map((p) => ({
-              "Listing ID": p.id,
-              "Property ID (Nav)": p.propertyId,
-              "Main Heading": p.mainHeading,
-              City: p.city,
-              Price: `₹${p.price}`,
-              Active: p.isActive,
-            }))
-          );
-
-          const activeProperties = formattedProperties.filter((p) => p.isActive);
-          console.log(`✅ Active Properties: ${activeProperties.length}`);
           
-          setApiProperties(activeProperties);
+          setApiProperties([...formatted].reverse());
         }
       } catch (error) {
-        console.error("❌ Failed to fetch properties:", error);
-        toast.error("Could not load latest properties");
+        console.error("❌ API Error:", error);
+        toast.error("Could not fetch latest properties");
       } finally {
         setLoading(false);
       }
@@ -235,266 +188,150 @@ export default function PropertiesSection() {
     fetchFullPropertyData();
   }, []);
 
-  const uniqueCities = [
-    "All Cities",
-    ...Array.from(new Set(apiProperties.map((p) => p.city))),
-  ];
-  const uniqueTypes = ["All Types", "Hotel", "Cafe", "Restaurant"];
+  const handleBookNow = () => {
+    if (!searchData.checkIn || !searchData.checkOut) {
+      toast.error("Please select check-in and check-out dates");
+      return;
+    }
+    if (!selectedRoomId) {
+      toast.error("Please select a room");
+      return;
+    }
+    const token = "ODQ2Mg==";
+    const params = new URLSearchParams({
+      token,
+      checkin: searchData.checkIn.toISOString().split("T")[0],
+      checkout: searchData.checkOut.toISOString().split("T")[0],
+      adults: String(searchData.adults),
+      children: String(searchData.children),
+      rooms: String(searchData.rooms),
+    });
+    const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
+    window.open(bookingUrl, "_blank");
+  };
 
-  const filteredProperties = apiProperties.filter((p) => {
+  const filtered = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
     const matchType = selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
 
-  const RESAVENUE_CONFIG = {
-    baseUrl: "https://bookings.resavenue.com/resBooking4/searchRooms",
-    defaultRegCode: "TXGZ0113",
-    dateFormat: "dd/MM/yyyy",
-  };
-
-  const generateResAvenueUrl = ({
-    checkIn,
-    checkOut,
-    adults = 2,
-    regCode = RESAVENUE_CONFIG.defaultRegCode,
-  }: {
-    checkIn?: Date;
-    checkOut?: Date;
-    adults?: number;
-    regCode?: string;
-  }) => {
-    const today = new Date();
-    const nextDay = new Date(today);
-    nextDay.setDate(today.getDate() + 1);
-    const arrDate = format(checkIn || today, RESAVENUE_CONFIG.dateFormat);
-    const depDate = format(checkOut || nextDay, RESAVENUE_CONFIG.dateFormat);
-
-    const params = new URLSearchParams({
-      targetTemplate: "4",
-      regCode,
-      curr: "INR",
-      arrDate,
-      depDate,
-      arr_date: arrDate,
-      dep_date: depDate,
-      adult_1: String(adults),
-    });
-    return `${RESAVENUE_CONFIG.baseUrl}?${params.toString()}`;
-  };
+  const nextSlide = () => setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
 
   useEffect(() => {
-    if (filteredProperties.length <= 1) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev >= filteredProperties.length - 1 ? 0 : prev + 1));
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [filteredProperties.length]);
+    if (filtered.length <= 1) return;
+    const timer = setInterval(nextSlide, 8000);
+    return () => clearInterval(timer);
+  }, [filtered.length, activeIndex]);
 
-  useEffect(() => {
-    if (filteredProperties.length > 0) {
-      console.log("🔄 Active Index Changed:", {
-        activeIndex,
-        totalProperties: filteredProperties.length,
-        activeProperty: {
-          listingId: filteredProperties[activeIndex]?.listingId,
-          propertyId: filteredProperties[activeIndex]?.propertyId,
-          mainHeading: filteredProperties[activeIndex]?.mainHeading,
-        },
-      });
-    }
-  }, [activeIndex, filteredProperties]);
-
-  const activeProperty = filteredProperties[activeIndex];
-
-  const handleShare = async (property: ApiProperty) => {
-    const shareUrl = `${window.location.origin}/hotels/${property.propertyId}`;
-    const shareData = {
-      title: property.mainHeading,
-      text: `${property.tagline}`,
-      url: shareUrl,
-    };
-
-    console.log("📤 Sharing property:", {
-      listingId: property.listingId,
-      propertyId: property.propertyId,
-      url: shareUrl,
-    });
-
-    try {
-      if (navigator.share) await navigator.share(shareData);
-      else {
-        await navigator.clipboard.writeText(shareData.url);
-        toast.success("Link copied!");
-      }
-    } catch (err) {
-      console.error("❌ Share failed:", err);
-    }
-  };
-
-  const handleExternalBook = (property: ApiProperty) => {
-    const bookingUrl = generateResAvenueUrl({});
-    console.log("🎫 External booking for:", {
-      listingId: property.listingId,
-      propertyId: property.propertyId,
-      bookingUrl,
-    });
-    window.open(bookingUrl, "_blank", "noopener,noreferrer");
-  };
-
-  const getActionButtonText = (type: string) => {
-    switch (type) {
-      case "Hotel":
-        return { primary: "Book Room", secondary: "Reserve Table" };
-      case "Cafe":
-      case "Restaurant":
-        return { primary: "Reserve Table", secondary: null };
-      default:
-        return { primary: "Book Now", secondary: null };
-    }
-  };
-
-  const calculatePricing = (property?: ApiProperty) => {
-    if (!property || !property.price) return { gstAmount: 0, discount: 0, total: 0 };
-    const basePrice = property.price;
-    const discount = property.discountAmount || 0;
-    const gstRate = property.gstPercentage || 0;
-    const priceAfterDiscount = Math.max(basePrice - discount, 0);
-    const gstAmount = (priceAfterDiscount * gstRate) / 100;
-    return { gstAmount, discount, total: priceAfterDiscount + gstAmount };
-  };
+  const active = filtered[activeIndex];
 
   return (
-    <section className="py-8 md:py-12 bg-gradient-to-br from-background via-secondary/5 to-background relative overflow-hidden">
-      <div className="container mx-auto px-4 md:px-6 lg:px-12">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-8">
-          <div className="flex items-center gap-4">
-            <div>
-              <h2 className="text-2xl md:text-4xl font-serif text-foreground mb-1.5">
-                Explore Our Properties
-              </h2>
-              <div className="w-16 h-0.5 bg-primary rounded-full" />
-            </div>
-            {loading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
+    <section className="py-8 md:py-16 bg-gradient-to-br from-background via-secondary/5 to-background relative">
+      <div className="container mx-auto px-4 md:px-12">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
+          <div className="space-y-2">
+            <h2 className="text-3xl md:text-5xl font-serif text-foreground">Explore Our Properties</h2>
+            <div className="w-24 h-1 bg-primary rounded-full" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <select
-                value={selectedType}
-                onChange={(e) => {
-                  setSelectedType(e.target.value);
-                  setActiveIndex(0);
-                }}
-                className="appearance-none bg-background border rounded-full py-2 pl-4 pr-10 text-sm font-medium outline-none shadow-sm transition-all"
-              >
-                {uniqueTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-              <Building2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            </div>
-
-            <div className="relative">
-              <select
-                value={selectedCity}
-                onChange={(e) => {
-                  setSelectedCity(e.target.value);
-                  setActiveIndex(0);
-                }}
-                className="appearance-none bg-background border rounded-full py-2 pl-4 pr-10 text-sm font-medium outline-none shadow-sm transition-all"
-              >
-                {uniqueCities.map((city) => (
-                  <option key={city} value={city}>
-                    {city}
-                  </option>
-                ))}
-              </select>
-              <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <select value={selectedType} onChange={(e) => { setSelectedType(e.target.value); setActiveIndex(0); }} className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer">
+              <option value="All Types">All Types</option>
+              {Array.from(new Set(apiProperties.map(p => p.propertyType))).map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select value={selectedCity} onChange={(e) => { setSelectedCity(e.target.value); setActiveIndex(0); }} className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer">
+              <option value="All Cities">All Cities</option>
+              {Array.from(new Set(apiProperties.map(p => p.city))).map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {loading && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
           </div>
         </div>
 
-        {filteredProperties.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[60%_38%] gap-6">
-            <div className="relative h-[320px] md:h-[480px] rounded-2xl overflow-hidden shadow-2xl">
-              {filteredProperties.map((property, index) => (
-                <CarouselItem
-                  key={`carousel-${property.propertyId}-${property.listingId}`}
-                  property={property}
-                  isActive={index === activeIndex}
-                  onShare={handleShare}
-                />
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
+            <div className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10">
+              {filtered.map((p, i) => (
+                <CarouselItem key={`${p.listingId}-${i}`} property={p} isActive={i === activeIndex} onShare={() => {}} />
               ))}
+              
+              {filtered.length > 1 && (
+                <>
+                  <button onClick={prevSlide} className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"><ChevronLeft size={28} /></button>
+                  <button onClick={nextSlide} className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"><ChevronRight size={28} /></button>
+                </>
+              )}
             </div>
 
-            {activeProperty && (
-              <div className="bg-card border rounded-2xl p-6 shadow-lg">
-                <div className="pb-4 border-b">
-                  <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif font-semibold">Property Details</h3>
-                    <Building2 className="text-primary" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase mb-1">Capacity</p>
-                      <p className="font-semibold">{activeProperty.capacity || "N/A"}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground uppercase mb-1">Base Price</p>
-                      <p className="text-xl font-bold">
-                        ₹{activeProperty.price.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  {(() => {
-                    const { gstAmount, discount, total } = calculatePricing(activeProperty);
-                    return (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span>Discount</span>
-                          <span className="text-green-600">-₹{discount.toLocaleString()}</span>
+            {active && (
+              <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl flex flex-col justify-between">
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-serif font-bold text-foreground">{active.propertyName}</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex flex-col pb-4 border-b border-border">
+                        <div className="flex justify-between items-end">
+                            <span className="text-sm text-muted-foreground uppercase font-bold">Base Price</span>
+                            <span className="text-xl font-semibold">₹{active.price.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between text-xs">
-                          <span>GST ({activeProperty.gstPercentage}%)</span>
-                          <span>+₹{gstAmount.toLocaleString()}</span>
+                        {active.discountAmount && active.discountAmount > 0 ? (
+                            <div className="flex justify-between text-sm text-green-600 mt-1">
+                                <span>Discount</span>
+                                <span>-₹{active.discountAmount.toLocaleString()}</span>
+                            </div>
+                        ) : null}
+                        {active.gstPercentage && active.gstPercentage > 0 ? (
+                             <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                                <span>GST ({active.gstPercentage}%)</span>
+                                <span>+₹{((active.price - (active.discountAmount || 0)) * (active.gstPercentage / 100)).toLocaleString()}</span>
+                             </div>
+                        ) : null}
+                        <div className="flex justify-between items-end mt-4">
+                            <span className="text-sm text-foreground font-bold uppercase">Total</span>
+                            <span className="text-3xl font-black text-primary">
+                                ₹{( (active.price - (active.discountAmount || 0)) * (1 + (active.gstPercentage || 0) / 100) ).toLocaleString()}
+                            </span>
                         </div>
-                        <div className="flex justify-between items-center pt-2 mt-2 border-t border-dashed">
-                          <span className="text-xs font-bold uppercase">Total Amount</span>
-                          <span className="text-2xl font-bold text-primary">
-                            ₹{total.toLocaleString()}
-                          </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm font-bold">
+                      <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
+                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Capacity</p>
+                        {active.capacity ? `${active.capacity} Guests` : "N/A"}
+                      </div>
+                      <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
+                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Rating</p>
+                        <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                            {active.rating ? active.rating.toFixed(1) : "N/A"}
                         </div>
                       </div>
-                    );
-                  })()}
-                </div>
-                <div className="py-6 border-b">
-                  <h3 className="font-serif font-semibold mb-4">Top Amenities</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {activeProperty.amenities?.slice(0, 4).map((a, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full" /> {a}
-                      </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
-                <div className="pt-6 space-y-4">
-                  <button
-                    onClick={() => handleExternalBook(activeProperty)}
-                    className="w-full py-3 bg-primary text-white font-bold rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest hover:opacity-90 transition-all"
+
+                <div className="mt-8 space-y-4">
+                  <button 
+                    onClick={handleBookNow}
+                    className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
                   >
-                    {getActionButtonText(activeProperty.propertyType).primary}{" "}
-                    <ArrowRight size={18} />
+                    Book Your Stay <ArrowRight size={20} />
                   </button>
+                  
+                  {/* Added Call and Email buttons as per image */}
                   <div className="grid grid-cols-2 gap-3">
-                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors">
-                      <Phone size={16} /> Call
+                    <button 
+                      onClick={() => window.location.href = `tel:+911234567890`}
+                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
+                    >
+                      <Phone size={18} /> Call
                     </button>
-                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors">
-                      <Mail size={16} /> Email
+                    <button 
+                      onClick={() => window.location.href = `mailto:info@kennediahotels.com`}
+                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
+                    >
+                      <Mail size={18} /> Email
                     </button>
                   </div>
                 </div>
@@ -502,8 +339,9 @@ export default function PropertiesSection() {
             )}
           </div>
         ) : (
-          <div className="text-center py-20 bg-secondary/10 rounded-xl border-2 border-dashed border-primary/20">
-            <p className="text-muted-foreground">No matching properties found.</p>
+          <div className="text-center py-24 bg-card border-2 border-dashed border-border rounded-3xl">
+            <Building2 className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <p className="text-xl text-muted-foreground font-serif">No active properties found.</p>
           </div>
         )}
       </div>
