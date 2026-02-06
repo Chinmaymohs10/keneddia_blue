@@ -23,7 +23,7 @@ const STYLE_CONFIG = {
 const TEXT_CONTENT = {
   header: {
     badge: "Latest News",
-    title: "News & Updates",
+    title: "Hotel Updates", // Updated for clarity
   },
   aria: {
     previous: "Previous",
@@ -58,35 +58,43 @@ export default function HotelNewsUpdates() {
   const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {
-    const fetchHotelNews = async () => {
-      try {
-        setLoading(true);
-        // Call API with Hotel category filter
-        const res = await getAllNews({ category: "", page: 0, size: 10 });
-        
-        // Handle paginated response structure
-        const data = res?.data?.content || res?.content || [];
-        
-        // Filter for active items only
-        const activeItems = Array.isArray(data) 
-          ? data.filter((item: NewsItem) => item.active === true)
-          : [];
-        
-        setNewsItems(activeItems);
-      } catch (error) {
-        console.error("Error fetching hotel news:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchHotelNews = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetching 20 items to ensure we have enough "Hotel" items after filtering
+      const res = await getAllNews({ category: "", page: 0, size: 20 });
+      
+      // Get the array from 'content' based on your JSON structure
+      const data = res?.content || res?.data?.content || [];
+      
+      const processedItems = Array.isArray(data) 
+        ? data
+            .filter((item: NewsItem) => 
+              item.active === true && 
+              // Filter by badgeType instead of category
+              item.badgeType?.toLowerCase() === "hotel"
+            )
+            // Sort by newsDate or dateBadge (Newest first)
+            .sort((a, b) => new Date(b.newsDate).getTime() - new Date(a.newsDate).getTime())
+            // Limit to exactly 6
+            .slice(0, 6)
+        : [];
+      
+      setNewsItems(processedItems);
+    } catch (error) {
+      console.error("Error fetching hotel news:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchHotelNews();
-  }, []);
+  fetchHotelNews();
+}, []);
 
   const handlePrev = () => swiperRef.current?.slidePrev();
   const handleNext = () => swiperRef.current?.slideNext();
 
-  // Loading state
   if (loading) {
     return (
       <section className="py-2 bg-background">
@@ -99,7 +107,6 @@ export default function HotelNewsUpdates() {
     );
   }
 
-  // Don't render if no news items
   if (newsItems.length === 0) return null;
 
   return (
@@ -136,7 +143,8 @@ function SectionHeader({
 
       <div className="flex items-center gap-4">
         <Link
-          to="/news"
+          // to="/news"
+          to="#"
           className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer"
         >
           View All
@@ -218,7 +226,6 @@ function NewsCarousel({
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
-  // Format date (YYYY-MM-DD to DD MMM YYYY)
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -234,7 +241,6 @@ function NewsCard({ item }: { item: NewsItem }) {
 
   return (
     <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
-      {/* Image */}
       <div className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}>
         <OptimizedImage
           src={item.imageUrl}
@@ -248,7 +254,6 @@ function NewsCard({ item }: { item: NewsItem }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-5 flex flex-col flex-grow">
         <div className="mb-2 text-xs font-bold text-primary tracking-wider uppercase">
           {item.category} • {item.badgeType}
@@ -264,7 +269,8 @@ function NewsCard({ item }: { item: NewsItem }) {
 
         <div className="mt-auto pt-2 border-t border-border/50">
           <Link
-            to={`/news/${item.id}`}
+            // to={`/news/${item.id}`}
+            to={`#`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
           >
             {item.ctaText || "Read Story"}

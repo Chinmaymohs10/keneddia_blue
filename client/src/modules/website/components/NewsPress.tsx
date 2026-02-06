@@ -35,7 +35,6 @@ const TEXT_CONTENT = {
   },
 } as const;
 
-// Interface for the API Response
 interface NewsItem {
   id: number;
   category: string;
@@ -61,9 +60,17 @@ export default function NewsPress() {
         // Call API with required params
         const res = await getAllNews({ category: "", page: 0, size: 10 });
         
-        // Handle paginated response structure from your JSON
+        // 1. Extract data from response
         const data = res?.data?.content || res?.content || [];
-        setNewsItems(Array.isArray(data) ? data : []);
+        
+        // 2. Sort by date (descending) and Slice to latest 6
+        const processedData = Array.isArray(data) 
+          ? [...data]
+              .sort((a, b) => new Date(b.dateBadge).getTime() - new Date(a.dateBadge).getTime())
+              .slice(0, 6) 
+          : [];
+
+        setNewsItems(processedData);
       } catch (error) {
         console.error("Error fetching news:", error);
       } finally {
@@ -117,9 +124,8 @@ function SectionHeader({ title, onPrev, onNext }: { title: string; onPrev: () =>
 
       <div className="flex items-center gap-4">
         <Link 
-        // to="/news" 
-        to="#" 
-        className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
+          to="#" 
+          className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all">
           View All <ArrowUpRight className="w-4 h-4" />
         </Link>
         <div className="flex gap-2">
@@ -149,6 +155,7 @@ function NewsCarousel({ items, swiperRef }: { items: NewsItem[]; swiperRef: any 
       modules={[Autoplay, Navigation]}
       spaceBetween={24}
       slidesPerView={1}
+      // Loop only if we have more items than shown slides
       loop={items.length > 3}
       autoplay={{ delay: 5000, disableOnInteraction: false }}
       breakpoints={{
@@ -168,7 +175,6 @@ function NewsCarousel({ items, swiperRef }: { items: NewsItem[]; swiperRef: any 
 }
 
 function NewsCard({ item }: { item: NewsItem }) {
-  // Simple date format (YYYY-MM-DD to DD MMM YYYY)
   const date = new Date(item.dateBadge).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -205,8 +211,7 @@ function NewsCard({ item }: { item: NewsItem }) {
 
         <div className="mt-auto pt-2 border-t border-border/50">
           <Link
-            // to={`/news/${item.id}`} key={item.id}
-            to={`#`} key={item.id}
+            to={`#`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
           >
             {item.ctaText}

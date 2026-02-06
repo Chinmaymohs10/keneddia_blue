@@ -55,7 +55,8 @@ export default function PropertiesSection() {
     media: [{ url: p.image.src }],
   }));
 
-  const [apiProperties, setApiProperties] = useState<ApiProperty[]>(fallbackData);
+  const [apiProperties, setApiProperties] =
+    useState<ApiProperty[]>(fallbackData);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
@@ -70,31 +71,39 @@ export default function PropertiesSection() {
 
         if (Array.isArray(rawData)) {
           // Map and Flatten the nested API structure
-          const formattedProperties: ApiProperty[] = rawData.map((item: any) => {
-            const parent = item.propertyResponseDTO;
-            // Get the first active listing if it exists
-            const listing = item.propertyListingResponseDTOS?.find((l: any) => l.isActive) || item.propertyListingResponseDTOS?.[0];
+          const formattedProperties: ApiProperty[] = rawData.map(
+            (item: any) => {
+              const parent = item.propertyResponseDTO;
+              // Get the first active listing if it exists
+              const listing =
+                item.propertyListingResponseDTOS?.find(
+                  (l: any) => l.isActive,
+                ) || item.propertyListingResponseDTOS?.[0];
 
-            return {
-              id: listing?.id || parent?.id,
-              propertyId: parent?.id,
-              propertyName: parent?.propertyName || "Unnamed Property",
-              propertyType: listing?.propertyType || parent?.propertyTypes?.[0] || "Property",
-              city: parent?.locationName || "Unknown",
-              mainHeading: listing?.mainHeading || parent?.propertyName,
-              subTitle: listing?.subTitle || "",
-              fullAddress: listing?.fullAddress || parent?.address,
-              tagline: listing?.tagline || "",
-              rating: listing?.rating || null,
-              capacity: listing?.capacity || null,
-              price: listing?.price || 0,
-              gstPercentage: listing?.gstPercentage || 0,
-              discountAmount: listing?.discountAmount || 0,
-              amenities: listing?.amenities || [],
-              isActive: parent?.isActive,
-              media: listing?.media || [],
-            };
-          });
+              return {
+                id: listing?.id || parent?.id,
+                propertyId: parent?.id,
+                propertyName: parent?.propertyName || "Unnamed Property",
+                propertyType:
+                  listing?.propertyType ||
+                  parent?.propertyTypes?.[0] ||
+                  "Property",
+                city: parent?.locationName || "Unknown",
+                mainHeading: listing?.mainHeading || parent?.propertyName,
+                subTitle: listing?.subTitle || "",
+                fullAddress: listing?.fullAddress || parent?.address,
+                tagline: listing?.tagline || "",
+                rating: listing?.rating || null,
+                capacity: listing?.capacity || null,
+                price: listing?.price || 0,
+                gstPercentage: listing?.gstPercentage || 0,
+                discountAmount: listing?.discountAmount || 0,
+                amenities: listing?.amenities || [],
+                isActive: parent?.isActive,
+                media: listing?.media || [],
+              };
+            },
+          );
 
           // Only show properties that are active and have at least one listing
           setApiProperties(formattedProperties.filter((p) => p.isActive));
@@ -109,12 +118,16 @@ export default function PropertiesSection() {
     fetchFullPropertyData();
   }, []);
 
-  const uniqueCities = ["All Cities", ...Array.from(new Set(apiProperties.map((p) => p.city)))];
+  const uniqueCities = [
+    "All Cities",
+    ...Array.from(new Set(apiProperties.map((p) => p.city))),
+  ];
   const uniqueTypes = ["All Types", "Hotel", "Cafe", "Restaurant"];
 
   const filteredProperties = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
-    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
+    const matchType =
+      selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
 
@@ -160,20 +173,22 @@ export default function PropertiesSection() {
   };
 
   const getPropertyDetailUrl = (property: ApiProperty) => {
-    const citySlug = getCitySlug(property.city);
-    return `/hotels/${citySlug}/${property.id}`;
+    return `/hotels/${property.propertyId}`;
   };
 
   useEffect(() => {
     if (filteredProperties.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev >= filteredProperties.length - 1 ? 0 : prev + 1));
+      setActiveIndex((prev) =>
+        prev >= filteredProperties.length - 1 ? 0 : prev + 1,
+      );
     }, 8000);
     return () => clearInterval(interval);
   }, [filteredProperties.length]);
 
   const activeProperty = filteredProperties[activeIndex];
-  const nextProperty = filteredProperties[(activeIndex + 1) % filteredProperties.length];
+  const nextProperty =
+    filteredProperties[(activeIndex + 1) % filteredProperties.length];
 
   const handleShare = async (property: ApiProperty) => {
     const shareData = {
@@ -187,7 +202,9 @@ export default function PropertiesSection() {
         await navigator.clipboard.writeText(shareData.url);
         toast.success("Link copied!");
       }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleExternalBook = (property: ApiProperty) => {
@@ -197,15 +214,19 @@ export default function PropertiesSection() {
 
   const getActionButtonText = (type: string) => {
     switch (type) {
-      case "Hotel": return { primary: "Book Room", secondary: "Reserve Table" };
+      case "Hotel":
+        return { primary: "Book Room", secondary: "Reserve Table" };
       case "Cafe":
-      case "Restaurant": return { primary: "Reserve Table", secondary: null };
-      default: return { primary: "Book Now", secondary: null };
+      case "Restaurant":
+        return { primary: "Reserve Table", secondary: null };
+      default:
+        return { primary: "Book Now", secondary: null };
     }
   };
 
   const calculatePricing = (property?: ApiProperty) => {
-    if (!property || !property.price) return { gstAmount: 0, discount: 0, total: 0 };
+    if (!property || !property.price)
+      return { gstAmount: 0, discount: 0, total: 0 };
     const basePrice = property.price;
     const discount = property.discountAmount || 0;
     const gstRate = property.gstPercentage || 0;
@@ -220,20 +241,31 @@ export default function PropertiesSection() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-8">
           <div className="flex items-center gap-4">
             <div>
-              <h2 className="text-2xl md:text-4xl font-serif text-foreground mb-1.5">Explore Our Properties</h2>
+              <h2 className="text-2xl md:text-4xl font-serif text-foreground mb-1.5">
+                Explore Our Properties
+              </h2>
               <div className="w-16 h-0.5 bg-primary rounded-full" />
             </div>
-            {loading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
+            {loading && (
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
               <select
                 value={selectedType}
-                onChange={(e) => { setSelectedType(e.target.value); setActiveIndex(0); }}
+                onChange={(e) => {
+                  setSelectedType(e.target.value);
+                  setActiveIndex(0);
+                }}
                 className="appearance-none bg-background border rounded-full py-2 pl-4 pr-10 text-sm font-medium outline-none shadow-sm transition-all"
               >
-                {uniqueTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                {uniqueTypes.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
               </select>
               <Building2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             </div>
@@ -241,10 +273,17 @@ export default function PropertiesSection() {
             <div className="relative">
               <select
                 value={selectedCity}
-                onChange={(e) => { setSelectedCity(e.target.value); setActiveIndex(0); }}
+                onChange={(e) => {
+                  setSelectedCity(e.target.value);
+                  setActiveIndex(0);
+                }}
                 className="appearance-none bg-background border rounded-full py-2 pl-4 pr-10 text-sm font-medium outline-none shadow-sm transition-all"
               >
-                {uniqueCities.map((city) => <option key={city} value={city}>{city}</option>)}
+                {uniqueCities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
               </select>
               <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             </div>
@@ -267,16 +306,27 @@ export default function PropertiesSection() {
                   <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
                   <div className="absolute inset-0 flex items-center px-8 lg:px-12">
                     <div className="max-w-xl text-white">
-                      <button onClick={() => handleShare(property)} className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20">
+                      <button
+                        onClick={() => handleShare(property)}
+                        className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20"
+                      >
                         <Share2 className="w-4 h-4" />
                       </button>
-                      <p className="text-white/90 text-sm mb-4 line-clamp-2">{property.tagline}</p>
+                      <p className="text-white/90 text-sm mb-4 line-clamp-2">
+                        {property.tagline}
+                      </p>
                       <h1 className="text-3xl lg:text-5xl font-serif mb-4 leading-tight">
-                        {property.mainHeading}<br/>
-                        <span className="italic font-light">{property.subTitle}</span>
+                        {property.mainHeading}
+                        <br />
+                        <span className="italic font-light">
+                          {property.subTitle}
+                        </span>
                       </h1>
                       <div className="flex items-center gap-4 mb-6">
-                        <div className="flex items-center"><MapPin className="w-4 h-4 mr-2"/>{property.city}</div>
+                        <div className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          {property.city}
+                        </div>
                         {property.rating && (
                           <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full">
                             <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -284,9 +334,14 @@ export default function PropertiesSection() {
                           </div>
                         )}
                       </div>
-                      <Link to={getPropertyDetailUrl(property)} className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group">
-                        Explore Now 
-                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40"><ArrowRight size={20}/></div>
+                      <Link
+                        to={getPropertyDetailUrl(property)}
+                        className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group"
+                      >
+                        Explore Now
+                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40">
+                          <ArrowRight size={20} />
+                        </div>
                       </Link>
                     </div>
                   </div>
@@ -298,50 +353,87 @@ export default function PropertiesSection() {
               <div className="bg-card border rounded-2xl p-6 shadow-lg">
                 <div className="pb-4 border-b">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-serif font-semibold">Property Details</h3>
+                    <h3 className="text-xl font-serif font-semibold">
+                      Property Details
+                    </h3>
                     <Building2 className="text-primary" />
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-xs text-muted-foreground uppercase mb-1">Capacity</p>
-                      <p className="font-semibold">{activeProperty.capacity || "N/A"}</p>
+                      <p className="text-xs text-muted-foreground uppercase mb-1">
+                        Capacity
+                      </p>
+                      <p className="font-semibold">
+                        {activeProperty.capacity || "N/A"}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground uppercase mb-1">Base Price</p>
-                      <p className="text-xl font-bold">₹{activeProperty.price.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground uppercase mb-1">
+                        Base Price
+                      </p>
+                      <p className="text-xl font-bold">
+                        ₹{activeProperty.price.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                   {(() => {
-                    const { gstAmount, discount, total } = calculatePricing(activeProperty);
+                    const { gstAmount, discount, total } =
+                      calculatePricing(activeProperty);
                     return (
                       <div className="space-y-1">
-                        <div className="flex justify-between text-xs"><span>Discount</span><span className="text-green-600">-₹{discount.toLocaleString()}</span></div>
-                        <div className="flex justify-between text-xs"><span>GST ({activeProperty.gstPercentage}%)</span><span>+₹{gstAmount.toLocaleString()}</span></div>
+                        <div className="flex justify-between text-xs">
+                          <span>Discount</span>
+                          <span className="text-green-600">
+                            -₹{discount.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span>GST ({activeProperty.gstPercentage}%)</span>
+                          <span>+₹{gstAmount.toLocaleString()}</span>
+                        </div>
                         <div className="flex justify-between items-center pt-2 mt-2 border-t border-dashed">
-                          <span className="text-xs font-bold uppercase">Total Amount</span>
-                          <span className="text-2xl font-bold text-primary">₹{total.toLocaleString()}</span>
+                          <span className="text-xs font-bold uppercase">
+                            Total Amount
+                          </span>
+                          <span className="text-2xl font-bold text-primary">
+                            ₹{total.toLocaleString()}
+                          </span>
                         </div>
                       </div>
                     );
                   })()}
                 </div>
                 <div className="py-6 border-b">
-                  <h3 className="font-serif font-semibold mb-4">Top Amenities</h3>
+                  <h3 className="font-serif font-semibold mb-4">
+                    Top Amenities
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {activeProperty.amenities?.slice(0, 4).map((a, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full" /> {a}
+                      <div
+                        key={i}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full" />{" "}
+                        {a}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="pt-6 space-y-4">
-                  <button onClick={() => handleExternalBook(activeProperty)} className="w-full py-3 bg-primary text-white font-bold rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest hover:opacity-90 transition-all">
-                    {getActionButtonText(activeProperty.propertyType).primary} <ArrowRight size={18}/>
+                  <button
+                    onClick={() => handleExternalBook(activeProperty)}
+                    className="w-full py-3 bg-primary text-white font-bold rounded-lg flex items-center justify-center gap-2 uppercase tracking-widest hover:opacity-90 transition-all"
+                  >
+                    {getActionButtonText(activeProperty.propertyType).primary}{" "}
+                    <ArrowRight size={18} />
                   </button>
                   <div className="grid grid-cols-2 gap-3">
-                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors"><Phone size={16}/> Call</button>
-                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors"><Mail size={16}/> Email</button>
+                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors">
+                      <Phone size={16} /> Call
+                    </button>
+                    <button className="py-2.5 border rounded-lg flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/10 transition-colors">
+                      <Mail size={16} /> Email
+                    </button>
                   </div>
                 </div>
               </div>
@@ -349,7 +441,9 @@ export default function PropertiesSection() {
           </div>
         ) : (
           <div className="text-center py-20 bg-secondary/10 rounded-xl border-2 border-dashed border-primary/20">
-            <p className="text-muted-foreground">No matching properties found.</p>
+            <p className="text-muted-foreground">
+              No matching properties found.
+            </p>
           </div>
         )}
       </div>
