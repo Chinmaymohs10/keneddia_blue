@@ -40,6 +40,14 @@ const PropertyDetail = ({ property, onBack }) => {
   // Normalize the base property data immediately
   const baseProperty = property?.propertyResponseDTO ?? property;
   const propId = baseProperty?.id;
+  const extractAmenitiesFromProperty = (property) => {
+    const listings = property?.propertyListingResponseDTOS || [];
+
+    if (!listings.length) return [];
+
+    // Merge + dedupe amenities
+    return Array.from(new Set(listings.flatMap((l) => l.amenities || [])));
+  };
 
   const [data, setData] = useState({
     overview: {
@@ -49,7 +57,7 @@ const PropertyDetail = ({ property, onBack }) => {
       propertyType: baseProperty?.propertyTypes?.[0] || "Hotel",
     },
     rooms: [],
-    amenities: [],
+     amenities: extractAmenitiesFromProperty(property),
     gallery: [],
     events: [],
     pricing: [],
@@ -87,8 +95,10 @@ const PropertyDetail = ({ property, onBack }) => {
       setData((prev) => ({
         ...prev,
         rooms: Array.isArray(roomsRes) ? roomsRes : [],
-        gallery: galleryRes?.content || (Array.isArray(galleryRes) ? galleryRes : []),
+        gallery:
+          galleryRes?.content || (Array.isArray(galleryRes) ? galleryRes : []),
         policies: policiesRes || {},
+        amenities: extractAmenitiesFromProperty(property),
       }));
     } catch (error) {
       console.error("Sync Error:", error);
@@ -125,12 +135,13 @@ const PropertyDetail = ({ property, onBack }) => {
 
   const propertyType = data.overview.propertyType;
   const tabsByPropertyType = {
-    Hotel: ["overview", "rooms", "amenities", "gallery", "policies", "events"],
+    Hotel: ["overview", "rooms", "amenities", "gallery", "policies"],
     Cafe: ["overview", "menu", "tables", "gallery"],
     Restaurant: ["overview", "menu", "gallery", "events"],
   };
 
-  const currentTabs = tabsByPropertyType[propertyType] || tabsByPropertyType["Hotel"];
+  const currentTabs =
+    tabsByPropertyType[propertyType] || tabsByPropertyType["Hotel"];
 
   const getModalNameForTab = (tab) => {
     const map = {
@@ -149,7 +160,7 @@ const PropertyDetail = ({ property, onBack }) => {
     const currentPropertyInfo = data.overview;
 
     const commonProps = {
-      propertyData: currentPropertyInfo, 
+      propertyData: currentPropertyInfo,
       data: data[activeTab],
       onEdit: (item) => toggleModal(getModalNameForTab(activeTab), true, item),
       onAdd: () => toggleModal(getModalNameForTab(activeTab), true),
@@ -174,7 +185,10 @@ const PropertyDetail = ({ property, onBack }) => {
         return <GalleryTab {...commonProps} />;
       case "events":
         return (
-          <EventsTab propertyData={currentPropertyInfo} refreshData={fetchAllData} />
+          <EventsTab
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
         );
       case "pricing":
         return <PricingTab {...commonProps} />;
@@ -248,7 +262,11 @@ const PropertyDetail = ({ property, onBack }) => {
                     ? "bg-white border-x border-t text-blue-600 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 }`}
-                style={activeTab === tab ? { color: colors.primary, borderColor: "#e5e7eb" } : {}}
+                style={
+                  activeTab === tab
+                    ? { color: colors.primary, borderColor: "#e5e7eb" }
+                    : {}
+                }
               >
                 {tab}
               </button>
