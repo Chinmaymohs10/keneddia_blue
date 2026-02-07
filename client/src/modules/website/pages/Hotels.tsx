@@ -608,34 +608,6 @@ export default function Hotels() {
                     <p className="text-muted-foreground leading-relaxed text-base font-light">
                       {displayAboutSections[currentAboutIndex].description}
                     </p>
-
-                    {/* Recognition Stats - Placeholder for future */}
-                    {/* <div className="grid grid-cols-3 gap-4 pt-3">
-                      <div>
-                        <h4 className="text-2xl font-serif text-primary mb-0.5">
-                          50+
-                        </h4>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Locations
-                        </p>
-                      </div>
-                      <div>
-                        <h4 className="text-2xl font-serif text-primary mb-0.5">
-                          5-Star
-                        </h4>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Rating
-                        </p>
-                      </div>
-                      <div>
-                        <h4 className="text-2xl font-serif text-primary mb-0.5">
-                          100K+
-                        </h4>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                          Guests
-                        </p>
-                      </div>
-                    </div> */}
                   </motion.div>
                 </AnimatePresence>
 

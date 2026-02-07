@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 import {
   Check,
   MapPin,
@@ -7,6 +8,7 @@ import {
   ChevronRight,
   Info,
   MessageSquare,
+  Calendar,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
@@ -49,12 +51,18 @@ interface RightSidebarProps {
   hotel: Hotel;
   selectedRoom: Room | null;
   onBookNow: () => void;
+  checkInDate: Date | null;
+  checkOutDate: Date | null;
+  numberOfNights: number;
 }
 
 export default function RightSidebar({
   hotel,
   selectedRoom,
   onBookNow,
+  checkInDate,
+  checkOutDate,
+  numberOfNights,
 }: RightSidebarProps) {
   const scrollToSection = (id: string, offset = 150) => {
     const element = document.getElementById(id);
@@ -81,6 +89,13 @@ export default function RightSidebar({
     return typeof price === "number" ? price : 0;
   };
 
+  // Calculate total price based on nights
+  const calculateTotalPrice = (room: Room | null): number => {
+    if (!room) return 0;
+    const roomPrice = getRoomPrice(room);
+    return roomPrice * numberOfNights;
+  };
+
   // Generate dynamic map URL based on coordinates
   const getMapEmbedUrl = () => {
     if (hotel.coordinates?.lat && hotel.coordinates?.lng) {
@@ -94,7 +109,7 @@ export default function RightSidebar({
 
   return (
     <div className="space-y-6 sticky top-24">
-      {/* Price Summary Card - STICKY PRIORITY */}
+      {/* Price Summary Card - UPDATED WITH DATES */}
       <div
         className={`bg-card border ${selectedRoom ? "border-primary ring-1 ring-primary" : "border-border"} rounded-xl p-5 shadow-lg relative overflow-hidden transition-all text-left`}
       >
@@ -103,15 +118,62 @@ export default function RightSidebar({
         </div>
 
         <div className="relative z-10 text-left">
+          {/* Date Display Section */}
+          {checkInDate && checkOutDate && (
+            <div className="mb-4 pb-4 border-b border-border">
+              <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                <div className="text-left">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                    Check-in
+                  </p>
+                  <p className="font-semibold text-foreground text-xs">
+                    {format(checkInDate, "dd MMM")}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {format(checkInDate, "EEE")}
+                  </p>
+                </div>
+                
+                <div className="text-center px-2">
+                  <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg px-3 py-2">
+                    <Calendar className="w-4 h-4 text-primary mb-1" />
+                    <p className="font-bold text-primary text-sm">
+                      {numberOfNights}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground uppercase">
+                      {numberOfNights === 1 ? "Night" : "Nights"}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                    Check-out
+                  </p>
+                  <p className="font-semibold text-foreground text-xs">
+                    {format(checkOutDate, "dd MMM")}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {format(checkOutDate, "EEE")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Price Display Section */}
           <div className="flex justify-between items-end mb-4 text-left">
             <div className="text-left w-full">
               {selectedRoom ? (
                 <>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                    Total Price for 1 Night
+                    Total Price for {numberOfNights} {numberOfNights === 1 ? "Night" : "Nights"}
                   </p>
-                  <div className="flex items-baseline gap-1 mt-1">
+                  <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-serif font-bold text-primary">
+                      {formatPrice(calculateTotalPrice(selectedRoom))}
+                    </span>
+                    <span className="text-xs text-muted-foreground line-through">
                       {formatPrice(getRoomPrice(selectedRoom))}
                     </span>
                   </div>
