@@ -69,6 +69,7 @@ function ManageProperties() {
       setLoading(false);
     }
   }, []);
+  
 
   useEffect(() => {
     fetchData();
