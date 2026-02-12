@@ -52,7 +52,9 @@ const CarouselItem = ({
   return (
     <div
       className={`absolute inset-0 transition-all duration-1000 ${
-        isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+        isActive
+          ? "opacity-100 z-10 pointer-events-auto"
+          : "opacity-0 z-0 pointer-events-none"
       }`}
     >
       {imageUrl ? (
@@ -75,7 +77,7 @@ const CarouselItem = ({
           >
             <Share2 className="w-4 h-4" />
           </button>
-          
+
           {property.tagline && (
             <p className="text-white/90 text-sm mb-4 line-clamp-2 italic font-light tracking-wide">
               {property.tagline}
@@ -85,7 +87,7 @@ const CarouselItem = ({
           <h1 className="text-3xl lg:text-5xl font-serif mb-4 leading-tight">
             {property.propertyName}
             {property.mainHeading && (
-               <span className="block italic font-light text-xl lg:text-2xl mt-1 opacity-80">
+              <span className="block italic font-light text-xl lg:text-2xl mt-1 opacity-80">
                 {property.mainHeading}
               </span>
             )}
@@ -99,13 +101,23 @@ const CarouselItem = ({
             {property.rating && (
               <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="font-bold text-sm">{property.rating.toFixed(1)}</span>
+                <span className="font-bold text-sm">
+                  {property.rating.toFixed(1)}
+                </span>
               </div>
             )}
           </div>
 
           <button
-            onClick={() => navigate(`/hotels/${property.propertyId}`)}
+            onClick={() => {
+              const type = property.propertyType?.toLowerCase();
+
+              if (type === "resturant" || type === "restaurant") {
+                navigate(`/resturant/${property.propertyId}`);
+              } else {
+                navigate(`/hotels/${property.propertyId}`);
+              }
+            }}
             className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group"
           >
             Explore Now
@@ -158,9 +170,10 @@ export default function PropertiesSection() {
                 propertyId: parent.id, // Fixed: correctly mapping parent propertyId
                 listingId: l.id,
                 propertyName: parent.propertyName || "Unnamed Property",
-                propertyType: l.propertyType || parent.propertyTypes?.[0] || "Property",
+                propertyType:
+                  l.propertyType || parent.propertyTypes?.[0] || "Property",
                 city: parent.locationName,
-                mainHeading: l.mainHeading || "", 
+                mainHeading: l.mainHeading || "",
                 subTitle: l.subTitle || "",
                 fullAddress: l.fullAddress || parent.address,
                 tagline: l.tagline || "",
@@ -174,7 +187,7 @@ export default function PropertiesSection() {
                 media: l.media || [],
               }));
           });
-          
+
           setApiProperties([...formatted].reverse());
         }
       } catch (error) {
@@ -212,12 +225,15 @@ export default function PropertiesSection() {
 
   const filtered = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
-    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
+    const matchType =
+      selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
 
-  const nextSlide = () => setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
+  const nextSlide = () =>
+    setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
+  const prevSlide = () =>
+    setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
 
   useEffect(() => {
     if (filtered.length <= 1) return;
@@ -232,20 +248,50 @@ export default function PropertiesSection() {
       <div className="container mx-auto px-4 md:px-12">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
           <div className="space-y-2">
-            <h2 className="text-3xl md:text-5xl font-serif text-foreground">Explore Our Properties</h2>
+            <h2 className="text-3xl md:text-5xl font-serif text-foreground">
+              Explore Our Properties
+            </h2>
             <div className="w-24 h-1 bg-primary rounded-full" />
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <select value={selectedType} onChange={(e) => { setSelectedType(e.target.value); setActiveIndex(0); }} className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer">
+            <select
+              value={selectedType}
+              onChange={(e) => {
+                setSelectedType(e.target.value);
+                setActiveIndex(0);
+              }}
+              className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
+            >
               <option value="All Types">All Types</option>
-              {Array.from(new Set(apiProperties.map(p => p.propertyType))).map(t => <option key={t} value={t}>{t}</option>)}
+              {Array.from(
+                new Set(apiProperties.map((p) => p.propertyType)),
+              ).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
-            <select value={selectedCity} onChange={(e) => { setSelectedCity(e.target.value); setActiveIndex(0); }} className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer">
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setActiveIndex(0);
+              }}
+              className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
+            >
               <option value="All Cities">All Cities</option>
-              {Array.from(new Set(apiProperties.map(p => p.city))).map(c => <option key={c} value={c}>{c}</option>)}
+              {Array.from(new Set(apiProperties.map((p) => p.city))).map(
+                (c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ),
+              )}
             </select>
-            {loading && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
+            {loading && (
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            )}
           </div>
         </div>
 
@@ -253,13 +299,28 @@ export default function PropertiesSection() {
           <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
             <div className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10">
               {filtered.map((p, i) => (
-                <CarouselItem key={`${p.listingId}-${i}`} property={p} isActive={i === activeIndex} onShare={() => {}} />
+                <CarouselItem
+                  key={`${p.listingId}-${i}`}
+                  property={p}
+                  isActive={i === activeIndex}
+                  onShare={() => {}}
+                />
               ))}
-              
+
               {filtered.length > 1 && (
                 <>
-                  <button onClick={prevSlide} className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"><ChevronLeft size={28} /></button>
-                  <button onClick={nextSlide} className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"><ChevronRight size={28} /></button>
+                  <button
+                    onClick={prevSlide}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <ChevronLeft size={28} />
+                  </button>
+                  <button
+                    onClick={nextSlide}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all"
+                  >
+                    <ChevronRight size={28} />
+                  </button>
                 </>
               )}
             </div>
@@ -267,44 +328,68 @@ export default function PropertiesSection() {
             {active && (
               <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl flex flex-col justify-between">
                 <div className="space-y-6">
-                  <h3 className="text-2xl font-serif font-bold text-foreground">{active.propertyName}</h3>
-                  
+                  <h3 className="text-2xl font-serif font-bold text-foreground">
+                    {active.propertyName}
+                  </h3>
+
                   <div className="space-y-4">
                     <div className="flex flex-col pb-4 border-b border-border">
-                        <div className="flex justify-between items-end">
-                            <span className="text-sm text-muted-foreground uppercase font-bold">Base Price</span>
-                            <span className="text-xl font-semibold">₹{active.price.toLocaleString()}</span>
+                      <div className="flex justify-between items-end">
+                        <span className="text-sm text-muted-foreground uppercase font-bold">
+                          Base Price
+                        </span>
+                        <span className="text-xl font-semibold">
+                          ₹{active.price.toLocaleString()}
+                        </span>
+                      </div>
+                      {active.discountAmount && active.discountAmount > 0 ? (
+                        <div className="flex justify-between text-sm text-green-600 mt-1">
+                          <span>Discount</span>
+                          <span>
+                            -₹{active.discountAmount.toLocaleString()}
+                          </span>
                         </div>
-                        {active.discountAmount && active.discountAmount > 0 ? (
-                            <div className="flex justify-between text-sm text-green-600 mt-1">
-                                <span>Discount</span>
-                                <span>-₹{active.discountAmount.toLocaleString()}</span>
-                            </div>
-                        ) : null}
-                        {active.gstPercentage && active.gstPercentage > 0 ? (
-                             <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                                <span>GST ({active.gstPercentage}%)</span>
-                                <span>+₹{((active.price - (active.discountAmount || 0)) * (active.gstPercentage / 100)).toLocaleString()}</span>
-                             </div>
-                        ) : null}
-                        <div className="flex justify-between items-end mt-4">
-                            <span className="text-sm text-foreground font-bold uppercase">Total</span>
-                            <span className="text-3xl font-black text-primary">
-                                ₹{( (active.price - (active.discountAmount || 0)) * (1 + (active.gstPercentage || 0) / 100) ).toLocaleString()}
-                            </span>
+                      ) : null}
+                      {active.gstPercentage && active.gstPercentage > 0 ? (
+                        <div className="flex justify-between text-sm text-muted-foreground mt-1">
+                          <span>GST ({active.gstPercentage}%)</span>
+                          <span>
+                            +₹
+                            {(
+                              (active.price - (active.discountAmount || 0)) *
+                              (active.gstPercentage / 100)
+                            ).toLocaleString()}
+                          </span>
                         </div>
+                      ) : null}
+                      <div className="flex justify-between items-end mt-4">
+                        <span className="text-sm text-foreground font-bold uppercase">
+                          Total
+                        </span>
+                        <span className="text-3xl font-black text-primary">
+                          ₹
+                          {(
+                            (active.price - (active.discountAmount || 0)) *
+                            (1 + (active.gstPercentage || 0) / 100)
+                          ).toLocaleString()}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 text-sm font-bold">
                       <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Capacity</p>
+                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">
+                          Capacity
+                        </p>
                         {active.capacity ? `${active.capacity} Guests` : "N/A"}
                       </div>
                       <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">Rating</p>
+                        <p className="text-[10px] text-muted-foreground mb-1 uppercase">
+                          Rating
+                        </p>
                         <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            {active.rating ? active.rating.toFixed(1) : "N/A"}
+                          <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                          {active.rating ? active.rating.toFixed(1) : "N/A"}
                         </div>
                       </div>
                     </div>
@@ -312,23 +397,27 @@ export default function PropertiesSection() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  <button 
+                  <button
                     onClick={handleBookNow}
                     className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
                   >
                     Book Your Stay <ArrowRight size={20} />
                   </button>
-                  
+
                   {/* Added Call and Email buttons as per image */}
                   <div className="grid grid-cols-2 gap-3">
-                    <button 
-                      onClick={() => window.location.href = `tel:+911234567890`}
+                    <button
+                      onClick={() =>
+                        (window.location.href = `tel:+911234567890`)
+                      }
                       className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
                     >
                       <Phone size={18} /> Call
                     </button>
-                    <button 
-                      onClick={() => window.location.href = `mailto:info@kennediahotels.com`}
+                    <button
+                      onClick={() =>
+                        (window.location.href = `mailto:info@kennediahotels.com`)
+                      }
                       className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors"
                     >
                       <Mail size={18} /> Email
@@ -341,7 +430,9 @@ export default function PropertiesSection() {
         ) : (
           <div className="text-center py-24 bg-card border-2 border-dashed border-border rounded-3xl">
             <Building2 className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-xl text-muted-foreground font-serif">No active properties found.</p>
+            <p className="text-xl text-muted-foreground font-serif">
+              No active properties found.
+            </p>
           </div>
         )}
       </div>

@@ -26,7 +26,7 @@ import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian"
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
-
+import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
@@ -42,7 +42,7 @@ const WebsiteRoutes = [
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
-  
+  <Route key="resturant-detail" path="/resturant/:propertyId" element={<ResturantPage />} />,
   // Restaurant Sub-Verticals
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,

@@ -1,117 +1,137 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
-import { testimonials } from "@/data/restaurantData";
-import { Quote, Star, ChevronLeft, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Quote, Star, Sparkles } from "lucide-react";
 
-export default function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+// --- Mock Data ---
+const FEEDBACK_DATA = [
+  { id: 1, name: "Arjun Mehta", text: "The Signature Butter Chicken is easily the best in Ghaziabad. Incredible atmosphere!", img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=400", rating: 5 },
+  { id: 2, name: "Sarah Khan", text: "A perfect BYOB spot for family gatherings. The staff is exceptionally polite.", img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=400", rating: 5 },
+  { id: 3, name: "Priya Das", text: "Love the Dim Sum platter. The flavors are authentic and presentation is top-notch.", img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=400", rating: 4 },
+  { id: 4, name: "Rohan V.", text: "The live music on weekends pairs perfectly with their Tandoori Jhinga.", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=400", rating: 5 },
+  { id: 5, name: "Elena G.", text: "Sophisticated settings and very clean. Highly recommend for corporate dinners.", img: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=400", rating: 5 },
+];
+
+const FeedbackCard = ({ item }) => (
+  <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md p-5 rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-3 group transition-all hover:scale-[1.02]">
+    <div className="flex gap-0.5">
+      {[...Array(item.rating)].map((_, i) => (
+        <Star key={i} className="w-3 h-3 fill-primary text-primary" />
+      ))}
+    </div>
+    <p className="text-zinc-600 dark:text-zinc-300 text-[13px] leading-relaxed italic">"{item.text}"</p>
+    <div className="relative h-28 w-full rounded-xl overflow-hidden grayscale-[0.6] group-hover:grayscale-0 transition-all duration-700">
+      <img src={item.img} className="w-full h-full object-cover" alt="User Post" />
+    </div>
+    <div className="flex items-center gap-3 pt-1">
+      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px]">
+        {item.name.charAt(0)}
+      </div>
+      <span className="text-[10px] font-bold dark:text-white uppercase tracking-tighter">{item.name}</span>
+    </div>
+  </div>
+);
+
+export default function AutoTestimonials() {
   const containerRef = useRef(null);
-
-  // Scroll animations for Parallax
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  });
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start end", "end start"] });
 
   const bgTextX = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
-  const cardY = useTransform(scrollYProgress, [0, 1], ["50px", "-50px"]);
-  const smoothCardY = useSpring(cardY, { stiffness: 100, damping: 30 });
-
-  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 bg-[#050505] overflow-hidden min-h-[600px] flex items-center"
+      className="relative py-24 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[750px] flex items-center"
     >
-      {/* 1. BACKGROUND STORYTELLING LAYER */}
+      {/* --- BACKGROUND DECOR --- */}
       <motion.div 
         style={{ x: bgTextX }}
-        className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[15rem] font-black text-white/[0.01] pointer-events-none select-none italic uppercase z-0"
+        className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[12rem] lg:text-[18rem] font-black text-zinc-900/[0.03] dark:text-white/[0.01] pointer-events-none select-none italic uppercase z-0"
       >
-        Guest Experience Excellence Reviews
+        Guest Stories Feedback
       </motion.div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           
-          {/* LEFT: STATIC STORY HEADER */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <span className="text-primary text-[10px] font-bold uppercase tracking-[0.5em]">The Feedback</span>
+          {/* --- LEFT: CONTENT --- */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+                <span className="text-primary text-[10px] font-black uppercase tracking-[0.4em]">Testimonials</span>
+              </div>
+              <h2 className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-white leading-[1.1]">
+                Voices of <br />
+                <span className="italic text-zinc-400 dark:text-white/30 decoration-primary/20 underline decoration-1 underline-offset-8">Delight.</span>
+              </h2>
+              <p className="text-zinc-500 dark:text-white/40 text-lg font-light leading-relaxed max-w-sm pt-4">
+                Real moments shared by our guests. Experience the legacy of flavors through their eyes.
+              </p>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif text-white leading-none">
-              Voices of <br />
-              <span className="italic text-white/30 italic decoration-primary/20 underline decoration-1 underline-offset-[12px]">Delight.</span>
-            </h2>
-            <p className="text-white/40 text-lg font-light leading-relaxed max-w-xs">
-              Direct insights from those who have journeyed through our culinary offerings.
-            </p>
+
+            <div className="pt-8 border-t border-zinc-100 dark:border-white/10 flex items-center gap-6">
+               <div className="text-center">
+                  <p className="text-4xl font-serif dark:text-white leading-none">4.9</p>
+                  <div className="flex gap-0.5 mt-2 justify-center">
+                     {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-primary text-primary" />)}
+                  </div>
+               </div>
+               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-tight">
+                  Trusted by <br /> 1,200+ Guests
+               </p>
+            </div>
           </div>
 
-          {/* RIGHT: PARALLAX REVERSE TESTIMONIAL CARD */}
-          <div className="lg:col-span-8 relative">
-            <motion.div style={{ y: smoothCardY }} className="relative">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentIndex}
-                  initial={{ opacity: 0, x: 20, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, x: -20, filter: "blur(10px)" }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
-                  className="bg-zinc-900/40 backdrop-blur-3xl border border-white/10 p-8 md:p-16 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden"
-                >
-                  {/* Decorative Elements */}
-                  <Quote className="absolute -top-6 -right-6 w-32 h-32 text-primary/5 -rotate-12" />
-                  
-                  {/* Rating */}
-                  <div className="flex gap-1 mb-8">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-
-                  {/* Content */}
-                  <blockquote className="text-xl md:text-3xl font-serif text-white leading-snug mb-10 italic">
-                    "{testimonials[currentIndex].text}"
-                  </blockquote>
-
-                  {/* Author Meta */}
-                  <div className="flex items-center justify-between pt-8 border-t border-white/5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                        <span className="text-primary font-black text-lg">{testimonials[currentIndex].name.charAt(0)}</span>
-                      </div>
-                      <div>
-                        <h4 className="text-white font-bold text-sm tracking-widest uppercase">{testimonials[currentIndex].name}</h4>
-                        <p className="text-white/30 text-[10px] uppercase font-medium">{testimonials[currentIndex].location || "Verified Guest"}</p>
-                      </div>
-                    </div>
-
-                    {/* Manual Navigation Inside Card */}
-                    <div className="flex gap-1">
-                      <button onClick={handlePrev} className="p-4 border border-white/5 text-white hover:bg-white hover:text-black transition-all">
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-                      <button onClick={handleNext} className="p-4 bg-white text-black hover:bg-primary hover:text-white transition-all">
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Counter Indicator Overlay */}
-              <div className="absolute -bottom-6 -right-6 text-white/5 text-9xl font-black italic select-none">
-                0{currentIndex + 1}
+          {/* --- RIGHT: AUTO CAROUSEL WITH BLUR OVERLAY --- */}
+          <div className="lg:col-span-7 h-[650px] relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-zinc-50/50 dark:bg-white/[0.02] backdrop-blur-2xl">
+            
+            <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group">
+              
+              {/* Vertical Scroller 1 (Up) */}
+              <div className="flex flex-col gap-6 animate-marquee-up group-hover:[animation-play-state:paused]">
+                {[...FEEDBACK_DATA, ...FEEDBACK_DATA, ...FEEDBACK_DATA].map((item, i) => (
+                  <FeedbackCard key={`up-${i}`} item={item} />
+                ))}
               </div>
-            </motion.div>
+
+              {/* Vertical Scroller 2 (Down) */}
+              <div className="flex flex-col gap-6 animate-marquee-down group-hover:[animation-play-state:paused]">
+                {[...FEEDBACK_DATA, ...FEEDBACK_DATA, ...FEEDBACK_DATA].map((item, i) => (
+                  <FeedbackCard key={`down-${i}`} item={item} />
+                ))}
+              </div>
+
+              {/* Glass Overlays for Top/Bottom Fading */}
+              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
+            </div>
+
+            {/* Floating Quote Icon */}
+            <div className="absolute bottom-8 right-8 z-20 bg-primary p-4 rounded-full shadow-2xl shadow-primary/40 text-white">
+               <Quote className="w-6 h-6 fill-white" />
+            </div>
           </div>
 
         </div>
       </div>
+
+      {/* --- Inline Styles for Custom Marquee --- */}
+      <style>{`
+        @keyframes marquee-up {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @keyframes marquee-down {
+          0% { transform: translateY(-50%); }
+          100% { transform: translateY(0); }
+        }
+        .animate-marquee-up {
+          animation: marquee-up 40s linear infinite;
+        }
+        .animate-marquee-down {
+          animation: marquee-down 40s linear infinite;
+        }
+      `}</style>
     </section>
   );
 }
