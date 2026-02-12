@@ -10,7 +10,11 @@ export const availableRoutes = [
   '/bars',
   '/about',
   '/events',
+  '/entertainment',
   '/reviews',
+  '/login',
+  '/news',
+  '/careers',
 ] as const;
 
 export type AvailableRoute = typeof availableRoutes[number];

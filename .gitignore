@@ -11,6 +11,7 @@ pnpm-debug.log*
 # Build outputs
 # ===============================
 dist/
+public_html/
 dist-ssr/
 build/
 .out/

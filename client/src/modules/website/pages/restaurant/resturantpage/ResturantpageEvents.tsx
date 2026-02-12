@@ -1,0 +1,345 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Calendar, ArrowRight, MapPin, Loader2 } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getEventsUpdated } from "@/Api/Api";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+const ROUTES = {
+  allEvents: "/events",
+  eventDetail: (id: number | string) => `/#`,
+} as const;
+
+const STYLE_CONFIG = {
+  cardHeight: "h-[280px]", // Compact card height matching your image
+  cardRadius: "rounded-2xl",
+} as const;
+
+// ============================================================================
+// INTERFACES
+// ============================================================================
+
+interface ApiEvent {
+  id: number | string;
+  title: string;
+  locationName: string;
+  eventDate: string;
+  description: string;
+  status: "ACTIVE" | "COMING_SOON" | "SOLD_OUT";
+  active: boolean;
+  image?: {
+    mediaId?: number;
+    type?: "IMAGE" | "VIDEO";
+    url: string;
+    fileName?: string | null;
+    alt?: string | null;
+    width?: number | null;
+    height?: number | null;
+  };
+  ctaText: string;
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export default function ResturantpageEvents() {
+  const [apiEvents, setApiEvents] = useState<ApiEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+
+  useEffect(() => {
+    fetchEventData();
+  }, []);
+
+  const fetchEventData = async () => {
+    try {
+      setLoading(true);
+      const response = await getEventsUpdated();
+
+      // Extract array regardless of wrapper
+      const rawEvents = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+
+      // Filter: Only show events with status="ACTIVE" AND active=true
+      const activeEvents = rawEvents
+        .filter((event) => event.status === "ACTIVE" && event.active === true)
+        .map((event) => ({
+          ...event,
+          image: event.image
+            ? {
+                mediaId: event.image.mediaId,
+                type: event.image.type, // 🔥 REQUIRED
+                url: event.image.url,
+                fileName: event.image.fileName,
+                alt: event.image.alt,
+                width: event.image.width,
+                height: event.image.height,
+              }
+            : null,
+        }));
+
+      if (activeEvents.length > 0) {
+        // Sort: Latest events first
+        const sortedEvents = [...activeEvents].sort(
+          (a, b) =>
+            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+        );
+        setApiEvents(sortedEvents);
+      }
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uniqueLocations = [
+    "All Locations",
+    ...Array.from(
+      new Set(apiEvents.map((event) => event.locationName).filter(Boolean)),
+    ),
+  ];
+
+  const filteredEvents =
+    selectedLocation === "All Locations"
+      ? apiEvents
+      : apiEvents.filter((event) => event.locationName === selectedLocation);
+
+  // Loading state
+  if (loading) {
+    return (
+      <section id="events" className="py-12 bg-background">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="h-64 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // No events state
+  if (apiEvents.length === 0) {
+    return null; // Don't render section if no active events
+  }
+
+  return (
+    <section id="events" className="py-12 bg-background overflow-hidden">
+      <div className="container mx-auto px-6 lg:px-12">
+        <SectionHeader
+          selectedLocation={selectedLocation}
+          setSelectedLocation={setSelectedLocation}
+          uniqueLocations={uniqueLocations}
+        />
+
+        {filteredEvents.length > 0 ? (
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1}
+            autoplay={
+              filteredEvents.length > 3
+                ? { delay: 3000, disableOnInteraction: false }
+                : false
+            }
+            pagination={
+              filteredEvents.length > 3
+                ? { clickable: true, dynamicBullets: true }
+                : false
+            }
+            breakpoints={{
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            allowTouchMove={filteredEvents.length > 1}
+            className="pb-12"
+          >
+            {filteredEvents.map((event, index) => (
+              <SwiperSlide key={event.id}>
+                <EventCard event={event} index={index} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <div className="text-center py-20 text-muted-foreground border border-dashed rounded-xl">
+            No events found for {selectedLocation}.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+function SectionHeader({
+  selectedLocation,
+  setSelectedLocation,
+  uniqueLocations,
+}: {
+  selectedLocation: string;
+  setSelectedLocation: (location: string) => void;
+  uniqueLocations: string[];
+}) {
+  return (
+    <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center gap-4">
+        <div>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Upcoming Events
+          </h2>
+          <div className="h-0.5 w-16 bg-primary" />
+        </div>
+      </div>
+      <div className="flex items-center gap-4">
+        <div className="relative hidden sm:block">
+          <select
+            value={selectedLocation}
+            onChange={(e) => setSelectedLocation(e.target.value)}
+            className="appearance-none bg-background border border-border rounded-full py-1.5 pl-3 pr-8 text-sm font-medium focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+          >
+            {uniqueLocations.map((loc: string) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
+          <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+        </div>
+        <Link
+          to={ROUTES.allEvents}
+          // to="#"
+          className="group flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all"
+        >
+          All Events <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ event, index }: { event: ApiEvent; index: number }) {
+  // Format date to match your image style (e.g., "13 FEB")
+  const formatDate = (dateString: string) => {
+    try {
+      const dateObj = new Date(dateString);
+      if (isNaN(dateObj.getTime())) return dateString;
+
+      const day = dateObj.getDate();
+      const month = dateObj
+        .toLocaleDateString("en-US", { month: "short" })
+        .toUpperCase();
+
+      return `${day} ${month}`;
+    } catch {
+      return dateString;
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className="group relative"
+    >
+      <Link
+        // to={ROUTES.eventDetail(event.id)}
+        to="#"
+        className="block"
+      >
+        <div
+          className={`relative ${STYLE_CONFIG.cardHeight} ${STYLE_CONFIG.cardRadius} overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-500`}
+        >
+          {/* Image with fixed height */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            {/* Image / Video with fixed height */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+              {event.image?.url ? (
+                event.image.type === "VIDEO" ? (
+                  <video
+                    src={event.image.url}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    muted
+                    playsInline
+                    autoPlay
+                    loop
+                  />
+                ) : (
+                  <OptimizedImage
+                    src={event.image.url}
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                )
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground/40" />
+                </div>
+              )}
+
+              {/* VIDEO badge */}
+              {event.image?.type === "VIDEO" && (
+                <div className="absolute bottom-3 left-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                  VIDEO
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+          {/* Date Badge - Top Right */}
+          <div className="absolute top-3 right-3 bg-primary shadow-lg rounded-md">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5">
+              <Calendar className="w-3.5 h-3.5 text-white" />
+              <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                {formatDate(event.eventDate)}
+              </span>
+            </div>
+          </div>
+
+          {/* Content overlay - Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+            {/* Location */}
+            <div className="flex items-center gap-1 text-[11px] font-medium text-white/90 mb-2">
+              <MapPin className="w-3 h-3" />
+              <span>{event.locationName}</span>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-base font-bold mb-1 line-clamp-2 group-hover:text-primary transition-colors drop-shadow-lg">
+              {event.title}
+            </h3>
+
+            {/* Description */}
+            <p className="text-[11px] text-white/80 mb-3 line-clamp-1 leading-relaxed drop-shadow-md">
+              {event.description}
+            </p>
+
+            {/* CTA Button */}
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary bg-white px-3 py-1.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all shadow-lg">
+              {event.ctaText || "Details"} <ArrowRight className="w-3 h-3" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
