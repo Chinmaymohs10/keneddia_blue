@@ -34,7 +34,7 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     active: true,
     ctaText: "Book Table",
     image: {
-      url: "https://images.unsplash.com/photo-1510812431400-41d2bd2722f3?q=80&w=800",
+      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
       type: "IMAGE"
     }
   },
@@ -62,7 +62,7 @@ const FALLBACK_EVENTS: ApiEvent[] = [
     active: true,
     ctaText: "Join Now",
     image: {
-      url: "https://images.unsplash.com/photo-1504609770332-e29ca208a69e?q=80&w=800",
+      url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800",
       type: "IMAGE"
     }
   }
@@ -97,58 +97,58 @@ interface ApiEvent {
 // ============================================================================
 
 export default function ResturantpageEvents() {
-  const [apiEvents, setApiEvents] = useState<ApiEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [apiEvents] = useState<ApiEvent[]>(FALLBACK_EVENTS);
+  const [loading, setLoading] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
-  useEffect(() => {
-    fetchEventData();
-  }, []);
+  // useEffect(() => {
+  //   fetchEventData();
+  // }, []);
 
-  const fetchEventData = async () => {
-    try {
-      setLoading(true);
-      const response = await getEventsUpdated();
+  // const fetchEventData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await getEventsUpdated();
 
-      const rawEvents = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
-          ? response
-          : [];
+  //     const rawEvents = Array.isArray(response?.data)
+  //       ? response.data
+  //       : Array.isArray(response)
+  //         ? response
+  //         : [];
 
-      const activeEvents = rawEvents
-        .filter((event: any) => event.status === "ACTIVE" && event.active === true)
-        .map((event: any) => ({
-          ...event,
-          image: event.image
-            ? {
-                mediaId: event.image.mediaId,
-                type: event.image.type,
-                url: event.image.url,
-                fileName: event.image.fileName,
-                alt: event.image.alt,
-                width: event.image.width,
-                height: event.image.height,
-              }
-            : null,
-        }));
+  //     const activeEvents = rawEvents
+  //       .filter((event: any) => event.status === "ACTIVE" && event.active === true)
+  //       .map((event: any) => ({
+  //         ...event,
+  //         image: event.image
+  //           ? {
+  //               mediaId: event.image.mediaId,
+  //               type: event.image.type,
+  //               url: event.image.url,
+  //               fileName: event.image.fileName,
+  //               alt: event.image.alt,
+  //               width: event.image.width,
+  //               height: event.image.height,
+  //             }
+  //           : null,
+  //       }));
 
-      // Use API events if available, otherwise use FALLBACK_EVENTS
-      if (activeEvents.length > 0) {
-        const sortedEvents = [...activeEvents].sort(
-          (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
-        );
-        setApiEvents(sortedEvents);
-      } else {
-        setApiEvents(FALLBACK_EVENTS);
-      }
-    } catch (error) {
-      console.error("Failed to fetch events, using fallbacks:", error);
-      setApiEvents(FALLBACK_EVENTS);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // Use API events if available, otherwise use FALLBACK_EVENTS
+  //     if (activeEvents.length > 0) {
+  //       const sortedEvents = [...activeEvents].sort(
+  //         (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+  //       );
+  //       setApiEvents(sortedEvents);
+  //     } else {
+  //       setApiEvents(FALLBACK_EVENTS);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to fetch events, using fallbacks:", error);
+  //     setApiEvents(FALLBACK_EVENTS);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const uniqueLocations = [
     "All Locations",

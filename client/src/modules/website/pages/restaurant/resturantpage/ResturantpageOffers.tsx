@@ -21,7 +21,8 @@ const FALLBACK_OFFERS = [
   {
     id: "fallback-1",
     title: "Weekend Gourmet Buffet",
-    description: "Enjoy a lavish spread of over 50+ delicacies with live music.",
+    description:
+      "Enjoy a lavish spread of over 50+ delicacies with live music.",
     couponCode: "BUFFET20",
     ctaText: "Book Table",
     ctaLink: "#",
@@ -31,8 +32,8 @@ const FALLBACK_OFFERS = [
       url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
       type: "IMAGE",
       width: 800,
-      height: 600
-    }
+      height: 600,
+    },
   },
   {
     id: "fallback-2",
@@ -47,8 +48,8 @@ const FALLBACK_OFFERS = [
       url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?q=80&w=800",
       type: "IMAGE",
       width: 800,
-      height: 1200 // To trigger portrait mode logic
-    }
+      height: 1200, // To trigger portrait mode logic
+    },
   },
   {
     id: "fallback-3",
@@ -63,8 +64,8 @@ const FALLBACK_OFFERS = [
       url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
       type: "IMAGE",
       width: 1080,
-      height: 1920 // To trigger reel mode logic
-    }
+      height: 1920, // To trigger reel mode logic
+    },
   },
   {
     id: "fallback-4",
@@ -79,8 +80,8 @@ const FALLBACK_OFFERS = [
       url: "https://images.unsplash.com/photo-1504674900248-0877df9cc836?q=80&w=800",
       type: "IMAGE",
       width: 1080,
-      height: 1920 // To trigger reel mode logic
-    }
+      height: 1920, // To trigger reel mode logic
+    },
   },
   {
     id: "fallback-5",
@@ -95,9 +96,9 @@ const FALLBACK_OFFERS = [
       url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
       type: "IMAGE",
       width: 1080,
-      height: 1920 // To trigger reel mode logic
-    }
-  }
+      height: 1920, // To trigger reel mode logic
+    },
+  },
 ];
 
 const MEDIA_DETECTION_RULES = {
@@ -195,70 +196,74 @@ export default function ResturantpageOffers() {
   const normalize = (v?: string) =>
     (v || "").trim().toLowerCase().replace(/\s+/g, " ");
 
+  // useEffect(() => {
+  //   const fetchOffers = async () => {
+  //     try {
+  //       setLoading(true);
+
+  //       const res = await getDailyOffers({
+  //         targetType: "GLOBAL",
+  //         page: 0,
+  //         size: 100,
+  //       });
+
+  //       const rawData = res.data?.data || res.data || [];
+  //       const list = Array.isArray(rawData) ? rawData : rawData.content || [];
+
+  //       const filtered = await Promise.all(
+  //         list.map(async (o: any) => {
+  //           if (!o.isActive) return null;
+  //           if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
+  //             return null;
+
+  //           if (o.propertyTypeId) {
+  //             try {
+  //               const propertyTypeRes = await getPropertyTypeById(o.propertyTypeId);
+  //               const propertyType = propertyTypeRes.data;
+
+  //               if (propertyType?.isActive) {
+  //                 const typeName = normalize(propertyType.typeName);
+  //                 if (typeName === "hotel" || typeName === "both" || typeName === "restaurant") {
+  //                   return {
+  //                     ...o,
+  //                     propertyTypeName: propertyType.typeName,
+  //                   };
+  //                 }
+  //               }
+  //             } catch (err) {
+  //               console.error(`Failed to fetch property type ${o.propertyTypeId}`, err);
+  //             }
+  //           }
+  //           return null;
+  //         }),
+  //       );
+
+  //       const validOffers = filtered.filter(Boolean).map((o: any) => ({
+  //         id: o.id,
+  //         title: o.title,
+  //         description: o.description,
+  //         couponCode: o.couponCode || "N/A",
+  //         ctaText: o.ctaText || "Claim Offer",
+  //         ctaLink: o.ctaLink || "#",
+  //         expiresAt: o.expiresAt,
+  //         propertyType: o.propertyTypeName || "Hotel",
+  //         image: o.image,
+  //       }));
+
+  //       // Combine API offers with fallbacks
+  //       setOffers(validOffers.length > 0 ? validOffers : FALLBACK_OFFERS);
+  //     } catch (err) {
+  //       console.error("Offer fetch failed, showing fallbacks", err);
+  //       setOffers(FALLBACK_OFFERS);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchOffers();
+  // }, []);
   useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        setLoading(true);
-
-        const res = await getDailyOffers({
-          targetType: "GLOBAL",
-          page: 0,
-          size: 100,
-        });
-
-        const rawData = res.data?.data || res.data || [];
-        const list = Array.isArray(rawData) ? rawData : rawData.content || [];
-
-        const filtered = await Promise.all(
-          list.map(async (o: any) => {
-            if (!o.isActive) return null;
-            if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
-              return null;
-
-            if (o.propertyTypeId) {
-              try {
-                const propertyTypeRes = await getPropertyTypeById(o.propertyTypeId);
-                const propertyType = propertyTypeRes.data;
-
-                if (propertyType?.isActive) {
-                  const typeName = normalize(propertyType.typeName);
-                  if (typeName === "hotel" || typeName === "both" || typeName === "restaurant") {
-                    return {
-                      ...o,
-                      propertyTypeName: propertyType.typeName,
-                    };
-                  }
-                }
-              } catch (err) {
-                console.error(`Failed to fetch property type ${o.propertyTypeId}`, err);
-              }
-            }
-            return null;
-          }),
-        );
-
-        const validOffers = filtered.filter(Boolean).map((o: any) => ({
-          id: o.id,
-          title: o.title,
-          description: o.description,
-          couponCode: o.couponCode || "N/A",
-          ctaText: o.ctaText || "Claim Offer",
-          ctaLink: o.ctaLink || "#",
-          expiresAt: o.expiresAt,
-          propertyType: o.propertyTypeName || "Hotel",
-          image: o.image,
-        }));
-
-        // Combine API offers with fallbacks
-        setOffers(validOffers.length > 0 ? validOffers : FALLBACK_OFFERS);
-      } catch (err) {
-        console.error("Offer fetch failed, showing fallbacks", err);
-        setOffers(FALLBACK_OFFERS);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOffers();
+    setOffers(FALLBACK_OFFERS);
+    setLoading(false);
   }, []);
 
   if (loading)
