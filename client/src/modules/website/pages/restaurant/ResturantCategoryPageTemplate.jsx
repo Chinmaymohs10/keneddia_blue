@@ -7,6 +7,15 @@ import CategoryHero from "./components/shared/CategoryHero";
 import CategoryMenu from "./components/shared/CategoryMenu";
 import Testimonials from "./components/Testimonials";
 import ResturantSubCategories from "./resturantpage/ResturantSubCategories";
+import beverage from "@/assets/resturant_images/beverage.jpg";
+import drink1 from "@/assets/resturant_images/drink1.jpg";
+import drink2 from "@/assets/resturant_images/drink2.jpg";
+import drink3 from "@/assets/resturant_images/drink3.jpg";
+import food1 from "@/assets/resturant_images/food1.jpg";
+import italian1 from "@/assets/resturant_images/italian1.jpg";
+import item1 from "@/assets/resturant_images/item1.jpg";
+import item2 from "@/assets/resturant_images/item2.jpg";
+
 /* Navigation for Category Page */
 const resturant_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "/" },
@@ -19,50 +28,43 @@ export const CATEGORY_DATA = {
     title: "Authentic Italian",
     description:
       "Hand-rolled pasta and wood-fired pizzas using heritage recipes.",
-    heroImage:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1200",
+    heroImage: italian1,
     themeColor: "#ef4444",
     menu: [
       {
         category: "Antipasti (Starters)",
-        categoryImage:
-          "https://images.unsplash.com/photo-1572656631137-7935297eff55?q=80&w=600",
+        categoryImage: food1,
         items: [
           {
             name: "Bruschetta Trio",
             description: "Tomato, Mushroom, and Olive Tapenade.",
             price: "₹450",
-            image:
-              "https://images.unsplash.com/photo-1506280754576-f6fa8a873550?q=80&w=300",
+            image: item1,
           },
           {
             name: "Arancini di Riso",
             description: "Crispy risotto balls stuffed with ragu.",
             price: "₹550",
-            image:
-              "https://images.unsplash.com/photo-1541529086526-db283c563270?q=80&w=300",
+            image: item2,
           },
         ],
       },
       {
         category: "Pasta & Zuppe",
-        categoryImage:
-          "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=600",
+        categoryImage: italian1,
         items: [
           {
             name: "Aglio e Olio",
             description: "Garlic, olive oil, and crushed chili flakes.",
             price: "₹650",
             isSpicy: true,
-            image:
-              "https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=300",
+            image: food1,
           },
           {
             name: "Lasagna Classica",
             description: "Layered pasta with rich meat sauce.",
             price: "₹780",
-            image:
-              "https://images.unsplash.com/photo-1608759265344-7c6a4e0a7a0f?q=80&w=300",
+            image: item2,
           },
         ],
       },
@@ -73,42 +75,36 @@ export const CATEGORY_DATA = {
     title: "Luxury Lounge",
     description:
       "An upscale lounge experience with signature cocktails and curated small plates.",
-    heroImage:
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1200",
+    heroImage: drink3,
     themeColor: "#8b5cf6",
     menu: [
       {
         category: "Signature Cocktails",
-        categoryImage:
-          "https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=600",
+        categoryImage: beverage,
         items: [
           {
             name: "Royal Old Fashioned",
             description: "Premium bourbon with smoked orange zest.",
             price: "₹850",
-            image:
-              "https://images.unsplash.com/photo-1470337458703-46ad1756a187?q=80&w=300",
+            image: drink1,
           },
           {
             name: "Velvet Martini",
             description: "Vodka infused with elderflower essence.",
             price: "₹900",
-            image:
-              "https://images.unsplash.com/photo-1582450871972-ab5ca641643d?q=80&w=300",
+            image: drink2,
           },
         ],
       },
       {
         category: "Gourmet Bites",
-        categoryImage:
-          "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=600",
+        categoryImage: food1,
         items: [
           {
             name: "Truffle Fries",
             description: "Crispy fries with truffle oil & parmesan.",
             price: "₹420",
-            image:
-              "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=300",
+            image: item1,
           },
         ],
       },
@@ -119,28 +115,24 @@ export const CATEGORY_DATA = {
     title: "Spicy Darbar",
     description:
       "A royal journey through Indian spices and traditional clay-oven delicacies.",
-    heroImage:
-      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=1200",
+    heroImage: food1,
     themeColor: "#f59e0b",
     menu: [
       {
         category: "Kebab & Tandoor",
-        categoryImage:
-          "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?q=80&w=600",
+        categoryImage: item2,
         items: [
           {
             name: "Murgh Malai Tikka",
             description: "Creamy chicken kebabs with cardamom.",
             price: "₹595",
-            image:
-              "https://images.unsplash.com/photo-1626132646529-5006375325d7?q=80&w=300",
+            image: item1,
           },
           {
             name: "Paneer Tikka",
             description: "Char-grilled cottage cheese with spices.",
             price: "₹520",
-            image:
-              "https://images.unsplash.com/photo-1604908177522-43299f49b6f7?q=80&w=300",
+            image: italian1,
           },
         ],
       },
@@ -150,28 +142,24 @@ export const CATEGORY_DATA = {
   takeaway: {
     title: "Takeaway Treats",
     description: "Quick gourmet meals crafted for people on the move.",
-    heroImage:
-      "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200",
+    heroImage: item1,
     themeColor: "#10b981",
     menu: [
       {
         category: "Quick Bites",
-        categoryImage:
-          "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=600",
+        categoryImage: item2,
         items: [
           {
             name: "Loaded Chicken Wrap",
             description: "Grilled chicken with spicy mayo.",
             price: "₹320",
-            image:
-              "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=300",
+            image: food1,
           },
           {
             name: "Veg Club Sandwich",
             description: "Triple layered with fresh veggies.",
             price: "₹280",
-            image:
-              "https://images.unsplash.com/photo-1553909489-cd47e0ef937f?q=80&w=300",
+            image: italian1,
           },
         ],
       },
@@ -182,28 +170,24 @@ export const CATEGORY_DATA = {
     title: "The Bakehouse",
     description:
       "Artisanal breads, handcrafted pastries, and premium desserts.",
-    heroImage:
-      "https://images.unsplash.com/photo-1483695028939-5bb13f8648b0?q=80&w=1200",
+    heroImage: item2,
     themeColor: "#f472b6",
     menu: [
       {
         category: "Freshly Baked",
-        categoryImage:
-          "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?q=80&w=600",
+        categoryImage: item1,
         items: [
           {
             name: "Butter Croissant",
             description: "Flaky French classic baked daily.",
             price: "₹180",
-            image:
-              "https://images.unsplash.com/photo-1555507036-ab794f4ade6a?q=80&w=300",
+            image: food1,
           },
           {
             name: "Chocolate Éclair",
             description: "Filled with rich vanilla custard.",
             price: "₹220",
-            image:
-              "https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?q=80&w=300",
+            image: beverage,
           },
         ],
       },
@@ -264,13 +248,11 @@ function ResturantCategoryPageTemplate() {
           />
         </div>
         <div id="categories">
-          <ResturantSubCategories
-            propertyId={propertyId}
-          />
+          <ResturantSubCategories propertyId={propertyId} />
         </div>
         {/* ResturantSubCategories */}
         <div id="testimonials">
-          <Testimonials/>
+          <Testimonials />
         </div>
         {/* Testimonials */}
       </main>

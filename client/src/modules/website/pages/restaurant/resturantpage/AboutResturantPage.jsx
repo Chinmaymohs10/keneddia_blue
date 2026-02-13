@@ -1,15 +1,92 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Clock, Phone, MapPin, Instagram, Facebook, Twitter, MessageCircle } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { 
+  Clock, Phone, MapPin, Instagram, Facebook, 
+  Twitter, MessageCircle, Contact2, X, MessageSquare 
+} from "lucide-react";
+
+// --- POPUP COMPONENT ---
+const ContactPopup = ({ isOpen, onClose }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+          />
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white dark:bg-zinc-900 rounded-3xl p-8 z-[101] shadow-2xl border border-zinc-100 dark:border-white/10"
+          >
+            <button 
+              onClick={onClose}
+              className="absolute right-4 top-4 text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-2xl font-serif text-zinc-900 dark:text-white italic">Quick Connect</h3>
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-widest font-bold">Choose your preferred method</p>
+              </div>
+
+              <div className="grid gap-4">
+                {/* WhatsApp Option */}
+                <a 
+                  href="https://wa.me/919999999999" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] transition-all group"
+                >
+                  <div className="w-12 h-12 bg-[#25D366] text-white rounded-xl flex items-center justify-center shadow-lg shadow-[#25D366]/20">
+                    <MessageSquare size={24} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block font-bold text-sm text-zinc-900 dark:text-white">WhatsApp</span>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Instant Chat</span>
+                  </div>
+                </a>
+
+                {/* Mobile Option */}
+                <a 
+                  href="tel:+919999999999" 
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary transition-all group"
+                >
+                  <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <Phone size={24} />
+                  </div>
+                  <div className="text-left">
+                    <span className="block font-bold text-sm text-zinc-900 dark:text-white">Direct Call</span>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Speak to Host</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
 
 export default function AboutResturantPage() {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const containerRef = useRef(null);
+  
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
 
-  // Smooth Parallax Controls
   const textX = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
   const imageY = useTransform(scrollYProgress, [0, 1], ["-15px", "15px"]);
 
@@ -19,6 +96,8 @@ export default function AboutResturantPage() {
       id="about" 
       className="relative py-16 md:py-20 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden"
     >
+      <ContactPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+
       {/* DECORATIVE BACKGROUND TEXT */}
       <motion.div 
         style={{ x: textX }}
@@ -30,7 +109,7 @@ export default function AboutResturantPage() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           
-          {/* LEFT: COMPACT IMAGE COMPONENT (Reduced to 4 Columns) */}
+          {/* LEFT: IMAGE */}
           <div className="lg:col-span-4 relative max-w-sm mx-auto lg:mx-0">
             <motion.div 
               style={{ y: imageY }}
@@ -44,7 +123,6 @@ export default function AboutResturantPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             </motion.div>
 
-            {/* SMALLER SOCIAL MEDIA FLOATER */}
             <div className="absolute -bottom-4 left-4 flex gap-2">
               {[
                 { icon: <Instagram size={14} />, link: "#" },
@@ -63,7 +141,7 @@ export default function AboutResturantPage() {
             </div>
           </div>
 
-          {/* RIGHT: CONTENT (Increased to 8 Columns) */}
+          {/* RIGHT: CONTENT */}
           <div className="lg:col-span-8 space-y-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -86,9 +164,7 @@ export default function AboutResturantPage() {
               </p>
             </div>
 
-            {/* INFO GRID */}
             <div className="grid sm:grid-cols-2 gap-6 pt-6 border-t border-zinc-100 dark:border-white/10">
-              {/* Availability */}
               <div className="group">
                 <h4 className="text-zinc-400 dark:text-white/40 font-bold text-[9px] uppercase tracking-widest mb-2 flex items-center gap-2">
                   <Clock className="w-3 h-3 text-primary" /> Availability
@@ -103,21 +179,25 @@ export default function AboutResturantPage() {
                 </div>
               </div>
 
-              {/* Connect */}
-              <div className="group">
+              {/* CONNECT SECTION - Triggering Popup */}
+              <div className="group cursor-pointer" onClick={() => setIsPopupOpen(true)}>
                 <h4 className="text-zinc-400 dark:text-white/40 font-bold text-[9px] uppercase tracking-widest mb-2 flex items-center gap-2">
                   <Phone className="w-3 h-3 text-primary" /> Connect
                 </h4>
-                <div className="space-y-1">
-                  <a 
-                    href="tel:+919999999999" 
-                    className="text-zinc-900 dark:text-white font-serif text-lg md:text-xl italic block hover:text-primary transition-colors"
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-12 h-12 bg-primary/10 dark:bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm active:scale-95"
                   >
-                    +91 999 999 9999
-                  </a>
-                  <span className="text-zinc-400 dark:text-white/30 text-[9px] font-bold tracking-widest uppercase">
-                    Direct Reservation
-                  </span>
+                    <Contact2 className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="text-zinc-900 dark:text-white font-serif text-lg md:text-xl italic block leading-tight">
+                      Get In Touch
+                    </span>
+                    <span className="text-zinc-400 dark:text-white/30 text-[9px] font-bold tracking-widest uppercase">
+                      Direct Reservation
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

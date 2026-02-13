@@ -403,10 +403,10 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
   const validateForm = () => {
     // For property type mode: title, subtitle and background required
     if (isPropertyTypeSelected) {
-      if (!formData.mainTitle.trim()) {
-        showError("Please provide a Title");
-        return false;
-      }
+      // if (!formData.mainTitle.trim()) {
+      //   showError("Please provide a Title");
+      //   return false;
+      // }
       const hasBg =
         backgroundMedia.allPreviews.length > 0 ||
         backgroundMedia.lightPreviews.length > 0 ||
@@ -675,7 +675,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 {/* Main Title - Always shown */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
-                    Main Title <span className="text-red-500">*</span>
+                    Main Title
                   </label>
                   <input
                     type="text"

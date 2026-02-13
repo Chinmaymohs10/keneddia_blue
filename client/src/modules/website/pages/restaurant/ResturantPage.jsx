@@ -9,6 +9,7 @@ import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import SignatureDishesAndBuffet from "./resturantpage/SignatureDishesAndBuffet";
 import Testimonials from "./components/Testimonials";
 import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
+import ReservationForm from "./components/ReservationForm";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
 
@@ -39,10 +40,7 @@ export default function RestaurantHomepage() {
       {/* ===============================
           NAVBAR
       =============================== */}
-      <Navbar
-        navItems={RESTAURANT_NAV_ITEMS}
-        logo={siteContent.brand.logo}
-      />
+      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
 
       {/* ===============================
           MAIN CONTENT
@@ -57,11 +55,6 @@ export default function RestaurantHomepage() {
         <div id="menu">
           <ResturantSubCategories propertyId={propertyId} />
           <SignatureDishesAndBuffet propertyId={propertyId} />
-        </div>
-
-        {/* OFFERS SECTION */}
-        <div id="offers">
-          <ResturantpageOffers propertyId={propertyId} />
         </div>
 
         {/* ABOUT SECTION */}
@@ -81,6 +74,8 @@ export default function RestaurantHomepage() {
         <div id="gallery">
           <ResturantGallerypage propertyId={propertyId} />
         </div>
+        {/* Reservation Form */}
+        <ReservationForm />
       </main>
 
       {/* ===============================

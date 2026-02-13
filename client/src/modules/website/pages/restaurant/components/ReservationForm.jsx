@@ -39,7 +39,7 @@ export default function ReservationForm() {
     <section 
       ref={containerRef}
       id="reservation" 
-      className="relative py-24 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[400px]"
+      className="relative py-4 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[400px]"
     >
       {/* 1. BACKGROUND STORYTELLING LAYER */}
       <motion.div 

@@ -272,8 +272,12 @@ export const createPropertyByType = (typeName, data) =>
 export const createPropertyListing = (data) =>
   API.post("api/v1/property-listings", data);
 export const GetAllPropertyListing = () => API.get("api/v1/property-listings");
+
 export const GetAllPropertyDetails = () =>
   API.get("api/v1/properties/showAllDetails");
+export const updatePropertyById = (propertyId, payload) =>
+  API.put(`api/v1/properties/edit/${propertyId}`, payload);
+
 // properties/showAllDetails
 export const getPropertyListingMedia = (propertyListingId) =>
   API.get(`api/v1/property-listings/${propertyListingId}/media`);

@@ -46,7 +46,7 @@ export default function RestaurantGalleryPage() {
   };
 
   return (
-    <section ref={containerRef} className="relative py-24 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[850px]">
+    <section ref={containerRef} className="relative py-14 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[650px]">
       
       {/* ── BACKGROUND PARALLAX ── */}
       <motion.div 

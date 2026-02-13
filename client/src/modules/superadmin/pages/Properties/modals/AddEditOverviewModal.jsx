@@ -1,38 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, InformationCircleIcon, CurrencyRupeeIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, CurrencyRupeeIcon } from '@heroicons/react/24/outline';
 import { colors } from '@/lib/colors/colors';
-
+import { updatePropertyById } from '@/Api/Api';
+import { toast } from 'react-hot-toast'; // Optional: for feedback
+import { Send, Loader2 } from 'lucide-react';
 const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     propertyName: '',
     address: '',
-    city: '',
     locationName: '',
     latitude: '',
     longitude: '',
     propertyType: 'Hotel',
     isActive: true,
-    // Primary Listing Data
     price: 0,
     capacity: 0,
     rating: 0,
     tagline: '',
     gstPercentage: 18,
-    discountAmount: 0
+    discountAmount: 0,
+    // Fields required by your body format
+    mainHeading: '',
+    subTitle: '',
+    fullAddress: '',
+    pincode: '',
+    area: ''
   });
 
   useEffect(() => {
     if (initialData) {
-      // Mapping the complex JSON structure to a flat form state
       const primaryListing = initialData.listings?.[0] || {};
       setFormData({
         ...initialData,
-        price: primaryListing.price || 0,
-        capacity: primaryListing.capacity || 0,
-        rating: primaryListing.rating || 0,
-        tagline: primaryListing.tagline || '',
-        gstPercentage: primaryListing.gstPercentage || 18,
-        discountAmount: primaryListing.discountAmount || 0
+        // Mapping existing data to form fields
+        propertyName: initialData.propertyName || '',
+        address: initialData.address || '',
+        locationName: initialData.locationName || '',
+        mainHeading: initialData.mainHeading || initialData.propertyName || '',
+        subTitle: initialData.subTitle || '',
+        fullAddress: initialData.fullAddress || initialData.address || '',
+        price: primaryListing.price || initialData.price || 0,
+        capacity: primaryListing.capacity || initialData.capacity || 0,
+        rating: primaryListing.rating || initialData.rating || 0,
+        tagline: primaryListing.tagline || initialData.tagline || '',
+        gstPercentage: primaryListing.gstPercentage || initialData.gstPercentage || 18,
+        discountAmount: primaryListing.discountAmount || initialData.discountAmount || 0,
+        isActive: initialData.isActive ?? true,
       });
     }
   }, [initialData]);
@@ -45,27 +59,51 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Construct the payload back to match your API structure
+    setLoading(true);
+
+    // Constructing the payload exactly as your API format
     const payload = {
-      ...formData,
-      listings: [
-        {
-          ...(initialData?.listings?.[0] || {}),
-          price: Number(formData.price),
-          capacity: Number(formData.capacity),
-          rating: Number(formData.rating),
-          tagline: formData.tagline,
-          gstPercentage: Number(formData.gstPercentage),
-          discountAmount: Number(formData.discountAmount),
-        }
-      ]
+      propertyName: formData.propertyName,
+      propertyTypeIds: formData.propertyTypeIds || [2], // Defaulting as per your example
+      propertyCategoryIds: formData.propertyCategoryIds || [1],
+      address: formData.address,
+      area: formData.area || "Central",
+      pincode: formData.pincode || "560001",
+      locationId: formData.locationId || 2,
+      assignedAdminId: formData.assignedAdminId || 2,
+      parentPropertyId: formData.parentPropertyId || 1,
+      isActive: formData.isActive,
+      mainHeading: formData.mainHeading || formData.propertyName,
+      subTitle: formData.subTitle,
+      fullAddress: formData.fullAddress || formData.address,
+      tagline: formData.tagline,
+      rating: Number(formData.rating),
+      capacity: Number(formData.capacity),
+      price: Number(formData.price),
+      gstPercentage: Number(formData.gstPercentage),
+      discountAmount: Number(formData.discountAmount),
+      amenitiesAndFeaturesIds: formData.amenitiesAndFeaturesIds || []
     };
 
-    onSave(payload);
-    onClose();
+    try {
+      if (initialData?.id) {
+        // API Call
+        const response = await updatePropertyById(initialData.id, payload);
+        
+        if (response.status === 200 || response.data) {
+          toast.success('Property updated successfully');
+          onSave(response.data); // Notify parent to refresh list
+          onClose();
+        }
+      }
+    } catch (error) {
+      console.error("Update Error:", error);
+      toast.error(error.response?.data?.message || 'Failed to update property');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -85,7 +123,7 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-8 overflow-y-auto">
-          {/* Basic Section */}
+          {/* General Section */}
           <div className="space-y-4">
             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                General Information
@@ -98,23 +136,20 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
                   name="propertyName"
                   value={formData.propertyName}
                   onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="e.g. Hotel Amritsariya"
+                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
-                <select
-                  name="propertyType"
-                  value={formData.propertyType}
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sub Title</label>
+                <input
+                  type="text"
+                  name="subTitle"
+                  value={formData.subTitle}
                   onChange={handleChange}
                   className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="Hotel">Hotel</option>
-                  <option value="Cafe">Cafe</option>
-                  <option value="Restaurant">Restaurant</option>
-                </select>
+                  placeholder="e.g. Premium stay in Central City"
+                />
               </div>
               <div className="flex items-end pb-2">
                 <label className="flex items-center gap-3 cursor-pointer group">
@@ -125,84 +160,16 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
                     onChange={handleChange}
                     className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
-                    Property is Active
-                  </span>
+                  <span className="text-sm font-medium text-gray-700">Property is Active</span>
                 </label>
               </div>
             </div>
           </div>
 
-          {/* Location Section */}
+          {/* Pricing & Listing Section */}
           <div className="space-y-4 pt-6 border-t border-gray-100">
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Location & Address</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Address</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City / Location</label>
-                <input
-                  type="text"
-                  name="locationName"
-                  value={formData.locationName}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-                  <input
-                    type="number"
-                    step="any"
-                    name="latitude"
-                    value={formData.latitude}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-                  <input
-                    type="number"
-                    step="any"
-                    name="longitude"
-                    value={formData.longitude}
-                    onChange={handleChange}
-                    className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Info / Listing Section */}
-          <div className="space-y-4 pt-6 border-t border-gray-100">
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-               Additional Details (Extra Info)
-            </h4>
-            <div className="bg-gray-50 rounded-xl p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-                <input
-                  type="text"
-                  name="tagline"
-                  value={formData.tagline}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
-                  placeholder="Catchy tagline for the property"
-                />
-              </div>
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Pricing & Listing</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Base Price</label>
                 <div className="relative">
@@ -214,40 +181,30 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
                     name="price"
                     value={formData.price}
                     onChange={handleChange}
-                    className="w-full pl-9 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full pl-9 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (Pax)</label>
-                <input
-                  type="number"
-                  name="capacity"
-                  value={formData.capacity}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
-                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
                 <input
                   type="number"
+                  name="rating"
                   step="0.1"
                   max="5"
-                  name="rating"
                   value={formData.rating}
                   onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Amount</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
                 <input
                   type="number"
-                  name="discountAmount"
-                  value={formData.discountAmount}
+                  name="capacity"
+                  value={formData.capacity}
                   onChange={handleChange}
-                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -258,16 +215,18 @@ const AddEditOverviewModal = ({ isOpen, onClose, initialData, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 transition-all"
+              disabled={loading}
+              className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg shadow-sm active:scale-95 transition-all"
+              disabled={loading}
+              className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg shadow-sm active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
               style={{ backgroundColor: colors.primary }}
             >
-              Save Property Changes
+              {loading ? 'Saving...' : 'Save Property Changes'}
             </button>
           </div>
         </form>

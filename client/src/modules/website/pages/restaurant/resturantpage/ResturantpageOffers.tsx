@@ -10,7 +10,6 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { getDailyOffers, getPropertyTypeById } from "@/Api/Api";
 
 // Swiper Styles
 import "swiper/css";
@@ -146,7 +145,6 @@ const detectBanner = (image: any) => {
 
   return isReel || isPortrait;
 };
-
 /* =======================
     TIMER COMPONENT
 ======================= */
@@ -186,82 +184,13 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
   );
 }
 
-/* =======================
-    MAIN COMPONENT
-======================= */
 export default function ResturantpageOffers() {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const normalize = (v?: string) =>
-    (v || "").trim().toLowerCase().replace(/\s+/g, " ");
 
-  // useEffect(() => {
-  //   const fetchOffers = async () => {
-  //     try {
-  //       setLoading(true);
-
-  //       const res = await getDailyOffers({
-  //         targetType: "GLOBAL",
-  //         page: 0,
-  //         size: 100,
-  //       });
-
-  //       const rawData = res.data?.data || res.data || [];
-  //       const list = Array.isArray(rawData) ? rawData : rawData.content || [];
-
-  //       const filtered = await Promise.all(
-  //         list.map(async (o: any) => {
-  //           if (!o.isActive) return null;
-  //           if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation))
-  //             return null;
-
-  //           if (o.propertyTypeId) {
-  //             try {
-  //               const propertyTypeRes = await getPropertyTypeById(o.propertyTypeId);
-  //               const propertyType = propertyTypeRes.data;
-
-  //               if (propertyType?.isActive) {
-  //                 const typeName = normalize(propertyType.typeName);
-  //                 if (typeName === "hotel" || typeName === "both" || typeName === "restaurant") {
-  //                   return {
-  //                     ...o,
-  //                     propertyTypeName: propertyType.typeName,
-  //                   };
-  //                 }
-  //               }
-  //             } catch (err) {
-  //               console.error(`Failed to fetch property type ${o.propertyTypeId}`, err);
-  //             }
-  //           }
-  //           return null;
-  //         }),
-  //       );
-
-  //       const validOffers = filtered.filter(Boolean).map((o: any) => ({
-  //         id: o.id,
-  //         title: o.title,
-  //         description: o.description,
-  //         couponCode: o.couponCode || "N/A",
-  //         ctaText: o.ctaText || "Claim Offer",
-  //         ctaLink: o.ctaLink || "#",
-  //         expiresAt: o.expiresAt,
-  //         propertyType: o.propertyTypeName || "Hotel",
-  //         image: o.image,
-  //       }));
-
-  //       // Combine API offers with fallbacks
-  //       setOffers(validOffers.length > 0 ? validOffers : FALLBACK_OFFERS);
-  //     } catch (err) {
-  //       console.error("Offer fetch failed, showing fallbacks", err);
-  //       setOffers(FALLBACK_OFFERS);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchOffers();
-  // }, []);
   useEffect(() => {
+    // Standardizing on fallback for this view
     setOffers(FALLBACK_OFFERS);
     setLoading(false);
   }, []);
@@ -269,121 +198,122 @@ export default function ResturantpageOffers() {
   if (loading)
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin text-primary" />
+        <Loader2 className="animate-spin text-primary" size={24} />
       </div>
     );
   if (!offers.length) return null;
 
   return (
-    <section className="bg-muted/30 py-10">
-      <div className="container mx-auto px-6 lg:px-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-serif text-foreground">
-            Exclusive Offers
-          </h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => swiper?.slidePrev()}
-              className="p-2 rounded-full border border-border hover:bg-white transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => swiper?.slideNext()}
-              className="p-2 rounded-full border border-border hover:bg-white transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+    <div className="w-full">
+      {/* 1. Optimized Header for 30% width */}
+      <div className="flex justify-between items-center mb-4">
+        {/* <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
+          Exclusive Deals
+        </h3> */}
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => swiper?.slidePrev()}
+            className="p-1.5 rounded-full border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 hover:bg-zinc-50 transition-all shadow-sm"
+          >
+            <ChevronLeft size={14} className="dark:text-white" />
+          </button>
+          <button
+            onClick={() => swiper?.slideNext()}
+            className="p-1.5 rounded-full border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 hover:bg-zinc-50 transition-all shadow-sm"
+          >
+            <ChevronRight size={14} className="dark:text-white" />
+          </button>
         </div>
+      </div>
 
+      {/* 2. Single card view restricted to container width */}
+      <div className="w-full max-w-full">
         <Swiper
           modules={[Navigation, Autoplay]}
           slidesPerView={1}
-          spaceBetween={16}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-            1280: { slidesPerView: 4 },
-          }}
-          autoplay={{ delay: 5000 }}
+          spaceBetween={0}
+          centeredSlides={true}
+          loop={offers.length > 1}
+          autoplay={{ delay: 5000, disableOnInteraction: false }}
           onSwiper={setSwiper}
+          className="rounded-[28px]"
         >
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
 
             return (
               <SwiperSlide key={offer.id || i}>
-                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
+                <div className="group h-[480px] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[28px] overflow-hidden flex flex-col shadow-sm relative transition-all duration-300">
+                  {/* Media Section */}
                   <div
-                    className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[280px]"}`}
+                    className={`relative overflow-hidden ${isBanner ? "flex-1" : "h-[240px]"}`}
                   >
                     {offer.image?.url ? (
                       offer.image.type === "VIDEO" ? (
                         <video
                           src={offer.image.url}
-                          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-cover"
                           autoPlay
                           loop
                           muted
                           playsInline
-                          preload="metadata"
                         />
                       ) : (
                         <img
                           src={offer.image.url}
                           alt={offer.title}
-                          className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                       )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <Tag className="w-10 h-10 text-muted-foreground/20" />
+                        <Tag className="w-8 h-8 text-muted-foreground/20" />
                       </div>
                     )}
 
-                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider">
+                    <div className="absolute top-3 left-3 bg-black/70 text-white text-[8px] px-2 py-0.5 rounded-full z-10 font-bold uppercase tracking-wider">
                       {offer.propertyType}
                     </div>
 
                     {offer.expiresAt && (
-                      <div className="absolute top-3 right-3 z-10">
+                      <div className="absolute top-3 right-3 z-10 scale-90 origin-right">
                         <CountdownTimer expiresAt={offer.expiresAt} />
                       </div>
                     )}
 
                     {isBanner && (
-                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out bg-gradient-to-t from-black/90 via-black/40 to-transparent pt-10 z-20">
-                        <h3 className="text-white font-serif font-bold text-sm mb-2 line-clamp-2">
+                      <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black via-black/40 to-transparent pt-10 z-20 text-left">
+                        <h4 className="text-white font-serif font-bold text-base mb-2">
                           {offer.title}
-                        </h3>
+                        </h4>
                         <a
                           href={offer.ctaLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-lg"
+                          className="w-full bg-primary text-white py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2"
                         >
-                          {offer.ctaText} <ExternalLink size={12} />
+                          {offer.ctaText} <ExternalLink size={10} />
                         </a>
                       </div>
                     )}
                   </div>
 
+                  {/* Standard Card Info (Optimized for Small Width) */}
                   {!isBanner && (
-                    <div className="p-4 flex flex-col flex-1">
-                      <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight transition-colors duration-300 group-hover:text-red-600">
+                    <div className="p-4 flex flex-col flex-1 text-left">
+                      <h4 className="text-sm font-serif font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                         {offer.title}
-                      </h3>
-                      <p className="text-[11px] text-muted-foreground italic line-clamp-2 mt-2">
+                      </h4>
+                      <p className="text-[11px] text-zinc-500 italic line-clamp-2 mt-1.5 leading-relaxed">
                         {offer.description}
                       </p>
 
-                      <div className="mt-auto pt-3 border-t border-muted">
-                        <div className="text-[11px] mb-3 flex justify-between items-center bg-muted/50 p-2 rounded-md border border-dashed border-primary/20">
-                          <span className="text-muted-foreground font-medium uppercase">
-                            Promo Code:
+                      <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-white/5">
+                        <div className="mb-3 flex flex-col gap-1.5 bg-zinc-50 dark:bg-white/5 p-2 rounded-xl border border-dashed border-primary/20">
+                          <span className="text-[9px] text-zinc-400 font-bold uppercase">
+                            Code:
                           </span>
-                          <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
+                          <span className="font-mono font-black text-primary text-xs tracking-widest text-center">
                             {offer.couponCode}
                           </span>
                         </div>
@@ -392,9 +322,9 @@ export default function ResturantpageOffers() {
                           href={offer.ctaLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md active:scale-95"
+                          className="w-full bg-primary text-white py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all"
                         >
-                          {offer.ctaText} <ExternalLink size={12} />
+                          {offer.ctaText} <ExternalLink size={10} />
                         </a>
                       </div>
                     </div>
@@ -405,6 +335,6 @@ export default function ResturantpageOffers() {
           })}
         </Swiper>
       </div>
-    </section>
+    </div>
   );
 }
