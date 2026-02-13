@@ -27,6 +27,8 @@ import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/Lux
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
+import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
+
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
@@ -43,7 +45,10 @@ const WebsiteRoutes = [
   <Route key="careers" path="/careers" element={<Careers />} />,
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
   <Route key="resturant-detail" path="/resturant/:propertyId" element={<ResturantPage />} />,
+
   // Restaurant Sub-Verticals
+  <Route path="/restaurant/:propertyId/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
+
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,
   <Route key="restaurant-spicy-darbar" path="/restaurant/spicy-darbar" element={<SpicyDarbar />} />,

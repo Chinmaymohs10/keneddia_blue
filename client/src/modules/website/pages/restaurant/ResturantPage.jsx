@@ -4,29 +4,24 @@ import Footer from "@/modules/website/components/Footer";
 import ResturantBanner from "./resturantpage/ResturantBanner";
 import ResturantSubCategories from "./resturantpage/ResturantSubCategories";
 import AboutResturantPage from "./resturantpage/AboutResturantPage";
-import PerformanceMetrics from "./components/PerformanceMetrics";
-import BanquetsAndCatering from "./components/BanquetsAndCatering";
 import ResturantpageOffers from "./resturantpage/ResturantpageOffers";
-import EventsSchedule from "./components/EventsSchedule";
 import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import SignatureDishesAndBuffet from "./resturantpage/SignatureDishesAndBuffet";
-import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
 import ResturantGallerypage from "./resturantpage/ResturantGallerypage";
 import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
 
-// Restaurant Navigation Items (following Hotels page pattern)
+/* ===============================
+   RESTAURANT NAVIGATION ITEMS
+================================= */
 const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
-  { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
-  {
-    type: "link",
-    label: "RESERVATION",
-    key: "reservation",
-    href: "#reservation",
-  },
+  { type: "link", label: "OFFERS", key: "offers", href: "#offers" },
+  { type: "link", label: "ABOUT", key: "about", href: "#about" },
+  { type: "link", label: "EVENTS", key: "events", href: "#events" },
+  { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
   { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
@@ -34,53 +29,63 @@ export default function RestaurantHomepage() {
   const params = useParams();
   const propertyId = params.propertyId;
 
-  // Scroll to top on mount
+  /* Scroll to top on page load */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Main Navbar with Restaurant-specific items */}
-      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
+      {/* ===============================
+          NAVBAR
+      =============================== */}
+      <Navbar
+        navItems={RESTAURANT_NAV_ITEMS}
+        logo={siteContent.brand.logo}
+      />
 
-      {/* Main Content */}
+      {/* ===============================
+          MAIN CONTENT
+      =============================== */}
       <main>
-        {/* Hero Section */}
+        {/* HERO SECTION */}
         <div id="home">
-          <ResturantBanner />
+          <ResturantBanner propertyId={propertyId} />
         </div>
 
-        {/* Cuisine Categories */}
-        <ResturantSubCategories />
+        {/* MENU SECTION (Categories + Signature Dishes) */}
+        <div id="menu">
+          <ResturantSubCategories propertyId={propertyId} />
+          <SignatureDishesAndBuffet propertyId={propertyId} />
+        </div>
 
-        {/* Signature Dishes / Menu */}
-        <SignatureDishesAndBuffet />
+        {/* OFFERS SECTION */}
+        <div id="offers">
+          <ResturantpageOffers propertyId={propertyId} />
+        </div>
 
-        {/* ResturantpageOffers */}
-        <ResturantpageOffers />
+        {/* ABOUT SECTION */}
+        <div id="about">
+          <AboutResturantPage propertyId={propertyId} />
+        </div>
 
-        {/* About Section */}
-        <AboutResturantPage />
+        {/* EVENTS SECTION */}
+        <div id="events">
+          <ResturantpageEvents propertyId={propertyId} />
+        </div>
 
-        {/* Events Schedule */}
-        <ResturantpageEvents />
+        {/* TESTIMONIALS */}
+        <Testimonials propertyId={propertyId} />
 
-        {/* Banquets & Catering */}
-        {/* <BanquetsAndCatering /> */}
-
-        {/* Testimonials */}
-        <Testimonials />
-        {/* ResturantGallerypage */}
-
-        {/* ResturantGallerypage */}
-        <ResturantGallerypage />
-
-        {/* Reservation Form */}
-        {/* <ReservationForm /> */}
+        {/* GALLERY SECTION */}
+        <div id="gallery">
+          <ResturantGallerypage propertyId={propertyId} />
+        </div>
       </main>
 
-      {/* Footer */}
+      {/* ===============================
+          FOOTER / CONTACT
+      =============================== */}
       <div id="contact">
         <Footer />
       </div>

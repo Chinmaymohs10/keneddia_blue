@@ -231,7 +231,7 @@ function SectionHeader({
         </h2>
         <div className="h-0.5 w-16 bg-primary" />
       </div>
-      <div className="flex items-center gap-4 w-full sm:w-auto">
+      {/* <div className="flex items-center gap-4 w-full sm:w-auto">
         <div className="relative flex-1 sm:flex-none">
           <select
             value={selectedLocation}
@@ -252,7 +252,7 @@ function SectionHeader({
         >
           All Events <ArrowRight className="w-4 h-4" />
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }

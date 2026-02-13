@@ -53,7 +53,8 @@ const EXPERIENCES = [
   }
 ];
 
-export default function ResturantSubCategories() {
+export default function ResturantSubCategories({propertyId}) {
+  console.log(propertyId);
   const navigate = useNavigate();
   const containerRef = useRef(null);
   
@@ -134,7 +135,7 @@ export default function ResturantSubCategories() {
             {EXPERIENCES.map((exp, index) => (
               <SwiperSlide key={exp.id} className="h-auto">
                 <motion.div
-                  onClick={() => navigate(exp.link)}
+                  onClick={() => navigate(`/restaurant/${propertyId}/${exp.id}`)}
                   // Hover Zoom Effect for individual card
                   whileHover={{ scale: 1.02 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
