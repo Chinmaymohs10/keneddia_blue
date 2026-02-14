@@ -189,6 +189,17 @@ export default function ResturantSubCategories({ propertyId }) {
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                     Explore Vertical
                   </span>
+                  {exp.id === "takeaway" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // 🚨 prevent parent click
+                        navigate(`#`);
+                      }}
+                      className="px-3 py-2 text-[10px] font-light uppercase tracking-wider bg-primary text-white rounded-full shadow-lg hover:scale-105 transition-all"
+                    >
+                      Order
+                    </button>
+                  )}
                 </div>
               </div>
               <span className="hidden lg:block absolute bottom-8 right-10 text-7xl font-black text-zinc-900/[0.03] dark:text-white/[0.02] italic select-none">

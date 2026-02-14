@@ -11,7 +11,8 @@ import {
   Phone,
   Mail,
   Send,
-  Loader2
+  Loader2,
+  CalendarCheck // Added for the Reserve icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +29,15 @@ export default function CategoryMenu({ menu, themeColor }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
+  // Handle individual item order
   const handleOrderClick = (item) => {
     setSelectedItem(item);
+    setShowOrderModal(true);
+  };
+
+  // Handle category reservation (Marked Location in Image)
+  const handleReserveClick = () => {
+    setSelectedItem({ name: `${menu[activeTab].category} (Table Reservation)` });
     setShowOrderModal(true);
   };
 
@@ -85,24 +93,32 @@ export default function CategoryMenu({ menu, themeColor }) {
             </h2>
           </div>
 
-          {/* NEXT/PREV CONTROLS */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handlePrev}
-              disabled={activeTab === 0}
-              className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
-            >
-              <ChevronLeft className="w-5 h-5 dark:text-white" />
-            </button>
-            <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
-              {activeTab + 1} / {menu.length}
+          <div className="flex flex-row-reverse items-center gap-6">
+            {/* NEXT/PREV CONTROLS */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handlePrev}
+                disabled={activeTab === 0}
+                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+              >
+                <ChevronLeft className="w-5 h-5 dark:text-white" />
+              </button>
+              <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                {activeTab + 1} / {menu.length}
+              </div>
+              <button
+                onClick={handleNext}
+                disabled={activeTab === menu.length - 1}
+                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+              >
+                <ChevronRight className="w-5 h-5 dark:text-white" />
+              </button>
             </div>
-            <button
-              onClick={handleNext}
-              disabled={activeTab === menu.length - 1}
-              className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+             <button
+              onClick={handleReserveClick}
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
             >
-              <ChevronRight className="w-5 h-5 dark:text-white" />
+              <CalendarCheck size={14} /> Reserve Now
             </button>
           </div>
         </div>
@@ -182,7 +198,7 @@ export default function CategoryMenu({ menu, themeColor }) {
         </AnimatePresence>
       </div>
 
-      {/* --- ORDER POPUP FORM --- */}
+      {/* --- ORDER/RESERVE POPUP FORM --- */}
       <AnimatePresence>
         {showOrderModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -194,9 +210,13 @@ export default function CategoryMenu({ menu, themeColor }) {
             >
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><ShoppingBag size={18} /></div>
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    {selectedItem?.name.includes('Table') ? <CalendarCheck size={18}/> : <ShoppingBag size={18} />}
+                  </div>
                   <div>
-                    <h3 className="font-serif text-xl dark:text-white">Order {selectedItem?.name}</h3>
+                    <h3 className="font-serif text-xl dark:text-white">
+                        {selectedItem?.name.includes('Table') ? "Reservation" : `Order ${selectedItem?.name}`}
+                    </h3>
                     <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">Step {step} of 2</p>
                   </div>
                 </div>
@@ -254,8 +274,8 @@ export default function CategoryMenu({ menu, themeColor }) {
                     </div>
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
                       <p className="text-[11px] text-zinc-500 italic leading-relaxed">
-                        By clicking submit, you are requesting an order for <b>{selectedItem?.name}</b>. 
-                        Our staff will call you shortly to confirm your table or delivery details.
+                        By clicking submit, you are requesting for <b>{selectedItem?.name}</b>. 
+                        Our staff will call you shortly to confirm your {selectedItem?.name.includes('Table') ? 'reservation' : 'order'} details.
                       </p>
                     </div>
                     <div className="flex gap-3">
