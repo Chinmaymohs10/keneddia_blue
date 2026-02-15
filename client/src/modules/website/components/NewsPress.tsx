@@ -209,15 +209,15 @@ function NewsCard({ item }: { item: NewsItem }) {
           {item.description}
         </p>
 
-        {/* <div className="mt-auto pt-2 border-t border-border/50">
+        <div className="mt-auto pt-2 border-t border-border/50">
           <Link
-            to={`#`}
+            to={`/news/${item.id}`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
           >
             {item.ctaText}
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
           </Link>
-        </div> */}
+        </div>
       </div>
     </div>
   );

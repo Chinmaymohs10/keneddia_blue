@@ -179,11 +179,24 @@ function HeroSection() {
         <thead>
           <tr style={{ backgroundColor: colors.border }}>
             <th className="text-left px-4 py-3 text-xs font-semibold">ID</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">Preview</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">Titles</th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">Homepage</th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">Status Action</th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">Actions</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">
+              Preview
+            </th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">
+              Titles
+            </th>
+            {activeTab === "homepage" && (
+              <th className="text-center px-4 py-3 text-xs font-semibold">
+                Homepage
+              </th>
+            )}
+
+            <th className="text-center px-4 py-3 text-xs font-semibold">
+              Status Action
+            </th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -233,24 +246,30 @@ function HeroSection() {
                   </div>
                 </td>
 
-                <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() =>
-                      handleToggleHomepage(section.id, section.showOnHomepage)
-                    }
-                    disabled={isTogglingHome}
-                    className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
-                    style={{
-                      backgroundColor: section.showOnHomepage
-                        ? colors.primary
-                        : colors.border,
-                    }}
-                  >
-                    <span
-                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${section.showOnHomepage ? "translate-x-6" : "translate-x-1"}`}
-                    />
-                  </button>
-                </td>
+                {activeTab === "homepage" && (
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() =>
+                        handleToggleHomepage(section.id, section.showOnHomepage)
+                      }
+                      disabled={isTogglingHome}
+                      className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
+                      style={{
+                        backgroundColor: section.showOnHomepage
+                          ? colors.primary
+                          : colors.border,
+                      }}
+                    >
+                      <span
+                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                          section.showOnHomepage
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </td>
+                )}
 
                 <td className="px-4 py-3 text-center">
                   <div className="flex flex-col items-center gap-1">

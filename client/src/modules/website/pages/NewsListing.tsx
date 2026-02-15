@@ -325,8 +325,8 @@ export default function NewsListing() {
                 <div className="space-y-4">
                   {currentItems.map((item) => (
                     <Link
-                      // to={`/news/${item.id}`} key={item.id}
-                      to={`#`} key={item.id}
+                      to={`/news/${item.id}`} key={item.id}
+                      // to={`#`} key={item.id}
                       className="group flex flex-col sm:flex-row bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                     >
                       {/* Image */}

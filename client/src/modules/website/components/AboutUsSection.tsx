@@ -181,7 +181,7 @@ export default function AboutUsSection() {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch">
           {/* Left Column: Media Showcase Carousel */}
-          <div 
+          <div
             className="relative group flex flex-col"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
@@ -194,7 +194,7 @@ export default function AboutUsSection() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.8 }} // Slower transition animation
-                  className="w-full h-full absolute inset-0"
+                  className="w-full h-full absolute inset-0 cursor-pointer"
                 >
                   {mediaItems[currentMediaIndex].type === "video" ? (
                     <iframe
@@ -267,7 +267,8 @@ export default function AboutUsSection() {
               <h4 className="text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground">
                 Our Ventures
               </h4>
-              <div className="flex flex-wrap gap-8">
+
+              <div className="flex flex-wrap gap-16">
                 {ventures.map((venture) => (
                   <div
                     key={venture.id}
@@ -280,6 +281,7 @@ export default function AboutUsSection() {
                         className="w-full h-full object-scale-down"
                       />
                     </div>
+
                     <span className="text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity">
                       {venture.ventureName}
                     </span>
@@ -297,7 +299,7 @@ export default function AboutUsSection() {
                 {recognitions.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-secondary/20 border border-border/50 rounded-lg p-4 text-center group hover:border-primary/30 transition-all shadow-sm"
+                    className="bg-secondary/20 border border-border/50 rounded-lg p-2 text-center group hover:border-primary/30 transition-all shadow-sm"
                   >
                     <div className="text-xl font-serif font-bold text-primary mb-1">
                       {item.value}

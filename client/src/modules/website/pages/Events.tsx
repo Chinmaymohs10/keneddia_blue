@@ -689,7 +689,7 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar navItems={EVENT_NAV_ITEMS} />
+      <Navbar />
       <section id="collection" className="bg-secondary/5 border-y border-border/50">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-0">
@@ -858,7 +858,7 @@ export default function Events() {
                         <EventListRow
                           key={event.id}
                           event={event}
-                          onClick={() => navigate(`#`)}
+                          // onClick={() => navigate(`/events/${event.id}`)}
                         />
                       )
                     )}
@@ -871,7 +871,7 @@ export default function Events() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="py-20 bg-background border-t border-border/10">
+      {/* <section className="py-20 bg-background border-t border-border/10">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center px-6">
           <div className="order-2 md:order-1 relative h-[500px] w-full rounded-lg overflow-hidden">
             <OptimizedImage
@@ -903,7 +903,7 @@ export default function Events() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>
