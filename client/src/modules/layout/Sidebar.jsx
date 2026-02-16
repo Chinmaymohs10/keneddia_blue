@@ -65,17 +65,17 @@ function Sidebar({ isOpen, onToggle }) {
       //         { name: "Bookings", path: "/Hotel/Bookings" },
       //       ],
       // },
-      {
-        icon: UtensilsCrossed,
-        label: "Restaurant Vertical",
-        path: "/Restaurant",
-        hasSubmenu: true,
-        submenu: [
-          { name: "Menu", path: "/Restaurant/Menu" },
-          { name: "Reservations", path: "/Restaurant/Reservations" },
-          { name: "Orders", path: "/Restaurant/Orders" },
-        ],
-      },
+      // {
+      //   icon: UtensilsCrossed,
+      //   label: "Restaurant Vertical",
+      //   path: "/Restaurant",
+      //   hasSubmenu: true,
+      //   submenu: [
+      //     { name: "Menu", path: "/Restaurant/Menu" },
+      //     { name: "Reservations", path: "/Restaurant/Reservations" },
+      //     { name: "Orders", path: "/Restaurant/Orders" },
+      //   ],
+      // },
     ];
 
     return { coreItems, verticals };

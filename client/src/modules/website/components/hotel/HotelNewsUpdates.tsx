@@ -143,8 +143,8 @@ function SectionHeader({
 
       <div className="flex items-center gap-4">
         <Link
-          // to="/news"
-          to="#"
+          to="/news"
+          // to="#"
           className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all cursor-pointer"
         >
           View All
@@ -269,8 +269,8 @@ function NewsCard({ item }: { item: NewsItem }) {
 
         <div className="mt-auto pt-2 border-t border-border/50">
           <Link
-            // to={`/news/${item.id}`}
-            to={`#`}
+            to={`/news/${item.id}`}
+            // to={`#`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
           >
             {item.ctaText || "Read Story"}

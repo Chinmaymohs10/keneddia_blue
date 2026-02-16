@@ -72,6 +72,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     imageMediaId: null,
     isActive: false,
     showOnHomePage: false,
+    quickOfferActive: false,
     displayLocation: "PROPERTY_PAGE",
   });
 
@@ -130,6 +131,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         displayLocation: editingOffer.displayLocation || "PROPERTY_PAGE",
         isActive: editingOffer.isActive ?? false,
         ctaLink: editingOffer.ctaLink || "",
+        quickOfferActive: editingOffer.quickOfferActive ?? false,
       });
       setUploadedMediaId(editingOffer.imageMediaId || null);
       setImagePreview(
@@ -210,6 +212,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       isActive: false,
       showOnHomePage: false,
       displayLocation: "PROPERTY_PAGE",
+      quickOfferActive: false,
     });
     setImagePreview(null);
     setUploadedMediaId(null);
@@ -654,6 +657,34 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 >
                   <span
                     className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all ${formData.isActive ? "left-6" : "left-1"}`}
+                  />
+                </button>
+              </div>
+              <div className="p-4 border rounded-lg bg-[#F3F4F6] flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-gray-600">
+                    Quick Offer
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Show as quick/featured offer
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((p) => ({
+                      ...p,
+                      quickOfferActive: !p.quickOfferActive,
+                    }))
+                  }
+                  className={`h-6 w-11 rounded-full relative transition-colors ${
+                    formData.quickOfferActive ? "bg-blue-500" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 h-4 w-4 bg-white rounded-full transition-all ${
+                      formData.quickOfferActive ? "left-6" : "left-1"
+                    }`}
                   />
                 </button>
               </div>

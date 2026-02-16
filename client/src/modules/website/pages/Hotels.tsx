@@ -665,7 +665,7 @@ export default function Hotels() {
       </div>
 
       {/* EXCLUSIVE OFFER POPUP */}
-      <SpecialOfferPopup />
+      {/* <SpecialOfferPopup /> */}
 
       {/* FOOTER */}
       <div id="contact">

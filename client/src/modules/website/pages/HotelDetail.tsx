@@ -179,7 +179,93 @@ export default function HotelDetail() {
       searchData.checkOut.getTime() - searchData.checkIn.getTime();
     return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }, [searchData.checkIn, searchData.checkOut]);
+  const fetchNearbyFromOSM = async (
+    lat: number,
+    lng: number,
+    propertyName: string,
+  ) => {
+    try {
+      console.log(
+        `📍 Fetching nearby locations for: "${propertyName}" at [${lat}, ${lng}]`,
+      );
 
+      const query = `
+        [out:json][timeout:25];
+        (
+          node["amenity"~"restaurant|cafe|fast_food|bank"](around:3000, ${lat}, ${lng});
+          node["tourism"~"museum|attraction|viewpoint|hotel"](around:3000, ${lat}, ${lng});
+          node["historic"](around:3000, ${lat}, ${lng});
+          node["highway"~"bus_stop"](around:3000, ${lat}, ${lng});
+        );
+        out body 10;
+      `;
+
+      const response = await fetch(
+        `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
+      );
+
+      // 🔍 DEBUG: Check if response is actually JSON
+      const contentType = response.headers.get("content-type");
+      if (
+        !response.ok ||
+        !contentType ||
+        !contentType.includes("application/json")
+      ) {
+        console.warn(
+          "⚠️ OSM Server busy or returned HTML error. Using fallback.",
+        );
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (!data.elements) return [];
+
+      const results = data.elements
+        .filter((el: any) => el.tags && el.tags.name)
+        .map((el: any) => {
+          // DEBUG CALCULATION: Distance check
+          const dist = (
+            Math.sqrt(Math.pow(el.lat - lat, 2) + Math.pow(el.lon - lng, 2)) *
+            111
+          ).toFixed(2);
+          console.log(
+            `🔎 Found: ${el.tags.name} (${el.tags.amenity || "Point"}) ~${dist}km away`,
+          );
+
+          return {
+            name: el.tags.name,
+            type: (el.tags.amenity || el.tags.tourism || "Landmark").replace(
+              "_",
+              " ",
+            ),
+            // Save the distance here so the UI can use it
+            distance: `${(Math.sqrt(Math.pow(el.lat - lat, 2) + Math.pow(el.lon - lng, 2)) * 111).toFixed(2)} km`,
+            coordinates: { lat: el.lat, lng: el.lon },
+          };
+        })
+        // Sort by distance (optional but recommended for the "Top 2")
+        .sort((a, b) => {
+          const distA = Math.sqrt(
+            Math.pow(a.coordinates.lat - lat, 2) +
+              Math.pow(a.coordinates.lng - lng, 2),
+          );
+          const distB = Math.sqrt(
+            Math.pow(b.coordinates.lat - lat, 2) +
+              Math.pow(b.coordinates.lng - lng, 2),
+          );
+          return distA - distB;
+        })
+        .slice(0, 2);
+
+      return results;
+    } catch (error) {
+      console.error("❌ OSM Fetch Error:", error);
+      return [];
+    }
+  };
+
+  // --- MAIN FETCH FUNCTION ---
   useEffect(() => {
     const fetchPropertyData = async () => {
       if (!propertyIdFromUrl) {
@@ -187,29 +273,52 @@ export default function HotelDetail() {
         setLoading(false);
         return;
       }
+
       try {
         setLoading(true);
         const response = await GetAllPropertyDetails();
         const rawData = response?.data || response;
-        const flattened = rawData.flatMap((item: ApiPropertyData) => {
-          const parent = item.propertyResponseDTO;
-          const listings = item.propertyListingResponseDTOS || [];
-          return listings.length === 0
-            ? [{ parent, listing: null }]
-            : listings.map((l: any) => ({ parent, listing: l }));
-        });
+
+        const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
+          (item: ApiPropertyData) => {
+            const parent = item.propertyResponseDTO;
+            const listings = item.propertyListingResponseDTOS || [];
+            return listings.length === 0
+              ? [{ parent, listing: null }]
+              : listings.map((l: any) => ({ parent, listing: l }));
+          },
+        );
+
         const matched = flattened.find(
           (m: any) => Number(m.parent.id) === Number(propertyIdFromUrl),
         );
+
         if (!matched) {
           setError("Property Not Found");
           return;
         }
 
         const { parent, listing } = matched;
+
+        // Coordinate extraction with Number casting for safety
+        const coords =
+          parent.latitude && parent.longitude
+            ? { lat: Number(parent.latitude), lng: Number(parent.longitude) }
+            : null;
+
         const displayName = listing?.propertyName?.trim()
           ? listing.propertyName
           : listing?.mainHeading || parent.propertyName;
+
+        // Fetch dynamic nearby places based on coordinates
+        let dynamicNearby = [];
+        if (coords) {
+          dynamicNearby = await fetchNearbyFromOSM(
+            coords.lat,
+            coords.lng,
+            displayName,
+          );
+        }
 
         setHotel({
           id: listing?.id || parent.id,
@@ -228,30 +337,38 @@ export default function HotelDetail() {
           rating: listing?.rating || null,
           price: `₹${(listing?.price || 0).toLocaleString()}`,
           media: listing?.media || [],
-          coordinates:
-            parent.latitude && parent.longitude
-              ? { lat: parent.latitude, lng: parent.longitude }
-              : null,
+          coordinates: coords,
           amenities: listing?.amenities || [],
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
-          nearbyPlaces: [
-            "0.5 km from City Center",
-            "2.0 km from Main Transit Hub",
-          ], // Restored Landmarks
+          nearbyPlaces:
+            dynamicNearby.length > 0
+              ? dynamicNearby
+              : [
+                  {
+                    name: "N/A",
+                    type: "Transit",
+                    distance: "Nearby",
+                    coordinates: coords
+                      ? { lat: coords.lat + 0.005, lng: coords.lng + 0.005 }
+                      : { lat: 0, lng: 0 },
+                  },
+                ],
         });
 
+        // Secondary Data Fetches
         fetchRooms(parent.id);
         fetchGallery(parent.id);
         fetchPolicies(parent.id);
       } catch (err) {
+        console.error("Property Fetch Error:", err);
         setError("Error loading data");
       } finally {
         setLoading(false);
       }
     };
+
     fetchPropertyData();
   }, [propertyIdFromUrl]);
-
   const fetchRooms = async (propId: number) => {
     try {
       setRoomsLoading(true);
@@ -453,13 +570,22 @@ export default function HotelDetail() {
                   variants={fadeIn}
                   className="flex flex-wrap items-center gap-4 pt-1"
                 >
-                  {(hotel.nearbyPlaces || []).map((place, i) => (
+                  {(hotel.nearbyPlaces || []).map((place: any, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
                     >
                       <div className="w-1 h-1 rounded-full bg-primary/40" />
-                      <span>{place}</span>
+                      <span className="flex items-center gap-1">
+                        <span className="font-medium text-foreground/90">
+                          {typeof place === "string" ? place : place.name}
+                        </span>
+                        {place.distance && (
+                          <span className="text-[10px] opacity-70">
+                            ({place.distance})
+                          </span>
+                        )}
+                      </span>
                     </div>
                   ))}
                 </motion.div>
