@@ -163,27 +163,25 @@ export default function PropertiesSection() {
             const parent = item.propertyResponseDTO;
             const listings = item.propertyListingResponseDTOS || [];
 
-            if (!parent?.isActive) return [];
-
             return listings
-              .filter((l: any) => l.isActive)
+              .filter((l: any) => l.isActive === true)
               .map((l: any) => ({
                 id: l.id,
-                propertyId: parent.id,
+                propertyId: parent?.id,
                 listingId: l.id,
-                propertyName: parent.propertyName || "Unnamed Property",
+                propertyName: parent?.propertyName || "Unnamed Property",
                 propertyType:
-                  l.propertyType || parent.propertyTypes?.[0] || "Property",
-                city: parent.locationName,
+                  l.propertyType || parent?.propertyTypes?.[0] || "Property",
+                city: parent?.locationName,
                 mainHeading: l.mainHeading || "",
                 subTitle: l.subTitle || "",
-                fullAddress: l.fullAddress || parent.address,
+                fullAddress: l.fullAddress || parent?.address,
                 tagline: l.tagline || "",
-                rating: l.rating,
-                capacity: l.capacity,
-                price: l.price,
-                gstPercentage: l.gstPercentage,
-                discountAmount: l.discountAmount,
+                rating: l.rating ?? 0,
+                capacity: l.capacity ?? 0,
+                price: l.price ?? 0,
+                gstPercentage: l.gstPercentage ?? 0,
+                discountAmount: l.discountAmount ?? 0,
                 amenities: l.amenities || [],
                 isActive: true,
                 media: l.media || [],
@@ -295,7 +293,7 @@ export default function PropertiesSection() {
 
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
-            <div 
+            <div
               className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
@@ -312,13 +310,19 @@ export default function PropertiesSection() {
               {filtered.length > 1 && (
                 <>
                   <button
-                    onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevSlide();
+                    }}
                     className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronLeft size={28} />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextSlide();
+                    }}
                     className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronRight size={28} />
@@ -341,7 +345,7 @@ export default function PropertiesSection() {
                           Base Price
                         </span>
                         <span className="text-xl font-semibold">
-                          ₹{active.price.toLocaleString()}
+                          ₹{(active.price ?? 0).toLocaleString()}
                         </span>
                       </div>
                       {active.discountAmount && active.discountAmount > 0 ? (

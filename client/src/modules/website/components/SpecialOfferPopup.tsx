@@ -123,7 +123,7 @@ export default function SpecialOfferPopup() {
                 onClick={handleClaim}
                 className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow animate-pulse-slow"
               >
-                Book Now & Save <ArrowRight className="w-4 h-4 ml-2" />
+                Reserve Now <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
 
               <p className="text-center text-[10px] text-muted-foreground mt-3">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { addDays } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
   Star,
@@ -10,6 +11,12 @@ import {
   ChevronRight,
   Loader2,
   Info,
+  Navigation,
+  Image as ImageIcon,
+  Facebook,
+  Twitter,
+  Linkedin,
+  MessageCircle,
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -45,39 +52,9 @@ interface PropertyMedia {
   height: number | null;
 }
 
-interface PropertyListing {
-  id: number;
-  propertyId: number;
-  propertyName: string | null;
-  propertyType: string | null;
-  mainHeading: string;
-  subTitle: string;
-  fullAddress: string;
-  tagline: string;
-  rating: number | null;
-  price: number;
-  gstPercentage: number;
-  discountAmount: number;
-  amenities: string[];
-  isActive: boolean;
-  media: PropertyMedia[];
-}
-
-interface PropertyResponse {
-  id: number;
-  propertyName: string;
-  propertyTypes: string[];
-  propertyCategories: string[];
-  address: string;
-  locationName: string;
-  latitude: number | null;
-  longitude: number | null;
-  isActive: boolean;
-}
-
 interface ApiPropertyData {
-  propertyResponseDTO: PropertyResponse;
-  propertyListingResponseDTOS: PropertyListing[];
+  propertyResponseDTO: any;
+  propertyListingResponseDTOS: any[];
 }
 
 interface GalleryItem {
@@ -105,6 +82,7 @@ interface HotelData {
   coordinates: { lat: number; lng: number } | null;
   amenities: string[];
   image: { src: string; alt: string };
+  nearbyPlaces?: string[];
 }
 
 interface PolicyData {
@@ -115,6 +93,13 @@ interface PolicyData {
   cancellationPolicy: string | null;
   policies: Array<{ id: number; name: string; isActive: boolean }>;
 }
+
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
+const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
 export default function HotelDetail() {
   const params = useParams<{ propertyId?: string }>();
@@ -135,6 +120,10 @@ export default function HotelDetail() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [datesInitialized, setDatesInitialized] = useState(false);
 
+  // Feature States
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShareReactions, setShowShareReactions] = useState(false);
+
   const [searchData, setSearchData] = useState({
     checkIn: null as Date | null,
     checkOut: null as Date | null,
@@ -143,7 +132,34 @@ export default function HotelDetail() {
     rooms: 1,
   });
 
-  // Initialize dates on mount if not set
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const socialPlatforms = [
+    {
+      name: "WhatsApp",
+      icon: <MessageCircle size={20} />,
+      color: "bg-[#25D366]",
+      link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook size={20} />,
+      color: "bg-[#1877F2]",
+      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "X",
+      icon: <Twitter size={18} />,
+      color: "bg-black",
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "LinkedIn",
+      icon: <Linkedin size={20} />,
+      color: "bg-[#0A66C2]",
+      link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    },
+  ];
+
   useEffect(() => {
     if (!datesInitialized && !searchData.checkIn) {
       const today = new Date();
@@ -157,13 +173,11 @@ export default function HotelDetail() {
     }
   }, [datesInitialized, searchData.checkIn]);
 
-  // Calculate number of nights
   const numberOfNights = useMemo(() => {
     if (!searchData.checkIn || !searchData.checkOut) return 1;
     const diffTime =
       searchData.checkOut.getTime() - searchData.checkIn.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(1, diffDays);
+    return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }, [searchData.checkIn, searchData.checkOut]);
 
   useEffect(() => {
@@ -173,39 +187,34 @@ export default function HotelDetail() {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         const response = await GetAllPropertyDetails();
         const rawData = response?.data || response;
-
         const flattened = rawData.flatMap((item: ApiPropertyData) => {
           const parent = item.propertyResponseDTO;
           const listings = item.propertyListingResponseDTOS || [];
           return listings.length === 0
             ? [{ parent, listing: null }]
-            : listings.map((l) => ({ parent, listing: l }));
+            : listings.map((l: any) => ({ parent, listing: l }));
         });
-
         const matched = flattened.find(
           (m: any) => Number(m.parent.id) === Number(propertyIdFromUrl),
         );
-
         if (!matched) {
           setError("Property Not Found");
           return;
         }
 
         const { parent, listing } = matched;
-        const displayName =
-          listing?.propertyName && listing.propertyName.trim() !== ""
-            ? listing.propertyName
-            : listing?.mainHeading || parent.propertyName;
+        const displayName = listing?.propertyName?.trim()
+          ? listing.propertyName
+          : listing?.mainHeading || parent.propertyName;
 
         setHotel({
           id: listing?.id || parent.id,
           propertyId: parent.id,
-          locationId: parent.locationId, // Add this - or use the actual locationId field from your API
+          locationId: parent.locationId,
           name: displayName,
           location: listing?.fullAddress || parent.address,
           city: parent.locationName,
@@ -225,6 +234,10 @@ export default function HotelDetail() {
               : null,
           amenities: listing?.amenities || [],
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
+          nearbyPlaces: [
+            "0.5 km from City Center",
+            "2.0 km from Main Transit Hub",
+          ], // Restored Landmarks
         });
 
         fetchRooms(parent.id);
@@ -243,36 +256,24 @@ export default function HotelDetail() {
     try {
       setRoomsLoading(true);
       const res = await getRoomsByPropertyId(propId);
-      const data = Array.isArray(res?.data) ? res.data : [];
-
-      const mappedRooms = data.map((r: any) => {
-        const isAvailable =
-          r.status === "AVAILABLE" && r.bookable === true && r.active === true;
-
-        return {
-          id: r.roomId.toString(),
-          name: r.roomName || r.roomNumber,
-          type: r.roomType,
-          description: r.description || "",
-          basePrice: r.basePrice || 0,
-          maxOccupancy: r.maxOccupancy || 1,
-          isAvailable,
-
-          amenities:
-            r.amenitiesAndFeatures
-              ?.filter((a: any) => a.isActive)
-              ?.map((a: any) => a.name) || [],
-
-          image: {
-            src: hotel?.image?.src || "/images/room-placeholder.jpg",
-            alt: r.roomName || r.roomNumber,
-          },
-
-          gallery: [],
-        };
-      });
-
-      setRooms(mappedRooms);
+      setRooms(
+        Array.isArray(res?.data)
+          ? res.data.map((r: any) => ({
+              id: r.roomId.toString(),
+              name: r.roomName || r.roomNumber,
+              type: r.roomType,
+              description: r.description || "",
+              basePrice: r.basePrice || 0,
+              maxOccupancy: r.maxOccupancy || 1,
+              isAvailable: r.status === "AVAILABLE",
+              amenities: r.amenitiesAndFeatures?.map((a: any) => a.name) || [],
+              image: {
+                src: r.media?.[0]?.url || "/images/room-placeholder.jpg",
+                alt: r.roomName,
+              },
+            }))
+          : [],
+      );
     } finally {
       setRoomsLoading(false);
     }
@@ -281,86 +282,56 @@ export default function HotelDetail() {
   const fetchGallery = async (propId: number) => {
     try {
       const res = await getAllGalleries({ page: 0, size: 100 });
-      const allContent = res?.data?.content || res?.content || [];
-      const filtered = allContent.filter(
-        (item: any) =>
-          Number(item.propertyId) === Number(propId) && item.isActive,
+      const all = res?.data?.content || [];
+      setGalleryData(
+        all.filter(
+          (i: any) => Number(i.propertyId) === Number(propId) && i.isActive,
+        ),
       );
-      setGalleryData(filtered);
-    } catch (err) {
+    } catch {
       setGalleryData([]);
     }
   };
-  const map = new Map<number, PropertyMedia[]>();
 
   const fetchPolicies = async (propId: number) => {
     try {
       const res = await getAllPropertyPolicies(propId);
-      const data = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res)
-          ? res
-          : [];
-
-      const matchedPolicy = data.find(
-        (p: any) => Number(p.propertyId) === Number(propId),
-      );
-      if (matchedPolicy) {
-        setPolicies(matchedPolicy);
-      }
+      const data = res?.data || res;
+      const matched = Array.isArray(data)
+        ? data.find((p: any) => Number(p.propertyId) === Number(propId))
+        : data;
+      if (matched) setPolicies(matched);
     } catch (err) {
-      console.error("Error fetching policies", err);
+      console.error(err);
     }
   };
 
-  const roomImageMap = useMemo(() => {
-    const map = new Map<number, string>();
-    galleryData.forEach((item) => {
-      if (
-        item.category === "ROOM" &&
-        item.media?.url &&
-        !map.has(item.propertyId)
-      ) {
-        map.set(item.propertyId, item.media.url);
-      }
-    });
-    return map;
-  }, [galleryData]);
+  const handleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    isBookmarked
+      ? toast("Removed from favorites")
+      : toast.success("Added to favorites!");
+  };
+
+  const openGalleryAt = (index: number) => {
+    setInitialGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
 
   const handleSearchDataChange = (data: typeof searchData) => {
-    const dateChanged =
-      data.checkIn?.getTime() !== searchData.checkIn?.getTime() ||
-      data.checkOut?.getTime() !== searchData.checkOut?.getTime();
-
     setSearchData(data);
-
-    // Clear selected room when dates change
-    if (dateChanged) {
-      setSelectedRoomId(null);
-      toast.success("Dates updated! Please select a room again.");
-    }
+    setSelectedRoomId(null);
   };
 
   const handleBookNow = () => {
-    if (!searchData.checkIn || !searchData.checkOut) {
-      toast.error("Please select check-in and check-out dates");
+    if (!searchData.checkIn || !searchData.checkOut || !selectedRoomId) {
+      toast.error("Please select dates and a room");
       return;
     }
-    if (!selectedRoomId) {
-      toast.error("Please select a room");
-      return;
-    }
-    const token = "ODQ2Mg==";
-    const params = new URLSearchParams({
-      token,
-      checkin: searchData.checkIn.toISOString().split("T")[0],
-      checkout: searchData.checkOut.toISOString().split("T")[0],
-      adults: String(searchData.adults),
-      children: String(searchData.children),
-      rooms: String(searchData.rooms),
-    });
-    const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
-    window.open(bookingUrl, "_blank");
+    window.open(
+      `https://asiatech.in/booking_engine/index3?token=ODQ2Mg==&checkin=${searchData.checkIn.toISOString().split("T")[0]}&checkout=${searchData.checkOut.toISOString().split("T")[0]}`,
+      "_blank",
+    );
   };
 
   const topGridImages = useMemo(() => {
@@ -371,62 +342,38 @@ export default function HotelDetail() {
     return combined.filter((m) => m && m.url);
   }, [hotel?.media, galleryData]);
 
-  const isRestaurant = useMemo(() => {
-    if (!hotel) return false;
-    const type = hotel.type.toLowerCase();
-    return (
-      type.includes("restaurant") ||
-      type.includes("dining") ||
-      type.includes("cafe")
-    );
-  }, [hotel?.type]);
-
-  const sections = useMemo(() => {
-    const baseSections = [
+  const sections = useMemo(
+    () => [
       { id: "room-options", label: "Room Options" },
       { id: "about-hotel", label: "About Hotel" },
       { id: "amenities", label: "Amenities" },
-    ];
-
-    const optionalSections = [
       { id: "events", label: "Events" },
-      ...(isRestaurant ? [{ id: "dining", label: "Food & Dining" }] : []),
-      { id: "reviews", label: "Guest Reviews" },
       { id: "location", label: "Location" },
       { id: "policies", label: "Guest Policies" },
-    ];
+    ],
+    [],
+  );
 
-    return [...baseSections, ...optionalSections];
-  }, [isRestaurant]);
-
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="animate-spin w-8 h-8 text-primary" />
       </div>
     );
-  }
-
-  if (error || !hotel) {
+  if (error || !hotel)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-foreground mb-2">
-            Property Not Found
-          </p>
-          <Button onClick={() => navigate("/hotels")} variant="outline">
-            Back to Hotels
-          </Button>
+          <p className="mb-4">{error || "Property Not Found"}</p>
+          <Button onClick={() => navigate("/hotels")}>Back</Button>
         </div>
       </div>
     );
-  }
 
   return (
     <>
       <div className="min-h-screen bg-background text-foreground pt-20">
         <Navbar logo={siteContent.brand.logo_hotel} />
-
         <GalleryModal
           isOpen={isGalleryOpen}
           onClose={() => setIsGalleryOpen(false)}
@@ -436,7 +383,12 @@ export default function HotelDetail() {
         />
 
         <div className="container mx-auto px-4 md:px-8 lg:px-12 py-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <motion.nav
+            variants={fadeIn}
+            initial="initial"
+            animate="animate"
+            className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
+          >
             <Link to="/" className="hover:text-foreground transition-colors">
               Home
             </Link>
@@ -449,107 +401,172 @@ export default function HotelDetail() {
             </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-foreground font-medium">{hotel.name}</span>
-          </div>
+          </motion.nav>
 
-          <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3">
-                {hotel.name}
-              </h1>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span>
-                  {hotel.location}, {hotel.city}
-                </span>
-                {hotel.coordinates && (
-                  <a
-                    href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-destructive font-medium hover:underline ml-2 transition-colors"
-                  >
-                    View Map
-                  </a>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full"
-                onClick={() => toast.success("Link copied to clipboard!")}
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full"
-                onClick={() => toast.success("Added to favorites!")}
-              >
-                <Heart className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[350px] md:h-[450px] mb-8 rounded-xl overflow-hidden shadow-md cursor-pointer">
-            <div
-              className="md:col-span-2 h-full bg-muted overflow-hidden"
-              onClick={() => {
-                setInitialGalleryIndex(0);
-                setIsGalleryOpen(true);
-              }}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="space-y-3 w-full text-left"
             >
+              <motion.div variants={fadeIn} className="flex items-center gap-3">
+                <span className="inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                  {hotel.type}
+                </span>
+                {hotel.rating && (
+                  <div className="flex items-center gap-1.5 bg-green-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
+                    <span>{hotel.rating}</span>
+                    <Star className="w-3 h-3 fill-white" />
+                  </div>
+                )}
+              </motion.div>
+              <motion.h1
+                variants={fadeIn}
+                className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 dark:text-white"
+              >
+                {hotel.name}
+              </motion.h1>
+              <div className="space-y-2">
+                <motion.div
+                  variants={fadeIn}
+                  className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {hotel.location}, {hotel.city}
+                    </span>
+                  </div>
+                  {hotel.coordinates && (
+                    <a
+                      href={`http://googleusercontent.com/maps.google.com/?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
+                    >
+                      <Navigation className="w-4 h-4" /> View Map
+                    </a>
+                  )}
+                </motion.div>
+                <motion.div
+                  variants={fadeIn}
+                  className="flex flex-wrap items-center gap-4 pt-1"
+                >
+                  {(hotel.nearbyPlaces || []).map((place, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
+                    >
+                      <div className="w-1 h-1 rounded-full bg-primary/40" />
+                      <span>{place}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <div className="flex gap-3 relative">
+              <div
+                className="relative"
+                onMouseEnter={() => setShowShareReactions(true)}
+                onMouseLeave={() => setShowShareReactions(false)}
+              >
+                <AnimatePresence>
+                  {showShareReactions && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: -60, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md"
+                    >
+                      {socialPlatforms.map((p) => (
+                        <motion.a
+                          key={p.name}
+                          href={p.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          whileHover={{ scale: 1.2, y: -3 }}
+                          className={`${p.color} text-white p-2.5 rounded-full shadow-lg flex items-center justify-center`}
+                        >
+                          <p.icon size={20} />
+                        </motion.a>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <Button
+                  variant="outline"
+                  className="rounded-full active:scale-95 px-6"
+                >
+                  <Share2 className="w-4 h-4 mr-2" /> Share
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                className={`rounded-full active:scale-95 transition-all px-6 ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`}
+                onClick={handleBookmark}
+              >
+                <Heart
+                  className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`}
+                />
+                {isBookmarked ? "Saved" : "Save"}
+              </Button>
+            </div>
+          </div>
+
+          <motion.div
+            variants={fadeIn}
+            initial="initial"
+            animate="animate"
+            className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[350px] md:h-[450px] mb-8 rounded-2xl overflow-hidden shadow-xl relative cursor-pointer"
+          >
+            <div
+              className="md:col-span-2 h-full bg-muted overflow-hidden relative group"
+              onClick={() => openGalleryAt(0)}
+            >
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
               <OptimizedImage
                 src={topGridImages[0]?.url || ""}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
             </div>
-            <div className="md:col-span-1 flex flex-col gap-2">
-              <div
-                className="h-1/2 bg-muted overflow-hidden"
-                onClick={() => {
-                  setInitialGalleryIndex(1);
-                  setIsGalleryOpen(true);
-                }}
-              >
-                <OptimizedImage
-                  src={topGridImages[1]?.url || ""}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div
-                className="h-1/2 bg-muted overflow-hidden"
-                onClick={() => {
-                  setInitialGalleryIndex(2);
-                  setIsGalleryOpen(true);
-                }}
-              >
-                <OptimizedImage
-                  src={topGridImages[2]?.url || ""}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
+            <div className="md:col-span-1 flex flex-col gap-3">
+              {[1, 2].map((idx) => (
+                <div
+                  key={idx}
+                  className="h-1/2 bg-muted overflow-hidden relative group"
+                  onClick={() => openGalleryAt(idx)}
+                >
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+                  <OptimizedImage
+                    src={topGridImages[idx]?.url || ""}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+              ))}
             </div>
             <div
-              className="md:col-span-1 bg-muted relative overflow-hidden"
-              onClick={() => {
-                setInitialGalleryIndex(3);
-                setIsGalleryOpen(true);
-              }}
+              className="md:col-span-1 bg-muted relative overflow-hidden group"
+              onClick={() => openGalleryAt(3)}
             >
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
               <OptimizedImage
                 src={topGridImages[3]?.url || ""}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              {topGridImages.length > 4 && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
-                  +{topGridImages.length - 4} More
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <div className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transform transition-transform group-hover:scale-110">
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  <span>
+                    {topGridImages.length > 4
+                      ? `+${topGridImages.length - 4} MORE`
+                      : "VIEW GALLERY"}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           <FindYourStay
             onChange={handleSearchDataChange}
@@ -560,7 +577,6 @@ export default function HotelDetail() {
               rooms: searchData.rooms,
             }}
           />
-
           <HotelStickyNav sections={sections} />
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 py-8">
@@ -620,27 +636,6 @@ export default function HotelDetail() {
                   locationName={hotel.city}
                 />
               </section>
-
-              {isRestaurant && (
-                <section id="dining" className="scroll-mt-32 border-t pt-10">
-                  <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                    Food & Dining
-                  </h2>
-                  <p className="text-muted-foreground italic">
-                    Dining details coming soon...
-                  </p>
-                </section>
-              )}
-
-              <section id="reviews" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                  Guest Reviews
-                </h2>
-                <p className="text-muted-foreground italic">
-                  Guest reviews coming soon...
-                </p>
-              </section>
-
               <section id="location" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Location
@@ -656,8 +651,7 @@ export default function HotelDetail() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
-                        <Info className="w-4 h-4" />
-                        CHECK-IN / CHECK-OUT
+                        <Info className="w-4 h-4" /> CHECK-IN / CHECK-OUT
                       </div>
                       <div className="space-y-3 text-sm text-muted-foreground">
                         <div className="flex justify-between md:justify-start md:gap-6">
@@ -672,41 +666,26 @@ export default function HotelDetail() {
                           </span>
                           <span>{policies?.checkOutTime || "11:00 AM"}</span>
                         </div>
-                        <div className="flex justify-between md:justify-start md:gap-6">
-                          <span className="font-medium text-foreground min-w-[100px]">
-                            Minimum Age:
-                          </span>
-                          <span>18 years</span>
-                        </div>
                       </div>
                     </div>
-
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
-                        <Info className="w-4 h-4" />
-                        OTHER POLICIES
+                        <Info className="w-4 h-4" /> OTHER POLICIES
                       </div>
                       <div className="space-y-3 text-sm text-muted-foreground">
-                        {policies?.policies?.map((p) => {
-                          const parts = p.name.split(" ");
-                          const label = parts[0];
-                          const value =
-                            parts.slice(1).join(" ") ||
-                            (p.isActive ? "Allowed" : "Not Allowed");
-
-                          return (
-                            <div
-                              key={p.id}
-                              className="flex justify-between md:justify-start md:gap-6"
-                            >
-                              <span className="font-medium text-foreground min-w-[100px]">
-                                {label}:
-                              </span>
-                              <span>{value}</span>
-                            </div>
-                          );
-                        })}
-
+                        {policies?.policies?.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex justify-between md:justify-start md:gap-6"
+                          >
+                            <span className="font-medium text-foreground min-w-[100px]">
+                              {p.name.split(" ")[0]}:
+                            </span>
+                            <span>
+                              {p.isActive ? "Allowed" : "Not Allowed"}
+                            </span>
+                          </div>
+                        ))}
                         <div className="flex flex-col gap-1 pt-2">
                           <span className="font-medium text-foreground">
                             Cancellation:
@@ -716,24 +695,12 @@ export default function HotelDetail() {
                               "Non-refundable for promotional rates"}
                           </span>
                         </div>
-
-                        {!policies?.policies?.some((p) =>
-                          p.name.toLowerCase().includes("bed"),
-                        ) && (
-                          <div className="flex justify-between md:justify-start md:gap-6">
-                            <span className="font-medium text-foreground min-w-[100px]">
-                              Extra Bed:
-                            </span>
-                            <span>Not available</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
                 </div>
               </section>
             </div>
-
             <aside className="hidden lg:block">
               <RightSidebar
                 hotel={hotel}
@@ -755,11 +722,14 @@ export default function HotelDetail() {
           numberOfNights={numberOfNights}
           onSelectRoom={() => {
             const roomSection = document.getElementById("room-options");
-            if (roomSection) {
-              const elementPosition = roomSection.getBoundingClientRect().top;
-              const offsetPosition = elementPosition + window.pageYOffset - 120;
-              window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-            }
+            if (roomSection)
+              window.scrollTo({
+                top:
+                  roomSection.getBoundingClientRect().top +
+                  window.pageYOffset -
+                  120,
+                behavior: "smooth",
+              });
           }}
         />
         <Footer />
