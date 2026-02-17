@@ -45,15 +45,23 @@ const isYoutubeUrl = (url: string): boolean =>
 
 const getYoutubeId = (url: string): string | null => {
   if (!url) return null;
-  // Handle youtu.be/ID?si=... format (shared links)
+
+  // 1. Handle youtube.com/shorts/ID format (Added this)
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^"&?\/\s]{11})/);
+  if (shortsMatch) return shortsMatch[1];
+
+  // 2. Handle youtu.be/ID shared links
   const shortMatch = url.match(/youtu\.be\/([^"&?\/\s]{11})/);
   if (shortMatch) return shortMatch[1];
-  // Handle youtube.com/watch?v=ID&si=... format
+
+  // 3. Handle youtube.com/watch?v=ID standard links
   const longMatch = url.match(/[?&]v=([^"&?\/\s]{11})/);
   if (longMatch) return longMatch[1];
-  // Handle youtube.com/embed/ID format
+
+  // 4. Handle youtube.com/embed/ID format
   const embedMatch = url.match(/embed\/([^"&?\/\s]{11})/);
   if (embedMatch) return embedMatch[1];
+
   return null;
 };
 
