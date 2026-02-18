@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -7,16 +7,15 @@ import {
   Image as ImageIcon,
   Clock,
   ArrowUpRight,
-  ArrowRight
+  ArrowRight,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getEventsUpdated } from "@/Api/Api";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-// Swiper Styles
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -61,23 +60,22 @@ export default function EventsSection() {
     try {
       setLoading(true);
       const response = await getEventsUpdated();
-      
-      // Handle various response structures from API
-      const rawEvents = Array.isArray(response?.data) 
-        ? response.data 
-        : Array.isArray(response) 
-          ? response 
+
+      const rawEvents = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
           : [];
 
-      // Filter based on your requirements (ACTIVE status)
       const activeEvents = rawEvents.filter(
-        (event: any) => event.status === "ACTIVE" || event.active === true
+        (event: any) => event.status === "ACTIVE" || event.active === true,
       );
 
       setApiEvents(
         activeEvents.sort(
-          (a: any, b: any) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
-        )
+          (a: any, b: any) =>
+            new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+        ),
       );
     } catch (error) {
       console.error("Failed to fetch events:", error);
@@ -149,14 +147,29 @@ export default function EventsSection() {
   );
 }
 
+// ============================================================================
+// EVENT CARD
+// ============================================================================
+
 function EventCard({ event, index }: { event: ApiEvent; index: number }) {
   const [isBanner, setIsBanner] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // MANUALLY ANALYZE SIZE ON LOAD (since API returns null)
+  const isVideo =
+    event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
+
   const analyzeMediaSize = (w: number, h: number) => {
     const ratio = w / h;
-    if (ratio <= 0.85) {
-      setIsBanner(true);
+    if (ratio <= 0.85) setIsBanner(true);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
     }
   };
 
@@ -164,7 +177,9 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     const date = new Date(dateString);
     return {
       day: date.getDate(),
-      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+      month: date
+        .toLocaleDateString("en-US", { month: "short" })
+        .toUpperCase(),
     };
   };
 
@@ -185,25 +200,46 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
         }`}
       >
         {event.image?.url ? (
-          event.image.type === "VIDEO" || event.image.url.includes(".mp4") ? (
-            <video
-              src={event.image.url}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              autoPlay
-              loop
-              muted
-              playsInline
-              onLoadedMetadata={(e) => 
-                analyzeMediaSize(e.currentTarget.videoWidth, e.currentTarget.videoHeight)
-              }
-            />
+          isVideo ? (
+            <>
+              <video
+                ref={videoRef}
+                src={event.image.url}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                autoPlay
+                loop
+                muted
+                playsInline
+                onLoadedMetadata={(e) =>
+                  analyzeMediaSize(
+                    e.currentTarget.videoWidth,
+                    e.currentTarget.videoHeight,
+                  )
+                }
+              />
+              {/* Mute / Unmute Button */}
+              <button
+                onClick={toggleMute}
+                className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </button>
+            </>
           ) : (
             <img
               src={event.image.url}
               alt={event.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              onLoad={(e) => 
-                analyzeMediaSize(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
+              onLoad={(e) =>
+                analyzeMediaSize(
+                  e.currentTarget.naturalWidth,
+                  e.currentTarget.naturalHeight,
+                )
               }
             />
           )
@@ -224,7 +260,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           <MapPin size={10} /> {event.locationName}
         </div>
 
-        {/* Banner Mode UI (Text Over Media) */}
+        {/* Banner Mode Hover Overlay */}
         {isBanner && (
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
             <h3 className="text-white font-serif font-bold text-xl mb-2 drop-shadow-md">
@@ -245,7 +281,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
         )}
       </div>
 
-      {/* Standard Mode UI (Text Below Media) */}
+      {/* Standard Mode UI */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">

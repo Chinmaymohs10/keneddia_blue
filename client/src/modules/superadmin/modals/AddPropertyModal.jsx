@@ -305,6 +305,23 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   }
                 />
               </div>
+              <div className="col-span-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  Booking Engine URL
+                </label>
+                <input
+                  type="url"
+                  className="w-full px-4 py-2.5 border rounded-xl"
+                  value={parentData.bookingEngineUrl}
+                  onChange={(e) =>
+                    setParentData({
+                      ...parentData,
+                      bookingEngineUrl: e.target.value,
+                    })
+                  }
+                  placeholder="https://book.example.com/property"
+                />
+              </div>
               {/* NEW FIELDS STEP 1 */}
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
@@ -473,21 +490,6 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   placeholder="2"
                 />
               </div>
-              {/* <div className="bg-gray-50 p-4 rounded-xl border col-span-2">
-                <label className="text-xs font-bold text-gray-500 uppercase mb-3 block">Amenities</label>
-                <div className="grid grid-cols-3 gap-2 h-40 overflow-y-auto pr-2">
-                  {availableAmenities.map(a => (
-                    <button key={a.id} type="button" onClick={() => {
-                      const ids = listingData.amenitiesAndFeaturesIds.includes(a.id) 
-                        ? listingData.amenitiesAndFeaturesIds.filter(id => id !== a.id)
-                        : [...listingData.amenitiesAndFeaturesIds, a.id];
-                      setListingData({...listingData, amenitiesAndFeaturesIds: ids});
-                    }} className={`p-2 rounded-lg border text-left text-[10px] font-bold transition-all ${listingData.amenitiesAndFeaturesIds.includes(a.id) ? 'bg-primary text-white border-primary' : 'bg-white text-gray-500 border-gray-200'}`} style={listingData.amenitiesAndFeaturesIds.includes(a.id) ? { backgroundColor: colors.primary } : {}}>
-                      {a.name}
-                    </button>
-                  ))}
-                </div>
-              </div> */}
             </div>
           )}
 

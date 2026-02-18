@@ -60,7 +60,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     description: "",
     longDesc: "",
     couponCode: "",
-    ctaText: "Claim Offer",
+    ctaText: "",
     ctaLink: "",
     location: "",
     propertyId: null,
@@ -130,6 +130,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
           : "",
         displayLocation: editingOffer.displayLocation || "PROPERTY_PAGE",
         isActive: editingOffer.isActive ?? false,
+        ctaText: editingOffer.ctaText || "",
         ctaLink: editingOffer.ctaLink || "",
         quickOfferActive: editingOffer.quickOfferActive ?? false,
       });
@@ -199,7 +200,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
       description: "",
       longDesc: "",
       couponCode: "",
-      ctaText: "Claim Offer",
+      ctaText: "",
       ctaLink: "",
       location: "",
       propertyId: null,
@@ -348,7 +349,6 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     const errors = [];
     if (!uploadedMediaId && !formData.imageMediaId) errors.push("visual");
     if (isPropertyRequired && !formData.propertyId) errors.push("property");
-    if (!isBannerDetected && !formData.title?.trim()) errors.push("title");
     return { isValid: errors.length === 0, errors };
   }, [
     uploadedMediaId,
@@ -383,7 +383,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         propertyTypeId: resolvedType.propertyTypeId,
         propertyType: resolvedType.propertyType,
 
-        title: formData.title.trim() || "Untitled Offer",
+        title: formData.title.trim() || "",
         availableHours: timeString,
         propertyId: parseInt(formData.propertyId) || null,
         imageMediaId: uploadedMediaId || formData.imageMediaId,
@@ -482,10 +482,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase">
-                    Offer Title{" "}
-                    {!isBannerDetected && (
-                      <span className="text-red-500">*</span>
-                    )}
+                   Offer Title
                   </label>
                   <input
                     type="text"
@@ -493,7 +490,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, title: e.target.value }))
                     }
-                    className={`w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm ${!isBannerDetected && touchedFields.title && !formData.title ? "border-red-500 border-2" : ""}`}
+                   className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
                     placeholder="Weekend Special"
                   />
                 </div>
@@ -551,35 +548,48 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   maxLength={50}
                 />
               </div>
-
-              {/* {bothTypeAvailable && (
-                <div
-                  className="flex items-center gap-3 p-4 bg-blue-50/50 border border-blue-100 rounded-lg cursor-pointer group mt-auto"
-                  onClick={() =>
-                    setFormData((p) => ({
-                      ...p,
-                      displayLocation:
-                        p.displayLocation === "BOTH" ? "PROPERTY_PAGE" : "BOTH",
-                    }))
-                  }
-                >
-                  <div
-                    className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${formData.displayLocation === "BOTH" ? "bg-blue-600 border-blue-600" : "bg-white border-blue-200"}`}
-                  >
-                    {formData.displayLocation === "BOTH" && (
-                      <Check size={16} className="text-white" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-blue-900 leading-none">
-                      Show in both pages
-                    </p>
-                    <p className="text-[10px] text-blue-600 mt-1 uppercase font-semibold">
-                      Home page & Property page
-                    </p>
-                  </div>
+              {/* CTA Section */}
+              <div className="space-y-4 p-4 border rounded-lg bg-[#F9FAFB]">
+                <div className="flex items-center gap-2 mb-2">
+                  <LinkIcon size={14} className="text-gray-500" />
+                  <p className="text-xs font-bold uppercase text-gray-600">
+                    CTA Items
+                  </p>
                 </div>
-              )} */}
+
+                {/* CTA Text */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase">
+                    Button Text
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.ctaText}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, ctaText: e.target.value }))
+                    }
+                    className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
+                    placeholder="Claim Offer"
+                    maxLength={30}
+                  />
+                </div>
+
+                {/* CTA Link */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase">
+                    Button Link
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.ctaLink}
+                    onChange={(e) =>
+                      setFormData((p) => ({ ...p, ctaLink: e.target.value }))
+                    }
+                    className="w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm"
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Right Column */}

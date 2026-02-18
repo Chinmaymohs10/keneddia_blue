@@ -8,6 +8,8 @@ import {
   Edit2,
   Video,
   Youtube,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -45,23 +47,14 @@ const isYoutubeUrl = (url: string): boolean =>
 
 const getYoutubeId = (url: string): string | null => {
   if (!url) return null;
-
-  // 1. Handle youtube.com/shorts/ID format (Added this)
   const shortsMatch = url.match(/youtube\.com\/shorts\/([^"&?\/\s]{11})/);
   if (shortsMatch) return shortsMatch[1];
-
-  // 2. Handle youtu.be/ID shared links
   const shortMatch = url.match(/youtu\.be\/([^"&?\/\s]{11})/);
   if (shortMatch) return shortMatch[1];
-
-  // 3. Handle youtube.com/watch?v=ID standard links
   const longMatch = url.match(/[?&]v=([^"&?\/\s]{11})/);
   if (longMatch) return longMatch[1];
-
-  // 4. Handle youtube.com/embed/ID format
   const embedMatch = url.match(/embed\/([^"&?\/\s]{11})/);
   if (embedMatch) return embedMatch[1];
-
   return null;
 };
 
@@ -70,7 +63,6 @@ const getYoutubeThumbnail = (url: string): string => {
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
 };
 
-// ── Build unified media array from any item ──
 const buildMediaList = (
   item: any,
 ): { type: "image" | "video"; url: string }[] => {
@@ -89,12 +81,10 @@ const buildMediaList = (
     }
   };
 
-  // 1. Process the mediaList array first
   if (item.mediaList && Array.isArray(item.mediaList)) {
     item.mediaList.forEach((m: any) => {
       const url = m.url || m.imageUrl || m.videoUrl;
       if (!url) return;
-
       const isVid =
         m.type === "VIDEO" ||
         isYoutubeUrl(url) ||
@@ -103,7 +93,6 @@ const buildMediaList = (
     });
   }
 
-  // 2. Capture top-level videoUrl (Crucial for YouTube links)
   if (item.videoUrl) {
     const isVid =
       isYoutubeUrl(item.videoUrl) ||
@@ -111,13 +100,13 @@ const buildMediaList = (
     if (isVid) add("video", item.videoUrl);
   }
 
-  // 3. Capture top-level imageUrl as a fallback
   if (item.imageUrl) {
     add("image", item.imageUrl);
   }
 
   return allMedia;
 };
+
 export default function OurStoryPreview() {
   const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>(
     [],
@@ -140,6 +129,8 @@ export default function OurStoryPreview() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaErrors, setMediaErrors] = useState<Set<string>>(new Set());
+  const [mutedVideos, setMutedVideos] = useState<Set<string>>(new Set());
 
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -270,6 +261,11 @@ export default function OurStoryPreview() {
     setError("");
     setIsVerified(true);
     setShowPopup(false);
+    
+    // Auto-submit the form after verification
+    setTimeout(() => {
+      handleSubmit();
+    }, 100);
   };
 
   const handleSubmit = async () => {
@@ -312,40 +308,71 @@ export default function OurStoryPreview() {
     }
   };
 
-  // ── Render a single media item (image, direct video, or YouTube) ──
   const renderMediaItem = (
     m: { type: "image" | "video"; url: string },
     idx: number,
   ) => {
+    const videoKey = `video-${m.url}`;
+    const isMuted = !mutedVideos.has(videoKey); // Inverted: default muted
+
     if (m.type === "video") {
       if (isYoutubeUrl(m.url)) {
         const videoId = getYoutubeId(m.url);
         if (!videoId) return null;
         return (
-          <div key={idx} className="w-full h-full relative pointer-events-none">
+          <div key={idx} className="w-full h-full relative group">
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0`}
-              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1`}
+              className="w-full h-full"
               style={{ border: "none" }}
               allow="autoplay; encrypted-media"
+              allowFullScreen
             />
-            {/* This overlay ensures the user can still swipe the Swiper slide */}
-            <div className="absolute inset-0 z-10 bg-transparent" />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMutedVideos(prev => {
+                  const next = new Set(prev);
+                  next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
+                  return next;
+                });
+              }}
+              className="absolute bottom-3 right-3 z-20 bg-black/70 hover:bg-black/90 text-white p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
           </div>
         );
       }
+      
       return (
-        <video
-          key={idx}
-          src={m.url}
-          className="w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
+        <div key={idx} className="relative group w-full h-full">
+          <video
+            src={m.url}
+            className="w-full h-full object-cover"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+            controls={!isMuted}
+          />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setMutedVideos(prev => {
+                const next = new Set(prev);
+                next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
+                return next;
+              });
+            }}
+            className="absolute bottom-3 right-3 z-20 bg-black/70 hover:bg-black/90 text-white p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+        </div>
       );
     }
+    
     return (
       <img
         key={idx}
@@ -353,43 +380,46 @@ export default function OurStoryPreview() {
         alt=""
         className="w-full h-full object-cover"
         loading="lazy"
+        onError={() => {
+          setMediaErrors(prev => new Set(prev).add(m.url));
+        }}
       />
     );
   };
 
-  // ── Render the media grid based on count and types ──
   const renderMediaGrid = (
     allMedia: { type: "image" | "video"; url: string }[],
+    item: any,
   ) => {
     const total = allMedia.length;
+    const hasMediaErrors = allMedia.some(m => mediaErrors.has(m.url));
 
-    // 0 — placeholder
-    if (total === 0) {
+    if (total === 0 || hasMediaErrors) {
       return (
-        <div className="w-full h-full bg-muted flex items-center justify-center">
-          <ImageIcon className="w-10 h-10 text-muted-foreground/30" />
+        <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-8">
+          <div className="text-center space-y-3">
+            <p className="text-white text-base md:text-lg italic leading-relaxed line-clamp-4" style={{ fontSize: '120%' }}>
+              "{item.description}"
+            </p>
+            <p className="text-white/90 font-bold text-lg md:text-xl" style={{ fontSize: '120%' }}>
+              — {item.author}
+            </p>
+          </div>
         </div>
       );
     }
 
-    // 1 — full bleed
     if (total === 1) {
-      return (
-        <div className="w-full h-full">{renderMediaItem(allMedia[0], 0)}</div>
-      );
+      return <div className="w-full h-full">{renderMediaItem(allMedia[0], 0)}</div>;
     }
 
-    // 2 — detect mixed (image + video) → top/bottom; same type → side by side
     if (total === 2) {
       const hasVideo = allMedia.some((m) => m.type === "video");
       const hasImage = allMedia.some((m) => m.type === "image");
       const isMixed = hasVideo && hasImage;
 
       if (isMixed) {
-        // Put image on top, video on bottom
-        const sorted = [...allMedia].sort((a, b) =>
-          a.type === "image" ? -1 : 1,
-        );
+        const sorted = [...allMedia].sort((a, b) => (a.type === "image" ? -1 : 1));
         return (
           <div className="grid grid-rows-2 h-full gap-0.5">
             {sorted.map((m, i) => (
@@ -401,7 +431,6 @@ export default function OurStoryPreview() {
         );
       }
 
-      // Both same type → side by side
       return (
         <div className="grid grid-cols-2 h-full gap-0.5">
           {allMedia.map((m, i) => (
@@ -413,26 +442,18 @@ export default function OurStoryPreview() {
       );
     }
 
-    // 3 — 1 large left + 2 stacked right
     if (total === 3) {
       return (
         <div className="grid grid-cols-2 h-full gap-0.5">
-          <div className="h-full overflow-hidden">
-            {renderMediaItem(allMedia[0], 0)}
-          </div>
+          <div className="h-full overflow-hidden">{renderMediaItem(allMedia[0], 0)}</div>
           <div className="grid grid-rows-2 h-full gap-0.5">
-            <div className="overflow-hidden">
-              {renderMediaItem(allMedia[1], 1)}
-            </div>
-            <div className="overflow-hidden">
-              {renderMediaItem(allMedia[2], 2)}
-            </div>
+            <div className="overflow-hidden">{renderMediaItem(allMedia[1], 1)}</div>
+            <div className="overflow-hidden">{renderMediaItem(allMedia[2], 2)}</div>
           </div>
         </div>
       );
     }
 
-    // 4+ — 2x2 grid with +N overlay
     return (
       <div className="grid grid-cols-2 grid-rows-2 h-full gap-0.5">
         {allMedia.slice(0, 4).map((m, i) => (
@@ -440,9 +461,7 @@ export default function OurStoryPreview() {
             {renderMediaItem(m, i)}
             {i === 3 && total > 4 && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white font-black text-xl">
-                  +{total - 4}
-                </span>
+                <span className="text-white font-black text-xl">+{total - 4}</span>
               </div>
             )}
           </div>
@@ -459,7 +478,6 @@ export default function OurStoryPreview() {
     <section ref={sectionRef} className="py-12 bg-background">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-6 items-stretch min-w-0">
-          {/* ── LEFT: Showcase ── */}
           <div className="lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm">
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -514,17 +532,18 @@ export default function OurStoryPreview() {
                         <SwiperSlide key={item.id}>
                           <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
                             <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                              {renderMediaGrid(allMedia)}
+                              {renderMediaGrid(allMedia, item)}
 
-                              {/* Gradient overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                <p className="text-white text-xs italic mb-2 line-clamp-2">
-                                  "{item.description}"
-                                </p>
-                                <p className="text-white font-bold text-sm">
-                                  {item.author}
-                                </p>
-                              </div>
+                              {allMedia.length > 0 && !allMedia.some(m => mediaErrors.has(m.url)) && (
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
+                                  <p className="text-white text-xs italic mb-2 line-clamp-2">
+                                    "{item.description}"
+                                  </p>
+                                  <p className="text-white font-bold text-sm">
+                                    {item.author}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </SwiperSlide>
@@ -536,7 +555,7 @@ export default function OurStoryPreview() {
             </div>
           </div>
 
-          {/* ── RIGHT: Submission Panel ── */}
+          {/* RIGHT: Submission Panel - keeping original code */}
           <div className="lg:w-1/4 w-full flex flex-col">
             <div className="bg-card border rounded-2xl p-6 shadow-sm h-full flex flex-col w-full">
               <div className="flex items-center justify-between mb-4">
@@ -700,7 +719,6 @@ export default function OurStoryPreview() {
         </div>
       </div>
 
-      {/* ── Verification Popup ── */}
       <AnimatePresence>
         {showPopup && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">

@@ -18,6 +18,7 @@ import {
   ToggleLeft,
   Sparkles,
   Navigation,
+  LinkIcon
 } from "lucide-react";
 import { updatePropertyById } from "@/Api/Api";
 import { toast } from "react-hot-toast";
@@ -55,8 +56,8 @@ function EditPropertyModal({
   onClose,
   onSuccess,
 }) {
-  console.log(item)
-  const p       = item?.propertyResponseDTO || {};
+  console.log(item);
+  const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
 
   const resolveTypeIds = () =>
@@ -66,7 +67,9 @@ function EditPropertyModal({
 
   const resolveCategoryIds = () =>
     (p.propertyCategories || [])
-      .map((name) => propertyCategories?.find((c) => c.categoryName === name)?.id)
+      .map(
+        (name) => propertyCategories?.find((c) => c.categoryName === name)?.id,
+      )
       .filter(Boolean);
 
   const resolveAmenityIds = () =>
@@ -75,27 +78,28 @@ function EditPropertyModal({
       .filter(Boolean);
 
   const [form, setForm] = useState({
-    propertyName:            p.propertyName || "",
-    propertyTypeIds:         resolveTypeIds(),
-    propertyCategoryIds:     resolveCategoryIds(),
-    address:                 p.address || "",
-    area:                    p.area || "",
-    pincode:                 p.pincode || "",
-    locationId:              p.locationId || "",
-    assignedAdminId:         p.assignedAdminId || "",
-    parentPropertyId:        p.parentPropertyId || "",
-    latitude:                p.latitude ?? "",
-    longitude:               p.longitude ?? "",
-    isActive:                p.isActive ?? true,
-    mainHeading:             listing.mainHeading || "",
-    subTitle:                listing.subTitle || "",
-    fullAddress:             listing.fullAddress || "",
-    tagline:                 listing.tagline || "",
-    rating:                  listing.rating ?? "",
-    capacity:                listing.capacity ?? "",
-    price:                   listing.price ?? "",
-    gstPercentage:           listing.gstPercentage ?? "",
-    discountAmount:          listing.discountAmount ?? "",
+    propertyName: p.propertyName || "",
+    propertyTypeIds: resolveTypeIds(),
+    propertyCategoryIds: resolveCategoryIds(),
+    address: p.address || "",
+    area: p.area || "",
+    pincode: p.pincode || "",
+    locationId: p.locationId || "",
+    assignedAdminId: p.assignedAdminId || "",
+    parentPropertyId: p.parentPropertyId || "",
+    latitude: p.latitude ?? "",
+    longitude: p.longitude ?? "",
+    isActive: p.isActive ?? true,
+    mainHeading: listing.mainHeading || "",
+    subTitle: listing.subTitle || "",
+    fullAddress: listing.fullAddress || "",
+    tagline: listing.tagline || "",
+    rating: listing.rating ?? "",
+    capacity: listing.capacity ?? "",
+    price: listing.price ?? "",
+    gstPercentage: listing.gstPercentage ?? "",
+    discountAmount: listing.discountAmount ?? "",
+    bookingEngineUrl: p.bookingEngineUrl || "",
     amenitiesAndFeaturesIds: resolveAmenityIds(),
   });
 
@@ -116,28 +120,35 @@ function EditPropertyModal({
     setSaving(true);
     try {
       const payload = {
-        propertyName:            form.propertyName,
-        propertyTypeIds:         form.propertyTypeIds,
-        propertyCategoryIds:     form.propertyCategoryIds,
-        address:                 form.address,
-        area:                    form.area,
-        pincode:                 form.pincode,
-        locationId:              form.locationId       ? Number(form.locationId)       : null,
-        assignedAdminId:         form.assignedAdminId  ? Number(form.assignedAdminId)  : null,
-        parentPropertyId:        form.parentPropertyId ? Number(form.parentPropertyId) : null,
-        childPropertyIds:        null,
-        latitude:                form.latitude  !== "" ? Number(form.latitude)  : null,
-        longitude:               form.longitude !== "" ? Number(form.longitude) : null,
-        isActive:                form.isActive,
-        mainHeading:             form.mainHeading,
-        subTitle:                form.subTitle,
-        fullAddress:             form.fullAddress,
-        tagline:                 form.tagline,
-        rating:                  form.rating        !== "" ? Number(form.rating)        : null,
-        capacity:                form.capacity      !== "" ? Number(form.capacity)      : null,
-        price:                   form.price         !== "" ? Number(form.price)         : null,
-        gstPercentage:           form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
-        discountAmount:          form.discountAmount !== "" ? Number(form.discountAmount): null,
+        propertyName: form.propertyName,
+        propertyTypeIds: form.propertyTypeIds,
+        propertyCategoryIds: form.propertyCategoryIds,
+        address: form.address,
+        area: form.area,
+        pincode: form.pincode,
+        locationId: form.locationId ? Number(form.locationId) : null,
+        assignedAdminId: form.assignedAdminId
+          ? Number(form.assignedAdminId)
+          : null,
+        parentPropertyId: form.parentPropertyId
+          ? Number(form.parentPropertyId)
+          : null,
+        childPropertyIds: null,
+        latitude: form.latitude !== "" ? Number(form.latitude) : null,
+        longitude: form.longitude !== "" ? Number(form.longitude) : null,
+        isActive: form.isActive,
+        mainHeading: form.mainHeading,
+        subTitle: form.subTitle,
+        fullAddress: form.fullAddress,
+        bookingEngineUrl: form.bookingEngineUrl || null,
+        tagline: form.tagline,
+        rating: form.rating !== "" ? Number(form.rating) : null,
+        capacity: form.capacity !== "" ? Number(form.capacity) : null,
+        price: form.price !== "" ? Number(form.price) : null,
+        gstPercentage:
+          form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
+        discountAmount:
+          form.discountAmount !== "" ? Number(form.discountAmount) : null,
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
@@ -176,7 +187,9 @@ function EditPropertyModal({
           );
         })
       ) : (
-        <span className="text-xs text-gray-300 self-center px-1">None available</span>
+        <span className="text-xs text-gray-300 self-center px-1">
+          None available
+        </span>
       )}
     </div>
   );
@@ -184,7 +197,6 @@ function EditPropertyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[95vh]">
-
         {/* ── Header ──────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between px-7 py-5 rounded-t-2xl shrink-0"
@@ -213,10 +225,12 @@ function EditPropertyModal({
         </div>
 
         {/* ── Form ────────────────────────────────────────────────── */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 overflow-hidden"
+        >
           <div className="flex-1 overflow-y-auto px-7 py-6">
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-
               {/* ─── IDENTITY ─────────────────────────────────────── */}
               <Section label="Identity" icon={Building2} />
 
@@ -324,7 +338,9 @@ function EditPropertyModal({
                   >
                     <option value="">-- Select --</option>
                     {locations.map((l) => (
-                      <option key={l.id} value={l.id}>{l.locationName}</option>
+                      <option key={l.id} value={l.id}>
+                        {l.locationName}
+                      </option>
                     ))}
                   </select>
                 ) : (
@@ -347,7 +363,9 @@ function EditPropertyModal({
                   >
                     <option value="">-- Unassigned --</option>
                     {admins.map((a) => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
                     ))}
                   </select>
                 ) : (
@@ -359,6 +377,15 @@ function EditPropertyModal({
                     className={inputCls}
                   />
                 )}
+              </Field>
+              <Field label="Booking Engine URL" icon={LinkIcon} span={2}>
+                <input
+                  type="url"
+                  value={form.bookingEngineUrl}
+                  onChange={(e) => set("bookingEngineUrl", e.target.value)}
+                  placeholder="https://book.example.com/property"
+                  className={inputCls}
+                />
               </Field>
 
               {/* ─── COORDINATES ──────────────────────────────────── */}

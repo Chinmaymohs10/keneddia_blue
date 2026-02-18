@@ -126,8 +126,19 @@ function HeroSection() {
     setIsModalOpen(true);
   };
 
-  const handleToggleActive = async (id, currentStatus) => {
+  const handleToggleActive = async (id, currentStatus, showOnHomepage) => {
+    const nextStatus = !currentStatus;
+
+    // 🚨 If trying to disable while homepage is enabled
+    if (nextStatus === false && showOnHomepage === true) {
+      showError(
+        "Please disable Homepage visibility before turning off Action Status.",
+      );
+      return;
+    }
+
     const actionName = currentStatus ? "Disable" : "Enable";
+
     if (
       !window.confirm(
         `Are you sure you want to ${actionName} this hero section?`,
@@ -136,33 +147,67 @@ function HeroSection() {
       return;
 
     const key = `active-${id}`;
+
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-      await toggleHeroSectionActive(id, !currentStatus);
+
+      await toggleHeroSectionActive(id, nextStatus);
+
       showSuccess(
         `Hero section successfully ${currentStatus ? "disabled" : "enabled"}`,
       );
+
       activeTab === "homepage"
         ? fetchHomepageHero(currentPage)
         : fetchHotelHero();
     } catch (error) {
-      showError("Update failed");
+      console.log("❌ ACTIVE TOGGLE FAILED:", error?.response?.data);
+      showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
     }
   };
 
-  const handleToggleHomepage = async (id, currentStatus) => {
+  const handleToggleHomepage = async (
+    id,
+    currentHomepageStatus,
+    sectionActive,
+  ) => {
+    console.log("🔵 handleToggleHomepage CALLED");
+    console.log("ID:", id);
+    console.log("currentHomepageStatus:", currentHomepageStatus);
+    console.log("sectionActive:", sectionActive);
+    console.log("Type of sectionActive:", typeof sectionActive);
+
+    const nextHomepageState = !currentHomepageStatus;
+
+    console.log("nextHomepageState:", nextHomepageState);
+
+    if (sectionActive !== true && nextHomepageState === true) {
+      console.log("⛔ BLOCKED in frontend");
+      showError(
+        "To enable the Homepage, please set the Action Status to Active/On.",
+      );
+      return;
+    }
+
+    console.log("🚀 API WILL BE CALLED");
+
     const key = `homepage-${id}`;
+
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-      await toggleHeroSectionHomepage(id, !currentStatus);
-      showSuccess(`Homepage visibility updated`);
+
+      await toggleHeroSectionHomepage(id, nextHomepageState);
+
+      showSuccess("Homepage visibility updated");
+
       activeTab === "homepage"
         ? fetchHomepageHero(currentPage)
         : fetchHotelHero();
     } catch (error) {
-      showError("Update failed");
+      console.log("❌ API FAILED:", error?.response?.data);
+      showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
     }
@@ -249,9 +294,18 @@ function HeroSection() {
                 {activeTab === "homepage" && (
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() =>
-                        handleToggleHomepage(section.id, section.showOnHomepage)
-                      }
+                      onClick={() => {
+                        console.log("🟢 Homepage toggle clicked");
+                        console.log("Section ID:", section.id);
+                        console.log("showOnHomepage:", section.showOnHomepage);
+                        console.log("section.active:", section.active);
+
+                        handleToggleHomepage(
+                          section.id,
+                          section.showOnHomepage,
+                          section.active,
+                        );
+                      }}
                       disabled={isTogglingHome}
                       className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
                       style={{

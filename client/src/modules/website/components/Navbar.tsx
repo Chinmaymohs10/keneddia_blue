@@ -28,8 +28,8 @@ const JOIN_US_ITEMS = [
 // Quick Booking Options
 const QUICK_BOOKING_OPTIONS = [
   { label: "Book Hotel", category: "hotel" as const },
-  { label: "Reserve Table (Dine-in)", category: "dining" as const },
-  { label: "Takeaway / Delivery", category: "delivery" as const },
+  // { label: "Reserve Table (Dine-in)", category: "dining" as const },
+  // { label: "Takeaway / Delivery", category: "delivery" as const },
 ];
 
 // Types
@@ -57,12 +57,12 @@ const NAV_ITEMS: NavItem[] = [
     key: 'story',
     href: '#story' // Scroll to #reviews section
   },
-  {
-    type: 'dropdown',
-    label: 'JOIN US',
-    key: 'joinus',
-    items: JOIN_US_ITEMS
-  },
+  // {
+  //   type: 'dropdown',
+  //   label: 'JOIN US',
+  //   key: 'joinus',
+  //   items: JOIN_US_ITEMS
+  // },
   {
     type: 'link',
     label: 'ABOUT US',

@@ -148,8 +148,8 @@ const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
       id: item.id,
       type: (mediaObj?.type?.toLowerCase() as "video" | "image") || "image",
       media: mediaObj?.url || "", // This was previously hardcoded to ""
-      title: item.mainTitle || "Welcome to Our Hotels",
-      subtitle: item.subTitle || "Experience Luxury",
+      title: item.mainTitle || "",
+      subtitle: item.subTitle || "",
       backgroundAll: item.backgroundAll || [],
       backgroundLight: item.backgroundLight || [],
       backgroundDark: item.backgroundDark || [],
@@ -360,18 +360,17 @@ export default function Hotels() {
   );
 
   // Get About Us image from media array
-  const getAboutImage = useCallback((section: AboutUsSection | any) => {
-    if (!section.media || section.media.length === 0) {
-      // Return fallback image for sections without media
-      return siteContent.images.hotels.delhi;
-    }
+  const getAboutImage = useCallback((section?: AboutUsSection | any) => {
+  if (!section || !section.media || section.media.length === 0) {
+    return siteContent.images.hotels.delhi;
+  }
 
-    // Get first image from media array
-    const firstMedia = section.media.find(
-      (m: AboutUsMedia) => m.type === "IMAGE",
-    );
-    return firstMedia?.url || siteContent.images.hotels.delhi;
-  }, []);
+  const firstMedia = section.media.find(
+    (m: AboutUsMedia) => m.type === "IMAGE",
+  );
+
+  return firstMedia?.url || siteContent.images.hotels.delhi;
+}, []);
 
   const handleImageError = useCallback((url: string) => {
     setImageErrors((prev) => new Set(prev).add(url));

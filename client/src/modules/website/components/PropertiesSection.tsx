@@ -35,6 +35,7 @@ interface ApiProperty {
   media: any[];
   gstPercentage?: number;
   discountAmount?: number;
+  bookingEngineUrl?: string | null;
 }
 
 const CarouselItem = ({
@@ -135,6 +136,7 @@ const CarouselItem = ({
 };
 
 export default function PropertiesSection() {
+  const navigate = useNavigate();
   const [apiProperties, setApiProperties] = useState<ApiProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState("All Cities");
@@ -149,7 +151,6 @@ export default function PropertiesSection() {
     children: 0,
     rooms: 1,
   });
-  const [selectedRoomId] = useState("default-room");
 
   useEffect(() => {
     const fetchFullPropertyData = async () => {
@@ -163,8 +164,7 @@ export default function PropertiesSection() {
             const parent = item.propertyResponseDTO;
             const listings = item.propertyListingResponseDTOS || [];
 
-            // ✅ Ignore inactive parent properties
-           if (!parent || parent.isActive !== true) return [];
+            if (!parent || parent.isActive !== true) return [];
 
             return listings
               .filter((l: any) => l.isActive === true)
@@ -188,6 +188,7 @@ export default function PropertiesSection() {
                 amenities: l.amenities || [],
                 isActive: true,
                 media: l.media || [],
+                bookingEngineUrl: parent?.bookingEngineUrl || null,
               }));
           });
 
@@ -203,24 +204,6 @@ export default function PropertiesSection() {
 
     fetchFullPropertyData();
   }, []);
-
-  const handleBookNow = () => {
-    if (!searchData.checkIn || !searchData.checkOut) {
-      toast.error("Please select check-in and check-out dates");
-      return;
-    }
-    const token = "ODQ2Mg==";
-    const params = new URLSearchParams({
-      token,
-      checkin: searchData.checkIn.toISOString().split("T")[0],
-      checkout: searchData.checkOut.toISOString().split("T")[0],
-      adults: String(searchData.adults),
-      children: String(searchData.children),
-      rooms: String(searchData.rooms),
-    });
-    const bookingUrl = `https://asiatech.in/booking_engine/index3?${params.toString()}`;
-    window.open(bookingUrl, "_blank");
-  };
 
   const filtered = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
@@ -354,7 +337,6 @@ export default function PropertiesSection() {
                           </span>
                         </div>
 
-                        {/* Discount — only show if > 0 */}
                         {active.discountAmount && active.discountAmount > 0 ? (
                           <div className="flex justify-between text-sm text-green-600 mt-1">
                             <span>Discount</span>
@@ -364,7 +346,6 @@ export default function PropertiesSection() {
                           </div>
                         ) : null}
 
-                        {/* GST — only show if > 0 */}
                         {active.gstPercentage && active.gstPercentage > 0 ? (
                           <div className="flex justify-between text-sm text-muted-foreground mt-1">
                             <span>GST ({active.gstPercentage}%)</span>
@@ -378,7 +359,6 @@ export default function PropertiesSection() {
                           </div>
                         ) : null}
 
-                        {/* Total — only show if price > 0 */}
                         <div className="flex justify-between items-end mt-4">
                           <span className="text-sm text-foreground font-bold uppercase">
                             Total
@@ -394,7 +374,6 @@ export default function PropertiesSection() {
                       </div>
                     )}
 
-                    {/* Capacity + Rating grid — only render grid if at least one exists */}
                     {(!!active.capacity || !!active.rating) && (
                       <div className="grid grid-cols-2 gap-4 text-sm font-bold">
                         {!!active.capacity && (
@@ -422,33 +401,39 @@ export default function PropertiesSection() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  {/* Only show Book Your Stay for hotels */}
-                  <button
-                    onClick={
-                      active.propertyType?.toLowerCase() === "hotel"
-                        ? handleBookNow
-                        : handleBookNow
-                    }
-                    className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
-                  >
-                    {active.propertyType?.toLowerCase() === "hotel"
-                      ? "Book Your Stay"
-                      : "Explore"}
-                    <ArrowRight size={20} />
-                  </button>
+                  {/* Dynamic CTA: Booking Engine URL → Book Your Stay, else → View Details */}
+                  {active.bookingEngineUrl ? (
+                    <button
+                      onClick={() =>
+                        window.open(active.bookingEngineUrl!, "_blank")
+                      }
+                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      Book Your Stay <ArrowRight size={20} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        const type = active.propertyType?.toLowerCase();
+                        navigate(
+                          type === "resturant" || type === "restaurant"
+                            ? `/resturant/${active.propertyId}`
+                            : `/hotels/${active.propertyId}`,
+                        );
+                      }}
+                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      View Details <ArrowRight size={20} />
+                    </button>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
-                    <button
-                      // onClick={() =>
-                      //   (window.location.href = `tel:+91`)
-                      // }
-                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
-                    >
+                    <button className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer">
                       <Phone size={18} /> Call
                     </button>
                     <button
                       onClick={() =>
-                        (window.location.href = `mailto:info@kennediahotels.com`)
+                        (window.location.href = `#`)
                       }
                       className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
                     >

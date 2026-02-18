@@ -12,7 +12,7 @@ import { Navigation, Autoplay } from "swiper/modules";
 import { siteContent } from "@/data/siteContent";
 import { getDailyOffers } from "@/Api/Api";
 import type { Swiper as SwiperType } from "swiper";
-
+import OfferVideo from "./OfferVideo";
 import "swiper/css";
 import "swiper/css/navigation";
 
@@ -27,8 +27,8 @@ const detectBanner = (image: any) => {
     const ratio = image.width / image.height;
     if (ratio <= 0.85) return true;
   }
-  
-  // 2. MANUAL STRING ANALYSIS: 
+
+  // 2. MANUAL STRING ANALYSIS:
   // Looks for "1080", "1350", or "Instagram" in the URL or FileName
   // This explicitly catches videos where width/height are null.
   const name = (image.fileName || "").toLowerCase();
@@ -36,8 +36,8 @@ const detectBanner = (image: any) => {
   const sourceString = `${name} ${url}`;
 
   if (
-    sourceString.includes("1080") || 
-    sourceString.includes("1350") || 
+    sourceString.includes("1080") ||
+    sourceString.includes("1350") ||
     sourceString.includes("instagram_post")
   ) {
     return true;
@@ -92,6 +92,7 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
 /* =======================
     MAIN COMPONENT
 ======================= */
+
 export default function DailyOffers() {
   const { dailyOffers } = siteContent.text;
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
@@ -109,12 +110,17 @@ export default function DailyOffers() {
         });
 
         const rawData = res.data?.data || res.data || [];
-        const list = Array.isArray(rawData) ? rawData : (rawData.content || []);
+        const list = Array.isArray(rawData) ? rawData : rawData.content || [];
         const now = Date.now();
 
         const active = list.filter((o: any) => {
-          const notExpired = !o.expiresAt || new Date(o.expiresAt).getTime() > now;
-          return o.isActive && notExpired && ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation);
+          const notExpired =
+            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          return (
+            o.isActive &&
+            notExpired &&
+            ["HOME_PAGE", "BOTH", "PROPERTY_PAGE"].includes(o.displayLocation)
+          );
         });
 
         setOffers(
@@ -123,10 +129,10 @@ export default function DailyOffers() {
             title: o.title,
             description: o.description,
             couponCode: o.couponCode,
-            ctaText: o.ctaText || "Claim Offer",
+            ctaText: o.ctaText || "",
             ctaLink: o.ctaUrl || o.ctaLink || null,
             expiresAt: o.expiresAt,
-            propertyType: o.propertyTypeName || "Hotel",
+            propertyType: o.propertyTypeName || "",
             image: o.image?.url
               ? {
                   src: o.image.url,
@@ -137,7 +143,7 @@ export default function DailyOffers() {
                   alt: o.title,
                 }
               : null,
-          }))
+          })),
         );
       } catch (err) {
         console.error("Offer fetch failed", err);
@@ -149,11 +155,12 @@ export default function DailyOffers() {
     fetchOffers();
   }, []);
 
-  if (loading) return (
-    <div className="flex justify-center py-20">
-      <Loader2 className="animate-spin" />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
 
   if (!offers.length) return null;
 
@@ -161,12 +168,20 @@ export default function DailyOffers() {
     <section className="bg-muted py-10">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-serif">{dailyOffers?.title || "Daily Offers"}</h2>
+          <h2 className="text-2xl font-serif">
+            {dailyOffers?.title || "Daily Offers"}
+          </h2>
           <div className="flex gap-2">
-            <button onClick={() => swiper?.slidePrev()} className="p-2 rounded-full hover:bg-white/50 transition-colors">
+            <button
+              onClick={() => swiper?.slidePrev()}
+              className="p-2 rounded-full hover:bg-white/50 transition-colors"
+            >
               <ChevronLeft size={20} />
             </button>
-            <button onClick={() => swiper?.slideNext()} className="p-2 rounded-full hover:bg-white/50 transition-colors">
+            <button
+              onClick={() => swiper?.slideNext()}
+              className="p-2 rounded-full hover:bg-white/50 transition-colors"
+            >
               <ChevronRight size={20} />
             </button>
           </div>
@@ -187,24 +202,29 @@ export default function DailyOffers() {
           {offers.map((offer, i) => {
             const isBanner = detectBanner(offer.image);
             const isClickable = !!offer.ctaLink;
+            const hasContent = !!(
+              offer.title ||
+              offer.description ||
+              offer.couponCode
+            );
+            const hasCtaText = !!(offer.ctaText && offer.ctaText.trim());
+
+            // Show full-height image if:
+            // 1. It's a banner (portrait/Instagram format), OR
+            // 2. No content available, OR
+            // 3. No CTA text available
+            const showFullImage = isBanner || !hasContent || !hasCtaText;
 
             return (
               <SwiperSlide key={offer.id || i}>
                 <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
-                  
                   {/* MEDIA CONTAINER */}
-                  {/* Full height (h-full) is applied if isBanner is detected */}
-                  <div className={`relative overflow-hidden ${isBanner ? "h-full" : "h-[280px]"}`}>
+                  <div
+                    className={`relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`}
+                  >
                     {offer.image ? (
                       offer.image.type === "VIDEO" ? (
-                        <video
-                          src={offer.image.src}
-                          className="w-full h-full object-cover object-center"
-                          muted
-                          playsInline
-                          autoPlay
-                          loop
-                        />
+                        <OfferVideo src={offer.image.src} />
                       ) : (
                         <img
                           src={offer.image.src}
@@ -218,7 +238,7 @@ export default function DailyOffers() {
                       </div>
                     )}
 
-                    {/* BADGES (Z-index ensures they stay on top of full-bleed media) */}
+                    {/* BADGES */}
                     <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider">
                       {offer.propertyType}
                     </div>
@@ -228,30 +248,46 @@ export default function DailyOffers() {
                       </div>
                     )}
 
-                    {/* BANNER HOVER CONTENT Overlay */}
-                    {isBanner && (
+                    {/* BANNER/FULL IMAGE HOVER CONTENT Overlay */}
+                    {showFullImage && (
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-20">
                         <div className="mb-3">
-                          <h3 className="text-white font-bold text-sm line-clamp-1">{offer.title}</h3>
+                          {offer.title && (
+                            <h3 className="text-white font-bold text-sm line-clamp-1">
+                              {offer.title}
+                            </h3>
+                          )}
                           {offer.description && (
-                             <p className="text-white/80 text-[10px] line-clamp-1">{offer.description}</p>
+                            <p className="text-white/80 text-[10px] line-clamp-1">
+                              {offer.description}
+                            </p>
                           )}
                         </div>
-                        {isClickable ? (
-                          <a href={offer.ctaLink} target="_blank" rel="noopener noreferrer" className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700">
-                            {offer.ctaText} <ExternalLink size={12} />
-                          </a>
-                        ) : (
-                          <button disabled className="w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2">
-                            {offer.ctaText} <ExternalLink size={12} />
-                          </button>
-                        )}
+                        {/* Only show button if CTA text exists */}
+                        {hasCtaText &&
+                          (isClickable ? (
+                            <a
+                              href={offer.ctaLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </button>
+                          ))}
                       </div>
                     )}
                   </div>
 
-                  {/* STANDARD CARD CONTENT (Hidden for banners to allow full-bleed) */}
-                  {!isBanner && (
+                  {/* STANDARD CARD CONTENT (Hidden for full-image mode) */}
+                  {!showFullImage && (
                     <div className="p-4 flex flex-col flex-1">
                       <h3 className="text-sm font-serif font-bold line-clamp-2 leading-tight text-foreground group-hover:text-red-600 transition-colors">
                         {offer.title}
@@ -260,21 +296,35 @@ export default function DailyOffers() {
                         {offer.description}
                       </p>
                       <div className="mt-auto pt-3 border-t border-muted">
-                        <div className="text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20">
-                          <span className="text-muted-foreground font-medium uppercase">Code</span>
-                          <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
-                            {offer.couponCode || "AUTO"}
-                          </span>
-                        </div>
-                        {isClickable ? (
-                          <a href={offer.ctaLink} target="_blank" rel="noopener noreferrer" className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md">
-                            {offer.ctaText} <ExternalLink size={12} />
-                          </a>
-                        ) : (
-                          <button disabled className="w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2">
-                            {offer.ctaText} <ExternalLink size={12} />
-                          </button>
+                        {offer.couponCode && (
+                          <div className="text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20">
+                            <span className="text-muted-foreground font-medium uppercase">
+                              Code
+                            </span>
+                            <span className="font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border">
+                              {offer.couponCode}
+                            </span>
+                          </div>
                         )}
+                        {/* Only show button if CTA text exists */}
+                        {hasCtaText &&
+                          (isClickable ? (
+                            <a
+                              href={offer.ctaLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </a>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              {offer.ctaText} <ExternalLink size={12} />
+                            </button>
+                          ))}
                       </div>
                     </div>
                   )}

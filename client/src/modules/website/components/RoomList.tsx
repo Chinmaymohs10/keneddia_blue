@@ -91,9 +91,9 @@ export default function RoomList({
                             <Users className="w-3 h-3" /> Max{" "}
                             {room.maxOccupancy} Guests
                           </span>
-                          <span className="flex items-center gap-1 text-green-600 font-medium">
+                          {/* <span className="flex items-center gap-1 text-green-600 font-medium">
                             <Check className="w-3 h-3" /> Free Cancellation
-                          </span>
+                          </span> */}
                         </div>
                       </div>
 
@@ -180,7 +180,7 @@ export default function RoomList({
 
                   {!isAvailable && (
                     <p className="text-[10px] text-red-500 mt-2 font-medium">
-                      Sold Out for these dates
+                      Not Available
                     </p>
                   )}
                 </div>
