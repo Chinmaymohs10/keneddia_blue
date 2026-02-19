@@ -330,10 +330,7 @@ export default function HotelDetail() {
           city: parent.locationName,
           type:
             listing?.propertyType || parent.propertyTypes?.[0] || "Property",
-          description:
-            listing?.subTitle ||
-            listing?.mainHeading ||
-            "Welcome to " + displayName,
+          description: listing?.mainHeading || "",
           tagline: listing?.tagline || "",
           rating: listing?.rating || null,
           price: `₹${(listing?.price || 0).toLocaleString()}`,

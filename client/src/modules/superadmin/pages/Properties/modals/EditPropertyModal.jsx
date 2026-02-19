@@ -67,7 +67,7 @@ function EditPropertyModal({
   const existingMedia = (listing.media || []).slice(0, 3);
 
   // ── New files to replace media ─────────────────────────────────────────────
-  const [newFiles, setNewFiles] = useState([]);         // File[]
+  const [newFiles, setNewFiles] = useState([]); // File[]
   const [mediaUploading, setMediaUploading] = useState(false);
 
   const resolveTypeIds = () =>
@@ -77,7 +77,9 @@ function EditPropertyModal({
 
   const resolveCategoryIds = () =>
     (p.propertyCategories || [])
-      .map((name) => propertyCategories?.find((c) => c.categoryName === name)?.id)
+      .map(
+        (name) => propertyCategories?.find((c) => c.categoryName === name)?.id,
+      )
       .filter(Boolean);
 
   const resolveAmenityIds = () =>
@@ -180,8 +182,12 @@ function EditPropertyModal({
         area: form.area,
         pincode: form.pincode,
         locationId: form.locationId ? Number(form.locationId) : null,
-        assignedAdminId: form.assignedAdminId ? Number(form.assignedAdminId) : null,
-        parentPropertyId: form.parentPropertyId ? Number(form.parentPropertyId) : null,
+        assignedAdminId: form.assignedAdminId
+          ? Number(form.assignedAdminId)
+          : null,
+        parentPropertyId: form.parentPropertyId
+          ? Number(form.parentPropertyId)
+          : null,
         childPropertyIds: null,
         latitude: form.latitude !== "" ? Number(form.latitude) : null,
         longitude: form.longitude !== "" ? Number(form.longitude) : null,
@@ -194,8 +200,10 @@ function EditPropertyModal({
         rating: form.rating !== "" ? Number(form.rating) : null,
         capacity: form.capacity !== "" ? Number(form.capacity) : null,
         price: form.price !== "" ? Number(form.price) : null,
-        gstPercentage: form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
-        discountAmount: form.discountAmount !== "" ? Number(form.discountAmount) : null,
+        gstPercentage:
+          form.gstPercentage !== "" ? Number(form.gstPercentage) : null,
+        discountAmount:
+          form.discountAmount !== "" ? Number(form.discountAmount) : null,
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
@@ -249,7 +257,7 @@ function EditPropertyModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[95vh]">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[95vh]">
         {/* ── Header ──────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between px-7 py-5 rounded-t-2xl shrink-0"
@@ -284,7 +292,6 @@ function EditPropertyModal({
         >
           <div className="flex-1 overflow-y-auto px-7 py-6">
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-
               {/* ─── IDENTITY ─────────────────────────────────────── */}
               <Section label="Identity" icon={Building2} />
 
@@ -471,13 +478,13 @@ function EditPropertyModal({
               {/* ─── LISTING ──────────────────────────────────────── */}
               <Section label="Listing Details" icon={FileText} />
 
-              <Field label="Main Heading" span={2}>
-                <input
-                  type="text"
+              <Field label="Description" span={2}>
+                <textarea
                   value={form.mainHeading}
                   onChange={(e) => set("mainHeading", e.target.value)}
-                  placeholder="e.g. Grand Palace Hotel"
-                  className={inputCls}
+                  placeholder="Write a detailed description about the property..."
+                  rows={10}
+                 className={`${inputCls} resize-none leading-relaxed`}
                 />
               </Field>
 
@@ -593,7 +600,6 @@ function EditPropertyModal({
               <Section label="Media" icon={ImageIcon} />
 
               <div className="col-span-2 space-y-4">
-
                 {/* Existing Media — max 3 */}
                 {existingMedia.length > 0 && (
                   <div>
@@ -616,9 +622,7 @@ function EditPropertyModal({
                             }}
                           />
                           {/* Fallback if image fails */}
-                          <div
-                            className="absolute inset-0 items-center justify-center bg-gray-100 hidden"
-                          >
+                          <div className="absolute inset-0 items-center justify-center bg-gray-100 hidden">
                             <ImageIcon size={24} className="text-gray-300" />
                           </div>
                           {/* Index badge */}
@@ -635,13 +639,17 @@ function EditPropertyModal({
                 <div>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
                     <RefreshCw size={10} />
-                    {existingMedia.length > 0 ? "Replace Media" : "Upload Media"}
+                    {existingMedia.length > 0
+                      ? "Replace Media"
+                      : "Upload Media"}
                   </p>
 
                   {/* Drop zone — same pattern as AddPropertyModal */}
                   <div
                     className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 hover:border-blue-300 transition-all cursor-pointer"
-                    onClick={() => document.getElementById("edit-media-input").click()}
+                    onClick={() =>
+                      document.getElementById("edit-media-input").click()
+                    }
                   >
                     <Upload size={32} className="mx-auto text-gray-300 mb-2" />
                     <p className="text-sm font-bold text-gray-500">
@@ -671,7 +679,9 @@ function EditPropertyModal({
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-[11px] font-bold rounded-full border border-blue-100"
                         >
                           <ImageIcon size={10} />
-                          <span className="max-w-[120px] truncate">{file.name}</span>
+                          <span className="max-w-[120px] truncate">
+                            {file.name}
+                          </span>
                           <button
                             type="button"
                             onClick={() => removeNewFile(i)}
@@ -702,7 +712,6 @@ function EditPropertyModal({
                   )}
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -711,7 +720,9 @@ function EditPropertyModal({
             <span className="text-[10px] text-gray-400 font-semibold">
               Property ID #{p.id}
               {listing.id && (
-                <span className="ml-2 text-gray-300">· Listing #{listing.id}</span>
+                <span className="ml-2 text-gray-300">
+                  · Listing #{listing.id}
+                </span>
               )}
             </span>
             <div className="flex gap-3">

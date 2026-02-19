@@ -90,9 +90,9 @@ const CarouselItem = ({
 
           <h1 className="text-3xl lg:text-5xl font-serif mb-4 leading-tight">
             {property.propertyName}
-            {property.mainHeading && (
+            {property.subTitle && (
               <span className="block italic font-light text-xl lg:text-2xl mt-1 opacity-80">
-                {property.mainHeading}
+                {property.subTitle}
               </span>
             )}
           </h1>
