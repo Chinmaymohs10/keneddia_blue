@@ -230,6 +230,11 @@ export const getOurPresenceSection = () => API.get("api/v1/our-presence");
 export const updateOurPresenceSectionItemsById = (id, formData) =>
   API.put(`api/v1/our-presence/admin/items/${id}`, formData);
 
+export const addGuestExperineceRatingHeader = (data) =>API.post("/api/property-overall-reviews", data);
+export const getGuestExperineceRatingHeader  = () =>API.get("/api/property-overall-reviews");
+
+
+
 export const createOrUpdateOurPropertiesSection = (data) =>
   API.post("api/v1/our-properties/section", data);
 export const getOurPropertiesSection = () =>
@@ -380,6 +385,13 @@ export const getAllGalleries = ({ page = 0, size = 10 }) =>
   API.get("api/v1/gallery/showAll", { params: { page, size } });
 export const getGalleryById = (id) => API.get(`api/v1/gallery/${id}`);
 export const deleteGalleryById = (id) => API.delete(`api/v1/gallery/${id}`);
+
+//group booking
+// Add Group Booking
+export const addGroupBooking = (data) =>API.post("/api/v1/group-bookings", data);
+export const updateGroupBooking = (id, data) =>API.put(`/api/v1/group-bookings/${id}`, data);
+export const getGroupBookings = () =>API.get("/api/v1/group-bookings");
+
 
 // ===============================
 // ROOMS

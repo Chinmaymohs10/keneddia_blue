@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
-import { 
-  Home, 
-  DollarSign, 
-  Building, 
-  Info, 
-  Building2, 
-  Calendar, 
-  Newspaper, 
+import {
+  Home,
+  DollarSign,
+  Building,
+  Info,
+  Building2,
+  Calendar,
+  Newspaper,
   Star,
+  Users
 } from 'lucide-react';
 import HeroSection from '../tabPages/HeroSection';
 import DailyOffers from '../tabPages/DailyOffers';
@@ -19,7 +20,7 @@ import KennediaGroup from '../tabPages/KennediaGroup';
 import UpcomingEvents from '../tabPages/UpcomingEvents';
 import NewsPress from '../tabPages/NewsPress';
 import GuestExp from '../tabPages/GuestExp';
-
+import GroupBookings from '../tabPages/GroupBookings';
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState('hero');
 
@@ -32,29 +33,31 @@ function HomePageDashboard() {
     { id: 'news', label: 'News & Press', icon: Newspaper, component: NewsPress },
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
     { id: 'presence', label: 'Our Presence', icon: Building, component: OurPresence },
+    { id: 'group', label: 'Group Bookings', icon: Users, component: GroupBookings },
   ];
+
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || HeroSection;
 
   return (
-    <Layout 
+    <Layout
       title="Home Page Management"
       subtitle="Control what visitors see on your hotel's homepage"
-      role="superadmin" 
+      role="superadmin"
       showActions={false}
     >
       <div className="flex flex-col h-full">
         {/* Tab Navigation */}
-        <div 
+        <div
           className="flex gap-0.5 px-4 sm:px-6 overflow-x-auto sticky top-0 z-20 shrink-0 scrollbar-thin"
-          style={{ 
+          style={{
             backgroundColor: colors.contentBg,
             borderBottom: `1px solid ${colors.border}`
           }}
         >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
-            
+
             return (
               <button
                 key={tab.id}
@@ -74,7 +77,7 @@ function HomePageDashboard() {
         </div>
 
         {/* Content Area */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto"
           style={{ backgroundColor: colors.mainBg }}
         >

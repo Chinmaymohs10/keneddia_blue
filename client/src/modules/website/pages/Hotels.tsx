@@ -317,8 +317,7 @@ export default function Hotels() {
 
   // Hero Auto-play
   useEffect(() => {
-    const slidesCount =
-      heroSlides.length > 0 ? heroSlides.length : FALLBACK_HERO_IMAGES.length;
+    const slidesCount = heroSlides.length > 0 ? heroSlides.length : "";
 
     const timer = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % slidesCount);
@@ -329,10 +328,7 @@ export default function Hotels() {
 
   // About Us Auto-play (synced with hero)
   useEffect(() => {
-    const aboutCount =
-      aboutSections.length > 0
-        ? aboutSections.length
-        : FALLBACK_ABOUT_DATA.length;
+    const aboutCount = aboutSections.length > 0 ? aboutSections.length : "";
 
     const timer = setInterval(() => {
       setCurrentAboutIndex((prev) => (prev + 1) % aboutCount);
@@ -361,16 +357,16 @@ export default function Hotels() {
 
   // Get About Us image from media array
   const getAboutImage = useCallback((section?: AboutUsSection | any) => {
-  if (!section || !section.media || section.media.length === 0) {
-    return siteContent.images.hotels.delhi;
-  }
+    if (!section || !section.media || section.media.length === 0) {
+      return siteContent.images.hotels.delhi;
+    }
 
-  const firstMedia = section.media.find(
-    (m: AboutUsMedia) => m.type === "IMAGE",
-  );
+    const firstMedia = section.media.find(
+      (m: AboutUsMedia) => m.type === "IMAGE",
+    );
 
-  return firstMedia?.url || siteContent.images.hotels.delhi;
-}, []);
+    return firstMedia?.url || siteContent.images.hotels.delhi;
+  }, []);
 
   const handleImageError = useCallback((url: string) => {
     setImageErrors((prev) => new Set(prev).add(url));
@@ -384,15 +380,15 @@ export default function Hotels() {
     (slide: HeroSlide) => {
       const { type, url } = getCurrentMedia(slide);
 
-      if (!url || imageErrors.has(url)) {
-        const fallbackIndex = currentHeroIndex % FALLBACK_HERO_IMAGES.length;
-        return (
-          <OptimizedImage
-            {...FALLBACK_HERO_IMAGES[fallbackIndex]}
-            className="w-full h-full object-cover"
-          />
-        );
-      }
+      // if (!url || imageErrors.has(url)) {
+      //   const fallbackIndex = currentHeroIndex % FALLBACK_HERO_IMAGES.length;
+      //   return (
+      //     <OptimizedImage
+      //       {...FALLBACK_HERO_IMAGES[fallbackIndex]}
+      //       className="w-full h-full object-cover"
+      //     />
+      //   );
+      // }
 
       if (type === "video") {
         return (
@@ -426,8 +422,7 @@ export default function Hotels() {
   const displaySlides = heroSlides.length > 0 ? heroSlides : [];
   const useFallback = displaySlides.length === 0;
 
-  const displayAboutSections =
-    aboutSections.length > 0 ? aboutSections : FALLBACK_ABOUT_DATA;
+  const displayAboutSections = aboutSections.length > 0 ? aboutSections : "";
   const useAboutFallback = aboutSections.length === 0;
   useEffect(() => {
     const currentSection = displayAboutSections[currentAboutIndex];
@@ -451,7 +446,7 @@ export default function Hotels() {
       {/* 1. HERO SECTION */}
       <section className="relative h-[85vh] w-full overflow-hidden">
         {loading && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="absolute inset-0 z-50 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <Loader2 size={48} className="animate-spin text-white" />
               <p className="text-white text-sm font-medium">
@@ -463,81 +458,60 @@ export default function Hotels() {
 
         {!loading && (
           <>
-            {useFallback ? (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentHeroIndex}
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5 }}
-                  className="absolute inset-0"
-                >
-                  <OptimizedImage
-                    {...FALLBACK_HERO_IMAGES[currentHeroIndex]}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/30" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
-                </motion.div>
-              </AnimatePresence>
-            ) : (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${displaySlides[currentHeroIndex].id}-${currentTheme}`}
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5 }}
-                  className="absolute inset-0"
-                >
-                  {renderMedia(displaySlides[currentHeroIndex])}
-                  <div className="absolute inset-0 bg-black/30" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
-                </motion.div>
-              </AnimatePresence>
+            {displaySlides.length > 0 && (
+              <>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${displaySlides[currentHeroIndex]?.id}-${currentTheme}`}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5 }}
+                    className="absolute inset-0"
+                  >
+                    {renderMedia(displaySlides[currentHeroIndex])}
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent" />
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+                  <motion.h1
+                    key={`title-${currentHeroIndex}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider drop-shadow-2xl"
+                  >
+                    {displaySlides[currentHeroIndex]?.title || ""}
+                  </motion.h1>
+
+                  <motion.p
+                    key={`subtitle-${currentHeroIndex}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                    className="text-xl md:text-2xl text-white/90 font-light max-w-2xl drop-shadow-lg"
+                  >
+                    {displaySlides[currentHeroIndex]?.subtitle || ""}
+                  </motion.p>
+                </div>
+
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+                  {displaySlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentHeroIndex(idx)}
+                      className={`w-12 h-1 rounded-full transition-all duration-300 ${
+                        idx === currentHeroIndex
+                          ? "bg-white"
+                          : "bg-white/30 hover:bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-              <motion.h1
-                key={`title-${currentHeroIndex}`}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 uppercase tracking-wider drop-shadow-2xl"
-              >
-                {useFallback
-                  ? "Timeless Luxury"
-                  : displaySlides[currentHeroIndex].title}
-              </motion.h1>
-              <motion.p
-                key={`subtitle-${currentHeroIndex}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                className="text-xl md:text-2xl text-white/90 font-light max-w-2xl drop-shadow-lg"
-              >
-                {useFallback
-                  ? "Where every moment is crafted with elegance."
-                  : displaySlides[currentHeroIndex].subtitle}
-              </motion.p>
-            </div>
-
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-              {(useFallback ? FALLBACK_HERO_IMAGES : displaySlides).map(
-                (_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentHeroIndex(idx)}
-                    className={`w-12 h-1 rounded-full transition-all duration-300 ${
-                      idx === currentHeroIndex
-                        ? "bg-white"
-                        : "bg-white/30 hover:bg-white/50"
-                    }`}
-                  />
-                ),
-              )}
-            </div>
           </>
         )}
       </section>

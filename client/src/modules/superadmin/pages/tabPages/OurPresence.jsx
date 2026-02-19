@@ -7,17 +7,17 @@ import {
   UpdateOurPresenceSectionHeaders,
   updateOurPresenceSectionItemsById,
   enableKennediaDivision,
-  disableKennediaDivision
+  disableKennediaDivision,
 } from "@/Api/Api";
 
 function OurPresence() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sectionData, setSectionData] = useState({
-    overlineText: "OUR PRESENCE",
-    mainHeading: "Luxury Hospitality Across India",
+    overlineText: "",
+    mainHeading: "",
     description:
-      "Handpicked destinations that blend heritage charm with modern excellence, creating unforgettable stays in India's most iconic cities.",
+      "",
     isActive: true,
   });
 
