@@ -65,9 +65,19 @@ function ImageUpload({ value, onChange, onClear, size = "md" }) {
       const fd = new FormData();
       fd.append("file", file);
       const res = await uploadMedia(fd);
-      const mediaId = res.data?.id ?? res.data?.mediaId ?? res.data?.data?.id;
+      const raw = res.data;
+
+      // API returns plain number (e.g. 582), or { id }, or { data: { id } }
+      const mediaId =
+        typeof raw === "number"
+          ? raw
+          : (raw?.id ?? raw?.mediaId ?? raw?.data?.id ?? null);
+
       const url =
-        res.data?.url ?? res.data?.data?.url ?? URL.createObjectURL(file);
+        typeof raw === "object"
+          ? (raw?.url ?? raw?.data?.url ?? URL.createObjectURL(file))
+          : URL.createObjectURL(file);
+
       onChange(url, mediaId);
     } catch {
       onChange(URL.createObjectURL(file), null);
@@ -75,7 +85,6 @@ function ImageUpload({ value, onChange, onClear, size = "md" }) {
       setUploading(false);
     }
   };
-
   return (
     <div className="flex items-center gap-3">
       <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all text-sm text-gray-500 font-medium shrink-0">
@@ -400,7 +409,7 @@ function ItemForm({ initial, propertyId, onSave, onCancel }) {
           value={form.mediaUrl}
           onChange={(url, mediaId) => {
             set("mediaUrl", url);
-            if (mediaId) set("mediaId", mediaId);
+            set("mediaId", mediaId ?? null); // always set, even null — removes stale value
           }}
           onClear={() => {
             set("mediaUrl", "");

@@ -28,6 +28,9 @@ import {
   updateRestaurantConnect,
   createSocialPlatform,
   getAllSocialPlatforms,
+  // ── NEW ──
+  updateRestaurantSocialLink,
+  toggleRestaurantSocialLinkStatus,
 } from "@/Api/RestaurantApi";
 import { uploadMedia } from "@/Api/Api";
 
@@ -122,14 +125,6 @@ function ImageUpload({ value, onChange, onClear, className = "" }) {
 }
 
 // ── Social icon map ───────────────────────────────────────────────────────────
-const SOCIAL_ICONS = {
-  instagram: <Instagram size={14} />,
-  facebook: <Facebook size={14} />,
-  twitter: <Twitter size={14} />,
-  whatsapp: <MessageCircle size={14} />,
-  other: <Link size={14} />,
-};
-
 const platformIcon = (name = "") => {
   const n = name.toLowerCase();
   if (n.includes("instagram")) return <Instagram size={14} />;
@@ -202,7 +197,7 @@ function LivePreview({ form }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONTENT PANEL  — About header (text / availability)
+// CONTENT PANEL
 // ─────────────────────────────────────────────────────────────────────────────
 const EMPTY_ABOUT = {
   id: null,
@@ -419,26 +414,31 @@ function ContentPanel({ propertyId, sharedImage, sharedConnectForm }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MEDIA PANEL  — Restaurant image + social links
+// MEDIA PANEL  — Restaurant images + social links
+// Social links: existing ones use updateRestaurantSocialLink (PUT by id)
+//               toggle uses toggleRestaurantSocialLinkStatus (PATCH by id)
+//               new links are added via updateRestaurantImageSocial payload
+//               Save Image button only saves images
 // ─────────────────────────────────────────────────────────────────────────────
 function MediaPanel({ propertyId, onImageChange }) {
   const [platforms, setPlatforms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingImages, setSavingImages] = useState(false);
+  const [savingLinkId, setSavingLinkId] = useState(null); // which link row is saving
   const [newPlatformName, setNewPlatformName] = useState("");
   const [creatingPlatform, setCreatingPlatform] = useState(false);
 
-  // Images — multiple uploads, each tracked separately
-  // Each entry: { localId, mediaId, url, uploading }
+  // Images — each: { localId, mediaId, url, uploading }
   const [images, setImages] = useState([]);
 
-  // Social links (local state, submitted together in one payload)
+  // Social links — each: { localId, serverId (real DB id), platformId, platformName,
+  //                         iconMediaId, iconUrl, url, displayOrder, isActive, isDirty }
+  // isDirty = user has edited the row since last save
   const [links, setLinks] = useState([]);
 
-  // Whether a record already exists (for create vs update)
   const [recordExists, setRecordExists] = useState(false);
 
-  // Load existing data + platforms on mount
+  // ── Load on mount ────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       try {
@@ -455,25 +455,24 @@ function MediaPanel({ propertyId, onImageChange }) {
           if (data) {
             setRecordExists(true);
 
-            // Map existing images
             const imgList = Array.isArray(data.images) ? data.images : [];
             setImages(
               imgList.map((img) => ({
-                localId: img.id ?? img.mediaId,
-                mediaId: img.id ?? img.mediaId,
-                url: img.url ?? img.media?.url ?? "",
+                localId: img.mediaId ?? img.id,
+                mediaId: img.mediaId ?? img.id,
+                url: img.url ?? "",
                 uploading: false,
               })),
             );
             if (imgList[0]?.url) onImageChange?.(imgList[0].url);
 
-            // Map existing social links
             const slList = Array.isArray(data.socialLinks)
               ? data.socialLinks
               : [];
             setLinks(
               slList.map((l) => ({
-                localId: l.id ?? `existing_${l.platformId}`,
+                localId: l.id, // use real DB id as localId for existing rows
+                serverId: l.id, // the id used for PUT /social-link/:id
                 platformId: l.platformId,
                 platformName: l.platformName ?? "",
                 iconMediaId: l.icon?.id ?? null,
@@ -481,6 +480,8 @@ function MediaPanel({ propertyId, onImageChange }) {
                 url: l.url ?? "",
                 displayOrder: l.displayOrder ?? 1,
                 isActive: l.isActive ?? true,
+                isDirty: false,
+                isNew: false, // existing record from server
               })),
             );
           }
@@ -493,7 +494,7 @@ function MediaPanel({ propertyId, onImageChange }) {
     })();
   }, [propertyId]);
 
-  // ── Upload a new image file and add to the images list ───────────────────
+  // ── Image management ─────────────────────────────────────────────────────
   const handleAddImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -507,7 +508,6 @@ function MediaPanel({ propertyId, onImageChange }) {
       const fd = new FormData();
       fd.append("file", file);
       const res = await uploadMedia(fd);
-      // API may return plain number, or { id }, or { data: { id } }
       const raw = res.data;
       const mediaId =
         typeof raw === "number"
@@ -537,12 +537,116 @@ function MediaPanel({ propertyId, onImageChange }) {
   const removeImage = (localId) =>
     setImages((prev) => prev.filter((img) => img.localId !== localId));
 
-  // ── Social link helpers ───────────────────────────────────────────────────
+  // ── Save IMAGES only (via updateRestaurantImageSocial / create) ──────────
+  const handleSaveImages = async () => {
+    if (images.some((img) => img.uploading)) {
+      alert("Please wait for all images to finish uploading.");
+      return;
+    }
+    setSavingImages(true);
+    try {
+      const payload = {
+        propertyId,
+        mediaIds: images.filter((img) => img.mediaId).map((img) => img.mediaId),
+        isActive: true,
+        // pass existing social link ids so they aren't wiped server-side
+        socialLinks: links
+          .filter((l) => !l.isNew && l.serverId)
+          .map((l) => ({
+            platformId: l.platformId,
+            iconMediaId: l.iconMediaId ?? null,
+            url: l.url,
+            displayOrder: l.displayOrder,
+            isActive: l.isActive,
+          })),
+      };
+      if (recordExists) {
+        await updateRestaurantImageSocial(propertyId, payload);
+      } else {
+        await createRestaurantImageSocial(payload);
+        setRecordExists(true);
+      }
+    } catch (e) {
+      console.error("Failed to save images", e);
+      alert("Failed to save images. Please try again.");
+    } finally {
+      setSavingImages(false);
+    }
+  };
+
+  // ── Social link field change — mark row as dirty ─────────────────────────
+  const updateLink = (localId, field, val) =>
+    setLinks((prev) =>
+      prev.map((l) =>
+        l.localId === localId ? { ...l, [field]: val, isDirty: true } : l,
+      ),
+    );
+
+  // ── Toggle isActive — calls API immediately for existing rows ────────────
+  const handleToggleActive = async (link) => {
+    const newActive = !link.isActive;
+
+    // Optimistic UI update
+    setLinks((prev) =>
+      prev.map((l) =>
+        l.localId === link.localId ? { ...l, isActive: newActive } : l,
+      ),
+    );
+
+    if (link.serverId) {
+      // Existing server record — call toggle API immediately
+      try {
+        await toggleRestaurantSocialLinkStatus(link.serverId, newActive);
+      } catch (e) {
+        console.error("Failed to toggle social link status", e);
+        // Revert on error
+        setLinks((prev) =>
+          prev.map((l) =>
+            l.localId === link.localId ? { ...l, isActive: !newActive } : l,
+          ),
+        );
+        alert("Failed to update status. Please try again.");
+      }
+    }
+    // For new (unsaved) rows just update local state — will be sent on save
+  };
+
+  // ── Save a single social link row (PUT by serverId) ──────────────────────
+  const handleSaveLink = async (link) => {
+    if (!link.serverId) {
+      alert("This is a new link — please use 'Add Social Link via API' flow.");
+      return;
+    }
+    setSavingLinkId(link.localId);
+    try {
+      await updateRestaurantSocialLink(link.serverId, {
+        platformId: link.platformId,
+        iconMediaId: link.iconMediaId ?? null,
+        url: link.url,
+        displayOrder: link.displayOrder,
+        isActive: link.isActive,
+      });
+      // Clear dirty flag
+      setLinks((prev) =>
+        prev.map((l) =>
+          l.localId === link.localId ? { ...l, isDirty: false } : l,
+        ),
+      );
+    } catch (e) {
+      console.error("Failed to update social link", e);
+      alert("Failed to save link. Please try again.");
+    } finally {
+      setSavingLinkId(null);
+    }
+  };
+
+  // ── Add a new (local-only) link row ──────────────────────────────────────
   const addLinkRow = () => {
     setLinks((prev) => [
       ...prev,
       {
         localId: `new_${Date.now()}`,
+        serverId: null, // no server id yet
         platformId: platforms[0]?.id ?? null,
         platformName: platforms[0]?.name ?? "",
         iconMediaId: null,
@@ -550,38 +654,14 @@ function MediaPanel({ propertyId, onImageChange }) {
         url: "",
         displayOrder: prev.length + 1,
         isActive: true,
+        isDirty: true,
+        isNew: true,
       },
     ]);
   };
 
-  const updateLink = (localId, field, val) =>
-    setLinks((prev) =>
-      prev.map((l) => (l.localId === localId ? { ...l, [field]: val } : l)),
-    );
-
   const removeLink = (localId) =>
     setLinks((prev) => prev.filter((l) => l.localId !== localId));
-
-  // Upload icon for a specific link row
-  const handleLinkIconUpload = async (localId, file) => {
-    if (!file) return;
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await uploadMedia(fd);
-      const raw = res.data;
-      const iconMId =
-        typeof raw === "number" ? raw : (raw?.id ?? raw?.data?.id ?? null);
-      const iconUrl =
-        typeof raw === "object" && (raw?.url ?? raw?.data?.url)
-          ? (raw?.url ?? raw?.data?.url)
-          : URL.createObjectURL(file);
-      updateLink(localId, "iconMediaId", iconMId);
-      updateLink(localId, "iconUrl", iconUrl);
-    } catch {
-      updateLink(localId, "iconUrl", URL.createObjectURL(file));
-    }
-  };
 
   // ── Create new platform master ────────────────────────────────────────────
   const handleCreatePlatform = async () => {
@@ -603,42 +683,6 @@ function MediaPanel({ propertyId, onImageChange }) {
     }
   };
 
-  // ── Save all (images + social links) in one unified payload ──────────────
-  const handleSaveAll = async () => {
-    const pendingUploads = images.filter((img) => img.uploading);
-    if (pendingUploads.length > 0) {
-      alert("Please wait for all images to finish uploading.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = {
-        propertyId,
-        mediaIds: images.filter((img) => img.mediaId).map((img) => img.mediaId),
-        isActive: true,
-        socialLinks: links.map((l) => ({
-          platformId: l.platformId,
-          iconMediaId: l.iconMediaId ?? null,
-          url: l.url,
-          displayOrder: l.displayOrder,
-          isActive: l.isActive,
-        })),
-      };
-
-      if (recordExists) {
-        await updateRestaurantImageSocial(propertyId, payload);
-      } else {
-        await createRestaurantImageSocial(payload);
-        setRecordExists(true);
-      }
-    } catch (e) {
-      console.error("Failed to save media & social", e);
-      alert("Failed to save. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
   if (loading)
     return (
       <div className="py-10 text-center text-sm text-gray-400">
@@ -648,7 +692,7 @@ function MediaPanel({ propertyId, onImageChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Restaurant Images */}
+      {/* ── Restaurant Images ─────────────────────────────────────────────── */}
       <Section title="Restaurant Images (shown on left side)">
         <div className="flex flex-wrap gap-3">
           {images.map((img) => (
@@ -677,8 +721,6 @@ function MediaPanel({ propertyId, onImageChange }) {
               )}
             </div>
           ))}
-
-          {/* Add image button */}
           <label className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-all shrink-0 gap-1">
             <Plus size={18} className="text-gray-300" />
             <span className="text-[10px] text-gray-400 font-semibold">
@@ -697,9 +739,25 @@ function MediaPanel({ propertyId, onImageChange }) {
             No images yet — click Add Image above.
           </p>
         )}
+        {/* Save Images button — ONLY saves images */}
+        <div className="flex justify-end pt-1">
+          <button
+            onClick={handleSaveImages}
+            disabled={savingImages || images.some((img) => img.uploading)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60"
+          >
+            {savingImages ? (
+              "Saving…"
+            ) : (
+              <>
+                <Save size={13} /> Save Images
+              </>
+            )}
+          </button>
+        </div>
       </Section>
 
-      {/* Platform Master — create new platform */}
+      {/* ── Platform Master ───────────────────────────────────────────────── */}
       <Section title="Social Platforms (Master List)">
         <p className="text-[10px] text-gray-400">
           Platforms available:{" "}
@@ -727,7 +785,7 @@ function MediaPanel({ propertyId, onImageChange }) {
         </div>
       </Section>
 
-      {/* Social Links */}
+      {/* ── Social Links ─────────────────────────────────────────────────── */}
       <Section title="Social Links (shown as icon buttons on image)">
         <div className="space-y-3">
           {links.length === 0 && (
@@ -735,11 +793,42 @@ function MediaPanel({ propertyId, onImageChange }) {
               No social links yet — click Add below.
             </p>
           )}
+
           {links.map((link) => (
             <div
               key={link.localId}
-              className="border border-gray-100 rounded-xl p-3 space-y-2 bg-white"
+              className={`border rounded-xl p-3 space-y-2 bg-white transition-colors ${
+                link.isDirty
+                  ? "border-amber-300 bg-amber-50/30"
+                  : "border-gray-100"
+              }`}
             >
+              {/* Row header: id badge + dirty indicator */}
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  {link.serverId ? (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      ID: {link.serverId}
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                      New
+                    </span>
+                  )}
+                  {link.isDirty && (
+                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">
+                      Unsaved changes
+                    </span>
+                  )}
+                </div>
+                {/* <button
+                  onClick={() => removeLink(link.localId)}
+                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-all"
+                >
+                  <Trash2 size={13} />
+                </button> */}
+              </div>
+
               <div className="flex gap-2 items-center">
                 {/* Platform selector */}
                 <select
@@ -798,56 +887,37 @@ function MediaPanel({ propertyId, onImageChange }) {
                   }
                 />
 
-                {/* Active toggle */}
+                {/* Active toggle — calls API immediately for existing rows */}
                 <div
-                  onClick={() =>
-                    updateLink(link.localId, "isActive", !link.isActive)
-                  }
-                  className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer shrink-0 ${link.isActive ? "bg-blue-500" : "bg-gray-300"}`}
+                  onClick={() => handleToggleActive(link)}
+                  title={link.isActive ? "Click to disable" : "Click to enable"}
+                  className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer shrink-0 ${
+                    link.isActive ? "bg-blue-500" : "bg-gray-300"
+                  }`}
                 >
                   <span
-                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${link.isActive ? "translate-x-4" : "translate-x-0.5"}`}
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      link.isActive ? "translate-x-4" : "translate-x-0.5"
+                    }`}
                   />
                 </div>
 
-                {/* Remove */}
-                <button
-                  onClick={() => removeLink(link.localId)}
-                  className="p-2 rounded-lg hover:bg-red-50 text-red-400 transition-all shrink-0"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-
-              {/* Icon image upload for this link */}
-              {/* <div className="flex items-center gap-2 pl-1">
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider shrink-0">
-                  Icon Image (optional):
-                </p>
-                <label className="flex items-center gap-1.5 px-3 py-1 rounded-lg border border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer text-xs text-gray-400 font-medium transition-all">
-                  <ImageIcon size={11} />
-                  {link.iconUrl ? "Change" : "Upload"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) =>
-                      handleLinkIconUpload(link.localId, e.target.files?.[0])
-                    }
-                  />
-                </label>
-                {link.iconUrl && (
+                {/* Save this link row (only for existing server rows) */}
+                {link.serverId && (
                   <button
-                    onClick={() => {
-                      updateLink(link.localId, "iconMediaId", null);
-                      updateLink(link.localId, "iconUrl", "");
-                    }}
-                    className="text-red-400 hover:text-red-600 transition-colors"
+                    onClick={() => handleSaveLink(link)}
+                    disabled={savingLinkId === link.localId || !link.isDirty}
+                    title="Save this link"
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg text-white text-xs font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-40 shrink-0"
                   >
-                    <X size={12} />
+                    {savingLinkId === link.localId ? (
+                      <RefreshCw size={12} className="animate-spin" />
+                    ) : (
+                      <Save size={12} />
+                    )}
                   </button>
                 )}
-              </div> */}
+              </div>
             </div>
           ))}
         </div>
@@ -859,29 +929,12 @@ function MediaPanel({ propertyId, onImageChange }) {
           <Plus size={13} /> Add Social Link
         </button>
       </Section>
-
-      {/* Single unified Save button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSaveAll}
-          disabled={saving || images.some((img) => img.uploading)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60"
-        >
-          {saving ? (
-            "Saving…"
-          ) : (
-            <>
-              <Save size={14} /> Save Image & Social Links
-            </>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONNECT PANEL  — Connect card + quick connect
+// CONNECT PANEL
 // ─────────────────────────────────────────────────────────────────────────────
 const EMPTY_CONNECT = {
   id: null,
@@ -989,7 +1042,6 @@ function ConnectPanel({ propertyId, form, setForm }) {
       </Section>
 
       <Section title="Quick Connect Methods">
-        {/* WhatsApp */}
         <div className="p-4 rounded-xl border border-gray-100 bg-white space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
@@ -1016,7 +1068,6 @@ function ConnectPanel({ propertyId, form, setForm }) {
           </Field>
         </div>
 
-        {/* Direct Call */}
         <div className="p-4 rounded-xl border border-gray-100 bg-white space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center">
@@ -1044,7 +1095,6 @@ function ConnectPanel({ propertyId, form, setForm }) {
         </div>
       </Section>
 
-      {/* Active toggle */}
       <label className="flex items-center gap-2 cursor-pointer w-fit">
         <div
           onClick={() => set("isActive", !form.isActive)}
@@ -1057,7 +1107,6 @@ function ConnectPanel({ propertyId, form, setForm }) {
         <span className="text-xs font-semibold text-gray-600">Active</span>
       </label>
 
-      {/* Quick Connect preview */}
       <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
           Quick Connect Preview
@@ -1109,7 +1158,6 @@ function ConnectPanel({ propertyId, form, setForm }) {
 function ResturantAbout({ propertyData, refreshData }) {
   const propertyId = propertyData?.id ?? propertyData?.propertyId ?? 1;
 
-  // Shared state lifted up so LivePreview in ContentPanel can see image + connect
   const [sharedImage, setSharedImage] = useState("");
   const [connectForm, setConnectForm] = useState(EMPTY_CONNECT);
   const [activePanel, setActivePanel] = useState("content");
@@ -1122,7 +1170,6 @@ function ResturantAbout({ propertyData, refreshData }) {
 
   return (
     <div className="space-y-5">
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-base font-bold text-gray-800">About Section</h2>
         <p className="text-xs text-gray-400 mt-0.5">
@@ -1130,7 +1177,6 @@ function ResturantAbout({ propertyData, refreshData }) {
         </p>
       </div>
 
-      {/* ── Panel switcher ────────────────────────────────────────────────── */}
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
         {panels.map((t) => (
           <button
@@ -1147,7 +1193,6 @@ function ResturantAbout({ propertyData, refreshData }) {
         ))}
       </div>
 
-      {/* ── CONTENT PANEL ─────────────────────────────────────────────────── */}
       {activePanel === "content" && (
         <ContentPanel
           propertyId={propertyId}
@@ -1155,13 +1200,9 @@ function ResturantAbout({ propertyData, refreshData }) {
           sharedConnectForm={connectForm}
         />
       )}
-
-      {/* ── MEDIA PANEL ───────────────────────────────────────────────────── */}
       {activePanel === "media" && (
         <MediaPanel propertyId={propertyId} onImageChange={setSharedImage} />
       )}
-
-      {/* ── CONNECT PANEL ─────────────────────────────────────────────────── */}
       {activePanel === "connect" && (
         <ConnectPanel
           propertyId={propertyId}
