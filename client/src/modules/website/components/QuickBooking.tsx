@@ -16,6 +16,7 @@ import {
   BedDouble,
   Maximize,
 } from "lucide-react";
+import { createCitySlug } from "@/lib/HotelSlug";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -267,15 +268,21 @@ export default function QuickBooking() {
     });
 
     if (!bookingUrl) {
-      console.warn("Booking URL not generated. Missing dates.");
-      // Navigate to room detail page instead
-      navigate(`/hotels/${room.propertyId}`);
+      const cityName = selectedLocation?.locationName || room.locationName;
+
+      if (!cityName) {
+        console.error("No location found for hotel navigation.");
+        return;
+      }
+
+      const citySlug = createCitySlug(cityName);
+
+      navigate(`/hotels/${citySlug}/${room.propertyId}`);
       return;
     }
 
     window.open(bookingUrl, "_blank", "noopener,noreferrer");
   };
-
   // Get room type badge color
   const getRoomTypeBadgeColor = (type: string) => {
     switch (type?.toUpperCase()) {

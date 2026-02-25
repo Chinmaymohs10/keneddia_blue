@@ -15,7 +15,7 @@ import {
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
-
+import { createHotelSlug, createCitySlug } from "@/lib/HotelSlug";
 interface ApiProperty {
   id: number;
   propertyId: number;
@@ -119,7 +119,9 @@ const CarouselItem = ({
               if (type === "resturant" || type === "restaurant") {
                 navigate(`/resturant/${property.propertyId}`);
               } else {
-                navigate(`/hotels/${property.propertyId}`);
+                navigate(
+                  `/hotels/${createCitySlug(property.city || property.propertyName)}/${property.propertyId}`,
+                );
               }
             }}
             className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group cursor-pointer"
@@ -418,7 +420,7 @@ export default function PropertiesSection() {
                         navigate(
                           type === "resturant" || type === "restaurant"
                             ? `/resturant/${active.propertyId}`
-                            : `/hotels/${active.propertyId}`,
+                            : `/hotels/${createCitySlug(active.city || active.propertyName)}/${active.propertyId}`,
                         );
                       }}
                       className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
@@ -432,9 +434,7 @@ export default function PropertiesSection() {
                       <Phone size={18} /> Call
                     </button>
                     <button
-                      onClick={() =>
-                        (window.location.href = `#`)
-                      }
+                      onClick={() => (window.location.href = `#`)}
                       className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
                     >
                       <Mail size={18} /> Email

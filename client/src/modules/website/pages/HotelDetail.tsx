@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { showSuccess,showWarning,showError } from "@/lib/toasters/toastUtils";
+import { showSuccess, showWarning, showError } from "@/lib/toasters/toastUtils";
 import {
   MapPin,
   Star,
@@ -104,12 +104,15 @@ const fadeIn = {
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 
 export default function HotelDetail() {
-  const params = useParams<{ propertyId?: string }>();
-  const navigate = useNavigate();
-  const propertyIdFromUrl = params.propertyId
-    ? Number(params.propertyId)
-    : null;
+  const params = useParams();
+  console.log(params);
 
+  const { citySlug, propertyId } = useParams<{
+    citySlug: string;
+    propertyId: string;
+  }>();
+
+  const propertyIdFromUrl = propertyId ? Number(propertyId) : null;
   const [hotel, setHotel] = useState<HotelData | null>(null);
   const [rooms, setRooms] = useState<any[]>([]);
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
