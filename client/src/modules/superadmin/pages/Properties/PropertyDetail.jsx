@@ -193,9 +193,9 @@ const PropertyDetail = ({ property, onBack }) => {
       "offers section",
       "menu",
       "about",
-      "events",
-      "group bookings",
-      "3d gallery",
+      // "events",
+      // "group bookings",
+      // "3d gallery",
       "enquiries",
     ],
   };

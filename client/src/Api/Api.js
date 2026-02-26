@@ -293,7 +293,6 @@ export const getAllGalleries = ({ page = 0, size = 10 }) =>API.get("api/v1/galle
 export const getGalleryById = (id) => API.get(`api/v1/gallery/${id}`);
 export const deleteGalleryById = (id) => API.delete(`api/v1/gallery/${id}`);
 
-//group booking
 // Add Group Booking
 export const addGroupBooking = (data) =>API.post("/api/v1/group-bookings", data);
 export const updateGroupBooking = (id, data) =>API.put(`/api/v1/group-bookings/${id}`, data);

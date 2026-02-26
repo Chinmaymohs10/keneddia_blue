@@ -63,6 +63,7 @@ interface GalleryItem {
   propertyId: number;
   propertyName: string;
   media: PropertyMedia;
+  categoryId: number;
   isActive: boolean;
 }
 
@@ -137,7 +138,7 @@ function ResturantBanner({
 }: ResturantBannerProps) {
   // ── Derive restaurant fields from propertyData, fallback to static ────────
   const restaurant: RestaurantData = useMemo(() => {
-    console.log('propertyData',propertyData);
+    console.log("propertyData", propertyData);
     if (!propertyData) return FALLBACK_RESTAURANT;
     return {
       id: propertyData.id ?? propertyData.propertyId ?? FALLBACK_RESTAURANT.id,
@@ -190,7 +191,10 @@ function ResturantBanner({
   const galleryMedia: PropertyMedia[] = useMemo(() => {
     if (galleryData && galleryData.length > 0) {
       return galleryData
-        .filter((g) => g.isActive && g.media?.url)
+        .filter(
+          (g) =>
+            g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+        )
         .map((g) => g.media);
     }
     return FALLBACK_GALLERY_MEDIA;
@@ -198,7 +202,9 @@ function ResturantBanner({
 
   const galleryItems: GalleryItem[] = useMemo(() => {
     if (galleryData && galleryData.length > 0) {
-      return galleryData.filter((g) => g.isActive && g.media?.url);
+      return galleryData.filter(
+        (g) => g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+      );
     }
     return FALLBACK_GALLERY_MEDIA.map((media, index) => ({
       id: index,

@@ -64,3 +64,58 @@ export const toggleRestaurantSocialLinkStatus = (id, active) =>API.patch(`api/v1
 export const createRestaurantConnect = (data) =>API.post("api/v1/restaurant/connect", data);
 export const getRestaurantConnectByProperty = (propertyId) =>API.get(`api/v1/restaurant/connect/property/${propertyId}`);
 export const updateRestaurantConnect = (id, data) =>API.put(`api/v1/restaurant/connect/${id}`, data);
+
+// dynamic dropdown gallery (gallery categories)
+
+export const createGalleryDropdown = (data) =>API.post("api/v1/dynamic-dropdown-gallery/create", data);
+export const getAllGalleryDropdown = () =>API.get("api/v1/dynamic-dropdown-gallery/all");
+export const getGalleryDropdownById = (id) =>API.get(`api/v1/dynamic-dropdown-gallery/${id}`);
+export const updateGalleryDropdown = (id, data) =>API.put(`api/v1/dynamic-dropdown-gallery/${id}`, data);
+export const toggleGalleryDropdownStatus = (id, isActive) =>API.patch(`api/v1/dynamic-dropdown-gallery/${id}/status`,null,{ params: { isActive } });
+
+// ─────────────────────────────
+// create menu item
+// ─────────────────────────────
+
+export const createMenuItem = (formData) =>API.post("api/v1/menu-items/createMenuItem", formData, {headers: {"Content-Type": "multipart/form-data",},});
+export const getMenuItems = () =>API.get("api/v1/menu-items/getMenuItems");
+export const getActiveMenuItems = () =>API.get("api/v1/menu-items/getActiveMenuItems");
+export const getMenuItemById = (id) =>API.get(`api/v1/menu-items/getMenuItemById/${id}`);
+export const updateMenuItem = (id, data) =>API.patch(`api/v1/menu-items/updateMenuItem/${id}`, data);
+export const toggleMenuItemStatus = (id) =>API.patch(`api/v1/menu-items/toggleActive/${id}`);
+
+// ─────────────────────────────
+// ITEM CATEGORY
+// ─────────────────────────────
+export const createItemCategory = (data) =>API.post("api/v1/item-category/createItemCategory", data);
+export const getAllActiveItemCategory = () =>API.get("api/v1/item-category/getAllActiveItemCategory");
+export const getItemCategoryById = (id) =>API.get(`api/v1/item-category/getItemCategoryById/${id}`);
+export const updateItemCategory = (id, data) =>API.patch(`api/v1/item-category/updateItemCategory/${id}`, data);
+export const toggleItemCategoryStatus = (id, data) =>API.patch(`api/v1/item-category/toggleActive/${id}`, data);
+
+// ─────────────────────────────
+// ITEM TYPE
+// ─────────────────────────────
+export const createItemType = (data) =>API.post("api/v1/item-type/createItemType", data);
+export const getAllItemTypes = () =>API.get("api/v1/item-type/getAllItemType");
+export const getItemTypeById = (id) =>API.get(`api/v1/item-type/getItemTypeById/${id}`);
+export const updateItemType = (id, data) =>API.patch(`api/v1/item-type/updateItemType/${id}`, data);
+export const toggleItemTypeStatus = (id, data) =>API.patch(`api/v1/item-type/toggleActive/${id}`, data);
+
+// ─────────────────────────────
+// CHEF REMARKS
+// ─────────────────────────────
+export const createChefRemark = (formData, remarkParam) =>API.post("api/v1/chef-remarks/createChefRemark",formData,{params: { remark: remarkParam },headers: { "Content-Type": "multipart/form-data" },});
+export const getChefRemarks = () =>API.get("api/v1/chef-remarks/getChefRemarks");
+export const getChefRemarkById = (id) =>API.get(`api/v1/chef-remarks/getChefRemarkById/${id}`);
+export const updateChefRemark = (id, data) =>API.patch(`api/v1/chef-remarks/updateChefRemark/${id}`, data);
+export const toggleChefRemarkStatus = (id, data) =>API.patch(`api/v1/chef-remarks/toggleActive/${id}`, data);
+
+// ─────────────────────────────
+// MENU SECTION HEADERS (MENU SECTIONS)
+// ─────────────────────────────
+export const createMenuHeaderSection = (formData) =>API.post("api/v1/menu-sections/createMenu", formData, {headers: { "Content-Type": "multipart/form-data" },});
+export const getMenuHeaders = () =>API.get("api/v1/menu-sections/getMenus");
+export const getMenuHeadersById = (id) =>API.get(`api/v1/menu-sections/getMenuById/${id}`);
+export const updateMenuHeadersSection = (id, data) =>API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
+export const toggleMenuHeadersSectionStatus = (id, data) =>API.patch(`api/v1/menu-sections/toggleActive/${id}`, data);

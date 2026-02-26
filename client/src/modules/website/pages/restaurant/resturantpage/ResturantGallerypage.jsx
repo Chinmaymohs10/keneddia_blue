@@ -1,43 +1,81 @@
-import React, { useRef, useState } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  AnimatePresence,
-} from "framer-motion";
+import React, { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   Camera,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Maximize2,
+  Loader2,
 } from "lucide-react";
+import { getAllGalleries } from "@/Api/Api";
+
+// Fallbacks
 import gallery1 from "@/assets/resturant_images/3dGallery/3dGallery1.jpeg";
 import gallery2 from "@/assets/resturant_images/3dGallery/3dGallery2.jpeg";
 import gallery3 from "@/assets/resturant_images/3dGallery/3dGallery3.jpeg";
 import gallery4 from "@/assets/resturant_images/3dGallery/3dGallery4.jpeg";
 import gallery5 from "@/assets/resturant_images/3dGallery/3dGallery5.jpeg";
-const GALLERY_DATA = [
-  { id: 1, title: "Grand Hall", cat: "Interior", img: gallery1 },
-  { id: 2, title: "Chef's Table", cat: "Kitchen", img: gallery2 },
-  { id: 3, title: "Sunset Deck", cat: "Outdoor", img: gallery3 },
-  { id: 4, title: "The Bar", cat: "Lounge", img: gallery4 },
-  { id: 5, title: "Live Kitchen", cat: "Kitchen", img: gallery5 },
+
+const FALLBACK_DATA = [
+  { id: 1, title: "Grand Hall", cat: "3d", img: gallery1 },
+  { id: 2, title: "Chef's Table", cat: "3d", img: gallery2 },
+  { id: 3, title: "Sunset Deck", cat: "3d", img: gallery3 },
+  { id: 4, title: "The Bar", cat: "3d", img: gallery4 },
+  { id: 5, title: "Live Kitchen", cat: "3d", img: gallery5 },
 ];
 
-export default function RestaurantGalleryPage() {
+export default function RestaurantGalleryPage({ propertyId }) {
   const containerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
   const [manualOffset, setManualOffset] = useState(0);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Parallax for the background storytelling text
+  // --- Parallax Logic (Must be defined at top level) ---
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
   const bgTextX = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
 
-  // --- Diagonal Animation Logic ---
+  // --- Data Fetching ---
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        setLoading(true);
+        // Fixed: Passing empty object to prevent "undefined reading page" error
+        const response = await getAllGalleries({});
+
+        // Handle response format: content array is inside response or response.data
+        const allContent = response?.data?.content || response?.content || [];
+
+        const filtered = allContent
+          .filter(
+            (item) =>
+              item.propertyId === propertyId &&
+              item.categoryName?.toLowerCase() === "3d" &&
+              item.isActive,
+          )
+          .map((item) => ({
+            id: item.id,
+            title: item.propertyName || "Gallery View",
+            cat: item.categoryName || "3d",
+            img: item.media?.url,
+          }));
+          console.log('filtered',filtered);
+
+        setGalleryItems(filtered.length > 0 ? filtered : FALLBACK_DATA);
+      } catch (error) {
+        console.error("Gallery fetch error:", error);
+        setGalleryItems(FALLBACK_DATA);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (propertyId) fetchGallery();
+  }, [propertyId]);
+
   const diagonalVariants = {
     animate: {
       x: ["-25%", "25%"],
@@ -46,18 +84,17 @@ export default function RestaurantGalleryPage() {
         x: {
           repeat: Infinity,
           repeatType: "mirror",
-          duration: 10,
+          duration: 15,
           ease: "linear",
         },
         y: {
           repeat: Infinity,
           repeatType: "mirror",
-          duration: 10,
+          duration: 15,
           ease: "linear",
         },
       },
     },
-    // Cross-axis (Top Right to Bottom Left)
     animateReverse: {
       x: ["25%", "-25%"],
       y: ["-25%", "25%"],
@@ -79,7 +116,7 @@ export default function RestaurantGalleryPage() {
   };
 
   const handleManual = (dir) => {
-    setManualOffset((prev) => prev + (dir === "next" ? -100 : 100));
+    setManualOffset((prev) => prev + (dir === "next" ? -150 : 150));
   };
 
   return (
@@ -103,22 +140,21 @@ export default function RestaurantGalleryPage() {
               <div className="flex items-center gap-3">
                 <Camera className="w-5 h-5 text-primary animate-pulse" />
                 <span className="text-primary text-[10px] font-black uppercase tracking-[0.4em]">
-                  Visual Gallery
+                  3D Visual Gallery
                 </span>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif dark:text-white leading-[1.1]">
-                Welcome to <br />
+                Immersive <br />
                 <span className="italic text-zinc-400 dark:text-white/30 decoration-primary/20 underline decoration-1 underline-offset-8">
-                  Kennedia.
+                  Spaces.
                 </span>
               </h2>
               <p className="text-zinc-500 dark:text-white/40 text-lg font-light leading-relaxed max-w-sm">
-                A cinematic intersection of our finest spaces, moving through
-                the heart of our architecture.
+                Explore our architecture through a cinematic intersection of 3D
+                renderings and real-world elegance.
               </p>
             </div>
 
-            {/* Manual Controls */}
             <div className="flex gap-4 pt-4">
               <button
                 onClick={() => handleManual("prev")}
@@ -135,46 +171,49 @@ export default function RestaurantGalleryPage() {
             </div>
           </div>
 
-          {/* ── RIGHT: DIAGONAL "X" CAROUSEL ── */}
+          {/* ── RIGHT: CAROUSEL AREA ── */}
           <div
             className="lg:col-span-8 h-[550px] relative rounded-[3rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-white/40 dark:bg-white/[0.02] backdrop-blur-2xl shadow-2xl"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="relative w-full h-full flex items-center justify-center">
-              {/* Track 1: Top-Left to Bottom-Right */}
-              <motion.div
-                variants={diagonalVariants}
-                animate={isPaused ? "" : "animate"}
-                style={{ translateX: manualOffset }}
-                className="absolute flex gap-8 p-10 whitespace-nowrap"
-              >
-                {[...GALLERY_DATA, ...GALLERY_DATA].map((item, i) => (
-                  <GalleryItem key={`tlbr-${i}`} item={item} />
-                ))}
-              </motion.div>
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={40} />
+              </div>
+            ) : (
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Track 1 */}
+                <motion.div
+                  variants={diagonalVariants}
+                  animate={isPaused ? "" : "animate"}
+                  style={{ translateX: manualOffset }}
+                  className="absolute flex gap-8 p-10 whitespace-nowrap"
+                >
+                  {[...galleryItems, ...galleryItems].map((item, i) => (
+                    <GalleryItem key={`tlbr-${i}`} item={item} />
+                  ))}
+                </motion.div>
 
-              {/* Track 2: Top-Right to Bottom-Left (The X intersection) */}
-              <motion.div
-                variants={diagonalVariants}
-                animate={isPaused ? "" : "animateReverse"}
-                style={{ translateX: -manualOffset }}
-                className="absolute flex gap-8 p-10 whitespace-nowrap"
-              >
-                {[...GALLERY_DATA, ...GALLERY_DATA].reverse().map((item, i) => (
-                  <GalleryItem key={`trbl-${i}`} item={item} />
-                ))}
-              </motion.div>
+                {/* Track 2 */}
+                <motion.div
+                  variants={diagonalVariants}
+                  animate={isPaused ? "" : "animateReverse"}
+                  style={{ translateX: -manualOffset }}
+                  className="absolute flex gap-8 p-10 whitespace-nowrap"
+                >
+                  {[...galleryItems, ...galleryItems]
+                    .reverse()
+                    .map((item, i) => (
+                      <GalleryItem key={`trbl-${i}`} item={item} />
+                    ))}
+                </motion.div>
 
-              {/* Central Focus Overlay */}
-              <div className="absolute inset-0 pointer-events-none border-[40px] border-transparent rounded-[3rem] shadow-[inset_0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
-
-              {/* Corner Accents */}
-              <div className="absolute top-10 left-10 w-4 h-4 border-t-2 border-l-2 border-primary" />
-              <div className="absolute bottom-10 right-10 w-4 h-4 border-b-2 border-r-2 border-primary" />
-            </div>
-
-            {/* Gradient Fades for the Box Edges */}
+                {/* Corner Accents */}
+                <div className="absolute top-10 left-10 w-4 h-4 border-t-2 border-l-2 border-primary" />
+                <div className="absolute bottom-10 right-10 w-4 h-4 border-b-2 border-r-2 border-primary" />
+              </div>
+            )}
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/20 via-transparent to-white/20 dark:from-black/20 dark:to-black/20" />
           </div>
         </div>
@@ -197,7 +236,6 @@ function GalleryItem({ item }) {
         </span>
         <h4 className="text-white font-serif text-lg">{item.title}</h4>
       </div>
-      {/* Visual Marker for "X" movement */}
       <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
         <Maximize2 size={16} className="text-white" />
       </div>

@@ -60,6 +60,7 @@ interface GroupBooking {
   description: string;
   ctaText: string;
   ctaLink: string;
+  propertyTypeName: string | null;
   media: { mediaId: number; type: string; url: string }[];
 }
 
@@ -80,7 +81,7 @@ const CARD_COLORS = [
   "bg-green-50 border-green-200 hover:border-green-300",
 ];
 
-/* ================= EVENT CARD — identical structure to EventsSection ================= */
+/* ================= EVENT CARD ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -112,11 +113,8 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       transition={{ delay: index * 0.1 }}
       className="group h-[440px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
-      {/* Media Container */}
       <div
-        className={`relative overflow-hidden transition-all duration-500 ${
-          isBanner ? "h-full" : "h-[220px]"
-        }`}
+        className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[220px]"}`}
       >
         {event.image?.url ? (
           isVideo ? (
@@ -130,15 +128,21 @@ function EventCard({ event, index }: { event: Event; index: number }) {
                 muted
                 playsInline
                 onLoadedMetadata={(e) =>
-                  analyzeMediaSize(e.currentTarget.videoWidth, e.currentTarget.videoHeight)
+                  analyzeMediaSize(
+                    e.currentTarget.videoWidth,
+                    e.currentTarget.videoHeight,
+                  )
                 }
               />
               <button
                 onClick={toggleMute}
                 className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors backdrop-blur-sm"
-                aria-label={isMuted ? "Unmute" : "Mute"}
               >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
               </button>
             </>
           ) : (
@@ -147,7 +151,10 @@ function EventCard({ event, index }: { event: Event; index: number }) {
               alt={event.image.alt || event.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               onLoad={(e) =>
-                analyzeMediaSize(e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
+                analyzeMediaSize(
+                  e.currentTarget.naturalWidth,
+                  e.currentTarget.naturalHeight,
+                )
               }
             />
           )
@@ -157,24 +164,21 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           </div>
         )}
 
-        {/* Date Badge */}
         <div className="absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10">
           <span className="text-lg font-black leading-none">{day}</span>
           <span className="text-[9px] font-bold tracking-tighter">{month}</span>
         </div>
 
-        {/* Location Badge */}
         <div className="absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1">
           <MapPin size={10} /> {event.locationName}
         </div>
 
-        {/* Banner Hover Overlay */}
         {isBanner && (
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-            <h3 className="text-white font-serif font-bold text-xl mb-2 drop-shadow-md">
+            <h3 className="text-white font-serif font-bold text-xl mb-2">
               {event.title}
             </h3>
-            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic drop-shadow-sm">
+            <p className="text-white/80 text-xs mb-6 line-clamp-2 italic">
               {event.description}
             </p>
             {event.ctaText?.trim() && (
@@ -191,7 +195,6 @@ function EventCard({ event, index }: { event: Event; index: number }) {
         )}
       </div>
 
-      {/* Standard Mode Content */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
@@ -234,20 +237,27 @@ export default function GroupBookingSection() {
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState<CalendarValue>(null);
 
-  // Fetch events — Hotel type + ACTIVE + active only
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 4;
+
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await getEventsUpdated();
-        const raw = Array.isArray(response?.data)
-          ? response.data
-          : Array.isArray(response)
-            ? response
+        const [eventResponse, bookingResponse] = await Promise.all([
+          getEventsUpdated(),
+          getGroupBookings(),
+        ]);
+
+        const rawEvents = Array.isArray(eventResponse?.data)
+          ? eventResponse.data
+          : Array.isArray(eventResponse)
+            ? eventResponse
             : [];
+        const rawBookings = bookingResponse?.data || bookingResponse || [];
 
         setEvents(
-          raw
+          rawEvents
             .filter(
               (e: Event) =>
                 e.typeName === "Hotel" &&
@@ -256,73 +266,61 @@ export default function GroupBookingSection() {
             )
             .sort(
               (a: Event, b: Event) =>
-                new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+                new Date(b.eventDate).getTime() -
+                new Date(a.eventDate).getTime(),
             ),
         );
+
+        // Filter: Exclude "Restaurant", include everything else (including null)
+        // Sort: latest first (ID descending)
+        const filteredBookings = (Array.isArray(rawBookings) ? rawBookings : [])
+          .filter((b: GroupBooking) => b.propertyTypeName !== "Restaurant")
+          .sort((a, b) => b.id - a.id);
+
+        setGroupBookings(filteredBookings);
       } catch (err) {
-        console.error("Error fetching events:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchEvents();
+    fetchData();
   }, []);
 
-  // Fetch group bookings
-  useEffect(() => {
-    const fetchGroupBookings = async () => {
-      try {
-        const res = await getGroupBookings();
-        setGroupBookings(res?.data || []);
-      } catch (err) {
-        console.error("Error fetching group bookings:", err);
-      }
-    };
-    fetchGroupBookings();
-  }, []);
-
-  const handleOpenBooking = (booking: GroupBooking) => {
-    setSelectedOffer(booking);
-    setStep(1);
-    setDateRange(null);
-  };
+  const totalPages = Math.ceil(groupBookings.length / itemsPerPage);
+  const paginatedBookings = groupBookings.slice(
+    currentPage * itemsPerPage,
+    (currentPage + 1) * itemsPerPage,
+  );
 
   return (
     <section className="py-10 bg-background">
       <div className="w-[92%] max-w-7xl mx-auto">
-
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-serif font-semibold mb-2">
             Events & Celebrations
           </h2>
           <div className="w-16 h-0.5 bg-primary mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            Discover upcoming experiences and plan your special gatherings
-          </p>
         </div>
 
-        {/* Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
           {/* LEFT: EVENTS */}
           <div className="lg:col-span-8">
-            <div className="bg-card border rounded-2xl p-5">
+            <div className="bg-card border rounded-2xl p-5 h-full">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-serif font-semibold flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  Upcoming Events
+                  <Sparkles className="w-5 h-5 text-primary" /> Upcoming Events
                 </h3>
                 <div className="flex gap-2">
                   <button
                     onClick={() => swiper?.slidePrev()}
-                    className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+                    className="p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm"
                   >
                     <ChevronLeft size={18} />
                   </button>
                   <button
                     onClick={() => swiper?.slideNext()}
-                    className="p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+                    className="p-2 rounded-full border border-border bg-background hover:bg-muted shadow-sm"
                   >
                     <ChevronRight size={18} />
                   </button>
@@ -335,14 +333,18 @@ export default function GroupBookingSection() {
                 </div>
               ) : events.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground text-sm">
-                  No upcoming hotel events available at the moment.
+                  No upcoming hotel events available.
                 </div>
               ) : (
                 <Swiper
                   modules={[Autoplay, Pagination, Navigation]}
                   spaceBetween={16}
                   slidesPerView={1}
-                  autoplay={{ delay: 5000, disableOnInteraction: false,pauseOnMouseEnter: true }}
+                  autoplay={{
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
                   pagination={{ clickable: true }}
                   onSwiper={setSwiper}
                   breakpoints={{
@@ -363,101 +365,112 @@ export default function GroupBookingSection() {
 
           {/* RIGHT: GROUP BOOKINGS */}
           <div className="lg:col-span-4">
-            <div className="border rounded-2xl p-5 h-full">
-              <h3 className="text-xl font-serif font-semibold mb-4 flex gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Group Booking
-              </h3>
+            <div className="border rounded-2xl p-5 h-full flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-serif font-semibold flex gap-2">
+                  <Users className="w-5 h-5 text-primary" /> Group Booking
+                </h3>
+                {totalPages > 1 && (
+                  <div className="flex gap-1">
+                    <button
+                      disabled={currentPage === 0}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                      className="p-1 rounded bg-muted disabled:opacity-30"
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <button
+                      disabled={currentPage >= totalPages - 1}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      className="p-1 rounded bg-muted disabled:opacity-30"
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {groupBookings.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No group booking options available.
+                <div className="text-center py-8 text-muted-foreground text-sm flex-1">
+                  No group booking packages available.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {groupBookings.map((booking, index) => {
-                    const img = booking.media?.[0]?.url;
-                    const hasCtaLink = !!(booking.ctaLink && booking.ctaLink.trim());
+                <div className="space-y-3 flex-1">
+                  {paginatedBookings.map((booking, index) => {
                     const colorCls = CARD_COLORS[index % CARD_COLORS.length];
-
                     return (
                       <div
                         key={booking.id}
-                        onClick={() => handleOpenBooking(booking)}
-                        className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all group ${colorCls}`}
+                        onClick={() => {
+                          setSelectedOffer(booking);
+                          setStep(1);
+                        }}
+                        className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`}
                       >
-                        {img ? (
-                          <img
-                            src={img}
-                            alt={booking.title}
-                            className="w-14 h-14 rounded-lg object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <Users className="w-5 h-5 text-muted-foreground/40" />
-                          </div>
-                        )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                          <p className="text-sm font-semibold line-clamp-1 group-hover:text-primary">
                             {booking.title}
                           </p>
                           {booking.description && (
-                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                               {booking.description}
                             </p>
                           )}
-                          {hasCtaLink && (
-                            <a
-                              href={booking.ctaLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1 hover:underline"
-                            >
-                              {booking.ctaText || "Learn More"} <ExternalLink size={9} />
-                            </a>
+                          {booking.ctaLink && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight">
+                              {booking.ctaText || "Details"}{" "}
+                              <ExternalLink size={9} />
+                            </span>
                           )}
                         </div>
+                        <ArrowRight
+                          size={14}
+                          className="text-muted-foreground/40 group-hover:text-primary transition-colors"
+                        />
                       </div>
                     );
                   })}
                 </div>
+              )}
+              {totalPages > 1 && (
+                <p className="text-[10px] text-center text-muted-foreground mt-4 uppercase">
+                  Page {currentPage + 1} of {totalPages}
+                </p>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modal */}
-      <Dialog open={!!selectedOffer} onOpenChange={() => setSelectedOffer(null)}>
+      <Dialog
+        open={!!selectedOffer}
+        onOpenChange={() => setSelectedOffer(null)}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl">{selectedOffer?.title}</DialogTitle>
-            <DialogDescription>Select your preferred event dates.</DialogDescription>
+            <DialogTitle className="font-serif text-2xl">
+              {selectedOffer?.title}
+            </DialogTitle>
           </DialogHeader>
-
-          {step === 1 && (
+          {step === 1 ? (
             <div className="space-y-4">
               <Calendar selectRange value={dateRange} onChange={setDateRange} />
-              <p className="text-xs text-muted-foreground">*Select start and end date</p>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="py-8 text-center space-y-2">
-              <p className="text-lg font-semibold text-green-600">Enquiry Sent!</p>
-              <p className="text-sm text-muted-foreground">We'll get back to you shortly.</p>
-            </div>
-          )}
-
-          {step < 2 && (
-            <div className="flex justify-end mt-4">
               <Button
+                className="w-full"
                 onClick={() => setStep(2)}
-                disabled={!Array.isArray(dateRange) || !dateRange[0] || !dateRange[1]}
+                disabled={!Array.isArray(dateRange) || !dateRange[0]}
               >
-                Send Enquiry
+                Confirm Dates
               </Button>
+            </div>
+          ) : (
+            <div className="py-8 text-center space-y-2">
+              <p className="text-lg font-semibold text-green-600">
+                Enquiry Sent!
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We'll get back to you shortly.
+              </p>
             </div>
           )}
         </DialogContent>
