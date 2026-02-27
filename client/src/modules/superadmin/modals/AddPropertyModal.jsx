@@ -45,11 +45,20 @@ function AddPropertyModal({ onClose, onSuccess }) {
     pincode: "",
     locationId: "",
     assignedAdminId: "",
-    latitude: "", // Added
-    longitude: "", // Added
+    latitude: "",
+    longitude: "",
+    bookingEngineUrl: "",
     parentPropertyId: null,
     childPropertyIds: null,
     isActive: true,
+
+    // ✅ NEW FIELD
+    nearbyLocations: [
+      {
+        nearbyLocationName: "",
+        googleMapLink: "",
+      },
+    ],
   });
 
   // --- STEP 2: Listing Details State ---
@@ -79,6 +88,33 @@ function AddPropertyModal({ onClose, onSuccess }) {
   useEffect(() => {
     fetchDropdownData();
   }, []);
+  const handleNearbyChange = (index, field, value) => {
+    const updated = [...parentData.nearbyLocations];
+    updated[index][field] = value;
+
+    setParentData({
+      ...parentData,
+      nearbyLocations: updated,
+    });
+  };
+
+  const addNearbyLocation = () => {
+    setParentData({
+      ...parentData,
+      nearbyLocations: [
+        ...parentData.nearbyLocations,
+        { nearbyLocationName: "", googleMapLink: "" },
+      ],
+    });
+  };
+
+  const removeNearbyLocation = (index) => {
+    const updated = parentData.nearbyLocations.filter((_, i) => i !== index);
+    setParentData({
+      ...parentData,
+      nearbyLocations: updated,
+    });
+  };
 
   const fetchDropdownData = async () => {
     try {
@@ -138,6 +174,11 @@ function AddPropertyModal({ onClose, onSuccess }) {
         longitude: parentData.longitude
           ? parseFloat(parentData.longitude)
           : null,
+
+        // ✅ CLEAN EMPTY LOCATIONS
+        nearbyLocations: parentData.nearbyLocations.filter(
+          (loc) => loc.nearbyLocationName.trim() !== "",
+        ),
       };
 
       const parentRes = await createPropertyByType(typeName, parentPayload);
@@ -352,6 +393,68 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   }
                   placeholder="e.g. 77.2090"
                 />
+              </div>
+              <div className="col-span-2 mt-6">
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-3 block">
+                  Nearby Locations
+                </label>
+
+                <div className="space-y-4">
+                  {parentData.nearbyLocations.map((location, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-2 gap-4 items-center border p-4 rounded-xl bg-gray-50"
+                    >
+                      <input
+                        type="text"
+                        placeholder="Nearby Location Name"
+                        className="px-4 py-2.5 border rounded-xl"
+                        value={location.nearbyLocationName}
+                        onChange={(e) =>
+                          handleNearbyChange(
+                            index,
+                            "nearbyLocationName",
+                            e.target.value,
+                          )
+                        }
+                      />
+
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          placeholder="Google Map Link (optional)"
+                          className="flex-1 px-4 py-2.5 border rounded-xl"
+                          value={location.googleMapLink}
+                          onChange={(e) =>
+                            handleNearbyChange(
+                              index,
+                              "googleMapLink",
+                              e.target.value,
+                            )
+                          }
+                        />
+
+                        {parentData.nearbyLocations.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeNearbyLocation(index)}
+                            className="p-2 bg-red-50 text-red-500 rounded-xl"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={addNearbyLocation}
+                    className="flex items-center gap-2 text-xs font-bold text-primary"
+                  >
+                    <Plus size={14} /> Add Another Location
+                  </button>
+                </div>
               </div>
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">

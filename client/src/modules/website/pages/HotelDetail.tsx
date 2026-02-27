@@ -344,18 +344,14 @@ export default function HotelDetail() {
           bookingEngineUrl: parent.bookingEngineUrl || null,
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
           nearbyPlaces:
-            dynamicNearby.length > 0
-              ? dynamicNearby
-              : [
-                  {
-                    name: "N/A",
-                    type: "Transit",
-                    distance: "Nearby",
-                    coordinates: coords
-                      ? { lat: coords.lat + 0.005, lng: coords.lng + 0.005 }
-                      : { lat: 0, lng: 0 },
-                  },
-                ],
+            parent.nearbyLocations?.length > 0
+              ? parent.nearbyLocations.map((n: any) => ({
+                  name: n.nearbyLocationName,
+                  googleMapLink: n.googleMapLink,
+                }))
+              : dynamicNearby.length > 0
+                ? dynamicNearby
+                : [],
         });
 
         // Secondary Data Fetches
@@ -605,24 +601,46 @@ export default function HotelDetail() {
                   variants={fadeIn}
                   className="flex flex-wrap items-center gap-4 pt-1"
                 >
-                  {(hotel.nearbyPlaces || []).map((place: any, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
+                  {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
+                    <motion.div
+                      variants={fadeIn}
+                      className="flex flex-wrap items-center gap-4 pt-1 text-xs text-muted-foreground/80"
                     >
-                      <div className="w-1 h-1 rounded-full bg-primary/40" />
-                      <span className="flex items-center gap-1">
-                        <span className="font-medium text-foreground/90">
-                          {typeof place === "string" ? place : place.name}
-                        </span>
-                        {place.distance && (
-                          <span className="text-[10px] opacity-70">
-                            ({place.distance})
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  ))}
+
+                      {hotel.nearbyPlaces.map((place: any, i) => {
+                        const mapLink =
+                          place.googleMapLink ||
+                          (place.coordinates
+                            ? `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`
+                            : null);
+
+                        return (
+                          <div key={i} className="flex items-center gap-1.5">
+                            <div className="w-1 h-1 rounded-full bg-primary/40" />
+
+                            {mapLink ? (
+                              <a
+                                href={mapLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-primary hover:underline transition cursor-pointer"
+                              >
+                                {place.name}
+                              </a>
+                            ) : (
+                              <span>{place.name}</span>
+                            )}
+
+                            {place.distance && (
+                              <span className="text-[10px] opacity-70">
+                                ({place.distance})
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
                 </motion.div>
               </div>
             </motion.div>

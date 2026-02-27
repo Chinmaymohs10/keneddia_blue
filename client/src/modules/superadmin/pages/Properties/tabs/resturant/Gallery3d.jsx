@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, Plus, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Save, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import {
   createTestimonialHeader,
   getActiveTestimonialHeaders,
-  getTestimonialHeaderById,
   updateTestimonialHeader,
 } from "@/Api/RestaurantApi";
 import {
   createVisualGalleryHeader,
   getVisualGallerieHeaders,
-  getActiveVisualGalleriesHeader,
-  getVisualGalleryHeaderById,
   updateVisualGalleryHeader,
+} from "@/Api/RestaurantApi";
+import {
+  createPrimaryConversionHeader,
+  getPrimaryConversionsHeader,
+  updatePrimaryConversionHeader,
 } from "@/Api/RestaurantApi";
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -55,7 +57,12 @@ const EditingBadge = ({ show }) =>
   );
 
 // ── Live preview strip ────────────────────────────────────────────────────────
-function HeadlinePreview({ part1, part2, description, accentColor = "text-rose-600" }) {
+function HeadlinePreview({
+  part1,
+  part2,
+  description,
+  accentColor = "text-rose-600",
+}) {
   return (
     <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
@@ -78,11 +85,17 @@ function HeadlinePreview({ part1, part2, description, accentColor = "text-rose-6
 // VISUAL GALLERY HEADER EDITOR
 // ─────────────────────────────────────────────────────────────────────────────
 function VisualGalleryHeaderEditor({ propertyId }) {
-  const EMPTY = { header1: "", header2: "", description: "", isActive: true, existingId: null };
-  const [form, setForm]     = useState(EMPTY);
+  const EMPTY = {
+    header1: "",
+    header2: "",
+    description: "",
+    isActive: true,
+    existingId: null,
+  };
+  const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   const fetchData = useCallback(async () => {
@@ -91,7 +104,6 @@ function VisualGalleryHeaderEditor({ propertyId }) {
     try {
       const res = await getVisualGallerieHeaders();
       const all = res?.data || [];
-      // filter by propertyId, pick latest
       const matched = all
         .filter((h) => h.propertyId === propertyId)
         .sort((a, b) => b.id - a.id);
@@ -114,7 +126,9 @@ function VisualGalleryHeaderEditor({ propertyId }) {
     }
   }, [propertyId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -156,7 +170,6 @@ function VisualGalleryHeaderEditor({ propertyId }) {
 
   return (
     <div className="border border-gray-100 rounded-xl overflow-hidden">
-      {/* Card header */}
       <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">
@@ -170,9 +183,8 @@ function VisualGalleryHeaderEditor({ propertyId }) {
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Part 1 + Part 2 */}
         <div className="flex gap-3">
-          <Field label='Header Part 1 (e.g. "Welcome to")'>
+          <Field label="Header Part 1 (e.g. Welcome to)">
             <input
               className={inp}
               value={form.header1}
@@ -180,7 +192,7 @@ function VisualGalleryHeaderEditor({ propertyId }) {
               placeholder="Welcome to"
             />
           </Field>
-          <Field label='Header Part 2 — accent (e.g. "Kennedia.")'>
+          <Field label="Header Part 2 — accent (e.g. Kennedia.)">
             <input
               className={inp}
               value={form.header2}
@@ -190,7 +202,6 @@ function VisualGalleryHeaderEditor({ propertyId }) {
           </Field>
         </div>
 
-        {/* Description */}
         <Field label="Description">
           <textarea
             className={inp}
@@ -201,18 +212,18 @@ function VisualGalleryHeaderEditor({ propertyId }) {
           />
         </Field>
 
-        {/* Active */}
         <label className="flex items-center gap-2 cursor-pointer w-fit">
           <div
             onClick={() => set("isActive", !form.isActive)}
             className={`relative w-9 h-5 rounded-full transition-colors ${form.isActive ? "bg-blue-500" : "bg-gray-300"}`}
           >
-            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+            <span
+              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`}
+            />
           </div>
           <span className="text-xs font-semibold text-gray-600">Active</span>
         </label>
 
-        {/* Preview */}
         <HeadlinePreview
           part1={form.header1}
           part2={form.header2}
@@ -230,9 +241,13 @@ function VisualGalleryHeaderEditor({ propertyId }) {
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-violet-600 hover:bg-violet-700 transition-all disabled:opacity-60"
           >
             {saving ? (
-              <><Loader2 size={14} className="animate-spin" /> Saving…</>
+              <>
+                <Loader2 size={14} className="animate-spin" /> Saving…
+              </>
             ) : (
-              <><Save size={14} /> Save Gallery Header</>
+              <>
+                <Save size={14} /> Save Gallery Header
+              </>
             )}
           </button>
         </div>
@@ -252,10 +267,10 @@ function TestimonialHeaderEditor({ propertyId }) {
     isActive: true,
     existingId: null,
   };
-  const [form, setForm]     = useState(EMPTY);
+  const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   const fetchData = useCallback(async () => {
@@ -270,7 +285,6 @@ function TestimonialHeaderEditor({ propertyId }) {
       const latest = matched[0] || null;
       if (latest) {
         setForm({
-          // API response uses header1/header2 even for testimonials
           testimonialName1: latest.testimonialName1 || latest.header1 || "",
           testimonialName2: latest.testimonialName2 || latest.header2 || "",
           description: latest.description || "",
@@ -287,7 +301,9 @@ function TestimonialHeaderEditor({ propertyId }) {
     }
   }, [propertyId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -329,7 +345,6 @@ function TestimonialHeaderEditor({ propertyId }) {
 
   return (
     <div className="border border-gray-100 rounded-xl overflow-hidden">
-      {/* Card header */}
       <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">
@@ -343,9 +358,8 @@ function TestimonialHeaderEditor({ propertyId }) {
       </div>
 
       <div className="p-4 space-y-3">
-        {/* Name1 + Name2 */}
         <div className="flex gap-3">
-          <Field label='Part 1 (e.g. "Voices of")'>
+          <Field label="Part 1 (e.g. Voices of)">
             <input
               className={inp}
               value={form.testimonialName1}
@@ -353,7 +367,7 @@ function TestimonialHeaderEditor({ propertyId }) {
               placeholder="Voices of"
             />
           </Field>
-          <Field label='Part 2 — accent (e.g. "Delight.")'>
+          <Field label="Part 2 — accent (e.g. Delight.)">
             <input
               className={inp}
               value={form.testimonialName2}
@@ -363,7 +377,6 @@ function TestimonialHeaderEditor({ propertyId }) {
           </Field>
         </div>
 
-        {/* Description */}
         <Field label="Description">
           <textarea
             className={inp}
@@ -374,18 +387,18 @@ function TestimonialHeaderEditor({ propertyId }) {
           />
         </Field>
 
-        {/* Active */}
         <label className="flex items-center gap-2 cursor-pointer w-fit">
           <div
             onClick={() => set("isActive", !form.isActive)}
             className={`relative w-9 h-5 rounded-full transition-colors ${form.isActive ? "bg-blue-500" : "bg-gray-300"}`}
           >
-            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+            <span
+              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`}
+            />
           </div>
           <span className="text-xs font-semibold text-gray-600">Active</span>
         </label>
 
-        {/* Preview */}
         <HeadlinePreview
           part1={form.testimonialName1}
           part2={form.testimonialName2}
@@ -403,9 +416,200 @@ function TestimonialHeaderEditor({ propertyId }) {
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-amber-500 hover:bg-amber-600 transition-all disabled:opacity-60"
           >
             {saving ? (
-              <><Loader2 size={14} className="animate-spin" /> Saving…</>
+              <>
+                <Loader2 size={14} className="animate-spin" /> Saving…
+              </>
             ) : (
-              <><Save size={14} /> Save Testimonial Header</>
+              <>
+                <Save size={14} /> Save Testimonial Header
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRIMARY CONVERSION HEADER EDITOR
+// ─────────────────────────────────────────────────────────────────────────────
+function PrimaryConversionHeaderEditor({ propertyId }) {
+  const EMPTY = {
+    header1: "",
+    header2: "",
+    description: "",
+    footer: "",
+    isActive: true,
+    existingId: null,
+  };
+  const [form, setForm] = useState(EMPTY);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getPrimaryConversionsHeader();
+      const all = res?.data || [];
+      const matched = all
+        .filter((h) => h.propertyId === propertyId)
+        .sort((a, b) => b.id - a.id);
+      const latest = matched[0] || null;
+      if (latest) {
+        setForm({
+          header1: latest.header1 || "",
+          header2: latest.header2 || "",
+          description: latest.description || "",
+          footer: latest.footer || "",
+          isActive: latest.isActive ?? true,
+          existingId: latest.id,
+        });
+      } else {
+        setForm(EMPTY);
+      }
+    } catch {
+      setError("Failed to load primary conversion header.");
+    } finally {
+      setLoading(false);
+    }
+  }, [propertyId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const payload = {
+        header1: form.header1,
+        header2: form.header2,
+        description: form.description,
+        footer: form.footer,
+        isActive: form.isActive,
+        propertyId,
+      };
+      if (form.existingId) {
+        await updatePrimaryConversionHeader(form.existingId, payload);
+      } else {
+        const res = await createPrimaryConversionHeader(payload);
+        set("existingId", res?.data?.id || null);
+      }
+      setSuccess("Primary conversion header saved successfully.");
+      setTimeout(() => setSuccess(null), 3000);
+      await fetchData();
+    } catch {
+      setError("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-10 justify-center text-gray-400 text-sm">
+        <Loader2 size={15} className="animate-spin" /> Loading…
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-gray-100 rounded-xl overflow-hidden">
+      <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-xs font-black uppercase tracking-widest text-gray-500">
+            Primary Conversion Section Header
+          </h3>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Headline shown at the top of the primary conversion / CTA section
+          </p>
+        </div>
+        <EditingBadge show={!!form.existingId} />
+      </div>
+
+      <div className="p-4 space-y-3">
+        <div className="flex gap-3">
+          <Field label="Part 1 (e.g. Welcome to)">
+            <input
+              className={inp}
+              value={form.header1}
+              onChange={(e) => set("header1", e.target.value)}
+              placeholder="Welcome to"
+            />
+          </Field>
+          <Field label="Part 2 — accent (e.g. Kennedia.)">
+            <input
+              className={inp}
+              value={form.header2}
+              onChange={(e) => set("header2", e.target.value)}
+              placeholder="Kennedia."
+            />
+          </Field>
+        </div>
+
+        <Field label="Description">
+          <textarea
+            className={inp}
+            rows={2}
+            value={form.description}
+            onChange={(e) => set("description", e.target.value)}
+            placeholder="A cinematic intersection of our finest spaces…"
+          />
+        </Field>
+
+        <Field label="Footer (optional — e.g. tagline or sub-note)">
+          <input
+            className={inp}
+            value={form.footer}
+            onChange={(e) => set("footer", e.target.value)}
+            placeholder="e.g. Guaranteed Response within 24 Hours"
+          />
+        </Field>
+
+        <label className="flex items-center gap-2 cursor-pointer w-fit">
+          <div
+            onClick={() => set("isActive", !form.isActive)}
+            className={`relative w-9 h-5 rounded-full transition-colors ${form.isActive ? "bg-blue-500" : "bg-gray-300"}`}
+          >
+            <span
+              className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isActive ? "translate-x-4" : "translate-x-0.5"}`}
+            />
+          </div>
+          <span className="text-xs font-semibold text-gray-600">Active</span>
+        </label>
+
+        <HeadlinePreview
+          part1={form.header1}
+          part2={form.header2}
+          description={form.description}
+          accentColor="text-emerald-600"
+        />
+
+        <ErrorBanner msg={error} />
+        <SuccessBanner msg={success} />
+
+        <div className="flex justify-end pt-1">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold bg-emerald-600 hover:bg-emerald-700 transition-all disabled:opacity-60"
+          >
+            {saving ? (
+              <>
+                <Loader2 size={14} className="animate-spin" /> Saving…
+              </>
+            ) : (
+              <>
+                <Save size={14} /> Save Conversion Header
+              </>
             )}
           </button>
         </div>
@@ -422,17 +626,19 @@ function Gallery3d({ propertyData }) {
 
   return (
     <div className="space-y-5">
-      {/* Top bar */}
       <div>
-        <h2 className="text-base font-bold text-gray-800">Gallery & Testimonials</h2>
+        <h2 className="text-base font-bold text-gray-800">
+          Gallery & Testimonials
+        </h2>
         <p className="text-xs text-gray-400 mt-0.5">
-          Manage the section headlines for the 3D visual gallery and guest testimonials
+          Manage the section headlines for the 3D visual gallery, guest
+          testimonials, and primary conversion
         </p>
       </div>
 
-      {/* Two editors stacked */}
       <VisualGalleryHeaderEditor propertyId={propertyId} />
-      <TestimonialHeaderEditor  propertyId={propertyId} />
+      <TestimonialHeaderEditor propertyId={propertyId} />
+      <PrimaryConversionHeaderEditor propertyId={propertyId} />
     </div>
   );
 }

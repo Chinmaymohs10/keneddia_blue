@@ -54,7 +54,10 @@ interface RestaurantData {
   media: PropertyMedia[];
   coordinates: { lat: number; lng: number } | null;
   image: { src: string; alt: string };
-  nearbyPlaces?: string[];
+  nearbyPlaces?: {
+    nearbyLocationName: string;
+    googleMapLink?: string;
+  }[];
 }
 
 interface GalleryItem {
@@ -180,9 +183,15 @@ function ResturantBanner({
         src: propertyData.media?.[0]?.url ?? gallery5,
         alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name,
       },
-      nearbyPlaces: propertyData.nearbyLocations?.length
-        ? propertyData.nearbyLocations.map((n: any) => n.name ?? n)
-        : FALLBACK_RESTAURANT.nearbyPlaces,
+      nearbyPlaces:
+        propertyData.nearbyLocations?.length > 0
+          ? propertyData.nearbyLocations.map((n: any) => ({
+              nearbyLocationName: n.nearbyLocationName,
+              googleMapLink: n.googleMapLink,
+            }))
+          : FALLBACK_RESTAURANT.nearbyPlaces?.map((name) => ({
+              nearbyLocationName: name,
+            })),
     };
   }, [propertyData]);
 
@@ -193,7 +202,9 @@ function ResturantBanner({
       return galleryData
         .filter(
           (g) =>
-            g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+            g.isActive &&
+            g.media?.url &&
+            g.categoryName?.toLowerCase() !== "3d",
         )
         .map((g) => g.media);
     }
@@ -203,7 +214,8 @@ function ResturantBanner({
   const galleryItems: GalleryItem[] = useMemo(() => {
     if (galleryData && galleryData.length > 0) {
       return galleryData.filter(
-        (g) => g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
+        (g) =>
+          g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
       );
     }
     return FALLBACK_GALLERY_MEDIA.map((media, index) => ({
@@ -372,7 +384,19 @@ function ResturantBanner({
                         className="flex items-center gap-1.5 text-xs text-muted-foreground/80"
                       >
                         <div className="w-1 h-1 rounded-full bg-primary/40" />
-                        <span>{place}</span>
+
+                        {place.googleMapLink ? (
+                          <a
+                            href={place.googleMapLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary hover:underline transition cursor-pointer"
+                          >
+                            {place.nearbyLocationName}
+                          </a>
+                        ) : (
+                          <span>{place.nearbyLocationName}</span>
+                        )}
                       </div>
                     ))}
                   </motion.div>

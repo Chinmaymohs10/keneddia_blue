@@ -138,3 +138,13 @@ export const getVisualGallerieHeaders = () =>API.get("api/v1/visual-gallery/getV
 export const getActiveVisualGalleriesHeader = () =>API.get("api/v1/visual-gallery/getActiveVisualGalleries");
 export const getVisualGalleryHeaderById = (id) =>API.get(`api/v1/visual-gallery/getVisualGalleryById/${id}`);
 export const updateVisualGalleryHeader = (id, data) =>API.patch(`api/v1/visual-gallery/updateVisualGallery/${id}`, data);
+
+// ─────────────────────────────
+// PRIMARY CONVERSION SECTION (reserve table)
+// ─────────────────────────────
+
+export const createPrimaryConversionHeader = (data) =>API.post("api/v1/primary-conversion/createPrimaryConversion", data);
+export const getPrimaryConversionsHeader = () =>API.get("api/v1/primary-conversion/getVisualGalleries");
+export const getActivePrimaryConversionsHeader = () =>API.get("api/v1/primary-conversion/getActivePrimaryConversions");
+export const getPrimaryConversionHeaderById = (id) =>API.get(`api/v1/primary-conversion/getPrimaryConversionById/${id}`);
+export const updatePrimaryConversionHeader = (id, data) =>API.patch(`api/v1/primary-conversion/updatePrimaryConversion/${id}`, data);

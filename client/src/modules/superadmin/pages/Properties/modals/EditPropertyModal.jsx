@@ -6,6 +6,7 @@ import {
   Loader2,
   Building2,
   MapPin,
+  Plus,
   User,
   Tag,
   Layers,
@@ -60,7 +61,7 @@ function EditPropertyModal({
   onClose,
   onSuccess,
 }) {
-  console.log('item',item);
+  console.log("item", item);
   const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
 
@@ -112,6 +113,12 @@ function EditPropertyModal({
     discountAmount: listing.discountAmount ?? "",
     bookingEngineUrl: p.bookingEngineUrl || "",
     amenitiesAndFeaturesIds: resolveAmenityIds(),
+
+    // ✅ NEW FIELD
+    nearbyLocations:
+      p.nearbyLocations && p.nearbyLocations.length > 0
+        ? p.nearbyLocations
+        : [{ nearbyLocationName: "", googleMapLink: "" }],
   });
 
   const [saving, setSaving] = useState(false);
@@ -134,6 +141,33 @@ function EditPropertyModal({
 
   const removeNewFile = (index) => {
     setNewFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleNearbyChange = (index, field, value) => {
+    const updated = [...form.nearbyLocations];
+    updated[index][field] = value;
+
+    setForm((prev) => ({
+      ...prev,
+      nearbyLocations: updated,
+    }));
+  };
+
+  const addNearbyLocation = () => {
+    setForm((prev) => ({
+      ...prev,
+      nearbyLocations: [
+        ...prev.nearbyLocations,
+        { nearbyLocationName: "", googleMapLink: "" },
+      ],
+    }));
+  };
+
+  const removeNearbyLocation = (index) => {
+    const updated = form.nearbyLocations.filter((_, i) => i !== index);
+    setForm((prev) => ({
+      ...prev,
+      nearbyLocations: updated,
+    }));
   };
 
   // ── Upload media via PropertyEdiMedia ──────────────────────────────────────
@@ -208,8 +242,12 @@ function EditPropertyModal({
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
-      };
 
+        // ✅ CLEAN EMPTY ROWS
+        nearbyLocations: form.nearbyLocations.filter(
+          (loc) => loc.nearbyLocationName.trim() !== "",
+        ),
+      };
       await updatePropertyById(p.id, payload);
 
       // Upload media if any new files were selected
@@ -475,6 +513,66 @@ function EditPropertyModal({
                   className={inputCls}
                 />
               </Field>
+              {/* ─── NEARBY LOCATIONS ───────────────────────── */}
+              <Section label="Nearby Locations" icon={MapPin} />
+
+              <div className="col-span-2 space-y-4">
+                {form.nearbyLocations.map((loc, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-2 gap-3 p-4 border border-gray-200 rounded-xl bg-gray-50"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Nearby Location Name"
+                      className={inputCls}
+                      value={loc.nearbyLocationName}
+                      onChange={(e) =>
+                        handleNearbyChange(
+                          index,
+                          "nearbyLocationName",
+                          e.target.value,
+                        )
+                      }
+                    />
+
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="Google Map Link (optional)"
+                        className={`${inputCls} flex-1`}
+                        value={loc.googleMapLink}
+                        onChange={(e) =>
+                          handleNearbyChange(
+                            index,
+                            "googleMapLink",
+                            e.target.value,
+                          )
+                        }
+                      />
+
+                      {form.nearbyLocations.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeNearbyLocation(index)}
+                          className="px-3 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={addNearbyLocation}
+                  className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700"
+                >
+                  <Plus size={12} />
+                  Add Nearby Location
+                </button>
+              </div>
 
               {/* ─── LISTING ──────────────────────────────────────── */}
               <Section label="Listing Details" icon={FileText} />
@@ -485,7 +583,7 @@ function EditPropertyModal({
                   onChange={(e) => set("mainHeading", e.target.value)}
                   placeholder="Write a detailed description about the property..."
                   rows={10}
-                 className={`${inputCls} resize-none leading-relaxed`}
+                  className={`${inputCls} resize-none leading-relaxed`}
                 />
               </Field>
 

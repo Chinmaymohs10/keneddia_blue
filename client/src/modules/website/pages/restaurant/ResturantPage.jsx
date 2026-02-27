@@ -164,7 +164,7 @@ export default function RestaurantHomepage() {
           <ResturantGallerypage propertyId={numericPropertyId} />
         </div>
 
-        <ReservationForm />
+        <ReservationForm  propertyId={numericPropertyId} />
       </main>
 
       <div id="contact">
