@@ -496,11 +496,11 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                 return (
                   <div
                     key={item.id}
-                    onClick={() =>
-                      navigate(
-                        `/resturant/${item.category?.categoryName?.toLowerCase() || "menu"}`,
-                      )
-                    }
+                    // onClick={() =>
+                    //   navigate(
+                    //     `/resturant/${item.category?.categoryName?.toLowerCase() || "menu"}`,
+                    //   )
+                    // }
                     className="group relative bg-zinc-50 dark:bg-zinc-900/40 rounded-[2.5rem] border border-zinc-100 dark:border-white/5 p-8 flex-col items-center text-center flex cursor-pointer"
                   >
                     {/* Image */}

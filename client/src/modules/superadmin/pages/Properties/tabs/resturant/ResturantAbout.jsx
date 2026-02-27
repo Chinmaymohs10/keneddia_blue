@@ -28,6 +28,7 @@ import {
   updateRestaurantConnect,
   createSocialPlatform,
   getAllSocialPlatforms,
+  addRestaurantSocialLink,
   // ── NEW ──
   updateRestaurantSocialLink,
   toggleRestaurantSocialLinkStatus,
@@ -613,10 +614,48 @@ function MediaPanel({ propertyId, onImageChange }) {
 
   // ── Save a single social link row (PUT by serverId) ──────────────────────
   const handleSaveLink = async (link) => {
+    // ── NEW: if no serverId, create via addRestaurantSocialLink ──
     if (!link.serverId) {
-      alert("This is a new link — please use 'Add Social Link via API' flow.");
-      return;
+      if (!link.platformId || !link.url) {
+        alert("Please select a platform and enter a URL.");
+        return;
+      }
+      setSavingLinkId(link.localId);
+      try {
+        const res = await addRestaurantSocialLink(propertyId, {
+          // ← propertyId as 1st arg (goes to query param)
+          platformId: link.platformId,
+          iconMediaId: link.iconMediaId ?? null,
+          url: link.url,
+          displayOrder: link.displayOrder,
+          isActive: link.isActive,
+          // ← removed propertyId from body
+        });
+        const created = res.data?.data ?? res.data;
+        // Promote local row to a real server-backed row
+        setLinks((prev) =>
+          prev.map((l) =>
+            l.localId === link.localId
+              ? {
+                  ...l,
+                  serverId: created.id,
+                  localId: created.id,
+                  isDirty: false,
+                  isNew: false,
+                }
+              : l,
+          ),
+        );
+      } catch (e) {
+        console.error("Failed to create social link", e);
+        alert("Failed to save link. Please try again.");
+      } finally {
+        setSavingLinkId(null);
+      }
+      return; // ── end new-link path ──
     }
+
+    // existing server row — unchanged PUT logic below
     setSavingLinkId(link.localId);
     try {
       await updateRestaurantSocialLink(link.serverId, {
@@ -626,7 +665,6 @@ function MediaPanel({ propertyId, onImageChange }) {
         displayOrder: link.displayOrder,
         isActive: link.isActive,
       });
-      // Clear dirty flag
       setLinks((prev) =>
         prev.map((l) =>
           l.localId === link.localId ? { ...l, isDirty: false } : l,
@@ -903,10 +941,13 @@ function MediaPanel({ propertyId, onImageChange }) {
                 </div>
 
                 {/* Save this link row (only for existing server rows) */}
-                {link.serverId && (
+                {(link.serverId || link.isNew) && (
                   <button
                     onClick={() => handleSaveLink(link)}
-                    disabled={savingLinkId === link.localId || !link.isDirty}
+                    disabled={
+                      savingLinkId === link.localId ||
+                      (!link.isDirty && !!link.serverId)
+                    }
                     title="Save this link"
                     className="flex items-center gap-1 px-3 py-2 rounded-lg text-white text-xs font-bold bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-40 shrink-0"
                   >

@@ -157,3 +157,10 @@ export const createJoiningUs = (data) =>API.post("api/v1/joining-us/createJoinin
 export const getAllJoiningUs = () =>API.get("api/v1/joining-us/getAllJoiningUs");
 export const getJoiningUsById = (id) =>API.get(`api/v1/joining-us/getJoiningUsById/${id}`);
 export const updateJoiningUs = (id, data) =>API.patch(`api/v1/joining-us/updateJoiningUs/${id}`, data);
+
+// ─────────────────────────────
+// GROUP BOOKING ENQUIRY
+// ─────────────────────────────
+export const createGroupBookingEnquiry = (data) =>API.post("/api/v1/enquiry", data);
+export const getAllGroupBookingEnquiries = () =>API.get("/api/v1/enquiry");
+export const updateGroupBookingEnquiryStatus = (id, enabled) =>API.put(`/api/v1/enquiry/${id}/status?enabled=${enabled}`);

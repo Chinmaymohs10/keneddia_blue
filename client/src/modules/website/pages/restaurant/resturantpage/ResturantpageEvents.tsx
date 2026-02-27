@@ -1,4 +1,4 @@
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -17,13 +17,53 @@ import {
   Send,
   Calendar,
 } from "lucide-react";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 import { getEventsUpdated, getGroupBookings } from "@/Api/Api";
+import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
 
-// Color palette for dynamic group booking backgrounds
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface PropertyProps {
+  propertyId: number | string;
+}
+
+interface EventImage {
+  url?: string;
+  type?: string;
+  width?: number;
+  height?: number;
+}
+
+interface ApiEvent {
+  id: number;
+  title: string;
+  description?: string;
+  eventDate: string;
+  locationName?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  active: boolean;
+  status: string;
+  propertyId: number | string;
+  image?: EventImage;
+}
+
+interface GroupBooking {
+  id: number;
+  title: string;
+  propertyId: number | string;
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  persons: string;
+  customQuery: string;
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 const COLOR_PALETTE = [
   { color: "bg-[#F5E6FF] text-[#8E44AD]", border: "border-[#D7BDE2]" },
   { color: "bg-[#E3F2FD] text-[#1976D2]", border: "border-[#BBDEFB]" },
@@ -31,15 +71,19 @@ const COLOR_PALETTE = [
   { color: "bg-[#E8F5E9] text-[#2E7D32]", border: "border-[#C8E6C9]" },
 ];
 
-const detectBanner = (image) => {
-  if (!image?.width || !image?.height) return false;
-  const ratio = image.width / image.height;
-  return Math.abs(ratio - 9 / 16) <= 0.15 || Math.abs(ratio - 4 / 5) <= 0.1;
+const EMPTY_FORM: FormData = {
+  name: "",
+  email: "",
+  phone: "",
+  persons: "",
+  customQuery: "",
 };
 
-const isVideoUrl = (url = "") => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const isVideoUrl = (url = ""): boolean =>
+  /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
 
-const getBookingIcon = (title = "") => {
+const getBookingIcon = (title = ""): JSX.Element => {
   const t = title.toLowerCase();
   if (t.includes("birthday") || t.includes("party"))
     return <PartyPopper size={18} />;
@@ -50,33 +94,38 @@ const getBookingIcon = (title = "") => {
   return <Calendar size={18} />;
 };
 
-const normalizeEvent = (apiEvent) => {
+const normalizeEvent = (apiEvent: ApiEvent): ApiEvent => {
   const rawImage = apiEvent.image ?? {};
   const resolvedType =
     rawImage.type === "VIDEO" || isVideoUrl(rawImage.url) ? "VIDEO" : "IMAGE";
-  return {
-    ...apiEvent,
-    image: { ...rawImage, type: resolvedType },
-  };
+  return { ...apiEvent, image: { ...rawImage, type: resolvedType } };
 };
 
-export default function ResturantpageEvents({ propertyId }) {
-  const [events, setEvents] = useState([]);
-  const [groupBookings, setGroupBookings] = useState([]);
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+export default function ResturantpageEvents({ propertyId }: PropertyProps) {
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [groupBookings, setGroupBookings] = useState<GroupBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Pagination State
+  // Pagination
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
 
+  // Modal / form state
   const [showModal, setShowModal] = useState(false);
   const [bookingType, setBookingType] = useState("");
-  const [step, setStep] = useState(1);
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
+    null,
+  );
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
+  // ── Fetch data ──────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -86,8 +135,7 @@ export default function ResturantpageEvents({ propertyId }) {
           getGroupBookings(),
         ]);
 
-        // Process Events
-        const allEvents = Array.isArray(eventRes)
+        const allEvents: ApiEvent[] = Array.isArray(eventRes)
           ? eventRes
           : (eventRes?.data ?? []);
         setEvents(
@@ -101,16 +149,15 @@ export default function ResturantpageEvents({ propertyId }) {
             .map(normalizeEvent),
         );
 
-        // Process Group Bookings: Match propertyId and sort Latest First (ID Descending)
-        const allBookings = Array.isArray(bookingRes)
+        const allBookings: GroupBooking[] = Array.isArray(bookingRes)
           ? bookingRes
           : (bookingRes?.data ?? []);
-        const sortedBookings = allBookings
-          .filter((b) => (propertyId ? b.propertyId === propertyId : true))
-          .sort((a, b) => b.id - a.id);
-
-        setGroupBookings(sortedBookings);
-      } catch (err) {
+        setGroupBookings(
+          allBookings
+            .filter((b) => (propertyId ? b.propertyId === propertyId : true))
+            .sort((a, b) => b.id - a.id),
+        );
+      } catch {
         toast.error("Error loading events data");
       } finally {
         setLoading(false);
@@ -119,7 +166,7 @@ export default function ResturantpageEvents({ propertyId }) {
     fetchData();
   }, [propertyId]);
 
-  // Auto-carousel for events
+  // ── Auto-carousel ────────────────────────────────────────────────────────
   useEffect(() => {
     if (events.length <= 2 || isPaused) return;
     const timer = setInterval(() => {
@@ -128,22 +175,49 @@ export default function ResturantpageEvents({ propertyId }) {
     return () => clearInterval(timer);
   }, [events, isPaused]);
 
-  const openInquiry = (type) => {
+  // ── Inquiry helpers ──────────────────────────────────────────────────────
+  const openInquiry = (type: string, id?: number) => {
     setBookingType(type);
+    setSelectedBookingId(id ?? null);
+    setStep(1);
+    setFormData(EMPTY_FORM);
     setShowModal(true);
   };
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsSubmitting(false);
-    setShowModal(false);
-    toast.success(`Inquiry sent for ${bookingType}!`);
-    setStep(1);
-    setFormData({ name: "", email: "", phone: "" });
+    try {
+      const queriesText = [
+        `Booking Type: ${bookingType}`,
+        formData.persons ? `No. of Persons: ${formData.persons}` : null,
+        formData.customQuery
+          ? `Additional Info: ${formData.customQuery}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      await createGroupBookingEnquiry({
+        name: formData.name,
+        phoneNumber: formData.phone,
+        emailAddress: formData.email,
+        queries: queriesText,
+        enquiryDate: new Date().toISOString().split("T")[0],
+        propertyId: Number(propertyId),
+        ...(selectedBookingId ? { groupBookingId: selectedBookingId } : {}),
+      });
+
+      setStep(3);
+      setFormData((prev) => ({ ...EMPTY_FORM, name: prev.name })); // keep name for thank you message
+      setSelectedBookingId(null);
+    } catch {
+      toast.error("Failed to send inquiry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Pagination Logic
+  // ── Pagination ────────────────────────────────────────────────────────────
   const totalPages = Math.ceil(groupBookings.length / itemsPerPage);
   const paginatedBookings = groupBookings.slice(
     currentPage * itemsPerPage,
@@ -228,7 +302,7 @@ export default function ResturantpageEvents({ propertyId }) {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => openInquiry(item.title)}
+                        onClick={() => openInquiry(item.title, item.id)}
                         className={`w-full flex items-center gap-4 p-5 rounded-2xl border ${style.border} ${style.color} transition-transform hover:scale-[1.02] text-left group`}
                       >
                         <div className="shrink-0">
@@ -268,7 +342,7 @@ export default function ResturantpageEvents({ propertyId }) {
         </div>
       </div>
 
-      {/* Inquiry Modal */}
+      {/* ── Inquiry Modal ──────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -278,6 +352,7 @@ export default function ResturantpageEvents({ propertyId }) {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
             >
+              {/* Modal header */}
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -285,11 +360,15 @@ export default function ResturantpageEvents({ propertyId }) {
                   </div>
                   <div>
                     <h3 className="font-serif text-xl dark:text-white">
-                      Inquiry: {bookingType}
+                      {step === 3
+                        ? "Inquiry Submitted"
+                        : `Inquiry: ${bookingType}`}
                     </h3>
-                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">
-                      Step {step} of 2
-                    </p>
+                    {step !== 3 && (
+                      <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">
+                        Step {step} of 2
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button
@@ -299,91 +378,180 @@ export default function ResturantpageEvents({ propertyId }) {
                   <X size={20} />
                 </button>
               </div>
+
+              {/* Modal body */}
               <div className="p-8">
-                {step === 1 ? (
-                  <div className="space-y-5">
-                    <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input
-                          value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          placeholder="Your Name"
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input
-                          value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
-                          placeholder="+91"
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      disabled={!formData.name || !formData.phone}
-                      onClick={() => setStep(2)}
-                      className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em]"
+                {
+                  step === 3 ? (
+                    /* ── Step 3: Thank You ── */
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex flex-col items-center text-center py-4 space-y-5"
                     >
-                      Next Step <ChevronRight size={14} className="ml-2" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input
-                          value={formData.email}
+                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                        <Send size={28} className="text-green-500" />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="font-serif text-2xl text-zinc-800 dark:text-white">
+                          Thank You, {formData.name || "there"}!
+                        </h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                          Your inquiry for{" "}
+                          <span className="font-semibold text-primary">
+                            {bookingType}
+                          </span>{" "}
+                          has been received. We'll get back to you shortly.
+                        </p>
+                      </div>
+                      <div className="w-full pt-2">
+                        <Button
+                          onClick={() => {
+                            setShowModal(false);
+                            setStep(1);
+                          }}
+                          className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em]"
+                        >
+                          Close
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ) : step === 1 ? (
+                    /* ── Step 1: Name, Phone, Persons ── */
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                          Full Name
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                          <Input
+                            value={formData.name}
+                            onChange={(e) =>
+                              setFormData({ ...formData, name: e.target.value })
+                            }
+                            placeholder="Your Name"
+                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                          Phone Number
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                          <Input
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                phone: e.target.value,
+                              })
+                            }
+                            placeholder="+91"
+                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                          No. of Persons
+                        </label>
+                        <div className="relative">
+                          <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                          <Input
+                            type="number"
+                            min={1}
+                            value={formData.persons}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                persons: e.target.value,
+                              })
+                            }
+                            placeholder="e.g. 10"
+                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        disabled={!formData.name || !formData.phone}
+                        onClick={() => setStep(2)}
+                        className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em]"
+                      >
+                        Next Step <ChevronRight size={14} className="ml-2" />
+                      </Button>
+                    </div>
+                  ) : (
+                    /* ── Step 2: Email, Custom Query, Submit ── */
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                          Email Address
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                          <Input
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                email: e.target.value,
+                              })
+                            }
+                            placeholder="email@example.com"
+                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                          Additional Notes
+                        </label>
+                        <textarea
+                          value={formData.customQuery}
                           onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
+                            setFormData({
+                              ...formData,
+                              customQuery: e.target.value,
+                            })
                           }
-                          placeholder="email@example.com"
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
+                          placeholder="Any special requirements, date preference, etc."
+                          rows={3}
+                          className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none resize-none placeholder:text-zinc-400"
                         />
                       </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setStep(1)}
+                          className="h-14 rounded-xl px-8 dark:text-white"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          disabled={isSubmitting || !formData.email}
+                          onClick={handleFinalSubmit}
+                          className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
+                        >
+                          {isSubmitting ? (
+                            <Loader2 className="animate-spin" size={18} />
+                          ) : (
+                            <>
+                              Submit Inquiry <Send size={14} className="ml-2" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setStep(1)}
-                        className="h-14 rounded-xl px-8 dark:text-white"
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        disabled={isSubmitting || !formData.email}
-                        onClick={handleFinalSubmit}
-                        className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
-                      >
-                        {isSubmitting ? (
-                          <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                          <>
-                            Submit Inquiry <Send size={14} className="ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  ) /* end step 2 */
+                }
               </div>
             </motion.div>
           </div>
@@ -393,31 +561,31 @@ export default function ResturantpageEvents({ propertyId }) {
   );
 }
 
-function EventCard({ event, index }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENT CARD
+// ─────────────────────────────────────────────────────────────────────────────
+interface EventCardProps {
+  event: ApiEvent;
+  index: number;
+}
+
+function EventCard({ event, index }: EventCardProps) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const isVideo =
     event.image?.type === "VIDEO" ||
-    event.image?.url?.match(/\.(mp4|webm|ogg|mov)$/i);
+    Boolean(event.image?.url?.match(/\.(mp4|webm|ogg|mov)$/i));
 
-  const analyzeMediaSize = (w, h) => {
+  const analyzeMediaSize = (w: number, h: number) => {
     if (!w || !h) return;
-    const ratio = w / h;
-
-    // Vertical / banner-like media
-    if (ratio <= 0.85) {
-      setIsBanner(true);
-    } else {
-      setIsBanner(false);
-    }
+    setIsBanner(w / h <= 0.85);
   };
 
-  const toggleMute = (e) => {
+  const toggleMute = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted((prev) => !prev);
@@ -431,9 +599,7 @@ function EventCard({ event, index }) {
     .toUpperCase();
 
   const handleCta = () => {
-    if (event.ctaLink) {
-      window.open(event.ctaLink, "_blank", "noopener");
-    }
+    if (event.ctaLink) window.open(event.ctaLink, "_blank", "noopener");
   };
 
   return (
@@ -445,7 +611,7 @@ function EventCard({ event, index }) {
       transition={{ duration: 0.5 }}
       className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
     >
-      {/* Media Section */}
+      {/* Media */}
       <div
         className={`relative overflow-hidden transition-all duration-500 ${
           isBanner ? "h-full" : "h-[280px]"
@@ -469,8 +635,6 @@ function EventCard({ event, index }) {
                   )
                 }
               />
-
-              {/* Mute Toggle */}
               <button
                 onClick={toggleMute}
                 className="absolute bottom-4 right-4 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors backdrop-blur-sm"
@@ -492,9 +656,7 @@ function EventCard({ event, index }) {
             />
           )
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <ImageIcon className="w-10 h-10 text-muted-foreground/20" />
-          </div>
+          <div className="w-full h-full flex items-center justify-center bg-muted" />
         )}
 
         {/* Date Badge */}
@@ -510,7 +672,7 @@ function EventCard({ event, index }) {
           <MapPin size={10} /> {event.locationName}
         </div>
 
-        {/* Banner Overlay Mode */}
+        {/* Banner Overlay */}
         {isBanner && (
           <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
             <div className="space-y-4">
@@ -522,7 +684,6 @@ function EventCard({ event, index }) {
                   {event.description}
                 </p>
               </div>
-
               {event.ctaText && (
                 <button
                   onClick={handleCta}
@@ -536,17 +697,15 @@ function EventCard({ event, index }) {
         )}
       </div>
 
-      {/* Normal Card Mode */}
+      {/* Normal Card Content */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card text-left">
           <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
             {event.title}
           </h3>
-
           <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
             {event.description}
           </p>
-
           {event.ctaText && (
             <div className="mt-auto pt-4 border-t border-dashed border-border">
               <button
