@@ -119,3 +119,22 @@ export const getMenuHeaders = () =>API.get("api/v1/menu-sections/getMenus");
 export const getMenuHeadersById = (id) =>API.get(`api/v1/menu-sections/getMenuById/${id}`);
 export const updateMenuHeadersSection = (id, data) =>API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
 export const toggleMenuHeadersSectionStatus = (id, data) =>API.patch(`api/v1/menu-sections/toggleActive/${id}`, data);
+
+// ─────────────────────────────
+// TESTIMONIAL SECTION
+// ─────────────────────────────
+
+export const createTestimonialHeader = (data) =>API.post("api/v1/testimonial/createTestimonial", data);
+export const getActiveTestimonialHeaders = () =>API.get("api/v1/testimonial/getActiveTestimonials");
+export const getTestimonialHeaderById = (id) =>API.get(`api/v1/testimonial/getTestimonialById/${id}`);
+export const updateTestimonialHeader = (id, data) =>API.patch(`api/v1/testimonial/updateTestimonial/${id}`, data);
+
+// ─────────────────────────────
+// VISUAL GALLERY SECTION
+// ─────────────────────────────
+
+export const createVisualGalleryHeader = (data) =>API.post("api/v1/visual-gallery/createVisualGallery", data);
+export const getVisualGallerieHeaders = () =>API.get("api/v1/visual-gallery/getVisualGalleries");
+export const getActiveVisualGalleriesHeader = () =>API.get("api/v1/visual-gallery/getActiveVisualGalleries");
+export const getVisualGalleryHeaderById = (id) =>API.get(`api/v1/visual-gallery/getVisualGalleryById/${id}`);
+export const updateVisualGalleryHeader = (id, data) =>API.patch(`api/v1/visual-gallery/updateVisualGallery/${id}`, data);

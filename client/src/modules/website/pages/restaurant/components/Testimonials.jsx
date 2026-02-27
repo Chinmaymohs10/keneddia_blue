@@ -27,7 +27,7 @@ import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
 } from "@/Api/Api";
-
+import { getActiveTestimonialHeaders } from "@/Api/RestaurantApi";
 // ─── YouTube helpers (from OurStoryPreview) ──────────────────────────────────
 const isYoutubeUrl = (url) =>
   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
@@ -314,6 +314,11 @@ const FeedbackCard = ({ item }) => {
 export default function AutoTestimonials({ propertyId }) {
   const containerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [testimonialHeader, setTestimonialHeader] = useState({
+    testimonialName1: "",
+    testimonialName2: "",
+    description: "",
+  });
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -335,6 +340,28 @@ export default function AutoTestimonials({ propertyId }) {
   });
   const [ytError, setYtError] = useState("");
   const [mediaPreviews, setMediaPreviews] = useState([]);
+  const fetchTestimonialHeader = async () => {
+    try {
+      const res = await getActiveTestimonialHeaders();
+      const all = res?.data || [];
+
+      const matched = all
+        .filter((h) => h.propertyId === propertyId && h.isActive)
+        .sort((a, b) => b.id - a.id);
+
+      const latest = matched[0];
+
+      if (latest) {
+        setTestimonialHeader({
+          testimonialName1: latest.testimonialName1 || latest.header1 || "",
+          testimonialName2: latest.testimonialName2 || latest.header2 || "",
+          description: latest.description || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load testimonial header:", err);
+    }
+  };
 
   // Build star-prefixed title: "⭐⭐⭐⭐☆ (4/5) Amazing food..."
   const buildTitle = (rating, text) => {
@@ -382,6 +409,7 @@ export default function AutoTestimonials({ propertyId }) {
   };
 
   useEffect(() => {
+    fetchTestimonialHeader();
     fetchExperiences();
   }, [propertyId]);
 
@@ -547,14 +575,13 @@ export default function AutoTestimonials({ propertyId }) {
                 </span>
               </div>
               <h2 className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-white leading-[1.1]">
-                Voices of <br />
+                {testimonialHeader.testimonialName1 || ""} <br />
                 <span className="italic text-zinc-400 dark:text-white/30 decoration-primary/20 underline decoration-1 underline-offset-8">
-                  Delight.
+                  {testimonialHeader.testimonialName2 || " "}
                 </span>
               </h2>
               <p className="text-zinc-500 dark:text-white/40 text-lg font-light leading-relaxed max-w-sm pt-4">
-                Real moments shared by our guests. Experience the legacy of
-                flavors through their eyes.
+                {testimonialHeader.description || " "}
               </p>
 
               <Button
@@ -567,7 +594,7 @@ export default function AutoTestimonials({ propertyId }) {
             </div>
 
             <div className="pt-8 border-t border-zinc-100 dark:border-white/10 flex items-center gap-6">
-              <div className="text-center">
+              {/* <div className="text-center">
                 <p className="text-4xl font-serif dark:text-white leading-none">
                   4.9
                 </p>
@@ -582,7 +609,7 @@ export default function AutoTestimonials({ propertyId }) {
               </div>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-tight">
                 Trusted by <br /> 1,200+ Guests
-              </p>
+              </p> */}
             </div>
           </div>
 

@@ -1156,7 +1156,7 @@ function ConnectPanel({ propertyId, form, setForm }) {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 function ResturantAbout({ propertyData, refreshData }) {
-  const propertyId = propertyData?.id ?? propertyData?.propertyId ?? 1;
+  const propertyId = propertyData?.id ?? propertyData?.propertyId ?? "";
 
   const [sharedImage, setSharedImage] = useState("");
   const [connectForm, setConnectForm] = useState(EMPTY_CONNECT);

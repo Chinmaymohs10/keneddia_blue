@@ -8,7 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { getAllGalleries } from "@/Api/Api";
-
+import { getActiveVisualGalleriesHeader } from "@/Api/RestaurantApi";
 // Fallbacks
 import gallery1 from "@/assets/resturant_images/3dGallery/3dGallery1.jpeg";
 import gallery2 from "@/assets/resturant_images/3dGallery/3dGallery2.jpeg";
@@ -25,6 +25,11 @@ const FALLBACK_DATA = [
 ];
 
 export default function RestaurantGalleryPage({ propertyId }) {
+  const [galleryHeader, setGalleryHeader] = useState({
+    header1: "",
+    header2: "",
+    description: "",
+  });
   const containerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
   const [manualOffset, setManualOffset] = useState(0);
@@ -37,6 +42,28 @@ export default function RestaurantGalleryPage({ propertyId }) {
     offset: ["start end", "end start"],
   });
   const bgTextX = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
+  const fetchGalleryHeader = async () => {
+    try {
+      const res = await getActiveVisualGalleriesHeader();
+      const all = res?.data || [];
+
+      const matched = all
+        .filter((h) => h.propertyId === propertyId && h.isActive === true)
+        .sort((a, b) => b.id - a.id);
+
+      const latest = matched[0];
+
+      if (latest) {
+        setGalleryHeader({
+          header1: latest.header1 || "",
+          header2: latest.header2 || "",
+          description: latest.description || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load gallery header:", err);
+    }
+  };
 
   // --- Data Fetching ---
   useEffect(() => {
@@ -62,7 +89,7 @@ export default function RestaurantGalleryPage({ propertyId }) {
             cat: item.categoryName || "3d",
             img: item.media?.url,
           }));
-          console.log('filtered',filtered);
+        console.log("filtered", filtered);
 
         setGalleryItems(filtered.length > 0 ? filtered : FALLBACK_DATA);
       } catch (error) {
@@ -73,7 +100,10 @@ export default function RestaurantGalleryPage({ propertyId }) {
       }
     };
 
-    if (propertyId) fetchGallery();
+    if (propertyId) {
+      fetchGalleryHeader();
+      fetchGallery();
+    }
   }, [propertyId]);
 
   const diagonalVariants = {
@@ -129,7 +159,7 @@ export default function RestaurantGalleryPage({ propertyId }) {
         style={{ x: bgTextX }}
         className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[15rem] font-black text-zinc-900/[0.03] dark:text-white/[0.01] pointer-events-none select-none italic uppercase z-0"
       >
-        Atmosphere Kitchen Elegance Ambience
+        {galleryHeader.header1 || " "}
       </motion.div>
 
       <div className="container mx-auto px-6 relative z-10">
@@ -144,14 +174,13 @@ export default function RestaurantGalleryPage({ propertyId }) {
                 </span>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif dark:text-white leading-[1.1]">
-                Immersive <br />
+                {galleryHeader.header1 || " "} <br />
                 <span className="italic text-zinc-400 dark:text-white/30 decoration-primary/20 underline decoration-1 underline-offset-8">
-                  Spaces.
+                  {galleryHeader.header2 || ""}
                 </span>
               </h2>
               <p className="text-zinc-500 dark:text-white/40 text-lg font-light leading-relaxed max-w-sm">
-                Explore our architecture through a cinematic intersection of 3D
-                renderings and real-world elegance.
+                {galleryHeader.description || ""}
               </p>
             </div>
 

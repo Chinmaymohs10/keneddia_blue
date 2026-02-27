@@ -195,7 +195,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "about",
       // "events",
       // "group bookings",
-      // "3d gallery",
+      "3d gallery & testimonials",
       "enquiries",
     ],
   };
@@ -304,7 +304,7 @@ const PropertyDetail = ({ property, onBack }) => {
           />
         );
 
-      case "3d gallery":
+      case "3d gallery & testimonials":
         return (
           <Gallery3d
             propertyData={currentPropertyInfo}

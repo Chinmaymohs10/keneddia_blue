@@ -45,8 +45,6 @@ const buildDefaultTypeFilter = (propertyData) => {
   const types = propertyData?.propertyTypes ?? [];
   return [...new Set([...types.map(normalize)])];
 };
-
-// ── localStorage key for persisting header ID per property ───────────────────
 const headerIdKey = (propertyId) => `offer_header_id_${propertyId}`;
 
 // ─────────────────────────────────────────────────────────────────────────────
