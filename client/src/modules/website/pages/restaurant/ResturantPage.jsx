@@ -146,7 +146,7 @@ export default function RestaurantHomepage() {
         </div>
 
         <div id="menu">
-          <ResturantSubCategories propertyId={numericPropertyId} />
+          <ResturantSubCategories propertyId={numericPropertyId} propertyData={propertyData}/>
           <SignatureDishesAndBuffet propertyId={numericPropertyId} />
         </div>
 

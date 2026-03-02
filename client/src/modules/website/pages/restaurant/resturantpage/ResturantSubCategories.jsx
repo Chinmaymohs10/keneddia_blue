@@ -88,7 +88,7 @@ const STATIC_HEADER = {
   },
 };
 
-export default function ResturantSubCategories({ propertyId }) {
+export default function ResturantSubCategories({ propertyId,propertyData  }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 

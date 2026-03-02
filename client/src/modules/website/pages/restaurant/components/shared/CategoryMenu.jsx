@@ -12,16 +12,16 @@ import {
   Mail,
   Send,
   Loader2,
-  CalendarCheck // Added for the Reserve icon
+  CalendarCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
 
-export default function CategoryMenu({ menu, themeColor }) {
+export default function CategoryMenu({ menu, themeColor, showOrderButton = false }) {
   const [activeTab, setActiveTab] = useState(0);
   const scrollContainerRef = useRef(null);
-  
+
   // Modal & Form States
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -29,13 +29,11 @@ export default function CategoryMenu({ menu, themeColor }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
-  // Handle individual item order
   const handleOrderClick = (item) => {
     setSelectedItem(item);
     setShowOrderModal(true);
   };
 
-  // Handle category reservation (Marked Location in Image)
   const handleReserveClick = () => {
     setSelectedItem({ name: `${menu[activeTab].category} (Table Reservation)` });
     setShowOrderModal(true);
@@ -43,17 +41,14 @@ export default function CategoryMenu({ menu, themeColor }) {
 
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
-    // Simulate API Call
     await new Promise((r) => setTimeout(r, 2000));
     setIsSubmitting(false);
     setShowOrderModal(false);
     toast.success(`Request sent for ${selectedItem.name}! Our team will contact you.`);
-    // Reset Form
     setStep(1);
     setFormData({ name: "", email: "", phone: "" });
   };
 
-  // Navigation logic
   const handleNext = () => {
     if (activeTab < menu.length - 1) {
       setActiveTab(activeTab + 1);
@@ -114,7 +109,8 @@ export default function CategoryMenu({ menu, themeColor }) {
                 <ChevronRight className="w-5 h-5 dark:text-white" />
               </button>
             </div>
-             <button
+
+            <button
               onClick={handleReserveClick}
               className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
             >
@@ -130,8 +126,8 @@ export default function CategoryMenu({ menu, themeColor }) {
               key={idx}
               onClick={() => setActiveTab(idx)}
               className={`relative flex-shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center
-                ${activeTab === idx 
-                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                ${activeTab === idx
+                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                   : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50"
                 }`}
             >
@@ -149,10 +145,14 @@ export default function CategoryMenu({ menu, themeColor }) {
             exit={{ opacity: 0, x: -10 }}
             className="grid lg:grid-cols-12 gap-8 items-start"
           >
-            {/* COMPACT STICKY IMAGE */}
+            {/* STICKY IMAGE */}
             <div className="lg:col-span-5 hidden lg:block">
               <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5">
-                <img src={menu[activeTab].categoryImage} className="w-full h-full object-cover" alt="Featured" />
+                <img
+                  src={menu[activeTab].categoryImage}
+                  className="w-full h-full object-cover"
+                  alt="Featured"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-6 left-6 text-white">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">Featured</p>
@@ -161,7 +161,7 @@ export default function CategoryMenu({ menu, themeColor }) {
               </div>
             </div>
 
-            {/* MINIMALIST ITEM LIST */}
+            {/* ITEM LIST */}
             <div className="lg:col-span-7 space-y-6">
               {menu[activeTab].items.map((item, i) => (
                 <motion.div
@@ -172,24 +172,35 @@ export default function CategoryMenu({ menu, themeColor }) {
                   className="group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                 >
                   <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                    <img src={item.image} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500" alt={item.name} />
+                    <img
+                      src={item.image}
+                      className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                      alt={item.name}
+                    />
                   </div>
 
                   <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-lg font-extrabold tracking-tight text-zinc-900 dark:text-white">{item.name}</h4>
+                        <h4 className="text-lg font-extrabold tracking-tight text-zinc-900 dark:text-white">
+                          {item.name}
+                        </h4>
                         {item.isSpicy && <Flame size={16} className="text-red-500 fill-red-500" />}
                       </div>
-                      {/* ORDER BUTTON */}
-                      <button 
-                        onClick={() => handleOrderClick(item)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
-                      >
-                        <ShoppingBag size={12} /> Order
-                      </button>
+
+                      {/* ORDER BUTTON — only shown when showOrderButton is true */}
+                      {showOrderButton && (
+                        <button
+                          onClick={() => handleOrderClick(item)}
+                          className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                        >
+                          <ShoppingBag size={12} /> Order
+                        </button>
+                      )}
                     </div>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{item.description}</p>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {item.description}
+                    </p>
                   </div>
                 </motion.div>
               ))}
@@ -202,25 +213,34 @@ export default function CategoryMenu({ menu, themeColor }) {
       <AnimatePresence>
         {showOrderModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
             >
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    {selectedItem?.name.includes('Table') ? <CalendarCheck size={18}/> : <ShoppingBag size={18} />}
+                    {selectedItem?.name.includes("Table") ? <CalendarCheck size={18} /> : <ShoppingBag size={18} />}
                   </div>
                   <div>
                     <h3 className="font-serif text-xl dark:text-white">
-                        {selectedItem?.name.includes('Table') ? "Reservation" : `Order ${selectedItem?.name}`}
+                      {selectedItem?.name.includes("Table")
+                        ? "Reservation"
+                        : `Order ${selectedItem?.name}`}
                     </h3>
-                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">Step {step} of 2</p>
+                    <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest">
+                      Step {step} of 2
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => setShowOrderModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"><X size={20} /></button>
+                <button
+                  onClick={() => setShowOrderModal(false)}
+                  className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"
+                >
+                  <X size={20} />
+                </button>
               </div>
 
               <div className="p-8">
@@ -230,11 +250,11 @@ export default function CategoryMenu({ menu, themeColor }) {
                       <label className="text-[10px] uppercase font-black tracking-widest text-primary">Full Name</label>
                       <div className="relative">
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input 
-                          value={formData.name} 
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          placeholder="Your Name" 
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Your Name"
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                         />
                       </div>
                     </div>
@@ -242,17 +262,17 @@ export default function CategoryMenu({ menu, themeColor }) {
                       <label className="text-[10px] uppercase font-black tracking-widest text-primary">Phone Number</label>
                       <div className="relative">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input 
-                          value={formData.phone} 
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          placeholder="+91" 
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        <Input
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="+91"
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                         />
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       disabled={!formData.name || !formData.phone}
-                      onClick={() => setStep(2)} 
+                      onClick={() => setStep(2)}
                       className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-primary transition-all"
                     >
                       Next Step <ChevronRight size={14} className="ml-2" />
@@ -264,28 +284,39 @@ export default function CategoryMenu({ menu, themeColor }) {
                       <label className="text-[10px] uppercase font-black tracking-widest text-primary">Email Address</label>
                       <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                        <Input 
-                          value={formData.email} 
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          placeholder="email@example.com" 
-                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl" 
+                        <Input
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="email@example.com"
+                          className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                         />
                       </div>
                     </div>
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
                       <p className="text-[11px] text-zinc-500 italic leading-relaxed">
-                        By clicking submit, you are requesting for <b>{selectedItem?.name}</b>. 
-                        Our staff will call you shortly to confirm your {selectedItem?.name.includes('Table') ? 'reservation' : 'order'} details.
+                        By clicking submit, you are requesting for <b>{selectedItem?.name}</b>.
+                        Our staff will call you shortly to confirm your{" "}
+                        {selectedItem?.name.includes("Table") ? "reservation" : "order"} details.
                       </p>
                     </div>
                     <div className="flex gap-3">
-                      <Button variant="outline" onClick={() => setStep(1)} className="h-14 rounded-xl px-8 dark:text-white">Back</Button>
-                      <Button 
+                      <Button
+                        variant="outline"
+                        onClick={() => setStep(1)}
+                        className="h-14 rounded-xl px-8 dark:text-white"
+                      >
+                        Back
+                      </Button>
+                      <Button
                         disabled={isSubmitting || !formData.email}
                         onClick={handleFinalSubmit}
                         className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
                       >
-                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <>Submit Request <Send size={14} className="ml-2" /></>}
+                        {isSubmitting ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <>Submit Request <Send size={14} className="ml-2" /></>
+                        )}
                       </Button>
                     </div>
                   </div>

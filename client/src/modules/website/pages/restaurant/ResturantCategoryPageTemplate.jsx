@@ -10,7 +10,7 @@ import CategoryMenu from "./components/shared/CategoryMenu";
 import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
-import { getAllVerticalCards } from "@/Api/RestaurantApi";
+import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
 import { getAllGalleries } from "@/Api/Api";
 
 import beverage from "@/assets/resturant_images/beverage.jpg";
@@ -59,223 +59,44 @@ const CARD_BG_COLORS = [
 
 const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
 
-// Static menu & theme data keyed by slug — used until API provides menu data
-const CATEGORY_DATA = {
-  italian: {
-    heroImage: italian1,
-    themeColor: "#ef4444",
-    menu: [
-      {
-        category: "Antipasti (Starters)",
-        categoryImage: food1,
-        items: [
-          {
-            name: "Bruschetta Trio",
-            description: "Tomato, Mushroom, and Olive Tapenade.",
-            price: "₹450",
-            image: item1,
-          },
-          {
-            name: "Arancini di Riso",
-            description: "Crispy risotto balls stuffed with ragu.",
-            price: "₹550",
-            image: item2,
-          },
-        ],
-      },
-      {
-        category: "Pasta & Zuppe",
-        categoryImage: italian1,
-        items: [
-          {
-            name: "Aglio e Olio",
-            description: "Garlic, olive oil, and crushed chili flakes.",
-            price: "₹650",
-            isSpicy: true,
-            image: food1,
-          },
-          {
-            name: "Lasagna Classica",
-            description: "Layered pasta with rich meat sauce.",
-            price: "₹780",
-            image: item2,
-          },
-        ],
-      },
-    ],
-  },
+function buildMenuFromApi(allItems, verticalTitle) {
+  if (!allItems?.length || !verticalTitle) return [];
 
-  "luxury-lounge": {
-    heroImage: SHUFFLED_LUXURY[0],
-    themeColor: "#8b5cf6",
-    menu: [
-      {
-        category: "Signature Cocktails",
-        categoryImage: SHUFFLED_LUXURY[1],
-        items: [
-          {
-            name: "Royal Old Fashioned",
-            description: "Premium bourbon with smoked orange zest.",
-            price: "₹850",
-            image: SHUFFLED_LUXURY[2],
-          },
-          {
-            name: "Velvet Martini",
-            description: "Vodka infused with elderflower essence.",
-            price: "₹900",
-            image: SHUFFLED_LUXURY[3],
-          },
-        ],
-      },
-      {
-        category: "Gourmet Bites",
-        categoryImage: SHUFFLED_LUXURY[4],
-        items: [
-          {
-            name: "Truffle Fries",
-            description: "Crispy fries with truffle oil & parmesan.",
-            price: "₹420",
-            image: SHUFFLED_LUXURY[0],
-          },
-        ],
-      },
-    ],
-  },
+  const titleLower = verticalTitle.toLowerCase().trim();
 
-  "luxury-family-lounge": {
-    heroImage: SHUFFLED_LUXURY[0],
-    themeColor: "#8b5cf6",
-    menu: [
-      {
-        category: "Signature Cocktails",
-        categoryImage: SHUFFLED_LUXURY[1],
-        items: [
-          {
-            name: "Royal Old Fashioned",
-            description: "Premium bourbon with smoked orange zest.",
-            price: "₹850",
-            image: SHUFFLED_LUXURY[2],
-          },
-          {
-            name: "Velvet Martini",
-            description: "Vodka infused with elderflower essence.",
-            price: "₹900",
-            image: SHUFFLED_LUXURY[3],
-          },
-        ],
-      },
-      {
-        category: "Gourmet Bites",
-        categoryImage: SHUFFLED_LUXURY[4],
-        items: [
-          {
-            name: "Truffle Fries",
-            description: "Crispy fries with truffle oil & parmesan.",
-            price: "₹420",
-            image: SHUFFLED_LUXURY[0],
-          },
-        ],
-      },
-    ],
-  },
+  const matched = allItems.filter((item) => {
+    const catName = item.category?.categoryName?.toLowerCase().trim() || "";
+    return catName.includes(titleLower) || titleLower.includes(catName);
+  });
 
-  "spicy-darbar": {
-    heroImage: food1,
-    themeColor: "#f59e0b",
-    menu: [
-      {
-        category: "Kebab & Tandoor",
-        categoryImage: item2,
-        items: [
-          {
-            name: "Murgh Malai Tikka",
-            description: "Creamy chicken kebabs with cardamom.",
-            price: "₹595",
-            image: item1,
-          },
-          {
-            name: "Paneer Tikka",
-            description: "Char-grilled cottage cheese with spices.",
-            price: "₹520",
-            image: italian1,
-          },
-        ],
-      },
-    ],
-  },
+  if (!matched.length) return [];
 
-  takeaway: {
-    heroImage: item1,
-    themeColor: "#10b981",
-    menu: [
-      {
-        category: "Quick Bites",
-        categoryImage: item2,
-        items: [
-          {
-            name: "Loaded Chicken Wrap",
-            description: "Grilled chicken with spicy mayo.",
-            price: "₹320",
-            image: food1,
-          },
-          {
-            name: "Veg Club Sandwich",
-            description: "Triple layered with fresh veggies.",
-            price: "₹280",
-            image: italian1,
-          },
-        ],
-      },
-    ],
-  },
+  const groups = {};
 
-  bakery: {
-    heroImage: item2,
-    themeColor: "#f472b6",
-    menu: [
-      {
-        category: "Freshly Baked",
-        categoryImage: item1,
-        items: [
-          {
-            name: "Butter Croissant",
-            description: "Flaky French classic baked daily.",
-            price: "₹180",
-            image: food1,
-          },
-          {
-            name: "Chocolate Éclair",
-            description: "Filled with rich vanilla custard.",
-            price: "₹220",
-            image: beverage,
-          },
-        ],
-      },
-    ],
-  },
-};
+  matched.forEach((item) => {
+    const typeName = item.type?.typeName || "Other";
 
-// Default fallback for slugs not yet in CATEGORY_DATA
-const DEFAULT_STATIC = {
-  heroImage: food1,
-  themeColor: "#ef4444",
-  menu: [
-    {
-      category: "Coming Soon",
-      categoryImage: food1,
-      items: [
-        {
-          name: "Menu updating",
-          description: "Our menu will be available shortly.",
-          price: "—",
-          image: item1,
-        },
-      ],
-    },
-  ],
-};
+    if (!groups[typeName]) groups[typeName] = [];
 
-/* ── Other Verticals Grid (same card style as ResturantSubCategories) ── */
+    groups[typeName].push({
+      name: item.itemName || "",
+      description: item.description || "",
+      price: item.price ? `₹${item.price}` : "",
+      image: item.image?.url || item.media?.url || "",
+      isSpicy: item.foodType === "NON_VEG",
+      foodType: item.foodType,
+      likeCount: item.likeCount || 0,
+    });
+  });
+
+  return Object.entries(groups).map(([typeName, items]) => ({
+    category: typeName,
+    categoryImage: items[0]?.image || "",
+    items,
+  }));
+}
+
+/* ── Other Verticals Grid ─────────────────────────────────────────────────── */
 function OtherVerticalsSection({ experiences, propertyId }) {
   const navigate = useNavigate();
 
@@ -284,7 +105,6 @@ function OtherVerticalsSection({ experiences, propertyId }) {
   return (
     <section className="py-10 lg:py-20 bg-white dark:bg-[#080808]">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
-        {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -302,7 +122,6 @@ function OtherVerticalsSection({ experiences, propertyId }) {
           </h2>
         </motion.div>
 
-        {/* Cards */}
         <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
           {experiences.map((exp, index) => (
             <motion.div
@@ -370,20 +189,20 @@ function OtherVerticalsSection({ experiences, propertyId }) {
   );
 }
 
-/* ── Main Template ── */
+/* ── Main Template ─────────────────────────────────────────────────────────── */
 function ResturantCategoryPageTemplate() {
   const { propertyId, categoryType } = useParams();
   const navigate = useNavigate();
-  const [galleryData, setGalleryData] = useState([]);
 
-  const [currentCategory, setCurrentCategory] = useState(null); // data for this vertical
-  const [otherVerticals, setOtherVerticals] = useState([]); // all other verticals
+  const [currentCategory, setCurrentCategory] = useState(null);
+  const [otherVerticals, setOtherVerticals] = useState([]);
+  const [apiMenuItems, setApiMenuItems] = useState([]);
+  const [galleryData, setGalleryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   const normalizedSlug = categoryType?.toLowerCase().trim();
 
-  // Scroll to top on category change
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [categoryType]);
@@ -396,7 +215,7 @@ function ResturantCategoryPageTemplate() {
       setNotFound(false);
 
       try {
-        // 1️⃣ Fetch vertical cards
+        // 1️⃣ Vertical cards
         const cardsRes = await getAllVerticalCards();
         const cards = cardsRes?.data || cardsRes || [];
 
@@ -408,16 +227,12 @@ function ResturantCategoryPageTemplate() {
 
         const mapped = filtered.map((card, index) => {
           const slug = generateSlug(card.verticalName);
-          const staticData = CATEGORY_DATA[slug] || DEFAULT_STATIC;
-
           return {
             slug,
             id: card.id,
             title: card.verticalName || card.itemName,
             description: card.description || "",
-            image:
-              card.media?.url ||
-              "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
+            image: card.media?.url || "",
             link: card.link || "#",
             ctaButtonText: card.showOrderButton
               ? card.extraText || "Order"
@@ -427,14 +242,14 @@ function ResturantCategoryPageTemplate() {
               CARD_BG_COLORS[index % CARD_BG_COLORS.length].bgColor,
             hoverBg: CARD_BG_COLORS[index % CARD_BG_COLORS.length].hoverBg,
             isHexColor: !!card.cardBackgroundColor,
-            heroImage: card.media?.url || staticData.heroImage,
-            themeColor: staticData.themeColor,
-            menu: staticData.menu,
+
+            // Dynamic only
+            heroImage: card.media?.url || "",
+            themeColor: card.cardBackgroundColor || "#ef4444",
           };
         });
 
         const matched = mapped.find((m) => m.slug === normalizedSlug);
-
         if (!matched) {
           setNotFound(true);
         } else {
@@ -442,14 +257,18 @@ function ResturantCategoryPageTemplate() {
           setOtherVerticals(mapped.filter((m) => m.slug !== normalizedSlug));
         }
 
-        // 2️⃣ Fetch gallery (same as homepage)
-        const galleryRes = await getAllGalleries({
-          page: 0,
-          size: 100,
-        });
+        // 2️⃣ Menu items — all items for this property
+        const menuRes = await getMenuItems();
+        const allItems = menuRes?.data || menuRes || [];
+        const propItems = allItems.filter(
+          (i) =>
+            String(i.propertyId) === String(propertyId) && i.status !== false,
+        );
+        setApiMenuItems(propItems);
 
+        // 3️⃣ Gallery
+        const galleryRes = await getAllGalleries({ page: 0, size: 100 });
         const allGallery = galleryRes?.data?.content || [];
-
         const filteredGallery = allGallery.filter(
           (g) =>
             String(g.propertyId) === String(propertyId) &&
@@ -457,9 +276,6 @@ function ResturantCategoryPageTemplate() {
             g.media?.url &&
             g.categoryName?.toLowerCase() !== "3d",
         );
-
-        console.log("[CategoryPage] Gallery:", filteredGallery);
-
         setGalleryData(filteredGallery);
       } catch (err) {
         console.error("[CategoryPage] Error:", err);
@@ -505,6 +321,8 @@ function ResturantCategoryPageTemplate() {
     );
   }
 
+  const resolvedMenu = buildMenuFromApi(apiMenuItems, currentCategory.title);
+
   /* ── Page ── */
   return (
     <div className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
@@ -518,12 +336,18 @@ function ResturantCategoryPageTemplate() {
           galleryData={galleryData}
         />
 
-        {/* Menu */}
+        {/* Menu — API items matched by categoryName, grouped by typeName as tabs */}
         <div id="menu">
-          <CategoryMenu
-            menu={currentCategory.menu}
-            themeColor={currentCategory.themeColor}
-          />
+          {resolvedMenu.length > 0 ? (
+            <CategoryMenu
+              menu={resolvedMenu}
+              themeColor={currentCategory.themeColor}
+            />
+          ) : (
+            <div className="py-20 text-center text-muted-foreground">
+              Menu coming soon for this vertical.
+            </div>
+          )}
         </div>
 
         {/* Other Verticals (excluding current) */}
