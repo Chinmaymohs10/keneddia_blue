@@ -125,6 +125,24 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
+  // ── Manual Navigation Logic ──────────────────────────────────────────
+  const nextEvent = () => {
+    setCurrentIndex((prev) => {
+      const nextIdx = prev + 2;
+      return nextIdx >= events.length ? 0 : nextIdx;
+    });
+  };
+
+  const prevEvent = () => {
+    setCurrentIndex((prev) => {
+      const prevIdx = prev - 2;
+      if (prevIdx < 0) {
+        return Math.max(0, events.length - (events.length % 2 || 2));
+      }
+      return prevIdx;
+    });
+  };
+
   // ── Fetch data ──────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
@@ -170,12 +188,11 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   useEffect(() => {
     if (events.length <= 2 || isPaused) return;
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 2 >= events.length ? 0 : prev + 2));
+      nextEvent();
     }, 5000);
     return () => clearInterval(timer);
   }, [events, isPaused]);
 
-  // ── Inquiry helpers ──────────────────────────────────────────────────────
   const openInquiry = (type: string, id?: number) => {
     setBookingType(type);
     setSelectedBookingId(id ?? null);
@@ -208,8 +225,6 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
       });
 
       setStep(3);
-      setFormData((prev) => ({ ...EMPTY_FORM, name: prev.name })); // keep name for thank you message
-      setSelectedBookingId(null);
     } catch {
       toast.error("Failed to send inquiry. Please try again.");
     } finally {
@@ -217,7 +232,6 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
     }
   };
 
-  // ── Pagination ────────────────────────────────────────────────────────────
   const totalPages = Math.ceil(groupBookings.length / itemsPerPage);
   const paginatedBookings = groupBookings.slice(
     currentPage * itemsPerPage,
@@ -234,27 +248,49 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   const displayedEvents = events.slice(currentIndex, currentIndex + 2);
 
   return (
-    <section id="events" className="py-8 bg-muted/30 overflow-hidden">
+    <section id="events" className="py-12 bg-muted/30 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
-        <div className="lg:w-[70%] flex flex-col pt-2 mb-6">
-          <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
-            Events <span className="italic text-primary">& Celebrations</span>
-          </h2>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide">
-            Explore international delicacies curated for every event.
-          </p>
+        {/* ── HEADER SECTION WITH ARROWS ── */}
+        <div className="flex flex-row items-end justify-between mb-8">
+          <div className="flex flex-col">
+            <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
+              Events <span className="italic text-primary">& Celebrations</span>
+            </h2>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm font-light tracking-wide">
+              Explore international delicacies curated for every event.
+            </p>
+          </div>
+
+          {/* ARROWS CONTAINER - Positioned exactly as marked in red */}
+          {events.length > 2 && (
+            <div className="flex items-center gap-3 bg-white/50 dark:bg-white/5 p-1.5 rounded-full border border-border/40 backdrop-blur-sm shadow-sm">
+              <button
+                onClick={prevEvent}
+                className="p-2 rounded-full transition-all hover:bg-primary hover:text-white active:scale-90 text-zinc-600 dark:text-zinc-400"
+              >
+                <ChevronLeft size={22} strokeWidth={2.5} />
+              </button>
+              <div className="w-[1px] h-4 bg-border/50" />
+              <button
+                onClick={nextEvent}
+                className="p-2 rounded-full transition-all hover:bg-primary hover:text-white active:scale-90 text-zinc-600 dark:text-zinc-400"
+              >
+                <ChevronRight size={22} strokeWidth={2.5} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Events Section */}
+          {/* Events Cards Container */}
           <div
             className="lg:w-[60%] grid grid-cols-1 md:grid-cols-2 gap-6"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
             <AnimatePresence mode="wait">
-              {displayedEvents.map((event, index) => (
-                <EventCard key={event.id} event={event} index={index} />
+              {displayedEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
               ))}
             </AnimatePresence>
           </div>
@@ -294,7 +330,6 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                   </div>
                 )}
               </div>
-
               <div className="space-y-4 flex-grow">
                 {paginatedBookings.length > 0 ? (
                   paginatedBookings.map((item, index) => {
@@ -324,7 +359,6 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                   </div>
                 )}
               </div>
-
               <div className="mt-8 pt-8 border-t border-dashed border-border text-center">
                 <p className="text-xs text-muted-foreground mb-4 italic">
                   Planning a large gathering? Let our experts handle the
@@ -342,7 +376,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
         </div>
       </div>
 
-      {/* ── Inquiry Modal ──────────────────────────────────────────────────── */}
+      {/* Inquiry Modal */}
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -352,7 +386,6 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
             >
-              {/* Modal header */}
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -373,185 +406,147 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 text-zinc-400"
+                  className="p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
-
-              {/* Modal body */}
               <div className="p-8">
-                {
-                  step === 3 ? (
-                    /* ── Step 3: Thank You ── */
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex flex-col items-center text-center py-4 space-y-5"
+                {step === 3 ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center text-center py-4 space-y-5"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                      <Send size={28} className="text-green-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-serif text-2xl text-zinc-800 dark:text-white">
+                        Thank You, {formData.name || "there"}!
+                      </h3>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                        Your inquiry for{" "}
+                        <span className="font-semibold text-primary">
+                          {bookingType}
+                        </span>{" "}
+                        has been received.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setShowModal(false)}
+                      className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px]"
                     >
-                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                        <Send size={28} className="text-green-500" />
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="font-serif text-2xl text-zinc-800 dark:text-white">
-                          Thank You, {formData.name || "there"}!
-                        </h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                          Your inquiry for{" "}
-                          <span className="font-semibold text-primary">
-                            {bookingType}
-                          </span>{" "}
-                          has been received. We'll get back to you shortly.
-                        </p>
-                      </div>
-                      <div className="w-full pt-2">
-                        <Button
-                          onClick={() => {
-                            setShowModal(false);
-                            setStep(1);
-                          }}
-                          className="w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em]"
-                        >
-                          Close
-                        </Button>
-                      </div>
-                    </motion.div>
-                  ) : step === 1 ? (
-                    /* ── Step 1: Name, Phone, Persons ── */
-                    <div className="space-y-5">
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Full Name
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                          <Input
-                            value={formData.name}
-                            onChange={(e) =>
-                              setFormData({ ...formData, name: e.target.value })
-                            }
-                            placeholder="Your Name"
-                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Phone Number
-                        </label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                          <Input
-                            value={formData.phone}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                phone: e.target.value,
-                              })
-                            }
-                            placeholder="+91"
-                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                          No. of Persons
-                        </label>
-                        <div className="relative">
-                          <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                          <Input
-                            type="number"
-                            min={1}
-                            value={formData.persons}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                persons: e.target.value,
-                              })
-                            }
-                            placeholder="e.g. 10"
-                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                          />
-                        </div>
-                      </div>
-
+                      Close
+                    </Button>
+                  </motion.div>
+                ) : step === 1 ? (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                        Full Name
+                      </label>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        placeholder="Your Name"
+                        className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                        Phone Number
+                      </label>
+                      <Input
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        placeholder="+91"
+                        className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                        No. of Persons
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={formData.persons}
+                        onChange={(e) =>
+                          setFormData({ ...formData, persons: e.target.value })
+                        }
+                        placeholder="e.g. 10"
+                        className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
+                      />
+                    </div>
+                    <Button
+                      disabled={!formData.name || !formData.phone}
+                      onClick={() => setStep(2)}
+                      className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px]"
+                    >
+                      Next Step <ChevronRight size={14} className="ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                        Email Address
+                      </label>
+                      <Input
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        placeholder="email@example.com"
+                        className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase font-black tracking-widest text-primary">
+                        Additional Notes
+                      </label>
+                      <textarea
+                        value={formData.customQuery}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            customQuery: e.target.value,
+                          })
+                        }
+                        placeholder="Special requirements..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl text-sm outline-none resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
                       <Button
-                        disabled={!formData.name || !formData.phone}
-                        onClick={() => setStep(2)}
-                        className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px] tracking-[0.2em]"
+                        variant="outline"
+                        onClick={() => setStep(1)}
+                        className="h-14 rounded-xl px-8"
                       >
-                        Next Step <ChevronRight size={14} className="ml-2" />
+                        Back
+                      </Button>
+                      <Button
+                        disabled={isSubmitting || !formData.email}
+                        onClick={handleFinalSubmit}
+                        className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] shadow-lg shadow-primary/20"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <>
+                            Submit Inquiry <Send size={14} className="ml-2" />
+                          </>
+                        )}
                       </Button>
                     </div>
-                  ) : (
-                    /* ── Step 2: Email, Custom Query, Submit ── */
-                    <div className="space-y-5">
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Email Address
-                        </label>
-                        <div className="relative">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
-                          <Input
-                            value={formData.email}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                email: e.target.value,
-                              })
-                            }
-                            placeholder="email@example.com"
-                            className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                          Additional Notes
-                        </label>
-                        <textarea
-                          value={formData.customQuery}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              customQuery: e.target.value,
-                            })
-                          }
-                          placeholder="Any special requirements, date preference, etc."
-                          rows={3}
-                          className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl text-sm text-zinc-700 dark:text-zinc-300 outline-none resize-none placeholder:text-zinc-400"
-                        />
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setStep(1)}
-                          className="h-14 rounded-xl px-8 dark:text-white"
-                        >
-                          Back
-                        </Button>
-                        <Button
-                          disabled={isSubmitting || !formData.email}
-                          onClick={handleFinalSubmit}
-                          className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
-                        >
-                          {isSubmitting ? (
-                            <Loader2 className="animate-spin" size={18} />
-                          ) : (
-                            <>
-                              Submit Inquiry <Send size={14} className="ml-2" />
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  ) /* end step 2 */
-                }
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -561,15 +556,8 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EVENT CARD
-// ─────────────────────────────────────────────────────────────────────────────
-interface EventCardProps {
-  event: ApiEvent;
-  index: number;
-}
-
-function EventCard({ event, index }: EventCardProps) {
+// ── EVENT CARD COMPONENT ──────────────────────────────────────────────────
+function EventCard({ event }: { event: ApiEvent }) {
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -598,24 +586,16 @@ function EventCard({ event, index }: EventCardProps) {
     .toLocaleDateString("en-US", { month: "short" })
     .toUpperCase();
 
-  const handleCta = () => {
-    if (event.ctaLink) window.open(event.ctaLink, "_blank", "noopener");
-  };
-
   return (
     <motion.div
-      key={event.id}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
       className="group h-[520px] bg-card border rounded-[2.5rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
     >
-      {/* Media */}
       <div
-        className={`relative overflow-hidden transition-all duration-500 ${
-          isBanner ? "h-full" : "h-[280px]"
-        }`}
+        className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[280px]"}`}
       >
         {event.image?.url ? (
           isVideo ? (
@@ -637,7 +617,7 @@ function EventCard({ event, index }: EventCardProps) {
               />
               <button
                 onClick={toggleMute}
-                className="absolute bottom-4 right-4 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors backdrop-blur-sm"
+                className="absolute bottom-4 right-4 z-30 bg-black/60 text-white rounded-full p-2 backdrop-blur-sm"
               >
                 {isMuted ? "🔇" : "🔊"}
               </button>
@@ -659,7 +639,6 @@ function EventCard({ event, index }: EventCardProps) {
           <div className="w-full h-full flex items-center justify-center bg-muted" />
         )}
 
-        {/* Date Badge */}
         <div className="absolute top-5 left-5 z-30 flex flex-col items-center bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-2xl border border-white/10">
           <span className="text-xl font-black leading-none">{day}</span>
           <span className="text-[10px] font-bold tracking-tighter opacity-80">
@@ -667,50 +646,43 @@ function EventCard({ event, index }: EventCardProps) {
           </span>
         </div>
 
-        {/* Location Badge */}
         <div className="absolute top-5 right-5 z-30 bg-primary text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1.5">
           <MapPin size={10} /> {event.locationName}
         </div>
 
-        {/* Banner Overlay */}
         {isBanner && (
           <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-white font-serif font-bold text-2xl">
-                  {event.title}
-                </h3>
-                <p className="text-white/70 text-xs italic line-clamp-2 mt-1">
-                  {event.description}
-                </p>
-              </div>
-              {event.ctaText && (
-                <button
-                  onClick={handleCta}
-                  className="py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-primary text-white shadow-lg"
-                >
-                  {event.ctaText}
-                </button>
-              )}
-            </div>
+            <h3 className="text-white font-serif font-bold text-2xl">
+              {event.title}
+            </h3>
+            <p className="text-white/70 text-xs italic line-clamp-2 mt-1">
+              {event.description}
+            </p>
+            {event.ctaText && (
+              <button
+                onClick={() => window.open(event.ctaLink, "_blank")}
+                className="mt-4 py-3 rounded-xl text-[10px] font-bold uppercase bg-primary text-white"
+              >
+                {event.ctaText}
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* Normal Card Content */}
       {!isBanner && (
         <div className="p-6 flex flex-col flex-1 bg-card text-left">
-          <h3 className="text-lg font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+          <h3 className="text-lg font-serif font-bold group-hover:text-primary transition-colors">
             {event.title}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed mb-4">
+          <p className="text-xs text-muted-foreground line-clamp-3 mt-2">
             {event.description}
           </p>
           {event.ctaText && (
             <div className="mt-auto pt-4 border-t border-dashed border-border">
               <button
-                onClick={handleCta}
-                className="w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-primary text-white"
+                onClick={() => window.open(event.ctaLink, "_blank")}
+                className="w-full py-3 rounded-xl text-[10px] font-bold uppercase bg-primary text-white"
               >
                 {event.ctaText}
               </button>

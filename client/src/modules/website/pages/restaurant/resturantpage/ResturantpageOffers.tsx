@@ -50,7 +50,7 @@ const detectBanner = (image: any) => {
 
   // 2. Filename / URL string hints (catches cases where dimensions are null)
   const name = (image.fileName || "").toLowerCase();
-  const url  = (image.src    || "").toLowerCase();
+  const url = (image.src || "").toLowerCase();
   const sourceString = `${name} ${url}`;
   if (
     sourceString.includes("1080") ||
@@ -68,7 +68,7 @@ const detectBanner = (image: any) => {
 
 // ─── Countdown Timer ─────────────────────────────────────────────────────────
 function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
-  const [label, setLabel]       = useState("");
+  const [label, setLabel] = useState("");
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
@@ -109,9 +109,11 @@ interface ResturantpageOffersProps {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function ResturantpageOffers({ propertyId }: ResturantpageOffersProps) {
-  const [swiper, setSwiper]   = useState<SwiperType | null>(null);
-  const [offers, setOffers]   = useState<any[]>([]);
+export default function ResturantpageOffers({
+  propertyId,
+}: ResturantpageOffersProps) {
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -125,30 +127,37 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
       .then((res) => {
         const raw: any[] = res?.data?.content ?? res?.data ?? [];
 
-        const filtered = raw.filter(
-          (o) =>
+        const now = Date.now();
+
+        const filtered = raw.filter((o) => {
+          const notExpired =
+            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+
+          return (
             o.propertyId === propertyId &&
-            o.isActive   === true        &&
-            o.image?.url,
-        );
+            o.isActive === true &&
+            o.image?.url &&
+            notExpired
+          );
+        });
 
         if (filtered.length > 0) {
           const mapped = filtered.map((o) => ({
-            id:          o.id,
-            title:       o.title       ?? "",
+            id: o.id,
+            title: o.title ?? "",
             description: o.description ?? "",
-            couponCode:  o.couponCode  ?? "",
-            ctaText:     o.ctaText     ?? "",
-            ctaLink:     o.ctaUrl || o.ctaLink || null,
-            expiresAt:   o.expiresAt   ?? null,
+            couponCode: o.couponCode ?? "",
+            ctaText: o.ctaText ?? "",
+            ctaLink: o.ctaUrl || o.ctaLink || null,
+            expiresAt: o.expiresAt ?? null,
             // Map to the shape detectBanner expects (src + fileName)
             image: {
-              src:      o.image.url,
-              type:     o.image.type     ?? "IMAGE",
-              width:    o.image.width    ?? null,
-              height:   o.image.height   ?? null,
+              src: o.image.url,
+              type: o.image.type ?? "IMAGE",
+              width: o.image.width ?? null,
+              height: o.image.height ?? null,
               fileName: o.image.fileName ?? "",
-              alt:      o.title          ?? "Offer",
+              alt: o.title ?? "Offer",
             },
           }));
           setOffers(mapped);
@@ -196,15 +205,23 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
           spaceBetween={0}
           centeredSlides={true}
           loop={offers.length > 1}
-          autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+          autoplay={{
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
           onSwiper={setSwiper}
           className="rounded-[28px]"
         >
           {offers.map((offer, i) => {
-            const isBanner    = detectBanner(offer.image);
-            const isVideo     = offer.image?.type === "VIDEO";
-            const hasContent  = !!(offer.title || offer.description || offer.couponCode);
-            const hasCtaText  = !!(offer.ctaText?.trim());
+            const isBanner = detectBanner(offer.image);
+            const isVideo = offer.image?.type === "VIDEO";
+            const hasContent = !!(
+              offer.title ||
+              offer.description ||
+              offer.couponCode
+            );
+            const hasCtaText = !!offer.ctaText?.trim();
             const isClickable = !!offer.ctaLink;
 
             // Banner (portrait/video) OR offers with no text → fill the fixed frame
@@ -218,7 +235,6 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
                   Images/videos never blow out the container regardless of source dimensions.
                 */}
                 <div className="group h-[520px] bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-[28px] overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl">
-
                   {/* ── MEDIA CONTAINER ────────────────────────────────── */}
                   <div
                     className={`relative overflow-hidden shrink-0 ${
@@ -264,8 +280,8 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
                             </p>
                           )}
                         </div>
-                        {hasCtaText && (
-                          isClickable ? (
+                        {hasCtaText &&
+                          (isClickable ? (
                             <a
                               href={offer.ctaLink}
                               target="_blank"
@@ -281,8 +297,7 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
                             >
                               {offer.ctaText} <ExternalLink size={12} />
                             </button>
-                          )
-                        )}
+                          ))}
                       </div>
                     )}
                   </div>
@@ -299,14 +314,16 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
                       <div className="mt-auto pt-3 border-t border-zinc-100 dark:border-white/10">
                         {offer.couponCode && (
                           <div className="text-[11px] mb-3 flex items-center justify-center gap-2 bg-zinc-50 dark:bg-zinc-800 px-3 py-2 rounded-md border border-dashed border-primary/20">
-                            <span className="text-zinc-400 font-medium uppercase">Code</span>
+                            <span className="text-zinc-400 font-medium uppercase">
+                              Code
+                            </span>
                             <span className="font-mono font-black text-primary text-xs tracking-widest bg-white dark:bg-zinc-900 px-2 py-0.5 rounded shadow-sm border">
                               {offer.couponCode}
                             </span>
                           </div>
                         )}
-                        {hasCtaText && (
-                          isClickable ? (
+                        {hasCtaText &&
+                          (isClickable ? (
                             <a
                               href={offer.ctaLink}
                               target="_blank"
@@ -322,12 +339,10 @@ export default function ResturantpageOffers({ propertyId }: ResturantpageOffersP
                             >
                               {offer.ctaText} <ExternalLink size={12} />
                             </button>
-                          )
-                        )}
+                          ))}
                       </div>
                     </div>
                   )}
-
                 </div>
               </SwiperSlide>
             );

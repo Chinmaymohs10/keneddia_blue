@@ -269,42 +269,49 @@ const FeedbackCard = ({ item }) => {
   };
 
   return (
-    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-3 group transition-all hover:scale-[1.02] overflow-hidden">
-      {/* Media grid — fixed height so cards stay uniform */}
-      <div className="relative h-36 w-full overflow-hidden">
-        {renderMediaGrid()}
-        {/* Overlay with author name on top of media */}
-        {allMedia.length > 0 && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none flex flex-col justify-end p-3">
-            <p className="text-white font-bold text-[10px] uppercase tracking-tight">
-              {item.author}
-            </p>
-          </div>
+    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-4 p-4 group transition-all hover:scale-[1.02]">
+      {/* ⭐ RATING */}
+      <div className="flex items-center gap-1">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={14}
+            className={
+              i < (item.rating ?? 5)
+                ? "fill-primary text-primary"
+                : "text-zinc-300 dark:text-zinc-600"
+            }
+          />
+        ))}
+        {item.rating && (
+          <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-300 ml-1">
+            ({item.rating}/5)
+          </span>
         )}
       </div>
 
-      {/* Text content */}
-      <div className="px-4 pb-4 flex flex-col gap-2">
-        {/* Title row — shows star emojis from title field e.g. "⭐⭐⭐⭐☆ (4/5) ..." */}
-        {item.title && (
-          <p className="text-[11px] font-bold text-zinc-800 dark:text-white leading-snug line-clamp-2">
-            {item.title}
-          </p>
-        )}
-        {item.description && (
-          <p className="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed italic line-clamp-2">
-            "{item.description}"
-          </p>
-        )}
-        {/* Author row always shown at bottom */}
-        <div className="flex items-center gap-2 pt-1">
-          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[8px] shrink-0">
-            {item.author?.charAt(0)?.toUpperCase() ?? "G"}
-          </div>
-          <span className="text-[9px] font-bold dark:text-zinc-300 uppercase tracking-tighter truncate">
-            {item.author}
-          </span>
+      {/* ✍️ DESCRIPTION */}
+      {item.description && (
+        <p className="text-zinc-600 dark:text-zinc-400 text-[12px] italic leading-relaxed">
+          "{item.description}"
+        </p>
+      )}
+
+      {/* 🖼 MEDIA */}
+      {allMedia.length > 0 && (
+        <div className="relative h-32 w-full overflow-hidden rounded-xl">
+          {renderMediaGrid()}
         </div>
+      )}
+
+      {/* 👤 USER */}
+      <div className="flex items-center gap-2 pt-2">
+        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">
+          {item.author?.charAt(0)?.toUpperCase() ?? "G"}
+        </div>
+        <span className="text-[11px] font-bold dark:text-zinc-300 uppercase tracking-tight truncate">
+          {item.author}
+        </span>
       </div>
     </div>
   );
@@ -312,7 +319,7 @@ const FeedbackCard = ({ item }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AutoTestimonials({ propertyId }) {
-  console.log('propertyId',propertyId)
+  console.log("propertyId", propertyId);
   const containerRef = useRef(null);
   const fileInputRef = useRef(null);
   const [testimonialHeader, setTestimonialHeader] = useState({

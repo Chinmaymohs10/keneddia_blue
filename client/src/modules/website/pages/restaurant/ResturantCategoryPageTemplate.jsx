@@ -358,6 +358,7 @@ function ResturantCategoryPageTemplate() {
             <CategoryMenu
               menu={resolvedMenu}
               themeColor={currentCategory.themeColor}
+              propertyId={propertyId}
             />
           ) : (
             <div className="py-20 text-center text-muted-foreground">
