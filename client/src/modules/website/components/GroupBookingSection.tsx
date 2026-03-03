@@ -114,7 +114,9 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       className="group h-[440px] bg-card border rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       <div
-        className={`relative overflow-hidden transition-all duration-500 ${isBanner ? "h-full" : "h-[220px]"}`}
+        className={`relative overflow-hidden transition-all duration-500 ${
+          isBanner ? "h-full" : "h-[220px]"
+        } flex items-start justify-center bg-card`}
       >
         {event.image?.url ? (
           isVideo ? (
@@ -349,7 +351,7 @@ export default function GroupBookingSection() {
                   onSwiper={setSwiper}
                   breakpoints={{
                     640: { slidesPerView: 2 },
-                    1024: { slidesPerView: 3 },
+                    1024: { slidesPerView:2.4 }, // 👈 slightly wider cards
                   }}
                   className="!pb-10"
                 >

@@ -341,7 +341,7 @@ function ResturantCategoryPageTemplate() {
   /* ── Page ── */
   return (
     <div className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
-      <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo} />
+      <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
 
       <main>
         {/* Hero */}

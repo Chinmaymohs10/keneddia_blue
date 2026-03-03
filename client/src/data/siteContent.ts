@@ -1,5 +1,6 @@
 import placeholderImg from "@assets/placeholder.svg";
 import brandLogo from "@assets/logo/kb-logo1.png";
+import hotelLogo from "@assets/logo/hotel-kennedia-transparent.png";
 import brandLogo_main from "@assets/logo/kb-logo-main.png";
 import brandLogo_red from "@assets/logo/kb-logo-red.jpg";
 import brandLogo_black from "@assets/logo/kb-logo-black2.png";
@@ -58,7 +59,7 @@ export const siteContent = {
     },
     logo_hotel: {
       text: "Kennedia Blu Hotels",
-      image: { src: brandLogoHotel, alt: "Kennedia Blu Hotels Logo", priority: false },
+      image: { src: hotelLogo, alt: "Kennedia Blu Hotels Logo", priority: false },
       fallbackText: "KENNEDIA BLU HOTELS"
     },
     logo_cafe: {

@@ -127,7 +127,7 @@ export default function EventsSection() {
           modules={[Autoplay, Pagination, Navigation]}
           spaceBetween={20}
           slidesPerView={1}
-           autoplay={{
+          autoplay={{
             delay: 5000,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
@@ -197,9 +197,9 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
     >
       {/* Media Container */}
       <div
-        className={`relative overflow-hidden transition-all duration-500 ${
+        className={`relative overflow-hidden ${
           isBanner ? "h-full" : "h-[280px]"
-        }`}
+        } flex items-start justify-center bg-card`}
       >
         {event.image?.url ? (
           isVideo ? (
@@ -207,7 +207,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               <video
                 ref={videoRef}
                 src={event.image.url}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+               className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
                 autoPlay
                 loop
                 muted
@@ -236,7 +236,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <img
               src={event.image.url}
               alt={event.title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+             className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
               onLoad={(e) =>
                 analyzeMediaSize(
                   e.currentTarget.naturalWidth,

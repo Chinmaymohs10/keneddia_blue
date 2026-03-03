@@ -262,7 +262,11 @@ export default function HotelOffersCarousel() {
                         <img
                           src={offer.image.src}
                           alt={offer.image.alt}
-                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                          className={`w-full h-full ${
+                            showFullImage
+                              ? "object-contain bg-black"
+                              : "object-cover"
+                          } object-center transition-transform duration-500 group-hover:scale-105`}
                         />
                       )
                     ) : (
