@@ -37,7 +37,7 @@ const GalleryTab = ({ propertyData }) => {
     
     try {
       // Fetch all galleries with pagination
-      const response = await getAllGalleries({ page, size: 50 });
+      const response = await getAllGalleries({ page, size: 100 });
       // Extract data from response
       const rawData = response?.data?.data || response?.data || response;
       const allItems = rawData?.content || (Array.isArray(rawData) ? rawData : []);

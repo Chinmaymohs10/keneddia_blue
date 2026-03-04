@@ -289,7 +289,7 @@ export const updatePropertyPolicyStatus = (propertyId, isActive) =>
 // ===============================
 export const uploadGalleryMedia = (formData) =>API.post("api/v1/gallery/upload", formData);
 export const updateGalleryMedia = (galleryId, formData) =>API.put(`api/v1/gallery/${galleryId}/media`, formData);
-export const getAllGalleries = ({ page = 0, size = 10 }) =>API.get("api/v1/gallery/showAll", { params: { page, size } });
+export const getAllGalleries = ({ page = 1, size = 100 }) =>API.get("api/v1/gallery/showAll", { params: { page, size } });
 export const getGalleryById = (id) => API.get(`api/v1/gallery/${id}`);
 export const deleteGalleryById = (id) => API.delete(`api/v1/gallery/${id}`);
 
