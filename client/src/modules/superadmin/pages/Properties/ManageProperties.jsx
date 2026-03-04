@@ -33,21 +33,23 @@ function ManageProperties() {
   const [activeMainTab, setActiveMainTab] = useState("properties");
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All Types");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
   const [showAddTypeModal, setShowAddTypeModal] = useState(false);
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
 
   const [editItem, setEditItem] = useState(null);
-  const [editTypeItem, setEditTypeItem] = useState(null);       // type being edited
-  const [editCategoryItem, setEditCategoryItem] = useState(null); // category being edited
+  const [editTypeItem, setEditTypeItem] = useState(null);
+  const [editCategoryItem, setEditCategoryItem] = useState(null);
   const [selectedProperty, setSelectedProperty] = useState(null);
 
   const [properties, setProperties] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [propertyCategories, setPropertyCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(null); // "prop-{id}" | "type-{id}" | "cat-{id}"
+  const [actionLoading, setActionLoading] = useState(null);
 
   // ── Fetch all data ─────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -73,8 +75,42 @@ function ManageProperties() {
     fetchData();
   }, [fetchData]);
 
-  const getPropertyData = (item) =>
-    item?.propertyResponseDTO ? item.propertyResponseDTO : item;
+  // ── Reset to page 1 whenever filters change ───────────────────────────────
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter]);
+
+  // ── Always unwrap the propertyResponseDTO wrapper ─────────────────────────
+  const getPropertyData = (item) => item?.propertyResponseDTO ?? item;
+
+  // ── Filter: search + type ─────────────────────────────────────────────────
+  // API response shape: [{ propertyResponseDTO: {...}, propertyListingResponseDTOS: [...] }]
+  // propertyTypes inside DTO is string[], e.g. ["Hotel"]
+  const filteredProperties = properties.filter((item) => {
+    const p = item?.propertyResponseDTO ?? item;
+    const search = searchTerm.toLowerCase().trim();
+
+    const matchesSearch =
+      !search ||
+      p.propertyName?.toLowerCase().includes(search) ||
+      p.locationName?.toLowerCase().includes(search) ||
+      p.assignedAdminName?.toLowerCase().includes(search);
+
+    const matchesType =
+      typeFilter === "All Types" ||
+      (Array.isArray(p.propertyTypes)
+        ? p.propertyTypes.includes(typeFilter)
+        : p.propertyTypes === typeFilter);
+
+    return matchesSearch && matchesType;
+  });
+
+  const totalPages = Math.ceil(filteredProperties.length / ITEMS_PER_PAGE);
+
+  const paginatedProperties = filteredProperties.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   // ── Toggle property enable / disable ──────────────────────────────────────
   const handleTogglePropertyStatus = async (item) => {
@@ -162,7 +198,7 @@ function ManageProperties() {
     </thead>
   );
 
-  // ── Property Detail view ───────────────────────────────────────────────────
+  // ── Property Detail drill-down ─────────────────────────────────────────────
   if (selectedProperty) {
     return (
       <Layout role="superadmin" showActions={false}>
@@ -186,7 +222,7 @@ function ManageProperties() {
   return (
     <Layout role="superadmin" showActions={false}>
       <div className="h-full flex flex-col space-y-4 p-6 bg-gray-50/30">
-        {/* ── Header ─────────────────────────────────────────────────────── */}
+        {/* ── Page Header ────────────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
@@ -205,7 +241,8 @@ function ManageProperties() {
             className="px-5 py-2.5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-md"
             style={{ backgroundColor: colors.primary }}
           >
-            <Plus size={18} /> Create{" "}
+            <Plus size={18} />
+            Create{" "}
             {activeMainTab === "properties"
               ? "Property"
               : activeMainTab === "types"
@@ -233,11 +270,10 @@ function ManageProperties() {
 
         {/* ── Main Content Card ───────────────────────────────────────────── */}
         <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-
-          {/* ════ PROPERTIES TAB ════ */}
+          {/* ════════════════ PROPERTIES TAB ════════════════ */}
           {activeMainTab === "properties" && (
             <>
-              {/* Filters */}
+              {/* Filters bar */}
               <div className="p-4 border-b bg-white flex flex-wrap items-center justify-between gap-4">
                 <div className="relative">
                   <Search
@@ -246,7 +282,7 @@ function ManageProperties() {
                   />
                   <input
                     type="text"
-                    placeholder="Search properties..."
+                    placeholder="Search by name, location or admin…"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm w-80 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all shadow-sm"
@@ -283,23 +319,35 @@ function ManageProperties() {
                           <Loader2 className="animate-spin mx-auto text-blue-500" />
                         </td>
                       </tr>
+                    ) : paginatedProperties.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="py-20 text-center text-sm text-gray-400 italic"
+                        >
+                          No properties match your search.
+                        </td>
+                      </tr>
                     ) : (
-                      properties.map((item) => {
-                        const p = getPropertyData(item);
+                      paginatedProperties.map((item) => {
+                        const p = item?.propertyResponseDTO ?? item;
                         return (
                           <tr
                             key={p.id}
                             className="hover:bg-gray-50/50 transition-colors"
                           >
+                            {/* Property name + admin */}
                             <td className="px-6 py-4">
                               <div className="font-bold text-gray-900">
                                 {p.propertyName}
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-blue-500 font-black uppercase mt-1">
-                                <User size={12} />{" "}
+                                <User size={12} />
                                 {p.assignedAdminName || "Unassigned"}
                               </div>
                             </td>
+
+                            {/* Location */}
                             <td className="px-6 py-4">
                               <div className="text-sm font-bold text-gray-700">
                                 {p.locationName}
@@ -308,11 +356,22 @@ function ManageProperties() {
                                 {p.address}
                               </div>
                             </td>
+
+                            {/* Types — array of strings */}
                             <td className="px-6 py-4">
-                              <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase">
-                                {p.propertyTypes?.[0] || "Standard"}
-                              </span>
+                              <div className="flex flex-wrap gap-1">
+                                {(p.propertyTypes || []).map((t, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase"
+                                  >
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
                             </td>
+
+                            {/* Status */}
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${
@@ -324,6 +383,8 @@ function ManageProperties() {
                                 {p.isActive ? "Active" : "Inactive"}
                               </span>
                             </td>
+
+                            {/* Actions */}
                             <td className="px-6 py-4 text-center">
                               <div className="flex justify-center gap-2">
                                 <button
@@ -341,7 +402,9 @@ function ManageProperties() {
                                   <Edit2 size={15} />
                                 </button>
                                 <button
-                                  onClick={() => handleTogglePropertyStatus(item)}
+                                  onClick={() =>
+                                    handleTogglePropertyStatus(item)
+                                  }
                                   title={p.isActive ? "Deactivate" : "Activate"}
                                   disabled={actionLoading === `prop-${p.id}`}
                                   className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
@@ -351,7 +414,10 @@ function ManageProperties() {
                                   }`}
                                 >
                                   {actionLoading === `prop-${p.id}` ? (
-                                    <Loader2 size={15} className="animate-spin" />
+                                    <Loader2
+                                      size={15}
+                                      className="animate-spin"
+                                    />
                                   ) : (
                                     <Power size={15} />
                                   )}
@@ -365,10 +431,62 @@ function ManageProperties() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination footer */}
+              {!loading && filteredProperties.length > 0 && (
+                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white shrink-0">
+                  <p className="text-xs text-gray-400 font-medium">
+                    Showing{" "}
+                    <span className="font-bold text-gray-700">
+                      {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                      {Math.min(
+                        currentPage * ITEMS_PER_PAGE,
+                        filteredProperties.length,
+                      )}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-bold text-gray-700">
+                      {filteredProperties.length}
+                    </span>{" "}
+                    properties
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 text-xs font-bold rounded-lg transition-all ${
+                            currentPage === page
+                              ? "bg-blue-600 text-white shadow-sm"
+                              : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    )}
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
-          {/* ════ TYPES TAB ════ */}
+          {/* ════════════════ TYPES TAB ════════════════ */}
           {activeMainTab === "types" && (
             <div className="flex-1 overflow-auto">
               <table className="w-full text-left">
@@ -380,7 +498,10 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyTypes.map((type) => (
-                    <tr key={type.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={type.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4 text-sm text-gray-500">
                         #{type.id}
                       </td>
@@ -400,7 +521,6 @@ function ManageProperties() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex justify-center gap-2">
-                          {/* Edit */}
                           <button
                             onClick={() => setEditTypeItem(type)}
                             title="Edit Type"
@@ -408,7 +528,6 @@ function ManageProperties() {
                           >
                             <Edit2 size={15} />
                           </button>
-                          {/* Toggle status */}
                           <button
                             onClick={() => handleToggleTypeStatus(type)}
                             title={type.isActive ? "Deactivate" : "Activate"}
@@ -434,7 +553,7 @@ function ManageProperties() {
             </div>
           )}
 
-          {/* ════ CATEGORIES TAB ════ */}
+          {/* ════════════════ CATEGORIES TAB ════════════════ */}
           {activeMainTab === "categories" && (
             <div className="flex-1 overflow-auto">
               <table className="w-full text-left">
@@ -446,7 +565,10 @@ function ManageProperties() {
                 ])}
                 <tbody className="divide-y divide-gray-100">
                   {propertyCategories.map((cat) => (
-                    <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={cat.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4 font-bold text-gray-900">
                         {cat.categoryName}
                       </td>
@@ -466,7 +588,6 @@ function ManageProperties() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex justify-center gap-2">
-                          {/* Edit */}
                           <button
                             onClick={() => setEditCategoryItem(cat)}
                             title="Edit Category"
@@ -474,7 +595,6 @@ function ManageProperties() {
                           >
                             <Edit2 size={15} />
                           </button>
-                          {/* Toggle status */}
                           <button
                             onClick={() => handleToggleCategoryStatus(cat)}
                             title={cat.isActive ? "Deactivate" : "Activate"}

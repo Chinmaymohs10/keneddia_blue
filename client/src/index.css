@@ -180,3 +180,26 @@ input:focus, select:focus, textarea:focus {
   outline: none !important;
   box-shadow: none !important;
 }
+
+@keyframes marquee-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes marquee-down {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+.animate-marquee-up {
+  animation: marquee-up 40s linear infinite;
+}
+
+.animate-marquee-down {
+  animation: marquee-down 40s linear infinite;
+}
+
+/* ⭐ pause animation when hovering container */
+.group:hover .marquee-col {
+  animation-play-state: paused;
+}

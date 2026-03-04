@@ -59,7 +59,7 @@ export default function CategoryMenu({
         date: formData.date,
         time: formData.time, // Now captured from manual input
         totalGuest: Number(formData.totalGuest), // Now captured from manual input
-        propertyId: 27, // Set to 27 as per your requirement
+        propertyId: propertyId,
         description: `Category: ${currentCategory} | Request: ${itemType} | Email: ${formData.email}`,
       };
 

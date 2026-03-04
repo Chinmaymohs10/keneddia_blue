@@ -252,8 +252,6 @@ export default function CategoryHero({
                   <span className="text-sm font-medium">
                     {location}
                     {city && location !== city ? `, ${city}` : ""}
-                    {" • ID: "}
-                    {propertyId}
                   </span>
                 </div>
                 <a

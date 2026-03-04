@@ -607,10 +607,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                       <div className="flex items-center justify-center gap-1.5 text-primary">
                         <Heart size={14} className="fill-primary" />
                         <span className="text-sm font-black">
-                          <AnimatedCounter
-                            target={isLiked ? likes + 1 : likes}
-                          />
-                          +
+                          <AnimatedCounter target={likes} />+
                         </span>
                       </div>
                     </div>
@@ -725,7 +722,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   </div>
                 )}
 
-                <Input
+                {/* <Input
                   placeholder={
                     bookingModal.type === "like"
                       ? "Leave a comment (optional)"
@@ -736,7 +733,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                     setLikeForm((f) => ({ ...f, description: e.target.value }))
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                />
+                /> */}
 
                 <Button
                   disabled={!likeForm.name || !likeForm.phone || likeSubmitting}

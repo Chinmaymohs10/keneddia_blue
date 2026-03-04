@@ -268,8 +268,13 @@ const FeedbackCard = ({ item }) => {
     );
   };
 
+  const cardRating = (() => {
+    const match = item.title?.match(/\((\d+)\/5\)/);
+    return match ? Number(match[1]) : 5;
+  })();
+
   return (
-    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-4 p-4 group transition-all hover:scale-[1.02]">
+    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-4 p-4 group transition-all hover:scale-[1.02] cursor-pointer">
       {/* ⭐ RATING */}
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
@@ -277,17 +282,15 @@ const FeedbackCard = ({ item }) => {
             key={i}
             size={14}
             className={
-              i < (item.rating ?? 5)
+              i < cardRating
                 ? "fill-primary text-primary"
                 : "text-zinc-300 dark:text-zinc-600"
             }
           />
         ))}
-        {item.rating && (
-          <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-300 ml-1">
-            ({item.rating}/5)
-          </span>
-        )}
+        <span className="text-[11px] font-bold text-zinc-600 dark:text-zinc-300 ml-1">
+          ({cardRating}/5)
+        </span>
       </div>
 
       {/* ✍️ DESCRIPTION */}
@@ -554,6 +557,23 @@ export default function AutoTestimonials({ propertyId }) {
   const displayData = experiences.length > 0 ? experiences : FALLBACK;
   const displayCol1 = displayData.filter((_, i) => i % 2 === 0);
   const displayCol2 = displayData.filter((_, i) => i % 2 === 1);
+  const extractRatingFromTitle = (title = "") => {
+    const match = title?.match(/\((\d+)\/5\)/);
+    return match ? Number(match[1]) : null;
+  };
+
+  const validRatings = experiences
+    .map((e) => extractRatingFromTitle(e.title))
+    .filter((r) => r !== null);
+
+  const avgRating =
+    validRatings.length > 0
+      ? (
+          validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
+        ).toFixed(1)
+      : null;
+
+  const totalGuests = experiences.length;
 
   // Step labels
   const STEP_LABELS = { 1: "Your Story", 2: "Your Details" };
@@ -602,22 +622,30 @@ export default function AutoTestimonials({ propertyId }) {
             </div>
 
             <div className="pt-8 border-t border-zinc-100 dark:border-white/10 flex items-center gap-6">
-              {/* <div className="text-center">
+              <div className="text-center">
                 <p className="text-4xl font-serif dark:text-white leading-none">
-                  4.9
+                  {avgRating ?? "—"}
                 </p>
                 <div className="flex gap-0.5 mt-2 justify-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-3 h-3 fill-primary text-primary"
+                      className={`w-3 h-3 ${
+                        i < Math.round(Number(avgRating))
+                          ? "fill-primary text-primary"
+                          : "fill-zinc-200 text-zinc-200 dark:fill-zinc-700 dark:text-zinc-700"
+                      }`}
                     />
                   ))}
                 </div>
               </div>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-tight">
-                Trusted by <br /> 1,200+ Guests
-              </p> */}
+                Trusted by <br />
+                <span className="text-zinc-700 dark:text-zinc-300 font-light text-sm">
+                  {totalGuests.toLocaleString()}+
+                </span>{" "}
+                Guests
+              </p>
             </div>
           </div>
 
@@ -629,12 +657,12 @@ export default function AutoTestimonials({ propertyId }) {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group">
-                <div className="flex flex-col gap-6 animate-marquee-up group-hover:[animation-play-state:paused]">
+                <div className="flex flex-col gap-6 animate-marquee-up marquee-col">
                   {[...displayCol1, ...displayCol1].map((item, i) => (
                     <FeedbackCard key={`up-${item.id}-${i}`} item={item} />
                   ))}
                 </div>
-                <div className="flex flex-col gap-6 animate-marquee-down group-hover:[animation-play-state:paused]">
+               <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
                   {[...displayCol2, ...displayCol2].map((item, i) => (
                     <FeedbackCard key={`dn-${item.id}-${i}`} item={item} />
                   ))}
