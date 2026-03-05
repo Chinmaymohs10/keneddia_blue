@@ -6,6 +6,7 @@ import {
   ArrowPathIcon,
   Squares2X2Icon,
   ListBulletIcon,
+  PencilIcon,
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
@@ -14,12 +15,14 @@ import {
   getAllGalleries,
   deleteGalleryById,
   getGalleryByPropertyId,
+  updateGalleryMedia,
 } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import AddMediaModal from "../modals/AddMediaModal";
 
 const GalleryTab = ({ propertyData }) => {
   const [galleryItems, setGalleryItems] = useState([]);
+  const [editingItem, setEditingItem] = useState(null);
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -211,14 +214,26 @@ const GalleryTab = ({ propertyData }) => {
 
                 {/* Display Order Bar — always visible at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 bg-black/65 backdrop-blur-sm px-2.5 py-1.5 flex items-center justify-between z-10">
-                  <span className="text-[10px] text-gray-300 font-medium">Order</span>
+                  <span className="text-[10px] text-gray-300 font-medium">
+                    Order
+                  </span>
                   <span className="text-xs font-bold text-white bg-white/20 border border-white/30 rounded px-2 py-0.5 min-w-[28px] text-center">
                     {item.displayOrder ?? "—"}
                   </span>
                 </div>
-
                 {/* Delete Button Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-20">
+                  {/* ── EDIT ── */}
+                  <button
+                    onClick={() => {
+                      setEditingItem(item);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-3 bg-white text-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 shadow-xl"
+                  >
+                    <PencilIcon className="w-5 h-5" />
+                  </button>
+                  {/* ── DELETE ── */}
                   <button
                     onClick={() => handleDelete(item.id)}
                     disabled={deletingId === item.id}
@@ -296,6 +311,30 @@ const GalleryTab = ({ propertyData }) => {
                       </span>
                     </td>
                     <td className="px-6 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          disabled={deletingId === item.id}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {deletingId === item.id ? (
+                            <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <TrashIcon className="w-5 h-5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-center">
                       <button
                         onClick={() => handleDelete(item.id)}
                         disabled={deletingId === item.id}
@@ -338,11 +377,16 @@ const GalleryTab = ({ propertyData }) => {
       {isModalOpen && (
         <AddMediaModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingItem(null);
+          }}
           propertyData={propertyData}
+          editingItem={editingItem}
           onSuccess={() => {
             fetchGallery(currentPage);
             setIsModalOpen(false);
+            setEditingItem(null);
           }}
         />
       )}

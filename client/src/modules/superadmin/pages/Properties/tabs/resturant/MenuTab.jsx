@@ -899,7 +899,7 @@ function ItemLikesPanel({ propertyId }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              {["#", "User", "Mobile", "Item", "Total Likes", "Note"].map(
+              {["#", "User", "Mobile", "Item","Note"].map(
                 (h) => (
                   <th
                     key={h}
@@ -943,12 +943,12 @@ function ItemLikesPanel({ propertyId }) {
                     {l.itemName || "—"}
                   </span>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                {/* <td className="px-4 py-3 whitespace-nowrap">
                   <span className="flex items-center gap-1 text-xs font-bold text-rose-500">
                     <Heart size={12} className="fill-rose-500" />
                     {l.totalLikeCount?.toLocaleString() || 0}
                   </span>
-                </td>
+                </td> */}
                 <td className="px-4 py-3 max-w-[200px]">
                   <p className="text-xs text-gray-400 italic truncate">
                     {l.description || "—"}

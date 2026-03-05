@@ -9,7 +9,7 @@ import {
   TagIcon,
 } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
-import { uploadGalleryMedia } from "@/Api/Api";
+import { uploadGalleryMedia, updateGalleryMedia } from "@/Api/Api";
 import {
   createGalleryDropdown,
   getAllGalleryDropdown,
@@ -18,26 +18,20 @@ import {
 } from "@/Api/RestaurantApi";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
-// ─── tiny helpers ────────────────────────────────────────────────────────────
 const unwrap = (res) => (Array.isArray(res) ? res : (res?.data ?? []));
 
 // ============================================================================
-// CATEGORY MANAGER (inline panel)
+// CATEGORY MANAGER
 // ============================================================================
 const CategoryManager = ({ onClose, onCategoryChange }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // new-category input
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
-
-  // inline edit
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState("");
   const [savingId, setSavingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
-
   const inputRef = useRef(null);
 
   const load = async () => {
@@ -55,8 +49,6 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
   useEffect(() => {
     load();
   }, []);
-
-  // focus new-name input when panel opens
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -113,7 +105,6 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b flex-shrink-0">
         <div className="flex items-center gap-2">
           <TagIcon className="w-5 h-5 text-gray-500" />
@@ -130,7 +121,6 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        {/* Create new */}
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -152,28 +142,22 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
           </button>
         </div>
 
-        {/* List */}
         {loading ? (
           <div className="flex justify-center py-8">
             <Spinner className="w-6 h-6 text-gray-400" />
           </div>
         ) : categories.length === 0 ? (
           <p className="text-center text-sm text-gray-400 py-8">
-            No categories yet. Create one above.
+            No categories yet.
           </p>
         ) : (
           <ul className="space-y-2">
             {categories.map((cat) => (
               <li
                 key={cat.id}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all ${
-                  cat.isActive
-                    ? "border-gray-200 bg-white"
-                    : "border-gray-100 bg-gray-50 opacity-60"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all ${cat.isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"}`}
               >
                 {editId === cat.id ? (
-                  /* ── inline edit mode ── */
                   <>
                     <input
                       value={editName}
@@ -204,24 +188,15 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
                     </button>
                   </>
                 ) : (
-                  /* ── display mode ── */
                   <>
                     <span className="flex-1 text-sm font-medium text-gray-800 truncate">
                       {cat.name}
                     </span>
-
-                    {/* Status pill */}
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        cat.isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.isActive ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}
                     >
                       {cat.isActive ? "Active" : "Disabled"}
                     </span>
-
-                    {/* Edit */}
                     <button
                       onClick={() => {
                         setEditId(cat.id);
@@ -232,20 +207,14 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
                     >
                       <PencilIcon className="w-3.5 h-3.5" />
                     </button>
-
-                    {/* Toggle */}
                     <button
                       onClick={() => handleToggle(cat)}
                       disabled={togglingId === cat.id}
-                      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                        cat.isActive ? "bg-green-500" : "bg-gray-300"
-                      } ${togglingId === cat.id ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${cat.isActive ? "bg-green-500" : "bg-gray-300"} ${togglingId === cat.id ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
                       title={cat.isActive ? "Disable" : "Enable"}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${
-                          cat.isActive ? "translate-x-4" : "translate-x-0"
-                        }`}
+                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${cat.isActive ? "translate-x-4" : "translate-x-0"}`}
                       />
                     </button>
                   </>
@@ -269,7 +238,7 @@ const CategoryManager = ({ onClose, onCategoryChange }) => {
 };
 
 // ============================================================================
-// SPINNER HELPER
+// SPINNER
 // ============================================================================
 const Spinner = ({ className = "w-4 h-4" }) => (
   <svg className={`animate-spin ${className}`} viewBox="0 0 24 24">
@@ -291,15 +260,30 @@ const Spinner = ({ className = "w-4 h-4" }) => (
 );
 
 // ============================================================================
-// MAIN MODAL
+// MAIN MODAL  —  supports both upload (editingItem=null) and edit (editingItem=GalleryItem)
 // ============================================================================
-const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
+const AddMediaModal = ({
+  isOpen,
+  onClose,
+  propertyData,
+  onSuccess,
+  editingItem = null,
+}) => {
+  const isEditMode = !!editingItem;
+
+  // ── upload state (only used in create mode) ───────────────────────────────
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [displayOrders, setDisplayOrders] = useState([]);
-  const [categoryId, setCategoryId] = useState("");
   const [previews, setPreviews] = useState([]);
-  const [uploading, setUploading] = useState(false);
 
+  // ── edit state (only used in edit mode) ───────────────────────────────────
+  const [editDisplayOrder, setEditDisplayOrder] = useState("");
+  const [editFile, setEditFile] = useState(null);
+  const [editPreview, setEditPreview] = useState("");
+
+  // ── shared ────────────────────────────────────────────────────────────────
+  const [categoryId, setCategoryId] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -313,7 +297,6 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
       const all = unwrap(res);
       const active = all.filter((c) => c.isActive);
       setCategories(active);
-      // Keep current selection if still valid, else pick first
       setCategoryId((prev) =>
         active.find((c) => c.id === prev) ? prev : (active[0]?.id ?? ""),
       );
@@ -324,21 +307,34 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
     }
   };
 
+  // Hydrate when opening
   useEffect(() => {
-    if (isOpen) loadCategories();
+    if (isOpen) {
+      loadCategories();
+      if (isEditMode) {
+        // Pre-fill from existing item
+        setCategoryId(editingItem.categoryId ?? "");
+        setEditDisplayOrder(editingItem.displayOrder ?? "");
+        setEditPreview(editingItem.media?.url ?? "");
+        setEditFile(null);
+      }
+    }
   }, [isOpen]);
 
-  // Reset files when modal closes
+  // Reset on close
   useEffect(() => {
     if (!isOpen) {
       setSelectedFiles([]);
       setPreviews([]);
       setDisplayOrders([]);
+      setEditFile(null);
+      setEditPreview("");
+      setEditDisplayOrder("");
       setShowCategoryManager(false);
     }
   }, [isOpen]);
 
-  // Preview URLs
+  // Preview URLs for create mode
   useEffect(() => {
     if (selectedFiles.length === 0) {
       setPreviews([]);
@@ -349,6 +345,7 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, [selectedFiles]);
 
+  // ── Create mode: file selection ───────────────────────────────────────────
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -372,52 +369,93 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
     setDisplayOrders((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ── Edit mode: replacement file ───────────────────────────────────────────
+  const handleEditFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      showError("Only images and videos are allowed.");
+      return;
+    }
+    setEditFile(file);
+    setEditPreview(URL.createObjectURL(file));
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!propId) return showError("Property ID is missing");
-    if (!selectedFiles.length)
-      return showError("Please select at least one file");
-    if (!categoryId) return showError("Please select a category");
 
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      selectedFiles.forEach((f) => formData.append("files", f));
-      formData.append("categoryId", categoryId.toString());
-      formData.append("propertyId", propId.toString());
-      selectedFiles.forEach((_, i) =>
-        formData.append("displayOrders", displayOrders[i] ?? i + 1),
-      );
+    if (isEditMode) {
+      // ── EDIT ──
+      if (!categoryId) return showError("Please select a category");
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("categoryId", categoryId.toString());
+        formData.append("propertyId", propId.toString());
+        if (editDisplayOrder !== "")
+          formData.append("displayOrder", editDisplayOrder.toString());
+        if (editFile) formData.append("file", editFile);
 
-      await uploadGalleryMedia(formData);
-      showSuccess(`Successfully uploaded ${selectedFiles.length} file(s)`);
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      showError(error?.response?.data?.message || "Failed to upload media");
-    } finally {
-      setUploading(false);
+        await updateGalleryMedia(editingItem.id, formData);
+        showSuccess("Media updated successfully");
+        onSuccess?.();
+        onClose();
+      } catch (error) {
+        showError(error?.response?.data?.message || "Failed to update media");
+      } finally {
+        setUploading(false);
+      }
+    } else {
+      // ── CREATE ──
+      if (!propId) return showError("Property ID is missing");
+      if (!selectedFiles.length)
+        return showError("Please select at least one file");
+      if (!categoryId) return showError("Please select a category");
+
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        selectedFiles.forEach((f) => formData.append("files", f));
+        formData.append("categoryId", categoryId.toString());
+        formData.append("propertyId", propId.toString());
+        selectedFiles.forEach((_, i) =>
+          formData.append("displayOrders", displayOrders[i] ?? i + 1),
+        );
+
+        await uploadGalleryMedia(formData);
+        showSuccess(`Successfully uploaded ${selectedFiles.length} file(s)`);
+        onSuccess?.();
+        onClose();
+      } catch (error) {
+        showError(error?.response?.data?.message || "Failed to upload media");
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
   if (!isOpen) return null;
 
+  const isSubmitDisabled =
+    uploading ||
+    !categoryId ||
+    categoriesLoading ||
+    (!isEditMode && !selectedFiles.length);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      {/* Outer wrapper — two panels side by side when manager is open */}
       <div
         className={`flex gap-3 w-full max-w-4xl transition-all duration-300`}
       >
-        {/* ── UPLOAD PANEL ── */}
+        {/* ── MAIN PANEL ── */}
         <div
-          className={`bg-white rounded-xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col transition-all duration-300 ${
-            showCategoryManager ? "w-[55%]" : "w-full max-w-2xl mx-auto"
-          }`}
+          className={`bg-white rounded-xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col transition-all duration-300 ${showCategoryManager ? "w-[55%]" : "w-full max-w-2xl mx-auto"}`}
         >
           {/* Header */}
           <div className="px-6 py-4 border-b flex justify-between items-center flex-shrink-0">
             <h3 className="text-lg font-semibold text-gray-900">
-              Upload Gallery Media
+              {isEditMode ? "Edit Gallery Media" : "Upload Gallery Media"}
             </h3>
             <button
               onClick={onClose}
@@ -461,16 +499,10 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
                       ))}
                     </select>
                   )}
-
-                  {/* Manage button */}
                   <button
                     type="button"
                     onClick={() => setShowCategoryManager((v) => !v)}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                      showCategoryManager
-                        ? "bg-gray-900 text-white border-gray-900"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${showCategoryManager ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}`}
                   >
                     <TagIcon className="w-3.5 h-3.5" />
                     {showCategoryManager ? "Hide" : "Manage"}
@@ -478,104 +510,202 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
                 </div>
               </div>
 
-              {/* File Upload Area */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Files <span className="text-red-500">*</span>
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors bg-gray-50">
-                  <input
-                    type="file"
-                    id="file-upload"
-                    multiple
-                    accept="image/*,video/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <PhotoIcon className="w-12 h-12 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Click to upload or drag and drop
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      Images and videos (Multiple files supported)
-                    </span>
-                  </label>
-                </div>
-              </div>
+              {isEditMode ? (
+                /* ── EDIT MODE BODY ── */
+                <>
+                  {/* Display Order */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Display Order
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={editDisplayOrder}
+                      onChange={(e) =>
+                        setEditDisplayOrder(
+                          e.target.value === "" ? "" : Number(e.target.value),
+                        )
+                      }
+                      disabled={uploading}
+                      className="w-32 px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      placeholder="e.g. 1"
+                    />
+                  </div>
 
-              {/* Previews */}
-              {selectedFiles.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Selected Files ({selectedFiles.length})
-                  </label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedFiles.map((file, index) => (
+                  {/* Current / replacement media */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Media{" "}
+                      {editFile ? (
+                        <span className="text-blue-600 text-xs font-normal ml-1">
+                          (new file selected)
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs font-normal ml-1">
+                          (leave unchanged to keep current)
+                        </span>
+                      )}
+                    </label>
+
+                    {/* Preview */}
+                    {editPreview && (
                       <div
-                        key={index}
-                        className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100"
+                        className="relative mb-3 rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-100"
+                        style={{ aspectRatio: "16/9", maxHeight: 260 }}
                       >
-                        {file.type.startsWith("image/") ? (
-                          <img
-                            src={previews[index]}
-                            alt={file.name}
+                        {editFile?.type?.startsWith("video/") ||
+                        (!editFile && editingItem?.media?.type === "VIDEO") ? (
+                          <video
+                            src={editPreview}
                             className="w-full h-full object-cover"
+                            muted
+                            controls
                           />
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
-                            <svg
-                              className="w-12 h-12 text-gray-400"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                            </svg>
-                            <span className="text-xs text-gray-500 mt-2">
-                              Video
-                            </span>
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeFile(index)}
-                          disabled={uploading}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                        >
-                          <XCircleIcon className="w-5 h-5" />
-                        </button>
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1.5 flex items-center gap-1.5">
-                          <span className="text-[10px] text-gray-300 shrink-0">
-                            Order
-                          </span>
-                          <input
-                            type="number"
-                            min={0}
-                            value={displayOrders[index] ?? ""}
-                            onChange={(e) =>
-                              setDisplayOrders((prev) => {
-                                const updated = [...prev];
-                                const val = e.target.value;
-                                updated[index] = val === "" ? "" : Number(val);
-                                return updated;
-                              })
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            disabled={uploading}
-                            className="w-12 px-1 py-0.5 text-xs text-center bg-white/20 border border-white/30 rounded text-white focus:outline-none focus:bg-white/30 disabled:opacity-50"
+                          <img
+                            src={editPreview}
+                            alt="preview"
+                            className="w-full h-full object-cover"
                           />
-                          <span className="text-[10px] text-gray-400 truncate flex-1 text-right">
-                            {file.name}
-                          </span>
-                        </div>
+                        )}
+                        {editFile && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditFile(null);
+                              setEditPreview(editingItem?.media?.url ?? "");
+                            }}
+                            disabled={uploading}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg"
+                          >
+                            <XCircleIcon className="w-5 h-5" />
+                          </button>
+                        )}
                       </div>
-                    ))}
+                    )}
+
+                    {/* Replace file button */}
+                    <label
+                      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+                    >
+                      <PhotoIcon className="w-4 h-4 text-gray-400" />
+                      Replace Media (optional)
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={handleEditFileSelect}
+                        disabled={uploading}
+                      />
+                    </label>
                   </div>
-                </div>
+                </>
+              ) : (
+                /* ── CREATE MODE BODY ── */
+                <>
+                  {/* File Upload Area */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Files <span className="text-red-500">*</span>
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors bg-gray-50">
+                      <input
+                        type="file"
+                        id="file-upload"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer flex flex-col items-center gap-2"
+                      >
+                        <PhotoIcon className="w-12 h-12 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-700">
+                          Click to upload or drag and drop
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Images and videos (Multiple files supported)
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Previews */}
+                  {selectedFiles.length > 0 && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Selected Files ({selectedFiles.length})
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {selectedFiles.map((file, index) => (
+                          <div
+                            key={index}
+                            className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100"
+                          >
+                            {file.type.startsWith("image/") ? (
+                              <img
+                                src={previews[index]}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
+                                <svg
+                                  className="w-12 h-12 text-gray-400"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                                </svg>
+                                <span className="text-xs text-gray-500 mt-2">
+                                  Video
+                                </span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              disabled={uploading}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                            >
+                              <XCircleIcon className="w-5 h-5" />
+                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1.5 flex items-center gap-1.5">
+                              <span className="text-[10px] text-gray-300 shrink-0">
+                                Order
+                              </span>
+                              <input
+                                type="number"
+                                min={0}
+                                value={displayOrders[index] ?? ""}
+                                onChange={(e) =>
+                                  setDisplayOrders((prev) => {
+                                    const u = [...prev];
+                                    u[index] =
+                                      e.target.value === ""
+                                        ? ""
+                                        : Number(e.target.value);
+                                    return u;
+                                  })
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                                disabled={uploading}
+                                className="w-12 px-1 py-0.5 text-xs text-center bg-white/20 border border-white/30 rounded text-white focus:outline-none focus:bg-white/30 disabled:opacity-50"
+                              />
+                              <span className="text-[10px] text-gray-400 truncate flex-1 text-right">
+                                {file.name}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -591,19 +721,16 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
               </button>
               <button
                 type="submit"
-                disabled={
-                  uploading ||
-                  !selectedFiles.length ||
-                  !categoryId ||
-                  categoriesLoading
-                }
+                disabled={isSubmitDisabled}
                 className="px-5 py-2 text-sm font-medium text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md active:scale-95 flex items-center gap-2"
                 style={{ backgroundColor: colors.primary }}
               >
                 {uploading ? (
                   <>
-                    <Spinner /> Uploading…
+                    <Spinner /> {isEditMode ? "Saving…" : "Uploading…"}
                   </>
+                ) : isEditMode ? (
+                  "Save Changes"
                 ) : (
                   `Upload ${selectedFiles.length} file(s)`
                 )}
@@ -612,7 +739,7 @@ const AddMediaModal = ({ isOpen, onClose, propertyData, onSuccess }) => {
           </form>
         </div>
 
-        {/* ── CATEGORY MANAGER PANEL (slides in alongside) ── */}
+        {/* Category Manager Panel */}
         {showCategoryManager && (
           <div className="w-[45%] bg-white rounded-xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col animate-in slide-in-from-right-4 duration-200">
             <CategoryManager

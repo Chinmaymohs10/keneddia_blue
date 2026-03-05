@@ -13,6 +13,7 @@ import {
   addMenuThumbnail,
   getMenuThumbnailById,
   updateMenuThumbnail,
+  getAllActiveItemCategory,
 } from "@/Api/RestaurantApi";
 
 const inp =
@@ -21,10 +22,12 @@ const inp =
 function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
   const propertyId = propertyData?.id;
   const isEditing = !!thumbnailId;
+  const [categories, setCategories] = useState([]);
 
   const [types, setTypes] = useState([]);
   const [formData, setFormData] = useState({
     itemTypeId: "",
+    itemCategoryId: "", // ← add
     tag: "",
     file: null,
   });
@@ -45,10 +48,18 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
 
   const fetchTypes = async () => {
     try {
-      const res = await getAllItemTypes();
-      setTypes(res?.data || []);
+      const [typeRes, catRes] = await Promise.all([
+        getAllItemTypes(),
+        getAllActiveItemCategory(),
+      ]);
+      setTypes(typeRes?.data || []);
+      setCategories(
+        (catRes?.data || [])
+          .filter((c) => c.isActive !== false)
+          .map((c) => ({ id: c.id, name: c.categoryName })),
+      );
     } catch {
-      console.error("Failed to load types");
+      console.error("Failed to load types/categories");
     }
   };
 
@@ -58,6 +69,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
       const data = res?.data;
       setFormData({
         itemTypeId: data?.itemTypeId ? String(data.itemTypeId) : "",
+        itemCategoryId: data?.itemCategoryId ? String(data.itemCategoryId) : "", // ← add
         tag: data?.tag || "",
         file: null,
       });
@@ -99,6 +111,7 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
     try {
       const fd = new FormData();
       fd.append("itemTypeId", formData.itemTypeId);
+      fd.append("itemCategoryId", formData.itemCategoryId); // ← add
       fd.append("tag", formData.tag.trim());
       if (formData.file) fd.append("file", formData.file);
 
@@ -215,6 +228,24 @@ function AddMenuThumbnailModal({ isOpen, onClose, propertyData, thumbnailId }) {
               {types.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.typeName}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Item Category */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+              Item Category
+            </label>
+            <select
+              className={inp}
+              value={formData.itemCategoryId}
+              onChange={(e) => handleChange("itemCategoryId", e.target.value)}
+            >
+              <option value="">Select Category…</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>

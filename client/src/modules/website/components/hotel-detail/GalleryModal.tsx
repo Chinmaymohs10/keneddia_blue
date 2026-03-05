@@ -16,7 +16,7 @@ interface PropertyMedia {
 interface GalleryItem {
   id: number;
   category: string;
-  categoryName:string;
+  categoryName: string;
   propertyId: number;
   propertyName: string;
   media: PropertyMedia;
@@ -135,24 +135,21 @@ export default function GalleryModal({
           </button>
         </div>
 
-        {/* Main image - change this */}
-        {/* Main Image Section */}
         <div className="flex-1 flex items-center justify-center px-6">
           <motion.div
             key={currentIndex}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full max-w-6xl h-[80vh]"
+            className="relative flex items-center justify-center w-full max-w-6xl h-[80vh] bg-black"
           >
-            <OptimizedImage
+            <img
               src={filteredImages[currentIndex].src}
               alt={filteredImages[currentIndex].caption}
-              className="object-contain"
+              className="max-w-full max-h-full object-contain"
             />
           </motion.div>
         </div>
-
         {/* Footer / Thumbnails */}
         <div className="bg-black/80 backdrop-blur-md border-t border-white/10 p-4 pb-8 md:pb-4">
           {/* Categories */}

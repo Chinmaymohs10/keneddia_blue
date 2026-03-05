@@ -722,7 +722,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   </div>
                 )}
 
-                <Input
+                {/* <Input
                   placeholder={
                     bookingModal.type === "like"
                       ? "Leave a comment"
@@ -733,7 +733,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                     setLikeForm((f) => ({ ...f, description: e.target.value }))
                   }
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                />
+                /> */}
 
                 <Button
                   disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
