@@ -195,7 +195,6 @@ export default function EventsListing() {
           eventDate.toDateString() !== now.toDateString()
         )
           return false;
-        // ... (other date filter logic if needed)
       }
 
       return true;
