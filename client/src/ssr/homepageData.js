@@ -57,10 +57,34 @@ const normalizeOffers = (response) => {
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
   const now = Date.now();
 
+  const DAYS = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+
+  const todayName = DAYS[new Date().getDay()];
+
   return list
     .filter((o) => {
-      const notExpired = !o.expiresAt || new Date(o.expiresAt).getTime() > now;
-      return o.isActive && notExpired && o.showOnHomepage === true;
+      const notExpired =
+        !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+
+      const isDayActive =
+        !Array.isArray(o.activeDays) ||
+        o.activeDays.length === 0 ||
+        o.activeDays.includes(todayName);
+
+      return (
+        o.isActive &&
+        notExpired &&
+        o.showOnHomepage === true &&
+        isDayActive
+      );
     })
     .map((o) => ({
       id: o.id,
@@ -73,13 +97,13 @@ const normalizeOffers = (response) => {
       propertyType: o.propertyTypeName || "",
       image: o.image?.url
         ? {
-            src: o.image.url,
-            type: o.image.type,
-            width: o.image.width,
-            height: o.image.height,
-            fileName: o.image.fileName,
-            alt: o.title,
-          }
+          src: o.image.url,
+          type: o.image.type,
+          width: o.image.width,
+          height: o.image.height,
+          fileName: o.image.fileName,
+          alt: o.title,
+        }
         : null,
     }));
 };
@@ -154,10 +178,17 @@ const normalizeEvents = (response) => {
       ? response
       : [];
 
+  const now = Date.now();
+
   return rawEvents
-    .filter((event) => event.active === true)
+    .filter((event) => {
+      const eventTime = new Date(event.eventDate).getTime();
+      return event.active === true && eventTime >= now;
+    })
     .sort(
-      (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime(),
+      (a, b) =>
+        new Date(b.eventDate).getTime() -
+        new Date(a.eventDate).getTime(),
     );
 };
 
@@ -174,11 +205,11 @@ const normalizeStory = (experiencesRes, headerRes, ratingRes) => {
     experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
   const guestExperiences = Array.isArray(rawData)
     ? [...rawData].sort((a, b) => {
-        if (a.createdAt && b.createdAt) {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-        return Number(b.id) - Number(a.id);
-      })
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return Number(b.id) - Number(a.id);
+    })
     : [];
 
   const headerData = Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data;
@@ -243,11 +274,11 @@ export const fetchHomePageData = async () => {
   const businessData =
     businessPayload && Array.isArray(businessPayload.divisions)
       ? {
-          ...businessPayload,
-          divisions: businessPayload.divisions
-            .filter((div) => !!(div.title?.trim() && div.icon?.trim()))
-            .slice(0, 5),
-        }
+        ...businessPayload,
+        divisions: businessPayload.divisions
+          .filter((div) => !!(div.title?.trim() && div.icon?.trim()))
+          .slice(0, 5),
+      }
       : null;
 
   return {

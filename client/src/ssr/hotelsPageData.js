@@ -120,16 +120,40 @@ const normalizeHotelOffers = async (offersRes) => {
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
   const now = Date.now();
 
+  const DAYS = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+  const todayName = DAYS[new Date().getDay()];
+
   const filtered = await Promise.all(
     list.map(async (o) => {
       if (!o.isActive) return null;
+
       if (!["PROPERTY_PAGE", "BOTH"].includes(o.displayLocation)) return null;
+
       if (!o.propertyTypeId) return null;
+
+      const notExpired =
+        !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+      if (!notExpired) return null;
+
+      const isDayActive =
+        !Array.isArray(o.activeDays) ||
+        o.activeDays.length === 0 ||
+        o.activeDays.includes(todayName);
+      if (!isDayActive) return null;
 
       const propertyTypeRes = await fetchSafe(
         () => getPropertyTypeById(o.propertyTypeId),
         { data: null },
       );
+
       const propertyType = propertyTypeRes?.data;
       if (!propertyType?.isActive) return null;
 
@@ -141,7 +165,7 @@ const normalizeHotelOffers = async (offersRes) => {
   );
 
   return filtered
-    .filter((o) => o && (!o.expiresAt || new Date(o.expiresAt).getTime() > now))
+    .filter(Boolean)
     .map((o) => ({
       id: o.id,
       title: o.title,
@@ -153,13 +177,13 @@ const normalizeHotelOffers = async (offersRes) => {
       propertyType: o.propertyTypeName || "",
       image: o.image?.url
         ? {
-            src: o.image.url,
-            type: o.image.type,
-            width: o.image.width,
-            height: o.image.height,
-            fileName: o.image.fileName,
-            alt: o.title,
-          }
+          src: o.image.url,
+          type: o.image.type,
+          width: o.image.width,
+          height: o.image.height,
+          fileName: o.image.fileName,
+          alt: o.title,
+        }
         : null,
     }));
 };
@@ -168,13 +192,13 @@ const normalizeHotelNews = (res) => {
   const data = res?.content || res?.data?.content || [];
   return Array.isArray(data)
     ? data
-        .filter((item) => item.active === true && item.badgeType?.toLowerCase() === "hotel")
-        .sort(
-          (a, b) =>
-            new Date(b.newsDate || b.dateBadge).getTime() -
-            new Date(a.newsDate || a.dateBadge).getTime(),
-        )
-        .slice(0, 6)
+      .filter((item) => item.active === true && item.badgeType?.toLowerCase() === "hotel")
+      .sort(
+        (a, b) =>
+          new Date(b.newsDate || b.dateBadge).getTime() -
+          new Date(a.newsDate || a.dateBadge).getTime(),
+      )
+      .slice(0, 6)
     : [];
 };
 
@@ -185,9 +209,23 @@ const normalizeGroupEvents = (eventResponse) => {
       ? eventResponse
       : [];
 
+  const now = Date.now();
+
   return rawEvents
-    .filter((e) => e.typeName === "Hotel" && e.status === "ACTIVE" && e.active === true)
-    .sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+    .filter((e) => {
+      const eventTime = new Date(e.eventDate).getTime();
+      return (
+        e.typeName === "Hotel" &&
+        e.status === "ACTIVE" &&
+        e.active === true &&
+        eventTime >= now
+      );
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.eventDate).getTime() -
+        new Date(a.eventDate).getTime(),
+    );
 };
 
 const normalizeGroupBookings = (bookingResponse) => {
@@ -202,11 +240,11 @@ const normalizeHotelReviews = (experiencesRes, headerRes, ratingRes) => {
     experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
   const guestExperiences = Array.isArray(rawData)
     ? [...rawData].sort((a, b) => {
-        if (a.createdAt && b.createdAt) {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-        return Number(b.id) - Number(a.id);
-      })
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return Number(b.id) - Number(a.id);
+    })
     : [];
   const headerData = Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data;
   const ratingData = Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data;

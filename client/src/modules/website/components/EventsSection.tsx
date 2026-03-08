@@ -67,9 +67,12 @@ export default function EventsSection() {
           ? response
           : [];
 
-      const activeEvents = rawEvents.filter(
-        (event: any) => event.active === true,
-      );
+      const now = Date.now();
+
+      const activeEvents = rawEvents.filter((event: any) => {
+        const eventTime = new Date(event.eventDate).getTime();
+        return event.active === true && eventTime >= now;
+      });
 
       setApiEvents(
         activeEvents.sort(
@@ -207,7 +210,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               <video
                 ref={videoRef}
                 src={event.image.url}
-               className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
                 autoPlay
                 loop
                 muted
@@ -236,7 +239,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             <img
               src={event.image.url}
               alt={event.title}
-             className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
               onLoad={(e) =>
                 analyzeMediaSize(
                   e.currentTarget.naturalWidth,
