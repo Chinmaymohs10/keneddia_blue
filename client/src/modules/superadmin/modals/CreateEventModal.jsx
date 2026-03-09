@@ -486,7 +486,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 className="text-xs font-semibold uppercase mb-4 block"
                 style={{ color: colors.textSecondary }}
               >
-                Event Image
+                Event Media
               </label>
 
               <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
@@ -518,7 +518,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                     id="file-upload"
                     type="file"
                     className="hidden"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
@@ -530,7 +530,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   />
                   <Upload size={30} className="mx-auto mb-2 opacity-20" />
                   <p className="text-xs text-gray-500">
-                    {selectedFile ? selectedFile.name : "Choose or drag image"}
+                    {selectedFile ? selectedFile.name : "Choose or drag image/video"}
                   </p>
                 </div>
               ) : (
@@ -549,11 +549,20 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
 
               {imagePreview && (
                 <div className="mt-6 relative group">
-                  <img
-                    src={imagePreview}
-                    className="w-full h-52 object-cover rounded-xl border"
-                    alt="Preview"
-                  />
+                  {selectedFile?.type?.startsWith("video") ? (
+                    <video
+                      src={imagePreview}
+                      controls
+                      className="w-full h-52 object-cover rounded-xl border"
+                    />
+                  ) : (
+                    <img
+                      src={imagePreview}
+                      className="w-full h-52 object-cover rounded-xl border"
+                      alt="Preview"
+                    />
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {

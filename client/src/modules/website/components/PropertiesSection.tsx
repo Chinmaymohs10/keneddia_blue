@@ -8,14 +8,15 @@ import {
   Phone,
   Mail,
   Loader2,
-  Share2,
   ChevronLeft,
   ChevronRight,
+  Share2,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import { createHotelSlug, createCitySlug } from "@/lib/HotelSlug";
+
 interface ApiProperty {
   id: number;
   propertyId: number;
@@ -41,14 +42,22 @@ interface ApiProperty {
 const CarouselItem = ({
   property,
   isActive,
+  total,
+  activeIndex,
+  onDotClick,
   onShare,
 }: {
   property: ApiProperty;
   isActive: boolean;
+  total: number;
+  activeIndex: number;
+  onDotClick: (i: number) => void;
   onShare: (property: ApiProperty) => void;
 }) => {
   const navigate = useNavigate();
+  const [subTitleExpanded, setSubTitleExpanded] = useState(false);
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
+  const subTitleLong = (property.subTitle?.length || 0) > 50;
 
   return (
     <div
@@ -72,6 +81,7 @@ const CarouselItem = ({
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
       <div className="absolute inset-0 flex items-center px-8 lg:px-12">
         <div className="max-w-xl text-white">
+          {/* Share button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -83,19 +93,81 @@ const CarouselItem = ({
           </button>
 
           {property.tagline && (
-            <p className="text-white/90 text-sm mb-4 line-clamp-2 italic font-light tracking-wide">
+            <p className="text-white/90 text-sm mb-3 line-clamp-2 italic font-light tracking-wide">
               {property.tagline}
             </p>
           )}
 
-          <h1 className="text-3xl lg:text-5xl font-serif mb-4 leading-tight">
+          {/* Numbered Pagination — below tagline, above heading */}
+          {total > 1 && (
+            <div className="flex items-center gap-5 mb-4">
+              {Array.from({ length: total }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDotClick(i);
+                  }}
+                  className={`text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${
+                    i === activeIndex
+                      ? "text-white border-b-2 border-white"
+                      : "text-white/40 border-b-2 border-transparent hover:text-white/60"
+                  }`}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <h1 className="text-3xl lg:text-5xl font-serif mb-2 leading-tight">
             {property.propertyName}
-            {property.subTitle && (
-              <span className="block italic font-light text-xl lg:text-2xl mt-1 opacity-80">
-                {property.subTitle}
-              </span>
-            )}
           </h1>
+
+          {property.subTitle && (
+            <div className="mb-4 h-[110px] relative">
+              {subTitleLong ? (
+                <>
+                  {!subTitleExpanded ? (
+                    <p className="italic font-light text-xl lg:text-2xl opacity-80 line-clamp-1">
+                      {property.subTitle.slice(0, 10)}{" "}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSubTitleExpanded(true);
+                        }}
+                        className="text-sm font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
+                      >
+                        Show more
+                      </button>
+                    </p>
+                  ) : (
+                    <div
+                      className="max-h-28 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p className="italic font-light text-xl lg:text-2xl opacity-80 leading-snug">
+                        {property.subTitle}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSubTitleExpanded(false);
+                        }}
+                        className="mt-1 text-sm font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
+                      >
+                        Show less
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="italic font-light text-xl lg:text-2xl opacity-80">
+                  {property.subTitle}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center text-sm font-medium">
@@ -147,14 +219,6 @@ export default function PropertiesSection() {
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
-  const [searchData] = useState({
-    checkIn: new Date(),
-    checkOut: new Date(new Date().setDate(new Date().getDate() + 1)),
-    adults: 2,
-    children: 0,
-    rooms: 1,
-  });
 
   useEffect(() => {
     const fetchFullPropertyData = async () => {
@@ -283,6 +347,7 @@ export default function PropertiesSection() {
 
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
+            {/* ── LEFT: Carousel ── */}
             <div
               className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10"
               onMouseEnter={() => setIsPaused(true)}
@@ -293,10 +358,14 @@ export default function PropertiesSection() {
                   key={`${p.listingId}-${i}`}
                   property={p}
                   isActive={i === activeIndex}
+                  total={filtered.length}
+                  activeIndex={activeIndex}
+                  onDotClick={setActiveIndex}
                   onShare={() => {}}
                 />
               ))}
 
+              {/* Prev / Next arrows */}
               {filtered.length > 1 && (
                 <>
                   <button
@@ -319,8 +388,29 @@ export default function PropertiesSection() {
                   </button>
                 </>
               )}
+
+              {/* Dot Pagination — Bottom Left */}
+              {filtered.length > 1 && (
+                <div className="absolute bottom-5 left-8 z-20 flex items-center gap-2">
+                  {filtered.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveIndex(i);
+                      }}
+                      className={`rounded-full transition-all duration-300 cursor-pointer ${
+                        i === activeIndex
+                          ? "w-5 h-2 bg-white"
+                          : "w-2 h-2 bg-white/40 hover:bg-white/70"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
+            {/* ── RIGHT: Details Card ── */}
             {active && (
               <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl flex flex-col justify-between">
                 <div className="space-y-6">
@@ -405,7 +495,6 @@ export default function PropertiesSection() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                  {/* Dynamic CTA: Booking Engine URL → Book Your Stay, else → View Details */}
                   {active.bookingEngineUrl ? (
                     <button
                       onClick={() =>

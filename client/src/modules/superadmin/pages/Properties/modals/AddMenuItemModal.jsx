@@ -643,7 +643,10 @@ function AddMenuItemModal({
                 className={`${inp} pl-8`}
                 value={form.likeCount}
                 min={0}
-                onChange={(e) => set("likeCount", Number(e.target.value))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  set("likeCount", value === "" ? "" : Number(value));
+                }}
                 placeholder="0"
               />
             </div>
