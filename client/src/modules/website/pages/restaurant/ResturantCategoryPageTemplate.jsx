@@ -26,15 +26,14 @@ const resturant_NAV_ITEMS = [
 ];
 const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
 
-function buildMenuFromApi(allItems, verticalTitle) {
-  if (!allItems?.length || !verticalTitle) return [];
+function buildMenuFromApi(allItems, currentVerticalId) {
+  if (!allItems?.length || !currentVerticalId) return [];
 
-  const titleLower = verticalTitle.toLowerCase().trim();
-
-  const matched = allItems.filter((item) => {
-    const catName = item.category?.categoryName?.toLowerCase().trim() || "";
-    return catName.includes(titleLower) || titleLower.includes(catName);
-  });
+  const matched = allItems.filter(
+    (item) =>
+      item.verticalCardResponseDTO?.id === currentVerticalId ||
+      item.verticalCardId === currentVerticalId,
+  );
 
   if (!matched.length) return [];
 
@@ -57,8 +56,6 @@ function buildMenuFromApi(allItems, verticalTitle) {
       isSpicy: item.foodType === "NON_VEG",
       foodType: item.foodType,
       likeCount: item.likeCount || 0,
-      categoryId: item.category?.id ?? null,
-      categoryName: item.category?.categoryName || "",
       typeId: item.type?.id ?? null,
       typeName: item.type?.typeName || "",
       propertyId: item.propertyId,
@@ -68,12 +65,11 @@ function buildMenuFromApi(allItems, verticalTitle) {
 
   return Object.entries(groups).map(([typeName, group]) => ({
     category: typeName,
-    itemTypeId: group.typeId, // ← this is what CategoryMenu uses to match thumbnails
+    itemTypeId: group.typeId,
     categoryImage: group.items[0]?.image || "",
     items: group.items,
   }));
 }
-
 /* ── Other Verticals Grid ─────────────────────────────────────────────────── */
 function OtherVerticalsSection({ experiences, propertyId, citySlug }) {
   const navigate = useNavigate();
@@ -171,8 +167,11 @@ function OtherVerticalsSection({ experiences, propertyId, citySlug }) {
 
 /* ── Main Template ─────────────────────────────────────────────────────────── */
 function ResturantCategoryPageTemplate() {
-  const { propertyId: paramPropertyId, categoryType, citySlug: paramCitySlug } =
-    useParams();
+  const {
+    propertyId: paramPropertyId,
+    categoryType,
+    citySlug: paramCitySlug,
+  } = useParams();
   const propertyId = paramPropertyId ? Number(paramPropertyId) : null;
   const navigate = useNavigate();
   const [propertyData, setPropertyData] = useState(null);
@@ -365,7 +364,7 @@ function ResturantCategoryPageTemplate() {
     );
   }
 
-  const resolvedMenu = buildMenuFromApi(apiMenuItems, currentCategory.title);
+  const resolvedMenu = buildMenuFromApi(apiMenuItems, currentCategory.id);
 
   /* ── Page ── */
   return (

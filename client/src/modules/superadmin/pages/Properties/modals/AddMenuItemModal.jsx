@@ -15,12 +15,9 @@ import {
   getAllItemTypes,
   updateItemType,
   toggleItemTypeStatus,
-  createItemCategory,
-  getAllActiveItemCategory,
-  updateItemCategory,
-  toggleItemCategoryStatus,
   createMenuItem,
   updateMenuItem,
+  getAllVerticalCards,
 } from "@/Api/RestaurantApi";
 
 // ── Shared input style ────────────────────────────────────────────────────────
@@ -56,11 +53,7 @@ function ImageUpload({ value, onChange, onClear }) {
       </label>
       {value && (
         <div className="relative w-full h-44 rounded-xl overflow-hidden border shadow-sm">
-          <img
-            src={value}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
+          <img src={value} alt="Preview" className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={onClear}
@@ -74,7 +67,7 @@ function ImageUpload({ value, onChange, onClear }) {
   );
 }
 
-// ── Inline tag manager (shared for category & type) ───────────────────────────
+// ── Inline tag manager (types only) ──────────────────────────────────────────
 function TagSelector({
   label,
   items,
@@ -136,7 +129,6 @@ function TagSelector({
 
   return (
     <div className="space-y-2">
-      {/* Dropdown + New button */}
       <div className="flex gap-2">
         <select
           className={inp}
@@ -154,17 +146,13 @@ function TagSelector({
         </select>
         <button
           type="button"
-          onClick={() => {
-            setShowAdd((v) => !v);
-            setEditingId(null);
-          }}
+          onClick={() => { setShowAdd((v) => !v); setEditingId(null); }}
           className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-all"
         >
           <Plus size={13} /> New
         </button>
       </div>
 
-      {/* Inline add form */}
       {showAdd && (
         <div className="flex gap-2 items-center bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
           <input
@@ -181,79 +169,51 @@ function TagSelector({
             disabled={localAdding || !newName.trim()}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold disabled:opacity-50 hover:bg-blue-700 transition-all"
           >
-            {localAdding ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Check size={12} />
-            )}
+            {localAdding ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
             Add
           </button>
-          <button
-            type="button"
-            onClick={() => setShowAdd(false)}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button type="button" onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600">
             <X size={14} />
           </button>
         </div>
       )}
 
-      {/* Pill list — all items with edit + active toggle */}
       {items.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {items.map((item) => (
             <div key={item.id} className="group">
               {editingId === item.id ? (
-                /* ── Edit panel ── */
                 <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                   <input
                     className="text-xs w-28 border border-amber-300 rounded-lg px-2 py-1 outline-none focus:border-amber-400 bg-white"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && handleUpdate(item.id)
-                    }
+                    onKeyDown={(e) => e.key === "Enter" && handleUpdate(item.id)}
                     autoFocus
                   />
-                  {/* Active toggle inside edit */}
                   <div className="flex items-center gap-1.5 border-l border-amber-200 pl-2">
-                    <span className="text-[9px] font-black uppercase text-amber-600 tracking-wider whitespace-nowrap">
-                      Active
-                    </span>
+                    <span className="text-[9px] font-black uppercase text-amber-600 tracking-wider whitespace-nowrap">Active</span>
                     <button
                       type="button"
                       onClick={() => setEditActive((v) => !v)}
                       className={`relative w-8 h-4 rounded-full transition-colors shrink-0 ${editActive ? "bg-green-500" : "bg-gray-300"}`}
                     >
-                      <span
-                        className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${editActive ? "translate-x-4" : "translate-x-0.5"}`}
-                      />
+                      <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${editActive ? "translate-x-4" : "translate-x-0.5"}`} />
                     </button>
                   </div>
-                  {/* Confirm */}
                   <button
                     type="button"
                     onClick={() => handleUpdate(item.id)}
                     disabled={localUpdating || !editName.trim()}
                     className="text-amber-600 hover:text-amber-800 disabled:opacity-50"
                   >
-                    {localUpdating ? (
-                      <Loader2 size={12} className="animate-spin" />
-                    ) : (
-                      <Check size={12} />
-                    )}
+                    {localUpdating ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                   </button>
-                  {/* Cancel */}
-                  <button
-                    type="button"
-                    onClick={() => setEditingId(null)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
+                  <button type="button" onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600">
                     <X size={12} />
                   </button>
                 </div>
               ) : (
-                /* ── Display pill ── */
                 <div
                   className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full border transition-all ${
                     String(value) === String(item.id)
@@ -263,47 +223,25 @@ function TagSelector({
                         : "bg-gray-100 text-gray-600 border-gray-200"
                   }`}
                 >
-                  {/* Active dot */}
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                      item.isActive === false ? "bg-gray-400" : "bg-green-400"
-                    }`}
-                  />
-
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.isActive === false ? "bg-gray-400" : "bg-green-400"}`} />
                   {item.name}
-
-                  {/* Active/Inactive toggle button */}
                   <button
                     type="button"
                     onClick={(e) => handleToggle(item, e)}
                     disabled={togglingId === item.id}
-                    title={
-                      item.isActive === false ? "Set Active" : "Set Inactive"
-                    }
+                    title={item.isActive === false ? "Set Active" : "Set Inactive"}
                     className={`opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 disabled:opacity-50 ${
-                      String(value) === String(item.id)
-                        ? "text-blue-200 hover:text-white"
-                        : "text-gray-400 hover:text-red-500"
+                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-red-500"
                     }`}
                   >
-                    {togglingId === item.id ? (
-                      <Loader2 size={9} className="animate-spin" />
-                    ) : item.isActive === false ? (
-                      <Check size={9} />
-                    ) : (
-                      <X size={9} />
-                    )}
+                    {togglingId === item.id ? <Loader2 size={9} className="animate-spin" /> : item.isActive === false ? <Check size={9} /> : <X size={9} />}
                   </button>
-
-                  {/* Edit button */}
                   <button
                     type="button"
                     onClick={(e) => startEdit(item, e)}
                     title={`Edit ${item.name}`}
                     className={`opacity-0 group-hover:opacity-100 transition-opacity ${
-                      String(value) === String(item.id)
-                        ? "text-blue-200 hover:text-white"
-                        : "text-gray-400 hover:text-gray-700"
+                      String(value) === String(item.id) ? "text-blue-200 hover:text-white" : "text-gray-400 hover:text-gray-700"
                     }`}
                   >
                     <Pencil size={9} />
@@ -321,7 +259,7 @@ function TagSelector({
 // ── Empty form ────────────────────────────────────────────────────────────────
 const EMPTY = {
   itemName: "",
-  category_id: "",
+  verticalCardId: "",   // replaces category_id
   type_id: "",
   description: "",
   likeCount: 0,
@@ -335,52 +273,47 @@ const EMPTY = {
 // ─────────────────────────────────────────────────────────────────────────────
 // MODAL
 // ─────────────────────────────────────────────────────────────────────────────
-function AddMenuItemModal({
-  isOpen,
-  onClose,
-  initialData,
-  propertyData,
-  onSave,
-}) {
+function AddMenuItemModal({ isOpen, onClose, initialData, propertyData, onSave }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // ── Dynamic lists ──────────────────────────────────────────────────────────
-  const [categories, setCategories] = useState([]);
+  const [verticals, setVerticals] = useState([]);   // filtered vertical cards
   const [types, setTypes] = useState([]);
   const [loadingMeta, setLoadingMeta] = useState(false);
 
+  const propertyId = propertyData?.id;
   const isEditing = !!initialData?.id;
 
-  // ── Fetch categories & types ───────────────────────────────────────────────
+  // ── Fetch verticals (filtered) & types ────────────────────────────────────
   const fetchMeta = useCallback(async () => {
     setLoadingMeta(true);
     try {
-      const [catRes, typeRes] = await Promise.all([
-        getAllActiveItemCategory(),
+      const [vertRes, typeRes] = await Promise.all([
+        getAllVerticalCards(),
         getAllItemTypes(),
       ]);
-      setCategories(
-        (catRes?.data || []).map((c) => ({
-          id: c.id,
-          name: c.categoryName,
-          isActive: c.isActive,
-        })),
+
+      const allVerticals = vertRes?.data?.data ?? vertRes?.data ?? [];
+      setVerticals(
+        (Array.isArray(allVerticals) ? allVerticals : [])
+          .filter((v) => v.propertyId === propertyId && v.isActive !== false)
+          .map((v) => ({ id: v.id, name: v.verticalName }))
       );
+
       setTypes(
         (typeRes?.data || []).map((t) => ({
           id: t.id,
           name: t.typeName,
           isActive: t.isActive,
-        })),
+        }))
       );
     } catch {
-      // non-fatal; user can still type
+      // non-fatal
     } finally {
       setLoadingMeta(false);
     }
-  }, []);
+  }, [propertyId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -389,16 +322,18 @@ function AddMenuItemModal({
         setForm({
           ...EMPTY,
           itemName: initialData.itemName || "",
-          category_id: initialData.category?.id
-            ? String(initialData.category.id)
-            : "",
+          // support both verticalCardId and legacy category mapping
+          verticalCardId: initialData.verticalCardId
+            ? String(initialData.verticalCardId)
+            : initialData.verticalCard?.id
+              ? String(initialData.verticalCard.id)
+              : "",
           type_id: initialData.type?.id ? String(initialData.type.id) : "",
           description: initialData.description || "",
           likeCount: initialData.likeCount || 0,
           foodType: initialData.foodType || "VEG",
           signatureItem: initialData.signatureItem ?? false,
           status: initialData.status ?? true,
-          // prefer media url if present, fall back to mediaId-based path
           image:
             initialData.media?.url ||
             initialData.image?.url ||
@@ -415,48 +350,12 @@ function AddMenuItemModal({
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
-  // ── Category handlers ──────────────────────────────────────────────────────
-  const handleAddCategory = async (name) => {
-    const res = await createItemCategory({
-      categoryName: name,
-      isActive: true,
-    });
-    const created = res?.data;
-    if (created) {
-      const newCat = {
-        id: created.id,
-        name: created.categoryName,
-        isActive: created.isActive ?? true,
-      };
-      setCategories((prev) => [...prev, newCat]);
-      set("category_id", String(created.id));
-    }
-  };
-
-  const handleUpdateCategory = async (id, name, isActive) => {
-    await updateItemCategory(id, { categoryName: name, isActive });
-    setCategories((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, name, isActive } : c)),
-    );
-  };
-
-  const handleToggleCategoryStatus = async (id, newStatus) => {
-    await toggleItemCategoryStatus(id, { isActive: newStatus });
-    setCategories((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isActive: newStatus } : c)),
-    );
-  };
-
   // ── Type handlers ──────────────────────────────────────────────────────────
   const handleAddType = async (name) => {
     const res = await createItemType({ typeName: name, isActive: true });
     const created = res?.data;
     if (created) {
-      const newType = {
-        id: created.id,
-        name: created.typeName,
-        isActive: created.isActive ?? true,
-      };
+      const newType = { id: created.id, name: created.typeName, isActive: created.isActive ?? true };
       setTypes((prev) => [...prev, newType]);
       set("type_id", String(created.id));
     }
@@ -464,32 +363,19 @@ function AddMenuItemModal({
 
   const handleUpdateType = async (id, name, isActive) => {
     await updateItemType(id, { typeName: name, isActive });
-    setTypes((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, name, isActive } : t)),
-    );
+    setTypes((prev) => prev.map((t) => (t.id === id ? { ...t, name, isActive } : t)));
   };
 
   const handleToggleTypeStatus = async (id, newStatus) => {
     await toggleItemTypeStatus(id, { isActive: newStatus });
-    setTypes((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, isActive: newStatus } : t)),
-    );
+    setTypes((prev) => prev.map((t) => (t.id === id ? { ...t, isActive: newStatus } : t)));
   };
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!form.itemName.trim()) {
-      setError("Item name is required.");
-      return;
-    }
-    if (!form.category_id) {
-      setError("Please select a category.");
-      return;
-    }
-    if (!form.type_id) {
-      setError("Please select an item type.");
-      return;
-    }
+    if (!form.itemName.trim()) { setError("Item name is required."); return; }
+    if (!form.verticalCardId) { setError("Please select a vertical."); return; }
+    if (!form.type_id) { setError("Please select an item type."); return; }
 
     setSaving(true);
     setError(null);
@@ -497,13 +383,13 @@ function AddMenuItemModal({
       const fd = new FormData();
       fd.append("itemName", form.itemName.trim());
       fd.append("description", form.description);
-      fd.append("category_id", form.category_id);
+      fd.append("verticalCardId", form.verticalCardId);   // ← verticalCardId:4
       fd.append("type_id", form.type_id);
       fd.append("foodType", form.foodType);
       fd.append("signatureItem", String(form.signatureItem));
       fd.append("status", String(form.status));
       fd.append("likeCount", String(form.likeCount));
-      fd.append("propertyId", String(propertyData?.id || ""));
+      fd.append("propertyId", String(propertyId || ""));
       fd.append("propertyTypeId", String(propertyData?.propertyTypeId || ""));
       if (form.imageFile) fd.append("image", form.imageFile);
 
@@ -516,10 +402,7 @@ function AddMenuItemModal({
       onSave?.();
       onClose(true);
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          "Failed to save item. Please try again.",
-      );
+      setError(err?.response?.data?.message || "Failed to save item. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -535,17 +418,13 @@ function AddMenuItemModal({
           <h3 className="text-lg font-bold text-gray-800">
             {isEditing ? "Edit Menu Item" : "Add Menu Item"}
           </h3>
-          <button
-            onClick={() => onClose(false)}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
-          >
+          <button onClick={() => onClose(false)} className="p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
             <X size={20} />
           </button>
         </div>
 
         {/* ── Body ── */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Error banner */}
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
               <AlertCircle size={15} className="shrink-0" />
@@ -557,14 +436,8 @@ function AddMenuItemModal({
           <Field label="Item Image">
             <ImageUpload
               value={form.image}
-              onChange={(url, file) => {
-                set("image", url);
-                set("imageFile", file);
-              }}
-              onClear={() => {
-                set("image", "");
-                set("imageFile", null);
-              }}
+              onChange={(url, file) => { set("image", url); set("imageFile", file); }}
+              onClear={() => { set("image", ""); set("imageFile", null); }}
             />
           </Field>
 
@@ -578,35 +451,34 @@ function AddMenuItemModal({
             />
           </Field>
 
-          {/* Category */}
-          <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-              Category
-              {loadingMeta && (
-                <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">
-                  Loading…
-                </span>
-              )}
-            </label>
-            <TagSelector
-              label="Category"
-              items={categories}
-              value={form.category_id}
-              onChange={(v) => set("category_id", v)}
-              onAdd={handleAddCategory}
-              onUpdate={handleUpdateCategory}
-              onToggleStatus={handleToggleCategoryStatus}
-            />
-          </div>
+          {/* Vertical Card dropdown — filtered by propertyId */}
+          <Field label={`Vertical${loadingMeta ? " — Loading…" : ""}`}>
+            <select
+              className={inp}
+              value={form.verticalCardId}
+              onChange={(e) => set("verticalCardId", e.target.value)}
+              disabled={loadingMeta}
+            >
+              <option value="">Select Vertical…</option>
+              {verticals.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+            {!loadingMeta && verticals.length === 0 && (
+              <p className="text-[11px] text-amber-600 mt-1">
+                No active verticals found for this property.
+              </p>
+            )}
+          </Field>
 
           {/* Item Type */}
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
               Item Type
               {loadingMeta && (
-                <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">
-                  Loading…
-                </span>
+                <span className="ml-2 text-[9px] font-normal text-gray-400 normal-case tracking-normal">Loading…</span>
               )}
             </label>
             <TagSelector
@@ -634,19 +506,13 @@ function AddMenuItemModal({
           {/* Like Count */}
           <Field label="Like Count">
             <div className="relative max-w-[160px]">
-              <Heart
-                size={13}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400"
-              />
+              <Heart size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 fill-rose-400" />
               <input
                 type="number"
                 className={`${inp} pl-8`}
                 value={form.likeCount}
                 min={0}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  set("likeCount", value === "" ? "" : Number(value));
-                }}
+                onChange={(e) => set("likeCount", e.target.value === "" ? "" : Number(e.target.value))}
                 placeholder="0"
               />
             </div>
@@ -656,32 +522,20 @@ function AddMenuItemModal({
           <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
             {/* Food Type */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                Food Type
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Food Type</span>
               <div className="flex rounded-lg overflow-hidden border border-gray-200">
                 {["VEG", "NON_VEG", "EGG"].map((ft, i) => (
                   <button
                     key={ft}
                     type="button"
                     onClick={() => set("foodType", ft)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${
-                      i > 0 ? "border-l border-gray-200" : ""
-                    } ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all ${i > 0 ? "border-l border-gray-200" : ""} ${
                       form.foodType === ft
-                        ? ft === "VEG"
-                          ? "bg-green-500 text-white"
-                          : ft === "NON_VEG"
-                            ? "bg-red-500 text-white"
-                            : "bg-yellow-500 text-white"
+                        ? ft === "VEG" ? "bg-green-500 text-white" : ft === "NON_VEG" ? "bg-red-500 text-white" : "bg-yellow-500 text-white"
                         : "bg-white text-gray-500 hover:bg-gray-50"
                     }`}
                   >
-                    {ft === "VEG"
-                      ? "Veg"
-                      : ft === "NON_VEG"
-                        ? "Non-Veg"
-                        : "Egg"}
+                    {ft === "VEG" ? "Veg" : ft === "NON_VEG" ? "Non-Veg" : "Egg"}
                   </button>
                 ))}
               </div>
@@ -689,41 +543,29 @@ function AddMenuItemModal({
 
             {/* Signature */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                Signature Dish
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Signature Dish</span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
                 <div
                   onClick={() => set("signatureItem", !form.signatureItem)}
                   className={`relative w-9 h-5 rounded-full transition-colors ${form.signatureItem ? "bg-amber-400" : "bg-gray-300"}`}
                 >
-                  <span
-                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.signatureItem ? "translate-x-4" : "translate-x-0.5"}`}
-                  />
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.signatureItem ? "translate-x-4" : "translate-x-0.5"}`} />
                 </div>
-                <span className="text-xs font-semibold text-gray-600">
-                  {form.signatureItem ? "⭐ Yes" : "No"}
-                </span>
+                <span className="text-xs font-semibold text-gray-600">{form.signatureItem ? "⭐ Yes" : "No"}</span>
               </label>
             </div>
 
             {/* Status */}
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                Status
-              </span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Status</span>
               <label className="flex items-center gap-2 cursor-pointer h-[34px]">
                 <div
                   onClick={() => set("status", !form.status)}
                   className={`relative w-9 h-5 rounded-full transition-colors ${form.status ? "bg-blue-500" : "bg-gray-300"}`}
                 >
-                  <span
-                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.status ? "translate-x-4" : "translate-x-0.5"}`}
-                  />
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.status ? "translate-x-4" : "translate-x-0.5"}`} />
                 </div>
-                <span className="text-xs font-semibold text-gray-600">
-                  {form.status ? "Active" : "Inactive"}
-                </span>
+                <span className="text-xs font-semibold text-gray-600">{form.status ? "Active" : "Inactive"}</span>
               </label>
             </div>
           </div>
@@ -731,10 +573,7 @@ function AddMenuItemModal({
 
         {/* ── Footer ── */}
         <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
-          <button
-            onClick={() => onClose(false)}
-            className="px-5 py-2.5 rounded-lg border text-sm font-bold text-gray-600 hover:bg-white transition-all"
-          >
+          <button onClick={() => onClose(false)} className="px-5 py-2.5 rounded-lg border text-sm font-bold text-gray-600 hover:bg-white transition-all">
             Cancel
           </button>
           <button
@@ -743,13 +582,9 @@ function AddMenuItemModal({
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50"
           >
             {saving ? (
-              <>
-                <Loader2 size={15} className="animate-spin" /> Saving…
-              </>
+              <><Loader2 size={15} className="animate-spin" /> Saving…</>
             ) : (
-              <>
-                <Save size={15} /> {isEditing ? "Update Item" : "Add Item"}
-              </>
+              <><Save size={15} /> {isEditing ? "Update Item" : "Add Item"}</>
             )}
           </button>
         </div>

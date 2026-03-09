@@ -547,18 +547,22 @@ function MenuItemsPanel({
     if (didSave) fetchItems();
   };
 
-  const allCategories = [
-    ...new Set(items.map((i) => i.category?.categoryName).filter(Boolean)),
+  const allVerticals = [
+    ...new Map(
+      items
+        .filter((i) => i.verticalCardResponseDTO?.id)
+        .map((i) => [i.verticalCardResponseDTO.id, i.verticalCardResponseDTO]),
+    ).values(),
   ];
 
   const filtered = items.filter((item) => {
     const matchSearch =
       !search || item.itemName?.toLowerCase().includes(search.toLowerCase());
-    const matchCat =
-      !categoryFilter || item.category?.categoryName === categoryFilter;
-    return matchSearch && matchCat;
+    const matchVertical =
+      !categoryFilter ||
+      String(item.verticalCardResponseDTO?.id) === categoryFilter;
+    return matchSearch && matchVertical;
   });
-
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const goToPage = (p) => setPage(Math.max(0, Math.min(p, totalPages - 1)));
@@ -614,10 +618,10 @@ function MenuItemsPanel({
           value={categoryFilter}
           onChange={(e) => handleCat(e.target.value)}
         >
-          <option value="">All categories</option>
-          {allCategories.map((c) => (
-            <option key={c} value={c}>
-              {c}
+          <option value="">All verticals</option>
+          {allVerticals.map((v) => (
+            <option key={v.id} value={String(v.id)}>
+              {v.verticalName}
             </option>
           ))}
         </select>
@@ -642,7 +646,7 @@ function MenuItemsPanel({
               {[
                 "Image",
                 "Name",
-                "Category",
+                "Vertical",
                 "Type",
                 "Food",
                 "Likes",
@@ -703,7 +707,7 @@ function MenuItemsPanel({
                 {/* Category */}
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                    {item.category?.categoryName || "—"}
+                    {item.verticalCardResponseDTO?.verticalName || "—"}
                   </span>
                 </td>
                 {/* Type */}
@@ -899,16 +903,14 @@ function ItemLikesPanel({ propertyId }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              {["#", "User", "Mobile", "Item","Note"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {["#", "User", "Mobile", "Item", "Note"].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
