@@ -16,6 +16,7 @@ import {
   getAllGalleries,
   GetAllPropertyDetails,
   getGalleryByPropertyId,
+  searchGallery,
 } from "@/Api/Api";
 
 /* Navigation for Category Page */
@@ -301,7 +302,10 @@ function ResturantCategoryPageTemplate() {
         /* ─────────────────────────────────────────────
    3️⃣ Gallery
 ───────────────────────────────────────────── */
-        const galleryRes = await getGalleryByPropertyId(propertyId);
+        const galleryRes = await searchGallery({
+          propertyId: propertyId,
+          verticalId: matched?.id,
+        });
 
         const rawGallery =
           galleryRes?.data?.content || galleryRes?.data || galleryRes || [];

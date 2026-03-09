@@ -115,8 +115,13 @@ export default function RestaurantHomepage() {
 
         const filteredGallery = (
           Array.isArray(rawGallery) ? rawGallery : []
-        ).filter((g) => g.isActive && g.media?.url);
-        setGalleryData(filteredGallery);
+        ).filter(
+          (g) =>
+            g.isActive &&
+            g.media?.url &&
+            !g.verticalId && // exclude vertical galleries
+            (g.categoryName || "").toLowerCase() !== "3d", // exclude 3D category
+        );
         setGalleryData(filteredGallery);
       } catch (err) {
         console.error("Restaurant Fetch Error:", err);

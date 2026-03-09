@@ -21,6 +21,7 @@ import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import AddMediaModal from "../modals/AddMediaModal";
 
 const GalleryTab = ({ propertyData }) => {
+  console.log('propertyData',propertyData);
   const [galleryItems, setGalleryItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [totalElements, setTotalElements] = useState(0);

@@ -15,6 +15,7 @@ import {
   getAllGalleryDropdown,
   updateGalleryDropdown,
   toggleGalleryDropdownStatus,
+  getAllVerticalCards,
 } from "@/Api/RestaurantApi";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
@@ -290,6 +291,29 @@ const AddMediaModal = ({
 
   const propId = propertyData?.id || propertyData?.propertyId;
 
+  const [verticals, setVerticals] = useState([]);
+  const [verticalId, setVerticalId] = useState("");
+
+  const isRestaurant =
+    propertyData?.propertyType === "Restaurant" ||
+    propertyData?.propertyTypes?.includes("Restaurant");
+
+  const loadVerticals = async () => {
+    if (!isRestaurant || !propId) return;
+    try {
+      const res = await getAllVerticalCards();
+      const all = res?.data?.data ?? res?.data ?? [];
+      setVerticals(
+        (Array.isArray(all) ? all : []).filter(
+          (v) =>
+            Number(v.propertyId) === Number(propId) && v.isActive !== false,
+        ),
+      );
+    } catch {
+      showError("Failed to load verticals");
+    }
+  };
+
   const loadCategories = async () => {
     setCategoriesLoading(true);
     try {
@@ -311,9 +335,16 @@ const AddMediaModal = ({
   useEffect(() => {
     if (isOpen) {
       loadCategories();
+      loadVerticals();
       if (isEditMode) {
-        // Pre-fill from existing item
         setCategoryId(editingItem.categoryId ?? "");
+        setVerticalId(
+          editingItem.vertical?.id
+            ? String(editingItem.vertical.id)
+            : editingItem.verticalId
+              ? String(editingItem.verticalId)
+              : "",
+        );
         setEditDisplayOrder(editingItem.displayOrder ?? "");
         setEditPreview(editingItem.media?.url ?? "");
         setEditFile(null);
@@ -331,6 +362,7 @@ const AddMediaModal = ({
       setEditPreview("");
       setEditDisplayOrder("");
       setShowCategoryManager(false);
+      setVerticalId("");
     }
   }, [isOpen]);
 
@@ -393,6 +425,8 @@ const AddMediaModal = ({
         const formData = new FormData();
         formData.append("categoryId", categoryId.toString());
         formData.append("propertyId", propId.toString());
+        if (isRestaurant && verticalId)
+          formData.append("verticalId", verticalId.toString());
         if (editDisplayOrder !== "")
           formData.append("displayOrder", editDisplayOrder.toString());
         if (editFile) formData.append("file", editFile);
@@ -419,6 +453,8 @@ const AddMediaModal = ({
         selectedFiles.forEach((f) => formData.append("files", f));
         formData.append("categoryId", categoryId.toString());
         formData.append("propertyId", propId.toString());
+        if (isRestaurant && verticalId)
+          formData.append("verticalId", verticalId.toString());
         selectedFiles.forEach((_, i) =>
           formData.append("displayOrders", displayOrders[i] ?? i + 1),
         );
@@ -509,6 +545,26 @@ const AddMediaModal = ({
                   </button>
                 </div>
               </div>
+              {isRestaurant && verticals.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vertical <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={verticalId}
+                    onChange={(e) => setVerticalId(e.target.value)}
+                    disabled={uploading}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
+                  >
+                    <option value="">Select Vertical…</option>
+                    {verticals.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.verticalName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {isEditMode ? (
                 /* ── EDIT MODE BODY ── */
