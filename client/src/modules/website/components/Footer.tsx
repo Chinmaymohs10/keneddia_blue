@@ -1,4 +1,11 @@
-import { Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Twitter,
+  ArrowUp,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { siteContent } from "@/data/siteContent";
@@ -78,26 +85,25 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="space-y-6 flex flex-col items-center md:items-start">
-            {/* Logo */}
-            {/* Logo */}
             <Link to="/" onClick={handleLinkClick} className="inline-block">
               <div className="relative">
-                {/* Dark theme logo */}
+                {/* Light Mode Logo */}
                 <img
-                  src={siteContent.brand.logo_hotel.image.src}
-                  alt={siteContent.brand.logo_hotel.image.alt || siteContent.brand.logo.text}
-                  className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
-                />
-
-                {/* Light theme (Red) logo */}
-                <img
-                  src={siteContent.brand.logo.subImage.src}
-                  alt={siteContent.brand.logo.subImage.alt || siteContent.brand.logo.text}
+                  src={siteContent.brand.logo.image.src}
+                  alt={siteContent.brand.logo.image.alt}
                   className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
                 />
+
+                {/* Dark Mode Logo */}
+                {siteContent.brand.logo.darkImage && (
+                  <img
+                    src={siteContent.brand.logo.darkImage.src}
+                    alt={siteContent.brand.logo.darkImage.alt}
+                    className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                  />
+                )}
               </div>
             </Link>
-
 
             {/* Social Media Icons */}
             <div className="flex items-center gap-4 pt-4 border-t border-border">
@@ -147,7 +153,8 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <p className="text-sm text-[#4B5563]">
-              © {new Date().getFullYear()} {siteContent.brand.name}. All rights reserved.
+              © {new Date().getFullYear()} {siteContent.brand.name}. All rights
+              reserved.
             </p>
 
             {/* Legal Links */}

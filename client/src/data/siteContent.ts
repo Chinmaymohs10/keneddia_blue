@@ -3,6 +3,7 @@ import brandLogo from "@assets/logo/kb-logo1.png";
 import hotelLogo from "@assets/logo/hotel-kennedia-transparent.png";
 import brandLogo_main from "@assets/logo/kb-logo-main.png";
 import brandLogo_red from "@assets/logo/kb-logo-red.jpg";
+import brandLogo_dark from "@assets/logo/kb-logo-dark.jpeg"
 import brandLogo_black from "@assets/logo/kb-logo-black2.png";
 import brandLogoHotel from "@assets/logo/kb-logo1.jpg";
 import brandLogoCafe from "@assets/logo/kb-logo3.jpg";
@@ -46,8 +47,13 @@ export const siteContent = {
     logo: {
       text: "Kennedia Blu",
       image: {
-        src: brandLogo_black,
+        src: brandLogo_red,
         alt: "Kennedia Blu - Hotel | Restaurant | Cafe",
+        priority: true
+      },
+      darkImage: {                // 👈 DARK MODE LOGO
+        src: brandLogo_dark,
+        alt: "Kennedia Blu Dark Logo",
         priority: true
       },
       subImage: {                     // 👈 ADD THIS

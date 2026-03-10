@@ -5,12 +5,15 @@ import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { BookingSheet } from "./BookingSheet";
 import { ThemeToggle } from "./ThemeToggle";
-
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
   // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
   { label: "Hotels & Resorts", href: "/hotels", external: true },
-  { label: "Restaurants", href: "/ghaziabad/kennedia-blu-restaurant-27", external: true },
+  {
+    label: "Restaurants",
+    href: "/ghaziabad/kennedia-blu-restaurant-27",
+    external: true,
+  },
   // { label: "Restaurants", href: "https://restaurants.kennediablu.com/resturant/ghaziabad/31",external: true },
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
@@ -233,13 +236,23 @@ export default function Navbar({
               <Link
                 to="/"
                 onClick={() => window.scrollTo(0, 0)}
-                className="block rounded-lg p-2 bg-white shadow-sm"
+                className="block rounded-lg p-2 bg-transparent"
               >
+                {/* Light Mode Logo */}
                 <img
-                  src={brandLogo.subImage?.src || brandLogo.image.src}
-                  alt={brandLogo.subImage?.alt || brandLogo.image.alt}
-                  className="h-12 xl:h-14 w-auto object-contain"
+                  src={brandLogo.image.src}
+                  alt={brandLogo.image.alt}
+                  className="h-12 xl:h-14 w-auto object-contain dark:hidden"
                 />
+
+                {/* Dark Mode Logo */}
+                {brandLogo.darkImage && (
+                  <img
+                    src={brandLogo.darkImage.src}
+                    alt={brandLogo.darkImage.alt}
+                    className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
+                  />
+                )}
               </Link>
             </div>
           </div>

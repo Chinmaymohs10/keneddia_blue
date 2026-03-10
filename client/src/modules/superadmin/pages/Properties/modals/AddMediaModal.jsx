@@ -321,9 +321,7 @@ const AddMediaModal = ({
       const all = unwrap(res);
       const active = all.filter((c) => c.isActive);
       setCategories(active);
-      setCategoryId((prev) =>
-        active.find((c) => c.id === prev) ? prev : (active[0]?.id ?? ""),
-      );
+      setCategoryId((prev) => (active.find((c) => c.id === prev) ? prev : ""));
     } catch {
       showError("Failed to load categories");
     } finally {
@@ -420,15 +418,21 @@ const AddMediaModal = ({
     if (isEditMode) {
       // ── EDIT ──
       if (!categoryId) return showError("Please select a category");
+      // ── EDIT ──
       setUploading(true);
       try {
         const formData = new FormData();
-        formData.append("categoryId", categoryId.toString());
+
+        if (categoryId) formData.append("categoryId", categoryId.toString());
+
         formData.append("propertyId", propId.toString());
+
         if (isRestaurant && verticalId)
           formData.append("verticalId", verticalId.toString());
+
         if (editDisplayOrder !== "")
           formData.append("displayOrder", editDisplayOrder.toString());
+
         if (editFile) formData.append("file", editFile);
 
         await updateGalleryMedia(editingItem.id, formData);
@@ -445,13 +449,12 @@ const AddMediaModal = ({
       if (!propId) return showError("Property ID is missing");
       if (!selectedFiles.length)
         return showError("Please select at least one file");
-      if (!categoryId) return showError("Please select a category");
 
       setUploading(true);
       try {
         const formData = new FormData();
         selectedFiles.forEach((f) => formData.append("files", f));
-        formData.append("categoryId", categoryId.toString());
+        if (categoryId) formData.append("categoryId", categoryId.toString());
         formData.append("propertyId", propId.toString());
         if (isRestaurant && verticalId)
           formData.append("verticalId", verticalId.toString());
@@ -474,10 +477,7 @@ const AddMediaModal = ({
   if (!isOpen) return null;
 
   const isSubmitDisabled =
-    uploading ||
-    !categoryId ||
-    categoriesLoading ||
-    (!isEditMode && !selectedFiles.length);
+    uploading || categoriesLoading || (!isEditMode && !selectedFiles.length);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -510,7 +510,7 @@ const AddMediaModal = ({
               {/* Category row */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category <span className="text-red-500">*</span>
+                  Category
                 </label>
                 <div className="flex gap-2">
                   {categoriesLoading ? (
@@ -524,10 +524,16 @@ const AddMediaModal = ({
                   ) : (
                     <select
                       value={categoryId}
-                      onChange={(e) => setCategoryId(Number(e.target.value))}
+                      onChange={(e) =>
+                        setCategoryId(
+                          e.target.value ? Number(e.target.value) : "",
+                        )
+                      }
                       disabled={uploading}
                       className="flex-1 px-4 py-2 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm"
                     >
+                      <option value="">Select Category</option>
+
                       {categories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
@@ -548,7 +554,7 @@ const AddMediaModal = ({
               {isRestaurant && verticals.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vertical <span className="text-red-500">*</span>
+                    Vertical
                   </label>
                   <select
                     value={verticalId}
