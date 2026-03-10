@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -39,6 +39,9 @@ interface ApiProperty {
   bookingEngineUrl?: string | null;
 }
 
+// ── Max chars to show in collapsed state ──
+const SUBTITLE_LIMIT = 120;
+
 const CarouselItem = ({
   property,
   isActive,
@@ -55,10 +58,16 @@ const CarouselItem = ({
   onShare: (property: ApiProperty) => void;
 }) => {
   const navigate = useNavigate();
-  const [subTitleExpanded, setSubTitleExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
-  const subTitleLong = (property.subTitle?.length || 0) > 50;
-  const propertyPath = `/${createCitySlug(property.city || property.propertyName)}/${createHotelSlug(property.propertyName || property.city || "property", property.propertyId)}`;
+  const propertyPath = `/${createCitySlug(property.city || property.propertyName)}/${createHotelSlug(
+    property.propertyName || property.city || "property",
+    property.propertyId,
+  )}`;
+
+  const subtitle = property.subTitle || "";
+  const isLong = subtitle.length > SUBTITLE_LIMIT;
 
   return (
     <div
@@ -79,11 +88,13 @@ const CarouselItem = ({
           <Building2 className="w-24 h-24 text-gray-400" />
         </div>
       )}
+
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+
       <div className="absolute inset-0 flex items-center px-8 lg:px-12">
         <div className="max-w-xl text-white">
           {/* Share button */}
-          <button
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               onShare(property);
@@ -91,15 +102,15 @@ const CarouselItem = ({
             className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
           >
             <Share2 className="w-4 h-4" />
-          </button>
+          </button> */}
 
           {property.tagline && (
-            <p className="text-white/90 text-sm mb-3 line-clamp-2 italic font-light tracking-wide">
+            <p className="text-white/90 text-xs mb-3 line-clamp-2 italic font-light tracking-wide">
               {property.tagline}
             </p>
           )}
 
-          {/* Numbered Pagination — below tagline, above heading */}
+          {/* Numbered Pagination */}
           {total > 1 && (
             <div className="flex items-center gap-5 mb-4">
               {Array.from({ length: total }).map((_, i) => (
@@ -121,68 +132,52 @@ const CarouselItem = ({
             </div>
           )}
 
-          <h1 className="text-3xl lg:text-5xl font-serif mb-2 leading-tight">
+          {/* Property name — font reduced ~50% from text-3xl lg:text-5xl */}
+          <h1 className="text-xl lg:text-2xl font-serif mb-2 leading-tight">
             {property.propertyName}
           </h1>
 
-          {property.subTitle && (
-            <div className="mb-4 h-[110px] relative">
-              {subTitleLong ? (
-                <>
-                  {!subTitleExpanded ? (
-                    <p className="italic font-light text-xl lg:text-2xl opacity-80 line-clamp-1">
-                      {property.subTitle.slice(0, 10)}{" "}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSubTitleExpanded(true);
-                        }}
-                        className="text-sm font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
-                      >
-                        Show more
-                      </button>
-                    </p>
-                  ) : (
-                    <div
-                      className="max-h-28 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <p className="italic font-light text-xl lg:text-2xl opacity-80 leading-snug">
-                        {property.subTitle}
-                      </p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSubTitleExpanded(false);
-                        }}
-                        className="mt-1 text-sm font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
-                      >
-                        Show less
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="italic font-light text-xl lg:text-2xl opacity-80">
-                  {property.subTitle}
+          {/* Subtitle — fixed height scrollable, never breaks layout */}
+          {subtitle && (
+            <div className="mb-4">
+              <div
+                className={`transition-all duration-300 ${
+                  expanded
+                    ? "h-[90px] overflow-y-auto"
+                    : "h-[42px] overflow-hidden"
+                } pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`}
+              >
+                <p className="italic font-light text-sm opacity-80 leading-snug">
+                  {subtitle}
                 </p>
+              </div>
+              {isLong && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpanded((prev) => !prev);
+                  }}
+                  className="mt-1 text-xs font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2"
+                >
+                  {expanded ? "Show less" : "Show more"}
+                </button>
               )}
             </div>
           )}
 
           <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center text-sm font-medium">
-              <MapPin className="w-4 h-4 mr-2 text-primary" />
+            <div className="flex items-center text-xs font-medium">
+              <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary" />
               {property.city || "N/A"}
             </div>
-            {property.rating && (
+            {property.rating ? (
               <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span className="font-bold text-sm">
+                <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
+                <span className="font-bold text-xs">
                   {property.rating.toFixed(1)}
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
 
           <button
@@ -190,11 +185,11 @@ const CarouselItem = ({
               e.stopPropagation();
               navigate(propertyPath);
             }}
-            className="inline-flex items-center gap-3 uppercase text-sm font-bold tracking-widest group cursor-pointer"
+            className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >
             Explore Now
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-primary transition-all">
-              <ArrowRight size={20} />
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-primary transition-all">
+              <ArrowRight size={16} />
             </div>
           </button>
         </div>
@@ -499,7 +494,10 @@ export default function PropertiesSection() {
                   ) : (
                     <button
                       onClick={() => {
-                        const propertyPath = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(active.propertyName || active.city || "property", active.propertyId)}`;
+                        const propertyPath = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
+                          active.propertyName || active.city || "property",
+                          active.propertyId,
+                        )}`;
                         navigate(propertyPath);
                       }}
                       className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"

@@ -22,18 +22,16 @@ export default function CategoryMenu({
   menu,
   themeColor,
   propertyId,
+  verticalId,          // ← NEW: pass currentCategory.id from parent
   showOrderButton = false,
 }) {
-  console.log("menu", menu);
   const [activeTab, setActiveTab] = useState(0);
   const scrollContainerRef = useRef(null);
 
-  // Modal & Form States
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Thumbnails
   const [thumbnails, setThumbnails] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -44,73 +42,59 @@ export default function CategoryMenu({
     totalGuest: "2",
   });
 
-  // ── Fetch thumbnails filtered by propertyId ──────────────────────────────
+  // ── Fetch thumbnails — keep all active ones, filter by verticalId at match time ──
   useEffect(() => {
     if (!propertyId) return;
     (async () => {
       try {
         const res = await getAllMenuThumbnails(propertyId);
         const data = res?.data || [];
-        const filtered = Array.isArray(data)
-          ? data.filter(
-              (t) => Number(t.propertyId) === Number(propertyId) && t.active,
-            )
-          : [];
-        setThumbnails(filtered);
+        // Only keep active thumbnails — do NOT filter by root propertyId here
+        // because the API returns inconsistent/null propertyIds at the root level.
+        // Vertical-level filtering happens in getThumbsForTab via verticalCardResponseDTO.id
+        const active = Array.isArray(data) ? data.filter((t) => t.active === true) : [];
+        setThumbnails(active);
       } catch {
-        // non-fatal — will fallback to categoryImage
+        // non-fatal
       }
     })();
   }, [propertyId]);
-  console.log("menu", menu);
-  console.log("thumbnails", thumbnails);
 
+  // ── Thumbnail matching ────────────────────────────────────────────────────
+  // Strict rules:
+  //   1. Only show thumbnails where verticalCardResponseDTO.id === verticalId
+  //   2. Within that, prefer matching itemTypeId of the current tab
+  //   3. If no match at all → return [] → left column hidden, no static fallback
+  //   4. 1 thumbnail shown per 3 menu items (ceil(itemCount / 3))
   const getThumbsForTab = (tabIndex) => {
     const section = menu[tabIndex];
-    if (!section) return [];
+    if (!section || !verticalId) return [];
 
-    const sectionTypeId =
-      section.itemTypeId ?? section.items?.[0]?.typeId ?? null;
-
-    const sectionCategoryId = section.items?.[0]?.categoryId ?? null;
-
-    const sectionCategoryName = section.items?.[0]?.categoryName ?? null;
-
-    let matched = [];
-
-    if (
-      sectionTypeId !== null &&
-      sectionCategoryId !== null &&
-      sectionCategoryName
-    ) {
-      matched = thumbnails.filter(
-        (t) =>
-          Number(t.itemTypeId) === Number(sectionTypeId) &&
-          Number(t.itemCategoryId) === Number(sectionCategoryId) &&
-          t.itemCategoryName?.toLowerCase() ===
-            sectionCategoryName?.toLowerCase(),
-      );
-    }
-
+    const sectionTypeId = section.itemTypeId ?? section.items?.[0]?.typeId ?? null;
     const itemCount = section.items?.length || 0;
-    const thumbsNeeded = Math.ceil(itemCount / 4);
+    const thumbsNeeded = Math.ceil(itemCount / 3);
 
-    if (matched.length > 0) {
-      const result = [];
-      for (let i = 0; i < thumbsNeeded; i++) {
-        result.push(matched[i % matched.length]);
-      }
-      return result;
+    // All thumbnails strictly belonging to this vertical
+    const verticalThumbs = thumbnails.filter(
+      (t) => Number(t.verticalCardResponseDTO?.id) === Number(verticalId),
+    );
+
+    // Nothing for this vertical — show nothing
+    if (!verticalThumbs.length) return [];
+
+    // Prefer type-specific match within the vertical
+    const typeMatched = sectionTypeId !== null
+      ? verticalThumbs.filter((t) => Number(t.itemTypeId) === Number(sectionTypeId))
+      : [];
+
+    const pool = typeMatched.length > 0 ? typeMatched : verticalThumbs;
+
+    // Cycle through pool to fill thumbsNeeded slots
+    const result = [];
+    for (let i = 0; i < thumbsNeeded; i++) {
+      result.push(pool[i % pool.length]);
     }
-
-    // fallback
-    return [
-      {
-        media: { url: section.categoryImage, type: "IMAGE" },
-        tag: section.category,
-        _isFallback: true,
-      },
-    ];
+    return result;
   };
 
   // ── Tab navigation ────────────────────────────────────────────────────────
@@ -194,7 +178,6 @@ export default function CategoryMenu({
     }
   };
 
-  // ── Derived thumbnail data for current tab ────────────────────────────────
   const displayThumbs = getThumbsForTab(activeTab);
 
   return (
@@ -215,7 +198,6 @@ export default function CategoryMenu({
           </div>
 
           <div className="flex flex-row-reverse items-center gap-6">
-            {/* Prev / Next */}
             <div className="flex items-center gap-3">
               <button
                 onClick={handlePrev}
@@ -275,53 +257,54 @@ export default function CategoryMenu({
             exit={{ opacity: 0, x: -10 }}
             className="grid lg:grid-cols-12 gap-8 items-start"
           >
-            {/* ── LEFT: THUMBNAIL COLUMN ── */}
-            <div className="lg:col-span-5 hidden lg:block">
-              <div className="space-y-4">
-                {displayThumbs.map((thumb, i) => {
-                  const url = thumb.media?.url;
-                  const vid = thumb.media?.type === "VIDEO";
-                  return (
-                    <div
-                      key={i}
-                      className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-black"
-                    >
-                      {vid ? (
-                        <video
-                          src={url}
-                          className="w-full h-full object-contain"
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                        />
-                      ) : (
-                        <img
-                          src={url}
-                          alt={thumb.tag}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
+            {/* ── LEFT: THUMBNAIL COLUMN — only when real thumbnails exist ── */}
+            {displayThumbs.length > 0 && (
+              <div className="lg:col-span-5 hidden lg:block">
+                <div className="space-y-4">
+                  {displayThumbs.map((thumb, i) => {
+                    const url = thumb.media?.url;
+                    const vid = thumb.media?.type === "VIDEO";
+                    return (
+                      <div
+                        key={i}
+                        className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-black"
+                      >
+                        {vid ? (
+                          <video
+                            src={url}
+                            className="w-full h-full object-contain"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={url}
+                            alt={thumb.tag}
+                            className="w-full h-full object-contain"
+                          />
+                        )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-                      <div className="absolute bottom-6 left-6 text-white">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
-                          {thumb._isFallback
-                            ? "Featured"
-                            : thumb.tag || "Featured"}
-                        </p>
-                        <h3 className="text-2xl font-serif uppercase tracking-tight">
-                          {menu[activeTab]?.category}
-                        </h3>
+                        <div className="absolute bottom-6 left-6 text-white">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
+                            {thumb.tag || "Featured"}
+                          </p>
+                          <h3 className="text-2xl font-serif uppercase tracking-tight">
+                            {menu[activeTab]?.category}
+                          </h3>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-            {/* ── RIGHT: ITEM LIST ── */}
-            <div className="lg:col-span-7 space-y-2">
+            )}
+
+            {/* ── RIGHT: ITEM LIST — full width when no thumbnails ── */}
+            <div className={displayThumbs.length > 0 ? "lg:col-span-7 space-y-2" : "lg:col-span-12 space-y-2"}>
               {menu[activeTab].items.map((item, i) => (
                 <motion.div
                   key={item.id ?? i}
@@ -330,7 +313,6 @@ export default function CategoryMenu({
                   transition={{ delay: i * 0.05 }}
                   className="group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                 >
-                  {/* Item image */}
                   <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
                     {item.image ? (
                       <img
@@ -352,7 +334,6 @@ export default function CategoryMenu({
                           {item.name}
                         </h4>
 
-                        {/* Veg / Non-veg dot */}
                         {item.foodType === "VEG" && (
                           <span className="w-3.5 h-3.5 border border-green-600 flex items-center justify-center shrink-0">
                             <span className="w-2 h-2 rounded-full bg-green-600 block" />
@@ -364,15 +345,10 @@ export default function CategoryMenu({
                           </span>
                         )}
 
-                        {/* Spicy flame */}
                         {item.isSpicy && (
-                          <Flame
-                            size={14}
-                            className="text-red-500 fill-red-500"
-                          />
+                          <Flame size={14} className="text-red-500 fill-red-500" />
                         )}
 
-                        {/* Signature badge */}
                         {item.signatureItem && (
                           <span className="text-[9px] font-black text-amber-500 uppercase tracking-wider">
                             ★ Signature
@@ -417,7 +393,6 @@ export default function CategoryMenu({
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
             >
-              {/* Modal header */}
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -441,119 +416,82 @@ export default function CategoryMenu({
                 </button>
               </div>
 
-              {/* Modal body */}
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Name */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Full Name
-                    </label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Full Name</label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
                         value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Your Name"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                       />
                     </div>
                   </div>
 
-                  {/* Phone */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Phone Number
-                    </label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Phone Number</label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+91"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                       />
                     </div>
                   </div>
 
-                  {/* Date */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Date
-                    </label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Date</label>
                     <Input
                       type="date"
                       value={formData.date}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                       className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                     />
                   </div>
 
-                  {/* Time */}
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Arrival Time
-                    </label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Arrival Time</label>
                     <Input
                       type="time"
                       value={formData.time}
-                      onChange={(e) =>
-                        setFormData({ ...formData, time: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                       className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                     />
                   </div>
 
-                  {/* Guests */}
                   <div className="space-y-1 col-span-2">
-                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">
-                      Total Guests
-                    </label>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-primary">Total Guests</label>
                     <Input
                       type="number"
                       min="1"
                       value={formData.totalGuest}
-                      onChange={(e) =>
-                        setFormData({ ...formData, totalGuest: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, totalGuest: e.target.value })}
                       className="h-11 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl"
                     />
                   </div>
                 </div>
 
-                {/* Summary */}
                 <div className="p-3 bg-primary/5 rounded-xl border border-primary/10">
                   <p className="text-[11px] text-zinc-500 italic leading-relaxed">
                     Requesting <b>{selectedItem?.name}</b> for{" "}
-                    <b>{formData.totalGuest} guests</b> at{" "}
-                    <b>{formData.time}</b>.
+                    <b>{formData.totalGuest} guests</b> at <b>{formData.time}</b>.
                   </p>
                 </div>
 
-                {/* Submit */}
                 <Button
-                  disabled={
-                    isSubmitting ||
-                    !formData.name ||
-                    !formData.phone ||
-                    !formData.date ||
-                    !formData.time
-                  }
+                  disabled={isSubmitting || !formData.name || !formData.phone || !formData.date || !formData.time}
                   onClick={handleFinalSubmit}
                   className="w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
                 >
                   {isSubmitting ? (
                     <Loader2 className="animate-spin" size={18} />
                   ) : (
-                    <>
-                      Confirm Reservation <Send size={14} className="ml-2" />
-                    </>
+                    <>Confirm Reservation <Send size={14} className="ml-2" /></>
                   )}
                 </Button>
               </div>
@@ -563,13 +501,8 @@ export default function CategoryMenu({
       </AnimatePresence>
 
       <style jsx>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </section>
   );

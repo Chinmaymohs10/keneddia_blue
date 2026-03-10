@@ -404,6 +404,7 @@ function ResturantCategoryPageTemplate() {
               menu={resolvedMenu}
               themeColor={currentCategory.themeColor}
               propertyId={propertyId}
+              verticalId={currentCategory.id}   
             />
           ) : (
             <div className="py-20 text-center text-muted-foreground">
