@@ -120,8 +120,8 @@ export default function RestaurantHomepage() {
           (g) =>
             g.isActive &&
             g.media?.url &&
-            !g.verticalId && // exclude vertical galleries
-            (g.categoryName || "").toLowerCase() !== "3d", // exclude 3D category
+            !g.vertical && // exclude vertical galleries
+            (g.categoryName || "").toLowerCase() !== "3d",
         );
         setGalleryData(filteredGallery);
       } catch (err) {

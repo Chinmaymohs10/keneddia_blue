@@ -417,8 +417,6 @@ const AddMediaModal = ({
 
     if (isEditMode) {
       // ── EDIT ──
-      if (!categoryId) return showError("Please select a category");
-      // ── EDIT ──
       setUploading(true);
       try {
         const formData = new FormData();

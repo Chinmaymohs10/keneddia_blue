@@ -166,14 +166,20 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
         const allEvents: ApiEvent[] = Array.isArray(eventRes)
           ? eventRes
           : (eventRes?.data ?? []);
+        const now = new Date();
+
         setEvents(
           allEvents
-            .filter(
-              (ev) =>
+            .filter((ev) => {
+              const eventDate = new Date(ev.eventDate);
+
+              return (
                 ev.active &&
                 ev.status === "ACTIVE" &&
-                (propertyId ? ev.propertyId === propertyId : true),
-            )
+                eventDate >= now && // ✅ remove expired events
+                (propertyId ? ev.propertyId === propertyId : true)
+              );
+            })
             .map(normalizeEvent),
         );
 

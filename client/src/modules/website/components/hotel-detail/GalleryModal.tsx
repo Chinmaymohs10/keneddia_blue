@@ -33,15 +33,32 @@ interface GalleryModalProps {
     media?: PropertyMedia[];
   };
   initialImageIndex?: number;
-  galleryData?: GalleryItem[]; // Pass from parent
+  galleryData?: GalleryItem[];
 }
 
+// Helper function to format category strings (e.g., "GUEST_ROOM" -> "Guest Room")
 const formatCategoryName = (category: string) => {
-  if (category === "ALL") return "All";
+  if (!category || category === "ALL") return "All";
   return category
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+};
+
+// Variants for the sliding animation
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
 };
 
 export default function GalleryModal({
@@ -53,7 +70,9 @@ export default function GalleryModal({
 }: GalleryModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialImageIndex);
   const [activeCategory, setActiveCategory] = useState("ALL");
+  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
+  // Prepare and filter images
   const allImages = useMemo(() => {
     return galleryData
       .filter(
@@ -64,18 +83,16 @@ export default function GalleryModal({
       )
       .map((item) => ({
         src: item.media.url,
-        category: item.categoryName || "OTHER", // ✅ correct field
+        category: item.categoryName || "OTHER",
         caption: item.media.fileName || `${item.categoryName || "Image"} Image`,
       }));
   }, [galleryData]);
 
-  // Extract unique categories dynamically
   const categories = useMemo(() => {
     const uniqueCategories = new Set(allImages.map((img) => img.category));
     return ["ALL", ...Array.from(uniqueCategories)];
   }, [allImages]);
 
-  // Filter images by category
   const filteredImages = useMemo(() => {
     return activeCategory === "ALL"
       ? allImages
@@ -88,10 +105,12 @@ export default function GalleryModal({
   }, [activeCategory]);
 
   const handleNext = useCallback(() => {
+    setDirection(1);
     setCurrentIndex((prev) => (prev + 1) % filteredImages.length);
   }, [filteredImages.length]);
 
   const handlePrev = useCallback(() => {
+    setDirection(-1);
     setCurrentIndex(
       (prev) => (prev - 1 + filteredImages.length) % filteredImages.length,
     );
@@ -117,10 +136,10 @@ export default function GalleryModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/95 flex flex-col"
+        className="fixed inset-0 z-50 bg-black/95 flex flex-col overflow-hidden"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 text-white bg-gradient-to-b from-black/50 to-transparent absolute top-0 left-0 right-0 z-10">
+        {/* Header Section */}
+        <div className="flex items-center justify-between p-4 md:p-6 text-white bg-gradient-to-b from-black/80 to-transparent absolute top-0 left-0 right-0 z-30">
           <div>
             <h3 className="text-lg font-serif font-bold">{hotel.name}</h3>
             <p className="text-xs opacity-70">
@@ -135,33 +154,60 @@ export default function GalleryModal({
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-6">
-          <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="relative flex items-center justify-center w-full max-w-6xl h-[80vh] bg-black"
+        {/* Main Image Slider Area */}
+        <div className="flex-1 relative flex items-center justify-center px-4 overflow-hidden">
+          {/* Navigation Buttons */}
+          <button
+            onClick={handlePrev}
+            className="absolute left-4 z-30 p-3 rounded-full bg-white/5 hover:bg-white/20 text-white transition-all backdrop-blur-md border border-white/10 group"
           >
-            <img
-              src={filteredImages[currentIndex].src}
-              alt={filteredImages[currentIndex].caption}
-              className="max-w-full max-h-full object-contain"
-            />
-          </motion.div>
+            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+
+          <div className="relative w-full max-w-6xl h-[75vh] flex items-center justify-center">
+            <AnimatePresence initial={false} custom={direction} mode="popLayout">
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 },
+                }}
+                className="w-full h-full flex items-center justify-center"
+              >
+                <img
+                  src={filteredImages[currentIndex].src}
+                  alt={filteredImages[currentIndex].caption}
+                  className="max-w-full max-h-full object-contain select-none"
+                />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <button
+            onClick={handleNext}
+            className="absolute right-4 z-30 p-3 rounded-full bg-white/5 hover:bg-white/20 text-white transition-all backdrop-blur-md border border-white/10 group"
+          >
+            <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
+          </button>
         </div>
-        {/* Footer / Thumbnails */}
-        <div className="bg-black/80 backdrop-blur-md border-t border-white/10 p-4 pb-8 md:pb-4">
-          {/* Categories */}
-          <div className="flex justify-center gap-2 mb-4 flex-wrap">
+
+        {/* Footer / Categories & Thumbnails */}
+        <div className="bg-black/90 backdrop-blur-xl border-t border-white/10 p-4 pb-8 md:pb-4 z-30">
+          {/* Categories Navigation */}
+          <div className="flex justify-center gap-2 mb-6 flex-wrap">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full transition-all ${
+                className={`text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all ${
                   activeCategory === cat
                     ? "bg-white text-black"
-                    : "text-white/60 hover:text-white"
+                    : "text-white/50 hover:text-white bg-white/5"
                 }`}
               >
                 {formatCategoryName(cat)}
@@ -169,23 +215,22 @@ export default function GalleryModal({
             ))}
           </div>
 
-          {/* Thumbnails Strip */}
-          <div className="flex gap-2 overflow-x-auto justify-start md:justify-center px-4 no-scrollbar h-16">
-            {/* Thumbnails - change this */}
+          {/* Thumbnail Strip */}
+          <div className="flex gap-3 overflow-x-auto justify-start md:justify-center px-4 no-scrollbar h-16 max-w-6xl mx-auto">
             {filteredImages.map((img, idx) => (
               <div
                 key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`relative w-24 h-16 rounded-md overflow-hidden cursor-pointer flex-shrink-0 transition-all ${
+                onClick={() => {
+                  setDirection(idx > currentIndex ? 1 : -1);
+                  setCurrentIndex(idx);
+                }}
+                className={`relative w-20 h-14 rounded-md overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-300 ${
                   idx === currentIndex
-                    ? "ring-2 ring-primary scale-105 opacity-100"
-                    : "opacity-50 hover:opacity-80"
+                    ? "ring-2 ring-white scale-110 z-10 opacity-100"
+                    : "opacity-40 hover:opacity-100"
                 }`}
               >
-                <OptimizedImage // wrapper is absolute inset-0 now, parent has w-24 h-16 ✅
-                  src={img.src}
-                  alt={img.caption}
-                />
+                <OptimizedImage src={img.src} alt={img.caption} />
               </div>
             ))}
           </div>

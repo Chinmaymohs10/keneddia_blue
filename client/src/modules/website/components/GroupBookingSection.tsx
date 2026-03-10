@@ -258,18 +258,26 @@ export default function GroupBookingSection() {
             : [];
         const rawBookings = bookingResponse?.data || bookingResponse || [];
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         setEvents(
           rawEvents
-            .filter(
-              (e: Event) =>
+            .filter((e: Event) => {
+              const eventDate = new Date(e.eventDate);
+              eventDate.setHours(0, 0, 0, 0);
+
+              return (
                 e.typeName === "Hotel" &&
                 e.status === "ACTIVE" &&
-                e.active === true,
-            )
+                e.active === true &&
+                eventDate >= today // ✅ remove expired events
+              );
+            })
             .sort(
               (a: Event, b: Event) =>
-                new Date(b.eventDate).getTime() -
-                new Date(a.eventDate).getTime(),
+                new Date(a.eventDate).getTime() -
+                new Date(b.eventDate).getTime(), // upcoming first
             ),
         );
 
