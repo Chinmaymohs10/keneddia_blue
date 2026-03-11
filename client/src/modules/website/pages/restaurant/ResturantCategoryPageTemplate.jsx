@@ -71,6 +71,7 @@ function buildMenuFromApi(allItems, currentVerticalId) {
     items: group.items,
   }));
 }
+
 /* ── Other Verticals Grid ─────────────────────────────────────────────────── */
 function OtherVerticalsSection({
   experiences,
@@ -216,7 +217,7 @@ function ResturantCategoryPageTemplate() {
       try {
         /* ─────────────────────────────────────────────
          0️⃣ Fetch Property Details
-      ───────────────────────────────────────────── */
+        ───────────────────────────────────────────── */
         const propertyRes = await GetAllPropertyDetails();
         const rawData = propertyRes?.data || propertyRes;
 
@@ -263,7 +264,7 @@ function ResturantCategoryPageTemplate() {
 
         /* ─────────────────────────────────────────────
          1️⃣ Vertical Cards
-      ───────────────────────────────────────────── */
+        ───────────────────────────────────────────── */
         const cardsRes = await getAllVerticalCards();
         const cards = cardsRes?.data || cardsRes || [];
 
@@ -303,7 +304,7 @@ function ResturantCategoryPageTemplate() {
 
         /* ─────────────────────────────────────────────
          2️⃣ Menu Items
-      ───────────────────────────────────────────── */
+        ───────────────────────────────────────────── */
         const menuRes = await getMenuItems();
         const allItems = menuRes?.data || menuRes || [];
 
@@ -315,18 +316,41 @@ function ResturantCategoryPageTemplate() {
         setApiMenuItems(propItems);
 
         /* ─────────────────────────────────────────────
-   3️⃣ Gallery
-───────────────────────────────────────────── */
-        const galleryRes = await searchGallery({
-          propertyId: propertyId,
-          verticalId: matched?.id,
-        });
+         3️⃣ Gallery — normalize to shape CategoryHero expects:
+             { id, media: { mediaId, url, type, fileName, alt },
+               isActive, categoryName, displayOrder }
+        ───────────────────────────────────────────── */
+        if (matched) {
+          const galleryRes = await searchGallery({
+            propertyId: propertyId,
+            verticalId: matched.id,
+          });
 
-        const rawGallery =
-          galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
+          const rawGallery =
+            galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
 
-        // Pass the raw items as-is — CategoryHero handles filtering/sorting internally
-        setGalleryData(Array.isArray(rawGallery) ? rawGallery : []);
+          const normalizedGallery = (
+            Array.isArray(rawGallery) ? rawGallery : []
+          )
+            .filter((g) => g.isActive && g.media?.url)
+            .map((g) => ({
+              id: g.id,
+              // ── keep the full media object so CategoryHero can read g.media.url ──
+              media: {
+                mediaId: g.media.mediaId,
+                url: g.media.url,
+                type: g.media.type ?? "IMAGE",
+                fileName: g.media.fileName ?? "",
+                alt: g.media.alt ?? "",
+              },
+              isActive: g.isActive,
+              // categoryName drives the "3d" exclusion filter in CategoryHero
+              categoryName: g.categoryName ?? null,
+              displayOrder: g.displayOrder ?? 999,
+            }));
+
+          setGalleryData(normalizedGallery);
+        }
       } catch (err) {
         console.error("[CategoryPage] Error:", err);
         setNotFound(true);
@@ -337,6 +361,7 @@ function ResturantCategoryPageTemplate() {
 
     fetchData();
   }, [propertyId, normalizedSlug]);
+
   /* ── Loading ── */
   if (loading) {
     return (

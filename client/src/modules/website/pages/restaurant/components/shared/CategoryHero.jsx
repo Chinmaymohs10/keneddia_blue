@@ -64,9 +64,7 @@ export default function CategoryHero({
   const touchStart = React.useRef(null);
 
   const restaurantPath = `/${createCitySlug(
-    propertyData?.city ||
-      propertyData?.locationName ||
-      propertyData?.propertyName,
+    propertyData?.city || propertyData?.locationName || propertyData?.propertyName,
   )}/${createHotelSlug(propertyData?.propertyName || propertyData?.name || "restaurant", propertyId || 27)}`;
 
   // ── Derive fields from propertyData ──────────────────────────────────────
@@ -120,22 +118,27 @@ export default function CategoryHero({
   // ── Gallery: sorted active items, excluding 3d category ──────────────────
   const galleryItems = useMemo(() => {
     return (galleryData || [])
-      .filter((g) => g.url)
+      .filter(
+        (g) =>
+          g.isActive !== false &&
+          g.media?.url &&
+          g.categoryName?.toLowerCase() !== "3d",
+      )
       .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
   }, [galleryData]);
 
   // Flat sorted media list — used for mobile carousel & GalleryModal
   const galleryMedia = useMemo(
-  () =>
-    galleryItems.map((g) => ({
-      mediaId: g.id,
-      url: g.url,
-      type: "IMAGE",
-      fileName: "",
-      alt: g.alt,
-    })),
-  [galleryItems],
-);
+    () =>
+      galleryItems.map((g) => ({
+        mediaId: g.media.mediaId,
+        url: g.media.url,
+        type: g.media.type,
+        fileName: g.media.fileName,
+        alt: g.media.alt,
+      })),
+    [galleryItems],
+  );
 
   /**
    * gridMedia: 4-element array for the desktop grid.
@@ -152,9 +155,7 @@ export default function CategoryHero({
     // No gallery data — fall back to static hero image
     if (galleryItems.length === 0) {
       return [
-        content?.heroImage
-          ? { url: content.heroImage, alt: content?.title }
-          : null,
+        content?.heroImage ? { url: content.heroImage, alt: content?.title } : null,
         null,
         null,
         null,
@@ -190,9 +191,7 @@ export default function CategoryHero({
   const totalImages = galleryMedia.length;
 
   const prevMobile = () =>
-    setMobileIndex(
-      (c) => (c - 1 + Math.max(totalImages, 1)) % Math.max(totalImages, 1),
-    );
+    setMobileIndex((c) => (c - 1 + Math.max(totalImages, 1)) % Math.max(totalImages, 1));
   const nextMobile = () =>
     setMobileIndex((c) => (c + 1) % Math.max(totalImages, 1));
 
@@ -486,9 +485,7 @@ export default function CategoryHero({
               className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${gridMedia[0] ? "cursor-pointer" : "cursor-default"}`}
               onClick={() =>
                 gridMedia[0] &&
-                openGalleryAt(
-                  galleryMedia.findIndex((m) => m.url === gridMedia[0].url),
-                )
+                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[0].url))
               }
             >
               {gridMedia[0] ? (
@@ -513,11 +510,7 @@ export default function CategoryHero({
                   className={`relative group overflow-hidden rounded-2xl flex-1 ${gridMedia[idx] ? "cursor-pointer" : "cursor-default"}`}
                   onClick={() =>
                     gridMedia[idx] &&
-                    openGalleryAt(
-                      galleryMedia.findIndex(
-                        (m) => m.url === gridMedia[idx].url,
-                      ),
-                    )
+                    openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[idx].url))
                   }
                 >
                   {gridMedia[idx] ? (
@@ -541,9 +534,7 @@ export default function CategoryHero({
               className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${gridMedia[3] ? "cursor-pointer" : "cursor-default"}`}
               onClick={() =>
                 gridMedia[3] &&
-                openGalleryAt(
-                  galleryMedia.findIndex((m) => m.url === gridMedia[3].url),
-                )
+                openGalleryAt(galleryMedia.findIndex((m) => m.url === gridMedia[3].url))
               }
             >
               {gridMedia[3] ? (
@@ -570,9 +561,7 @@ export default function CategoryHero({
                 >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {totalImages > 4
-                      ? `+${totalImages - 4} MORE`
-                      : "VIEW GALLERY"}
+                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
                   </span>
                 </button>
               </div>
