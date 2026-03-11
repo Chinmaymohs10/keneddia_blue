@@ -210,7 +210,7 @@ const PropertyDetail = ({ property, onBack }) => {
       // "group bookings",
       "Header items",
       "enquiries",
-      "comment reviews",
+      // "comment reviews",
     ],
   };
 
