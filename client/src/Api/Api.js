@@ -1,12 +1,12 @@
 import axios from "axios";
 
 // DEV
-const apiUrl = "http://192.168.0.135:6090/";
+// const apiUrl = "http://192.168.0.135:6090/";
 
 // QA (commented as requested)
 // https://backend.kennediablu.com
 // const apiUrl = "http://103.152.79.63:6090/";
-// const apiUrl = "https://backend.kennediablu.com/";
+const apiUrl = "https://backend.kennediablu.com/";
 
 const API = axios.create({ baseURL: apiUrl });
 

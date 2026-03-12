@@ -46,13 +46,13 @@ function AboutUs() {
   const [selectedAboutUsId, setSelectedAboutUsId] = useState(null);
   const [selectedEditData, setSelectedEditData] = useState(null);
 
-  const [currentAboutPage, setCurrentAboutPage] = useState(1);
-  const itemsPerPage = 5;
-
   // Property Type State
   const [propertyTypes, setPropertyTypes] = useState([]);
-  const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState(null); // null = show all
+  const [selectedPropertyTypeId, setSelectedPropertyTypeId] = useState(null);
   const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(false);
+
+  const normalize = (val = "") =>
+    val.toString().trim().replace(/\s+/g, "").toLowerCase();
 
   // Fetch Property Types
   useEffect(() => {
@@ -66,7 +66,6 @@ function AboutUs() {
           const activeTypes = data.filter(
             (type) => type.isActive && normalize(type.typeName) !== "both",
           );
-
           setPropertyTypes(activeTypes);
         }
       } catch (error) {
@@ -79,8 +78,6 @@ function AboutUs() {
 
     fetchPropertyTypes();
   }, []);
-  const normalize = (val = "") =>
-    val.toString().trim().replace(/\s+/g, "").toLowerCase();
 
   const fetchAboutList = useCallback(async () => {
     try {
@@ -89,14 +86,11 @@ function AboutUs() {
       let data = [];
 
       if (selectedPropertyTypeId !== null) {
-        // Property-specific About Us
         const res = await getAboutUsByPropertyType(selectedPropertyTypeId);
         data = res?.data || res;
       } else {
-        // Homepage About Us (exclude property-specific entries)
         const res = await getAboutUsAdmin();
         const allData = res?.data || res;
-
         data = Array.isArray(allData)
           ? allData.filter((item) => item.propertyTypeId == null)
           : [];
@@ -106,10 +100,10 @@ function AboutUs() {
         const sorted = [...data].sort((a, b) => b.id - a.id);
         setAboutUsList(sorted);
 
-        // Auto-select first item
-        if (sorted.length > 0 && !selectedAboutUsId) {
+        // Always auto-select the latest (first) item
+        if (sorted.length > 0) {
           setSelectedAboutUsId(sorted[0].id);
-        } else if (sorted.length === 0) {
+        } else {
           setSelectedAboutUsId(null);
         }
       } else {
@@ -124,7 +118,7 @@ function AboutUs() {
     } finally {
       setFetching(false);
     }
-  }, [selectedPropertyTypeId, selectedAboutUsId]);
+  }, [selectedPropertyTypeId]);
 
   const fetchTabData = useCallback(async () => {
     if (!selectedAboutUsId) return;
@@ -152,23 +146,23 @@ function AboutUs() {
     fetchTabData();
   }, [fetchTabData]);
 
-  const handleToggleStatus = async (about) => {
-    try {
-      setLoading(true);
-      if (about.isActive) {
-        await disableAboutUs(about.id);
-      } else {
-        await enableAboutUs(about.id);
-      }
-      showSuccess("Status updated successfully");
-      fetchAboutList();
-    } catch (error) {
-      console.error("Toggle status error:", error);
-      showError("Failed to update status");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleToggleStatus = async (about) => {
+  //   try {
+  //     setLoading(true);
+  //     if (about.isActive) {
+  //       await disableAboutUs(about.id);
+  //     } else {
+  //       await enableAboutUs(about.id);
+  //     }
+  //     showSuccess("Status updated successfully");
+  //     fetchAboutList();
+  //   } catch (error) {
+  //     console.error("Toggle status error:", error);
+  //     showError("Failed to update status");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleOpenEdit = (type, item) => {
     setSelectedEditData(item);
@@ -179,12 +173,8 @@ function AboutUs() {
 
   const handlePropertyTypeChange = (typeId) => {
     setSelectedPropertyTypeId(typeId);
-    setSelectedAboutUsId(null); // Reset selection when filter changes
-    setCurrentAboutPage(1); // Reset pagination
+    setSelectedAboutUsId(null);
   };
-
-  const paginate = (items, page) =>
-    items.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const getSelectedPropertyTypeName = () => {
     if (selectedPropertyTypeId === null) return "Home page";
@@ -203,7 +193,8 @@ function AboutUs() {
     );
   }
 
-  const totalAboutPages = Math.ceil(aboutUsList.length / itemsPerPage);
+  // Only the latest entry
+  const latestAbout = aboutUsList[0] || null;
 
   return (
     <div className="space-y-6">
@@ -218,7 +209,6 @@ function AboutUs() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Home page Button */}
             <button
               onClick={() => handlePropertyTypeChange(null)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
@@ -231,7 +221,6 @@ function AboutUs() {
               Home page
             </button>
 
-            {/* Property Type Buttons */}
             {propertyTypes.map((type) => (
               <button
                 key={type.id}
@@ -252,7 +241,6 @@ function AboutUs() {
           )}
         </div>
 
-        {/* Active Filter Indicator */}
         <div className="mt-3 pt-3 border-t border-border/50">
           <p className="text-xs text-muted-foreground">
             Currently viewing:{" "}
@@ -303,22 +291,25 @@ function AboutUs() {
                   </span>
                 )}
               </h3>
-              <button
-                onClick={() => {
-                  setSelectedEditData(null);
-                  setIsAboutModalOpen(true);
-                }}
-                className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors"
-              >
-                <Plus size={14} /> Add New
-              </button>
+              {/* Only show Add button if no entry exists */}
+              {aboutUsList.length === 0 && (
+                <button
+                  onClick={() => {
+                    setSelectedEditData(null);
+                    setIsAboutModalOpen(true);
+                  }}
+                  className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors"
+                >
+                  <Plus size={14} /> Add New
+                </button>
+              )}
             </div>
 
             {fetching ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 size={32} className="animate-spin text-primary" />
               </div>
-            ) : aboutUsList.length === 0 ? (
+            ) : !latestAbout ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Info size={48} className="text-muted-foreground/30 mb-4" />
                 <p className="text-sm font-medium text-foreground mb-1">
@@ -331,131 +322,90 @@ function AboutUs() {
                 </p>
               </div>
             ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="bg-muted/50 text-[10px] font-bold uppercase text-muted-foreground">
-                      <tr>
-                        <th className="p-4">ID</th>
-                        <th className="p-4">Title</th>
-                        <th className="p-4">Property Type</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {paginate(aboutUsList, currentAboutPage).map((about) => (
-                        <tr
-                          key={about.id}
-                          onClick={() => setSelectedAboutUsId(about.id)}
-                          className={`cursor-pointer transition-colors ${
-                            selectedAboutUsId === about.id
-                              ? "bg-primary/5"
-                              : "hover:bg-muted/20"
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-muted/50 text-[10px] font-bold uppercase text-muted-foreground">
+                    <tr>
+                      <th className="p-4">ID</th>
+                      <th className="p-4">Title</th>
+                      <th className="p-4">Property Type</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    <tr
+                      key={latestAbout.id}
+                      className="bg-primary/5 cursor-default"
+                    >
+                      <td className="p-4 font-mono text-xs">
+                        <span className="mr-2 text-primary">●</span>
+                        #{latestAbout.id}
+                      </td>
+                      <td className="p-4 text-sm font-medium">
+                        {latestAbout.sectionTitle}
+                      </td>
+                      <td className="p-4">
+                        {latestAbout.propertyTypeId ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
+                            <Building2 size={10} />
+                            {propertyTypes.find(
+                              (pt) => pt.id === latestAbout.propertyTypeId,
+                            )?.typeName || "Unknown"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
+                            <Home size={10} />
+                            General
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                            latestAbout.isActive
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
                           }`}
                         >
-                          <td className="p-4 font-mono text-xs">
-                            {selectedAboutUsId === about.id && (
-                              <span className="mr-2 text-primary">●</span>
-                            )}
-                            #{about.id}
-                          </td>
-                          <td className="p-4 text-sm font-medium">
-                            {about.sectionTitle}
-                          </td>
-                          <td className="p-4">
-                            {about.propertyTypeId ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
-                                <Building2 size={10} />
-                                {propertyTypes.find(
-                                  (pt) => pt.id === about.propertyTypeId,
-                                )?.typeName || "Unknown"}
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
-                                <Home size={10} />
-                                General
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-4">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                                about.isActive
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {about.isActive ? "Active" : "Disabled"}
-                            </span>
-                          </td>
-                          <td className="p-4 text-right flex justify-end gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEdit("about", about);
-                              }}
-                              className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
-                              title="Edit"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleToggleStatus(about);
-                              }}
-                              disabled={loading}
-                              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                about.isActive
-                                  ? "border-red-200 text-red-600 hover:bg-red-50"
-                                  : "border-green-200 text-green-600 hover:bg-green-50"
-                              }`}
-                            >
-                              {loading ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : about.isActive ? (
-                                "Disable"
-                              ) : (
-                                "Enable"
-                              )}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {totalAboutPages > 1 && (
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <p className="text-xs text-muted-foreground">
-                      Showing {(currentAboutPage - 1) * itemsPerPage + 1} to{" "}
-                      {Math.min(
-                        currentAboutPage * itemsPerPage,
-                        aboutUsList.length,
-                      )}{" "}
-                      of {aboutUsList.length} sections
-                    </p>
-                    <div className="flex gap-2">
-                      {[...Array(totalAboutPages)].map((_, idx) => (
+                          {latestAbout.isActive ? "Active" : "Disabled"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right flex justify-end gap-2">
                         <button
-                          key={idx}
-                          onClick={() => setCurrentAboutPage(idx + 1)}
-                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                            currentAboutPage === idx + 1
-                              ? "bg-primary text-white"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          onClick={() => handleOpenEdit("about", latestAbout)}
+                          className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        {/* Disable/Enable button commented out
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStatus(latestAbout);
+                          }}
+                          disabled={loading}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                            latestAbout.isActive
+                              ? "border-red-200 text-red-600 hover:bg-red-50"
+                              : "border-green-200 text-green-600 hover:bg-green-50"
                           }`}
                         >
-                          {idx + 1}
+                          {loading ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : latestAbout.isActive ? (
+                            "Disable"
+                          ) : (
+                            "Enable"
+                          )}
                         </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
+                        */}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}

@@ -23,6 +23,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
+import { showSuccess,showError } from "@/lib/toasters/toastUtils";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface PropertyMedia {
@@ -183,9 +184,7 @@ function ResturantBanner({
     return (galleryData || [])
       .filter(
         (g) =>
-          g.isActive &&
-          g.media?.url &&
-          g.categoryName?.toLowerCase() !== "3d",
+          g.isActive && g.media?.url && g.categoryName?.toLowerCase() !== "3d",
       )
       .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999));
   }, [galleryData]);
@@ -196,22 +195,6 @@ function ResturantBanner({
     [galleryItems],
   );
 
-  /**
-   * gridMedia: always a 4-element array for the desktop grid.
-   *
-   * Logic:
-   * 1. Place each item into slot (displayOrder - 1) if displayOrder is 1–4.
-   * 2. Items with displayOrder outside 1–4 (or missing) go into overflow queue.
-   * 3. Empty slots are backfilled sequentially from overflow.
-   * 4. Remaining unfilled slots stay null → rendered as EmptySlot.
-   *
-   * Example: one image with displayOrder=4 → slots=[null,null,null,img]
-   *          but after backfill → slots=[img,null,null,null]
-   *          (overflow fills from left)
-   *
-   * Actually we DON'T backfill from left — we place by order first,
-   * then only fill remaining nulls with overflow items sequentially.
-   */
   const gridMedia: (PropertyMedia | null)[] = useMemo(() => {
     const slots: (PropertyMedia | null)[] = [null, null, null, null];
     const overflow: PropertyMedia[] = [];
@@ -251,10 +234,19 @@ function ResturantBanner({
   const mobileTouchStart = useRef<number | null>(null);
   const mobilePrev = () =>
     setMobileIndex((c) => (c - 1 + galleryMedia.length) % galleryMedia.length);
-  const mobileNext = () =>
-    setMobileIndex((c) => (c + 1) % galleryMedia.length);
+  const mobileNext = () => setMobileIndex((c) => (c + 1) % galleryMedia.length);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  useEffect(() => {
+    const bookmarks = JSON.parse(
+      localStorage.getItem("bookmarkedRestaurants") || "[]",
+    );
+
+    if (bookmarks.includes(restaurant.propertyId)) {
+      setIsBookmarked(true);
+    }
+  }, [restaurant.propertyId]);
 
   const socialPlatforms = [
     {
@@ -284,10 +276,27 @@ function ResturantBanner({
   ];
 
   const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    isBookmarked
-      ? toast("Removed from bookmark")
-      : toast.success("Added to bookmark");
+    const bookmarks = JSON.parse(
+      localStorage.getItem("bookmarkedRestaurants") || "[]",
+    );
+
+    if (bookmarks.includes(restaurant.propertyId)) {
+      const updated = bookmarks.filter((id) => id !== restaurant.propertyId);
+
+      localStorage.setItem("bookmarkedRestaurants", JSON.stringify(updated));
+      setIsBookmarked(false);
+
+      // showSuccess("Removed from favorites");
+    } else {
+      bookmarks.push(restaurant.propertyId);
+
+      localStorage.setItem("bookmarkedRestaurants", JSON.stringify(bookmarks));
+      setIsBookmarked(true);
+
+      // showSuccess(
+      //   "Saved to favorites ❤️ — Press Ctrl + D to bookmark this page in Chrome",
+      // );
+    }
   };
 
   const openGalleryAt = (index: number) => {
@@ -606,7 +615,10 @@ function ResturantBanner({
             {/* SLOT 0 — main image, col-span-2 */}
             <div
               className={`md:col-span-2 relative group overflow-hidden rounded-2xl ${gridMedia[0] ? "cursor-pointer" : "cursor-default"}`}
-              onClick={() => gridMedia[0] && openGalleryAt(galleryMedia.indexOf(gridMedia[0]))}
+              onClick={() =>
+                gridMedia[0] &&
+                openGalleryAt(galleryMedia.indexOf(gridMedia[0]))
+              }
             >
               {gridMedia[0] ? (
                 <>
@@ -628,7 +640,10 @@ function ResturantBanner({
                 <div
                   key={idx}
                   className={`relative group overflow-hidden rounded-2xl flex-1 ${gridMedia[idx] ? "cursor-pointer" : "cursor-default"}`}
-                  onClick={() => gridMedia[idx] && openGalleryAt(galleryMedia.indexOf(gridMedia[idx]!))}
+                  onClick={() =>
+                    gridMedia[idx] &&
+                    openGalleryAt(galleryMedia.indexOf(gridMedia[idx]!))
+                  }
                 >
                   {gridMedia[idx] ? (
                     <>
@@ -649,7 +664,10 @@ function ResturantBanner({
             {/* SLOT 3 — last column + view gallery button */}
             <div
               className={`md:col-span-1 relative group overflow-hidden rounded-2xl ${gridMedia[3] ? "cursor-pointer" : "cursor-default"}`}
-              onClick={() => gridMedia[3] && openGalleryAt(galleryMedia.indexOf(gridMedia[3]))}
+              onClick={() =>
+                gridMedia[3] &&
+                openGalleryAt(galleryMedia.indexOf(gridMedia[3]))
+              }
             >
               {gridMedia[3] ? (
                 <>
@@ -675,7 +693,9 @@ function ResturantBanner({
                 >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
+                    {totalImages > 4
+                      ? `+${totalImages - 4} MORE`
+                      : "VIEW GALLERY"}
                   </span>
                 </button>
               </div>

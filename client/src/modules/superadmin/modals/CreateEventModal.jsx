@@ -47,6 +47,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
+  const [mediaType, setMediaType] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,6 +79,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
       if (editingEvent.image?.url) {
         setImagePreview(editingEvent.image.url);
         setUploadMethod("upload"); // Default to upload view to show existing image
+        setMediaType(editingEvent.image.type);
       }
     } else if (isOpen) {
       clearForm();
@@ -489,67 +491,41 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 Event Media
               </label>
 
-              <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
-                <button
-                  type="button"
-                  onClick={() => setUploadMethod("upload")}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md ${uploadMethod === "upload" ? "bg-white shadow-sm" : "text-gray-500"}`}
-                >
-                  Upload
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUploadMethod("url")}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md ${uploadMethod === "url" ? "bg-white shadow-sm" : "text-gray-500"}`}
-                >
-                  URL
-                </button>
-              </div>
+              <div className="flex bg-gray-100 p-1 rounded-lg mb-4"></div>
 
-              {uploadMethod === "upload" ? (
-                <div
-                  className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() =>
-                    document.getElementById("file-upload")?.click()
-                  }
-                  style={{ borderColor: colors.border }}
-                >
-                  <input
-                    id="file-upload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*,video/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setSelectedFile(file);
-                        setFormData((p) => ({ ...p, mediaId: "" }));
-                        setImagePreview(URL.createObjectURL(file));
-                      }
-                    }}
-                  />
-                  <Upload size={30} className="mx-auto mb-2 opacity-20" />
-                  <p className="text-xs text-gray-500">
-                    {selectedFile ? selectedFile.name : "Choose or drag image/video"}
-                  </p>
-                </div>
-              ) : (
+              <div
+                className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => document.getElementById("file-upload")?.click()}
+                style={{ borderColor: colors.border }}
+              >
                 <input
-                  type="text"
-                  placeholder="https://..."
-                  value={imageUrl}
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  accept="image/*,video/*"
                   onChange={(e) => {
-                    setImageUrl(e.target.value);
-                    setImagePreview(e.target.value);
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelectedFile(file);
+                      setFormData((p) => ({ ...p, mediaId: "" }));
+                      setImagePreview(URL.createObjectURL(file));
+                    }
                   }}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none"
-                  style={{ borderColor: colors.border }}
                 />
-              )}
+
+                <Upload size={30} className="mx-auto mb-2 opacity-20" />
+
+                <p className="text-xs text-gray-500">
+                  {selectedFile
+                    ? selectedFile.name
+                    : "Choose or drag image/video"}
+                </p>
+              </div>
 
               {imagePreview && (
                 <div className="mt-6 relative group">
-                  {selectedFile?.type?.startsWith("video") ? (
+                  {selectedFile?.type?.startsWith("video") ||
+                  mediaType === "VIDEO" ? (
                     <video
                       src={imagePreview}
                       controls
@@ -569,6 +545,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                       setImagePreview(null);
                       setSelectedFile(null);
                       setImageUrl("");
+                      setMediaType(null);
                       setFormData((p) => ({ ...p, mediaId: "" }));
                     }}
                     className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"

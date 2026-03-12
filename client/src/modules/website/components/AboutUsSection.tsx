@@ -212,7 +212,7 @@ export default function AboutUsSection() {
                     <img
                       src={mediaItems[currentMediaIndex].src}
                       alt="Showcase"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain bg-black"
                     />
                   )}
                 </motion.div>
