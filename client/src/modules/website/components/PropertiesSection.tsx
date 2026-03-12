@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -10,7 +10,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Share2,
+  Navigation,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { GetAllPropertyDetails } from "@/Api/Api";
@@ -39,7 +39,6 @@ interface ApiProperty {
   bookingEngineUrl?: string | null;
 }
 
-// ── Max chars to show in collapsed state ──
 const SUBTITLE_LIMIT = 120;
 
 const CarouselItem = ({
@@ -48,25 +47,19 @@ const CarouselItem = ({
   total,
   activeIndex,
   onDotClick,
-  onShare,
+  nextProperty,
 }: {
   property: ApiProperty;
   isActive: boolean;
   total: number;
   activeIndex: number;
   onDotClick: (i: number) => void;
-  onShare: (property: ApiProperty) => void;
+  nextProperty: ApiProperty | null;
 }) => {
-  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
-  const baseUrl =
-    property.propertyType?.toLowerCase() === "restaurant"
-      ? "https://restaurants.kennediablu.com"
-      : property.propertyType?.toLowerCase() === "hotel"
-        ? "https://hotels.kennediablu.com"
-        : "";
+  const nextImageUrl = nextProperty?.media?.[0]?.url || nextProperty?.media?.[0] || "";
 
   const propertyPath = `${createCitySlug(
     property.city || property.propertyName,
@@ -74,24 +67,18 @@ const CarouselItem = ({
     property.propertyName || property.city || "",
     property.propertyId,
   )}`;
-  // const propertyPath = `${baseUrl}/${createCitySlug(
-  //   property.city || property.propertyName,
-  // )}/${createHotelSlug(
-  //   property.propertyName || property.city || "",
-  //   property.propertyId,
-  // )}`;
 
-  const subtitle = property.subTitle || "";
-  const isLong = subtitle.length > SUBTITLE_LIMIT;
+  const propertyName = property.propertyName || "";
+  const subTitle = property.subTitle || "";
+  const isLong = subTitle.length > SUBTITLE_LIMIT;
 
   return (
     <div
-      className={`absolute inset-0 transition-all duration-1000 cursor-pointer ${
-        isActive
-          ? "opacity-100 z-10 pointer-events-auto"
-          : "opacity-0 z-0 pointer-events-none"
+      className={`absolute inset-0 transition-all duration-1000 ${
+        isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
       }`}
     >
+      {/* Background */}
       {imageUrl ? (
         <OptimizedImage
           src={imageUrl}
@@ -99,46 +86,39 @@ const CarouselItem = ({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-          <Building2 className="w-24 h-24 text-gray-400" />
+        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+          <Building2 className="w-24 h-24 text-gray-600" />
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+      {/* Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-      <div className="absolute inset-0 flex items-center px-8 lg:px-12">
-        <div className="max-w-xl text-white">
-          {/* Share button */}
-          {/* <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare(property);
-            }}
-            className="mb-4 p-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
-          >
-            <Share2 className="w-4 h-4" />
-          </button> */}
+      {/* Three-zone layout */}
+      <div className="absolute inset-0 flex flex-col justify-between px-8 lg:px-10 py-8">
 
-          {property.tagline && (
-            <p className="text-white/90 text-xs mb-3 line-clamp-2 italic font-light tracking-wide">
+        {/* TOP — tagline */}
+        <div className="min-h-[28px]">
+          {property.tagline ? (
+            <p className="text-white/75 text-xs font-light italic tracking-wide max-w-xs leading-relaxed">
               {property.tagline}
             </p>
-          )}
+          ) : null}
+        </div>
 
-          {/* Numbered Pagination */}
+        {/* MIDDLE — numbered nav + heading + subtitle + city/rating + CTA */}
+        <div className="text-white max-w-lg">
           {total > 1 && (
-            <div className="flex items-center gap-5 mb-4">
+            <div className="flex items-center gap-5 mb-5">
               {Array.from({ length: total }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDotClick(i);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); onDotClick(i); }}
                   className={`text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${
                     i === activeIndex
                       ? "text-white border-b-2 border-white"
-                      : "text-white/40 border-b-2 border-transparent hover:text-white/60"
+                      : "text-white/35 border-b-2 border-transparent hover:text-white/60"
                   }`}
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -147,32 +127,23 @@ const CarouselItem = ({
             </div>
           )}
 
-          {/* Property name — font reduced ~50% from text-3xl lg:text-5xl */}
-          <h1 className="text-xl lg:text-2xl font-serif mb-2 leading-tight">
-            {property.propertyName}
+          <h1 className="text-2xl lg:text-3xl font-serif leading-tight mb-1">
+            <span className="block font-bold not-italic">{propertyName}</span>
           </h1>
 
-          {/* Subtitle — fixed height scrollable, never breaks layout */}
-          {subtitle && (
-            <div className="mb-4">
+          {subTitle && (
+            <div className="mb-1">
               <div
                 className={`transition-all duration-300 ${
-                  expanded
-                    ? "h-[90px] overflow-y-auto"
-                    : "h-[42px] overflow-hidden"
+                  expanded ? "h-[90px] overflow-y-auto" : "h-[42px] overflow-hidden"
                 } pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`}
               >
-                <p className="italic font-light text-sm opacity-80 leading-snug">
-                  {subtitle}
-                </p>
+                <p className="italic font-light text-sm opacity-80 leading-snug">{subTitle}</p>
               </div>
               {isLong && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setExpanded((prev) => !prev);
-                  }}
-                  className="mt-1 text-xs font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2"
+                  onClick={(e) => { e.stopPropagation(); setExpanded((prev) => !prev); }}
+                  className="mt-1 text-xs font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
                 >
                   {expanded ? "Show less" : "Show more"}
                 </button>
@@ -180,33 +151,60 @@ const CarouselItem = ({
             </div>
           )}
 
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center text-xs font-medium">
+          <div className="flex items-center gap-4 mt-4 mb-5">
+            <div className="flex items-center text-sm font-medium text-white/80">
               <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary" />
               {property.city || "N/A"}
             </div>
-            {property.rating ? (
-              <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+            {property.rating && property.rating > 0 ? (
+              <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full backdrop-blur-sm">
                 <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
-                <span className="font-bold text-xs">
-                  {property.rating.toFixed(1)}
-                </span>
+                <span className="font-bold text-sm">{property.rating.toFixed(1)}</span>
               </div>
             ) : null}
           </div>
 
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(propertyPath, "_blank", "noopener,noreferrer");
-            }}
+            onClick={(e) => { e.stopPropagation(); window.open(propertyPath, "_blank", "noopener,noreferrer"); }}
             className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >
             Explore Now
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-primary transition-all">
-              <ArrowRight size={16} />
+            <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
+              <ArrowRight size={14} />
             </div>
           </button>
+        </div>
+
+        {/* BOTTOM — dot pagination left + next thumbnail right */}
+        <div className="flex items-end justify-between">
+          {total > 1 ? (
+            <div className="flex items-center gap-2">
+              {Array.from({ length: total }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); onDotClick(i); }}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
+                    i === activeIndex ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/35 hover:bg-white/60"
+                  }`}
+                />
+              ))}
+            </div>
+          ) : <div />}
+
+          {nextProperty && nextImageUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDotClick((activeIndex + 1) % total); }}
+              className="relative w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-white/50 shadow-xl hover:border-white/90 hover:scale-105 transition-all cursor-pointer flex-shrink-0"
+              title={`Next: ${nextProperty.propertyName}`}
+            >
+              <OptimizedImage
+                src={nextImageUrl}
+                alt={nextProperty.propertyName}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/15 rounded-full" />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -233,9 +231,7 @@ export default function PropertiesSection() {
           const formatted = rawData.flatMap((item: any) => {
             const parent = item.propertyResponseDTO;
             const listings = item.propertyListingResponseDTOS || [];
-
             if (!parent || parent.isActive !== true) return [];
-
             return listings
               .filter((l: any) => l.isActive === true)
               .map((l: any) => ({
@@ -243,8 +239,7 @@ export default function PropertiesSection() {
                 propertyId: parent?.id,
                 listingId: l.id,
                 propertyName: parent?.propertyName || "Unnamed Property",
-                propertyType:
-                  l.propertyType || parent?.propertyTypes?.[0] || "Property",
+                propertyType: l.propertyType || parent?.propertyTypes?.[0] || "Property",
                 city: parent?.locationName,
                 mainHeading: l.mainHeading || "",
                 subTitle: l.subTitle || "",
@@ -261,7 +256,6 @@ export default function PropertiesSection() {
                 bookingEngineUrl: parent?.bookingEngineUrl || null,
               }));
           });
-
           setApiProperties([...formatted].reverse());
         }
       } catch (error) {
@@ -271,21 +265,17 @@ export default function PropertiesSection() {
         setLoading(false);
       }
     };
-
     fetchFullPropertyData();
   }, []);
 
   const filtered = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
-    const matchType =
-      selectedType === "All Types" || p.propertyType === selectedType;
+    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
 
-  const nextSlide = () =>
-    setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
-  const prevSlide = () =>
-    setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
+  const nextSlide = () => setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
 
   useEffect(() => {
     if (filtered.length <= 1 || isPaused) return;
@@ -293,11 +283,25 @@ export default function PropertiesSection() {
     return () => clearInterval(timer);
   }, [filtered.length, activeIndex, isPaused]);
 
+  useEffect(() => { setActiveIndex(0); }, [selectedCity, selectedType]);
+
   const active = filtered[activeIndex];
+  const nextProperty = filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
+  const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
+  const basePrice = active?.price ?? 0;
+  const discount = active?.discountAmount ?? 0;
+  const gst = active?.gstPercentage ?? 0;
+  const discountedPrice = basePrice - discount;
+
+  // Mobile: 4 amenities max; desktop: 6
+  const displayAmenities = active?.amenities?.slice(0, 6) ?? [];
+  const mobileAmenities = active?.amenities?.slice(0, 4) ?? [];
+  const hasAmenities = displayAmenities.length > 0;
 
   return (
     <section className="py-8 md:py-16 bg-gradient-to-br from-background via-secondary/5 to-background relative">
       <div className="container mx-auto px-4 md:px-12">
+        {/* Section Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-5xl font-serif text-foreground">
@@ -305,53 +309,37 @@ export default function PropertiesSection() {
             </h2>
             <div className="w-24 h-1 bg-primary rounded-full" />
           </div>
-
           <div className="flex flex-wrap items-center gap-4">
             <select
               value={selectedType}
-              onChange={(e) => {
-                setSelectedType(e.target.value);
-                setActiveIndex(0);
-              }}
+              onChange={(e) => setSelectedType(e.target.value)}
               className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
             >
               <option value="All Types">All Types</option>
-              {Array.from(
-                new Set(apiProperties.map((p) => p.propertyType)),
-              ).map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
+              {Array.from(new Set(apiProperties.map((p) => p.propertyType))).map((t) => (
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
             <select
               value={selectedCity}
-              onChange={(e) => {
-                setSelectedCity(e.target.value);
-                setActiveIndex(0);
-              }}
+              onChange={(e) => setSelectedCity(e.target.value)}
               className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
             >
               <option value="All Cities">All Cities</option>
-              {Array.from(new Set(apiProperties.map((p) => p.city))).map(
-                (c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ),
-              )}
+              {Array.from(new Set(apiProperties.map((p) => p.city))).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
-            {loading && (
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            )}
+            {loading && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
           </div>
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-8">
-            {/* ── LEFT: Carousel ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[63%_35%] gap-6">
+
+            {/* LEFT: Carousel */}
             <div
-              className="relative h-[400px] md:h-[550px] rounded-3xl overflow-hidden shadow-2xl group border border-white/10"
+              className="relative h-[440px] md:h-[560px] rounded-2xl overflow-hidden shadow-2xl group"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
             >
@@ -363,175 +351,225 @@ export default function PropertiesSection() {
                   total={filtered.length}
                   activeIndex={activeIndex}
                   onDotClick={setActiveIndex}
-                  onShare={() => {}}
+                  nextProperty={nextProperty}
                 />
               ))}
-
-              {/* Prev / Next arrows */}
               {filtered.length > 1 && (
                 <>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prevSlide();
-                    }}
-                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
-                    <ChevronLeft size={28} />
+                    <ChevronLeft size={22} />
                   </button>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      nextSlide();
-                    }}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
-                    <ChevronRight size={28} />
+                    <ChevronRight size={22} />
                   </button>
                 </>
               )}
-
-              {/* Dot Pagination — Bottom Left */}
-              {filtered.length > 1 && (
-                <div className="absolute bottom-5 left-8 z-20 flex items-center gap-2">
-                  {filtered.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveIndex(i);
-                      }}
-                      className={`rounded-full transition-all duration-300 cursor-pointer ${
-                        i === activeIndex
-                          ? "w-5 h-2 bg-white"
-                          : "w-2 h-2 bg-white/40 hover:bg-white/70"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* ── RIGHT: Details Card ── */}
+            {/* RIGHT: Details Card
+                Desktop → fixed height matching carousel (h-[560px])
+                Mobile  → auto height, compact padding, no overflow scroll needed */}
             {active && (
-              <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl flex flex-col justify-between">
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-serif font-bold text-foreground">
-                    {active.propertyName}
+              <div className="bg-card border border-border rounded-2xl shadow-xl flex flex-col overflow-hidden lg:h-[560px]">
+
+                {/* Card Header */}
+                <div className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-border">
+                  <h3 className="text-sm md:text-base font-bold text-foreground tracking-wide">
+                    Property Details
                   </h3>
-
-                  <div className="space-y-4">
-                    {/* Price block — only show if price > 0 */}
-                    {active.price > 0 && (
-                      <div className="flex flex-col pb-4 border-b border-border">
-                        <div className="flex justify-between items-end">
-                          <span className="text-sm text-muted-foreground uppercase font-bold">
-                            Base Price
-                          </span>
-                          <span className="text-xl font-semibold">
-                            ₹{active.price.toLocaleString()}
-                          </span>
-                        </div>
-
-                        {active.discountAmount && active.discountAmount > 0 ? (
-                          <div className="flex justify-between text-sm text-green-600 mt-1">
-                            <span>Discount</span>
-                            <span>
-                              -₹{active.discountAmount.toLocaleString()}
-                            </span>
-                          </div>
-                        ) : null}
-
-                        {active.gstPercentage && active.gstPercentage > 0 ? (
-                          <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                            <span>GST ({active.gstPercentage}%)</span>
-                            <span>
-                              +₹
-                              {(
-                                (active.price - (active.discountAmount || 0)) *
-                                (active.gstPercentage / 100)
-                              ).toLocaleString()}
-                            </span>
-                          </div>
-                        ) : null}
-
-                        <div className="flex justify-between items-end mt-4">
-                          <span className="text-sm text-foreground font-bold uppercase">
-                            Total
-                          </span>
-                          <span className="text-3xl font-black text-primary">
-                            ₹
-                            {(
-                              (active.price - (active.discountAmount || 0)) *
-                              (1 + (active.gstPercentage || 0) / 100)
-                            ).toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {(!!active.capacity || !!active.rating) && (
-                      <div className="grid grid-cols-2 gap-4 text-sm font-bold">
-                        {!!active.capacity && (
-                          <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                            <p className="text-[10px] text-muted-foreground mb-1 uppercase">
-                              Capacity
-                            </p>
-                            {active.capacity} Guests
-                          </div>
-                        )}
-                        {!!active.rating && (
-                          <div className="p-4 bg-secondary/20 rounded-2xl border border-border/50">
-                            <p className="text-[10px] text-muted-foreground mb-1 uppercase">
-                              Rating
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                              {active.rating.toFixed(1)}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  <div className="p-1.5 md:p-2 rounded-lg bg-secondary/30 text-muted-foreground">
+                    <Building2 size={16} />
                   </div>
                 </div>
 
-                <div className="mt-8 space-y-4">
-                  {active.bookingEngineUrl ? (
-                    <button
-                      onClick={() =>
-                        window.open(active.bookingEngineUrl!, "_blank")
-                      }
-                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
-                    >
-                      Book Your Stay <ArrowRight size={20} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        const propertyPath = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
-                          active.propertyName || active.city || "property",
-                          active.propertyId,
-                        )}`;
-                        navigate(propertyPath);
-                      }}
-                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl flex items-center justify-center gap-3 uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
-                    >
-                      View Details <ArrowRight size={20} />
-                    </button>
+                {/* Scrollable on desktop only; natural flow on mobile */}
+                <div className="px-4 md:px-6 py-3 md:py-5 flex flex-col flex-1 gap-3 md:gap-5 lg:overflow-y-auto">
+
+                  {/* Top info row */}
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    {/* Capacity */}
+                    <div>
+                      <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                        Capacity
+                      </p>
+                      {active.capacity && active.capacity > 0 ? (
+                        <p className="text-base md:text-lg font-bold text-foreground">
+                          {active.capacity}{" "}
+                          <span className="text-xs md:text-sm font-medium text-muted-foreground">
+                            {isRestaurant ? "Covers" : "Guests"}
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">—</p>
+                      )}
+                    </div>
+
+                    {/* Hotel: price | Restaurant: city */}
+                    {isRestaurant ? (
+                      <div>
+                        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                          Location
+                        </p>
+                        <p className="text-base md:text-lg font-bold text-foreground leading-tight">
+                          {active.city || "—"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                          Starting From
+                        </p>
+                        {basePrice > 0 ? (
+                          <div>
+                            <p className="text-xl md:text-2xl font-black text-primary leading-none">
+                              ₹{Math.round(discountedPrice > 0 ? discountedPrice : basePrice).toLocaleString()}
+                            </p>
+                            <p className="text-[9px] md:text-[10px] text-muted-foreground mt-0.5">/night</p>
+                            {discount > 0 && (
+                              <p className="text-[10px] md:text-[11px] text-muted-foreground line-through mt-0.5">
+                                ₹{basePrice.toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">On Request</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Restaurant extra row: type + rating */}
+                  {isRestaurant && (
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                      <div>
+                        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                          Type
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">{active.propertyType}</p>
+                      </div>
+                      {active.rating && active.rating > 0 ? (
+                        <div>
+                          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                            Rating
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400 fill-yellow-400" />
+                            <span className="text-base md:text-lg font-bold text-foreground">{active.rating.toFixed(1)}</span>
+                            <span className="text-xs text-muted-foreground">/ 5</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
+                            Address
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
+                            {active.fullAddress || "—"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <button className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer">
-                      <Phone size={18} /> Call
-                    </button>
-                    <button
-                      onClick={() => (window.location.href = `#`)}
-                      className="py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer"
-                    >
-                      <Mail size={18} /> Email
-                    </button>
+                  {/* Amenities OR location fallback */}
+                  {hasAmenities ? (
+                    <div>
+                      <p className="text-xs md:text-sm font-bold text-foreground mb-2 md:mb-3">
+                        Top Amenities
+                      </p>
+                      {/* Mobile: 4 items in 2-col; Desktop: 6 items */}
+                      <div className="grid grid-cols-2 gap-y-1.5 md:gap-y-2.5 gap-x-3">
+                        {displayAmenities.map((amenity, i) => (
+                          <div
+                            key={i}
+                            className={`flex items-center gap-2 ${i >= 4 ? "hidden md:flex" : ""}`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                            <span className="text-xs md:text-sm text-muted-foreground leading-tight">{amenity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs md:text-sm font-bold text-foreground mb-1">Location Info</p>
+                      {active.city && (
+                        <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
+                          <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">City</p>
+                            <p className="text-xs md:text-sm font-semibold text-foreground">{active.city}</p>
+                          </div>
+                        </div>
+                      )}
+                      {active.fullAddress && (
+                        <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
+                          <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Address</p>
+                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{active.fullAddress}</p>
+                          </div>
+                        </div>
+                      )}
+                      {active.propertyType && (
+                        <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
+                          <Building2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Type</p>
+                            <p className="text-xs md:text-sm font-semibold text-foreground">{active.propertyType}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="border-t border-border" />
+
+                  {/* Book Now */}
+                  <div>
+                    <div className="space-y-2 md:space-y-3">
+                      {active.bookingEngineUrl ? (
+                        <button
+                          onClick={() => window.open(active.bookingEngineUrl!, "_blank")}
+                          className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
+                        >
+                          {isRestaurant ? "Reserve Table" : "Book Your Stay"}
+                          <ArrowRight size={15} />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const path = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
+                              active.propertyName || active.city || "property",
+                              active.propertyId,
+                            )}`;
+                            navigate(path);
+                          }}
+                          className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
+                        >
+                          View Details <ArrowRight size={15} />
+                        </button>
+                      )}
+                      <div className="grid grid-cols-2 gap-2 md:gap-3">
+                        <button className="py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground">
+                          <Phone size={14} /> Call
+                        </button>
+                        <button
+                          onClick={() => (window.location.href = `#`)}
+                          className="py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground"
+                        >
+                          <Mail size={14} /> Email
+                        </button>
+                      </div>
+                    </div>
                   </div>
+
                 </div>
               </div>
             )}
