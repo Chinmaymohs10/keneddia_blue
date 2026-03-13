@@ -486,17 +486,97 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
               >
                 Full Article Content
               </label>
+
+              {/* Formatting Toolbar */}
+              <div
+                className="flex items-center gap-1 px-2 py-1.5 rounded-t-lg border border-b-0"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: colors.mainBg,
+                }}
+              >
+                {[
+                  { label: "H1", tag: "<h1></h1>", title: "Heading 1" },
+                  { label: "H2", tag: "<h2></h2>", title: "Heading 2" },
+                  { label: "H3", tag: "<h3></h3>", title: "Heading 3" },
+                  { label: "¶", tag: "<p></p>", title: "Paragraph" },
+                  { label: "#", tag: "<hashtag></hashtag>", title: "Hashtag" },
+                ].map(({ label, tag, title }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    title={title}
+                    onClick={() => {
+                      const textarea =
+                        document.getElementById("longDesc-textarea");
+                      if (!textarea) return;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      const selected = formData.longDesc.substring(start, end);
+
+                      let inserted;
+                      if (label === "#") {
+                        // Wrap selected word(s) as space-separated hashtags, or insert placeholder
+                        inserted = selected
+                          ? selected
+                              .split(",")
+                              .map((t) => `#${t.trim()}`)
+                              .join(" ")
+                          : "#tag";
+                      } else {
+                        const openTag = tag.split("><")[0] + ">";
+                        const closeTag = "<" + tag.split("><")[1];
+                        inserted = openTag + selected + closeTag;
+                      }
+
+                      const newVal =
+                        formData.longDesc.substring(0, start) +
+                        inserted +
+                        formData.longDesc.substring(end);
+                      handleInputChange("longDesc", newVal);
+                      setTimeout(() => {
+                        textarea.focus();
+                        const cursor = start + inserted.length;
+                        textarea.setSelectionRange(cursor, cursor);
+                      }, 0);
+                    }}
+                    className="px-2.5 py-1 text-xs font-bold rounded border transition-colors hover:bg-gray-100 active:scale-95"
+                    style={{
+                      borderColor: colors.border,
+                      color: colors.textPrimary,
+                      backgroundColor: "transparent",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+
+                <div
+                  className="h-4 w-px mx-1"
+                  style={{ backgroundColor: colors.border }}
+                />
+
+                <span
+                  className="text-[10px]"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Select text then click tag to wrap
+                </span>
+              </div>
+
               <textarea
+                id="longDesc-textarea"
                 value={formData.longDesc}
                 onChange={(e) => handleInputChange("longDesc", e.target.value)}
-                rows={5}
-                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none"
+                rows={7}
+                className="w-full px-4 py-2.5 border outline-none resize-none rounded-b-lg font-mono text-sm"
                 style={{
                   borderColor: colors.border,
                   backgroundColor: colors.mainBg,
                   color: colors.textPrimary,
                 }}
-                placeholder="Full article content..."
+                placeholder={`<h1>Main Heading</h1>\n<h2>Sub Heading</h2>\n<p>Your paragraph content here...</p>`}
               />
             </div>
 
@@ -545,6 +625,31 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
                   placeholder="5 min read"
                 />
               </div>
+            </div>
+
+            {/* About Author - full width below */}
+            <div>
+              <label
+                className="flex items-center gap-2 text-xs font-semibold uppercase mb-2"
+                style={{ color: colors.textSecondary }}
+              >
+                <User size={14} /> About Author
+              </label>
+              <textarea
+                value={formData.authorDescription}
+                onChange={(e) =>
+                  handleInputChange("authorDescription", e.target.value)
+                }
+                rows={2}
+                className="w-full px-4 py-2.5 rounded-lg border outline-none resize-none"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: colors.mainBg,
+                  color: colors.textPrimary,
+                }}
+                placeholder="Brief bio about the author..."
+                maxLength={300}
+              />
             </div>
           </div>
 

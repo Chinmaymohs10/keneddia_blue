@@ -81,6 +81,12 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
 
   const currentProperty = properties[currentIndex];
 
+  // Amenities or fallback tags
+  const displayTags =
+    currentProperty.highlights?.length > 0
+      ? currentProperty.highlights.slice(0, 4)
+      : ["Luxury", "Premium", "Hospitality"];
+
   const handleNavigate = () => {
     const citySlug = createCitySlug(currentProperty.location);
     const propertySlug = createHotelSlug(
@@ -92,7 +98,8 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
-      <div className="relative h-[200px] overflow-hidden">
+      {/* Image Section */}
+      <div className="relative h-[210px] overflow-hidden rounded-t-2xl">
         {properties.map((property, i) => (
           <div
             key={`${property.id}-${i}`}
@@ -113,18 +120,29 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
           </div>
         ))}
 
+        {/* Rating + Name + Location overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <div className="flex items-center gap-1 mb-1">
-            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-bold">
-              {currentProperty.rating || "5.0"}
-            </span>
+          <div className="flex items-center gap-0.5 mb-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-3 h-3 ${
+                  i < Math.round(currentProperty.rating || 5)
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "fill-white/30 text-white/30"
+                }`}
+              />
+            ))}
           </div>
           <h4 className="font-serif font-bold text-base leading-tight">
             {currentProperty.name}
           </h4>
+          <p className="flex items-center gap-1 text-[11px] text-white/80 mt-0.5">
+            <MapPin className="w-3 h-3" /> {currentProperty.location}
+          </p>
         </div>
 
+        {/* Prev/Next arrows */}
         {properties.length > 1 && (
           <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2">
             <button
@@ -133,7 +151,7 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
                   i === 0 ? properties.length - 1 : i - 1,
                 )
               }
-              className="p-1 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40"
+              className="p-1.5 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40"
             >
               <ChevronLeft size={14} />
             </button>
@@ -143,7 +161,7 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
                   i === properties.length - 1 ? 0 : i + 1,
                 )
               }
-              className="p-1 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40"
+              className="p-1.5 bg-black/20 backdrop-blur-sm rounded-full text-white hover:bg-black/40"
             >
               <ChevronRight size={14} />
             </button>
@@ -151,12 +169,43 @@ const PropertiesSlider = ({ properties }: { properties: Property[] }) => {
         )}
       </div>
 
+      {/* Bottom Content */}
       <div className="p-4 space-y-3">
+        {/* Amenity / tag pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {displayTags.map((tag, i) => (
+            <span
+              key={i}
+              className="px-2.5 py-1 text-[10px] font-semibold rounded-full border border-border text-muted-foreground bg-secondary/50"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Dot indicators */}
+        {properties.length > 1 && (
+          <div className="flex justify-center gap-1.5">
+            {properties.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentIndex(i)}
+                className={`rounded-full transition-all ${
+                  i === currentIndex
+                    ? "w-4 h-1.5 bg-primary"
+                    : "w-1.5 h-1.5 bg-border"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* CTA Button */}
         <button
           onClick={handleNavigate}
-          className="flex items-center justify-center gap-2 w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-[10px] font-bold uppercase tracking-wider"
+          className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-[11px] font-bold uppercase tracking-wider"
         >
-          Explore Now <ExternalLink className="w-3 h-3" />
+          Explore Property <ExternalLink className="w-3 h-3" />
         </button>
       </div>
     </div>
@@ -357,7 +406,6 @@ export default function NewsDetails() {
                   {newsItem.badgeType}
                 </div>
               </div>
-
               <article className="max-w-3xl">
                 <div className="prose prose-slate dark:prose-invert max-w-none">
                   <p className="text-xl md:text-2xl leading-relaxed font-serif text-foreground/90 mb-8">
@@ -369,29 +417,48 @@ export default function NewsDetails() {
 
                   {newsItem.longDesc && (
                     <div
-                      className="mt-8 space-y-6 text-lg leading-relaxed text-muted-foreground whitespace-pre-wrap font-sans"
-                      dangerouslySetInnerHTML={{ __html: newsItem.longDesc }}
+                      className="mt-8 font-sans [&_h1]:font-serif [&_h1]:font-bold [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:mb-3 [&_h1]:mt-8 [&_h2]:font-serif [&_h2]:font-bold [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:mb-3 [&_h2]:mt-8 [&_h3]:font-serif [&_h3]:font-semibold [&_h3]:text-foreground [&_h3]:text-lg [&_h3]:mb-2 [&_h3]:mt-6 [&_p]:text-muted-foreground [&_p]:text-base [&_p]:leading-relaxed [&_p]:mb-5"
+                      dangerouslySetInnerHTML={{
+                        __html: newsItem.longDesc.replace(/#\w+/g, "").trim(),
+                      }}
                     />
                   )}
                 </div>
               </article>
 
-              {/* HASHTAGS */}
-              <div className="flex flex-wrap gap-2 pt-10 pb-6 border-b border-border max-w-3xl">
-                {(
-                  newsItem.tags || "Hospitality, Luxury, Innovation, Excellence"
-                )
-                  .split(",")
-                  .map((tag, i) => (
-                    <span
-                      key={i}
-                      className="px-4 py-1.5 bg-secondary text-muted-foreground text-xs rounded-full font-bold uppercase tracking-wider"
-                    >
-                      #{tag.trim()}
-                    </span>
-                  ))}
-              </div>
+              {(() => {
+                // Extract #hashtags from longDesc
+                const longDescTags = newsItem.longDesc
+                  ? [...newsItem.longDesc.matchAll(/#(\w+)/g)].map((m) => m[1])
+                  : [];
 
+                // Merge with tags field, deduplicate
+                const tagFieldTags = newsItem.tags
+                  ? newsItem.tags
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean)
+                  : [];
+
+                const allTags = [
+                  ...new Set([...longDescTags, ...tagFieldTags]),
+                ];
+
+                if (allTags.length === 0) return null;
+
+                return (
+                  <div className="flex flex-wrap gap-2 pt-10 pb-6 border-b border-border max-w-3xl">
+                    {allTags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-4 py-1.5 bg-secondary text-muted-foreground text-xs rounded-full font-bold uppercase tracking-wider"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
               {/* SHARE */}
               <div className="py-8 flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-3xl">
                 <h4 className="font-serif font-bold text-xl">
@@ -427,7 +494,6 @@ export default function NewsDetails() {
                   </a>
                 </div>
               </div>
-
               {/* PAGINATION */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 max-w-3xl">
                 {pagination.prev ? (
@@ -486,7 +552,43 @@ export default function NewsDetails() {
                 </div>
                 <PropertiesSlider properties={dynamicProperties} />
               </div>
+              {/* About the Author */}
+              {newsItem.authorName && (
+                <div className="border border-border rounded-2xl p-5 space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    About the Author
+                  </p>
 
+                  {/* Avatar + Name Row */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-serif font-bold text-base leading-tight">
+                        {newsItem.authorName}
+                      </p>
+                      {newsItem.authorDescription?.includes("|") && (
+                        <p className="text-xs text-primary font-semibold mt-0.5">
+                          {newsItem.authorDescription.split("|")[0]?.trim()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {newsItem.authorDescription && (
+                    <>
+                      <div className="border-t border-border" />
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {newsItem.authorDescription.includes("|")
+                          ? newsItem.authorDescription.split("|")[1]?.trim()
+                          : newsItem.authorDescription}
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
               {/* Related News */}
               {relatedNews.length > 0 && (
                 <div className="space-y-6">
@@ -521,9 +623,8 @@ export default function NewsDetails() {
                 </div>
               )}
             </aside>
-             <NewsComment newsId={newsItem.id} />
+            <NewsComment newsId={newsItem.id} />
           </div>
-         
         </div>
       </main>
       <Footer />

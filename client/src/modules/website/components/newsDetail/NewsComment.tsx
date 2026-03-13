@@ -324,7 +324,7 @@ function CommentCard({ comment }: CommentCardProps) {
 
           <ReplyThread
             commentId={comment.id}
-            replyCount={comment.replies?.length ?? 0}
+            replyCount={comment.replies?.filter((r) => r.enabled).length ?? 0}
           />
         </div>
       </div>
