@@ -113,6 +113,8 @@ function EditPropertyModal({
     discountAmount: listing.discountAmount ?? "",
     bookingEngineUrl: p.bookingEngineUrl || "",
     amenitiesAndFeaturesIds: resolveAmenityIds(),
+    mobileNumber: p.mobileNumber || "",
+    email: p.email || "",
 
     // ✅ NEW FIELD
     nearbyLocations:
@@ -242,6 +244,8 @@ function EditPropertyModal({
         amenitiesAndFeaturesIds: form.amenitiesAndFeaturesIds.length
           ? form.amenitiesAndFeaturesIds
           : null,
+        mobileNumber: form.mobileNumber ? Number(form.mobileNumber) : null,
+        email: form.email || null,
 
         // ✅ CLEAN EMPTY ROWS
         nearbyLocations: form.nearbyLocations.filter(
@@ -453,13 +457,32 @@ function EditPropertyModal({
                   />
                 )}
               </Field>
+              <Field label="Mobile Number" icon={User}>
+                <input
+                  type="tel"
+                  value={form.mobileNumber}
+                  onChange={(e) => set("mobileNumber", e.target.value)}
+                  placeholder="9090800700"
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field label="Email" icon={LinkIcon}>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  placeholder="hello@gmail.com"
+                  className={inputCls}
+                />
+              </Field>
 
               <Field label="Assigned Admin" icon={User}>
                 {admins ? (
                   <select
                     value={form.assignedAdminId}
-                    onChange={(e) => set("assignedAdminId", e.target.value)}
-                    className={inputCls}
+                    disabled
+                    className={`${inputCls} bg-gray-100 cursor-not-allowed`}
                   >
                     <option value="">-- Unassigned --</option>
                     {admins.map((a) => (
@@ -472,9 +495,8 @@ function EditPropertyModal({
                   <input
                     type="number"
                     value={form.assignedAdminId}
-                    onChange={(e) => set("assignedAdminId", e.target.value)}
-                    placeholder="Admin ID"
-                    className={inputCls}
+                    disabled
+                    className={`${inputCls} bg-gray-100 cursor-not-allowed`}
                   />
                 )}
               </Field>

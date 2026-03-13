@@ -37,6 +37,8 @@ interface ApiProperty {
   gstPercentage?: number;
   discountAmount?: number;
   bookingEngineUrl?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
 }
 
 const SUBTITLE_LIMIT = 120;
@@ -59,7 +61,8 @@ const CarouselItem = ({
   const [expanded, setExpanded] = useState(false);
 
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
-  const nextImageUrl = nextProperty?.media?.[0]?.url || nextProperty?.media?.[0] || "";
+  const nextImageUrl =
+    nextProperty?.media?.[0]?.url || nextProperty?.media?.[0] || "";
 
   const propertyPath = `${createCitySlug(
     property.city || property.propertyName,
@@ -75,7 +78,9 @@ const CarouselItem = ({
   return (
     <div
       className={`absolute inset-0 transition-all duration-1000 ${
-        isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+        isActive
+          ? "opacity-100 z-10 pointer-events-auto"
+          : "opacity-0 z-0 pointer-events-none"
       }`}
     >
       {/* Background */}
@@ -97,7 +102,6 @@ const CarouselItem = ({
 
       {/* Three-zone layout */}
       <div className="absolute inset-0 flex flex-col justify-between px-8 lg:px-10 py-8">
-
         {/* TOP — tagline */}
         <div className="min-h-[28px]">
           {property.tagline ? (
@@ -114,7 +118,10 @@ const CarouselItem = ({
               {Array.from({ length: total }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={(e) => { e.stopPropagation(); onDotClick(i); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDotClick(i);
+                  }}
                   className={`text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${
                     i === activeIndex
                       ? "text-white border-b-2 border-white"
@@ -135,14 +142,21 @@ const CarouselItem = ({
             <div className="mb-1">
               <div
                 className={`transition-all duration-300 ${
-                  expanded ? "h-[90px] overflow-y-auto" : "h-[42px] overflow-hidden"
+                  expanded
+                    ? "h-[90px] overflow-y-auto"
+                    : "h-[42px] overflow-hidden"
                 } pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`}
               >
-                <p className="italic font-light text-sm opacity-80 leading-snug">{subTitle}</p>
+                <p className="italic font-light text-sm opacity-80 leading-snug">
+                  {subTitle}
+                </p>
               </div>
               {isLong && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); setExpanded((prev) => !prev); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpanded((prev) => !prev);
+                  }}
                   className="mt-1 text-xs font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer"
                 >
                   {expanded ? "Show less" : "Show more"}
@@ -159,13 +173,18 @@ const CarouselItem = ({
             {property.rating && property.rating > 0 ? (
               <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full backdrop-blur-sm">
                 <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
-                <span className="font-bold text-sm">{property.rating.toFixed(1)}</span>
+                <span className="font-bold text-sm">
+                  {property.rating.toFixed(1)}
+                </span>
               </div>
             ) : null}
           </div>
 
           <button
-            onClick={(e) => { e.stopPropagation(); window.open(propertyPath, "_blank", "noopener,noreferrer"); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(propertyPath, "_blank", "noopener,noreferrer");
+            }}
             className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >
             Explore Now
@@ -182,18 +201,28 @@ const CarouselItem = ({
               {Array.from({ length: total }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={(e) => { e.stopPropagation(); onDotClick(i); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDotClick(i);
+                  }}
                   className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    i === activeIndex ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/35 hover:bg-white/60"
+                    i === activeIndex
+                      ? "w-5 h-2 bg-white"
+                      : "w-2 h-2 bg-white/35 hover:bg-white/60"
                   }`}
                 />
               ))}
             </div>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
 
           {nextProperty && nextImageUrl && (
             <button
-              onClick={(e) => { e.stopPropagation(); onDotClick((activeIndex + 1) % total); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDotClick((activeIndex + 1) % total);
+              }}
               className="relative w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-white/50 shadow-xl hover:border-white/90 hover:scale-105 transition-all cursor-pointer flex-shrink-0"
               title={`Next: ${nextProperty.propertyName}`}
             >
@@ -239,7 +268,8 @@ export default function PropertiesSection() {
                 propertyId: parent?.id,
                 listingId: l.id,
                 propertyName: parent?.propertyName || "Unnamed Property",
-                propertyType: l.propertyType || parent?.propertyTypes?.[0] || "Property",
+                propertyType:
+                  l.propertyType || parent?.propertyTypes?.[0] || "Property",
                 city: parent?.locationName,
                 mainHeading: l.mainHeading || "",
                 subTitle: l.subTitle || "",
@@ -254,6 +284,8 @@ export default function PropertiesSection() {
                 isActive: true,
                 media: l.media || [],
                 bookingEngineUrl: parent?.bookingEngineUrl || null,
+                mobileNumber: parent?.mobileNumber || null,
+                email: parent?.email || null,
               }));
           });
           setApiProperties([...formatted].reverse());
@@ -270,12 +302,15 @@ export default function PropertiesSection() {
 
   const filtered = apiProperties.filter((p) => {
     const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
-    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
+    const matchType =
+      selectedType === "All Types" || p.propertyType === selectedType;
     return matchCity && matchType;
   });
 
-  const nextSlide = () => setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
+  const nextSlide = () =>
+    setActiveIndex((prev) => (prev === filtered.length - 1 ? 0 : prev + 1));
+  const prevSlide = () =>
+    setActiveIndex((prev) => (prev === 0 ? filtered.length - 1 : prev - 1));
 
   useEffect(() => {
     if (filtered.length <= 1 || isPaused) return;
@@ -283,10 +318,13 @@ export default function PropertiesSection() {
     return () => clearInterval(timer);
   }, [filtered.length, activeIndex, isPaused]);
 
-  useEffect(() => { setActiveIndex(0); }, [selectedCity, selectedType]);
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [selectedCity, selectedType]);
 
   const active = filtered[activeIndex];
-  const nextProperty = filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
+  const nextProperty =
+    filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
   const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
   const basePrice = active?.price ?? 0;
   const discount = active?.discountAmount ?? 0;
@@ -316,8 +354,12 @@ export default function PropertiesSection() {
               className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
             >
               <option value="All Types">All Types</option>
-              {Array.from(new Set(apiProperties.map((p) => p.propertyType))).map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {Array.from(
+                new Set(apiProperties.map((p) => p.propertyType)),
+              ).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
             <select
@@ -326,17 +368,22 @@ export default function PropertiesSection() {
               className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
             >
               <option value="All Cities">All Cities</option>
-              {Array.from(new Set(apiProperties.map((p) => p.city))).map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              {Array.from(new Set(apiProperties.map((p) => p.city))).map(
+                (c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ),
+              )}
             </select>
-            {loading && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
+            {loading && (
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            )}
           </div>
         </div>
 
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-[63%_35%] gap-6">
-
             {/* LEFT: Carousel */}
             <div
               className="relative h-[440px] md:h-[560px] rounded-2xl overflow-hidden shadow-2xl group"
@@ -357,13 +404,19 @@ export default function PropertiesSection() {
               {filtered.length > 1 && (
                 <>
                   <button
-                    onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevSlide();
+                    }}
                     className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronLeft size={22} />
                   </button>
                   <button
-                    onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextSlide();
+                    }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                   >
                     <ChevronRight size={22} />
@@ -377,7 +430,6 @@ export default function PropertiesSection() {
                 Mobile  → auto height, compact padding, no overflow scroll needed */}
             {active && (
               <div className="bg-card border border-border rounded-2xl shadow-xl flex flex-col overflow-hidden lg:h-[560px]">
-
                 {/* Card Header */}
                 <div className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-border">
                   <h3 className="text-sm md:text-base font-bold text-foreground tracking-wide">
@@ -390,7 +442,6 @@ export default function PropertiesSection() {
 
                 {/* Scrollable on desktop only; natural flow on mobile */}
                 <div className="px-4 md:px-6 py-3 md:py-5 flex flex-col flex-1 gap-3 md:gap-5 lg:overflow-y-auto">
-
                   {/* Top info row */}
                   <div className="grid grid-cols-2 gap-3 md:gap-4">
                     {/* Capacity */}
@@ -428,9 +479,16 @@ export default function PropertiesSection() {
                         {basePrice > 0 ? (
                           <div>
                             <p className="text-xl md:text-2xl font-black text-primary leading-none">
-                              ₹{Math.round(discountedPrice > 0 ? discountedPrice : basePrice).toLocaleString()}
+                              ₹
+                              {Math.round(
+                                discountedPrice > 0
+                                  ? discountedPrice
+                                  : basePrice,
+                              ).toLocaleString()}
                             </p>
-                            <p className="text-[9px] md:text-[10px] text-muted-foreground mt-0.5">/night</p>
+                            <p className="text-[9px] md:text-[10px] text-muted-foreground mt-0.5">
+                              /night
+                            </p>
                             {discount > 0 && (
                               <p className="text-[10px] md:text-[11px] text-muted-foreground line-through mt-0.5">
                                 ₹{basePrice.toLocaleString()}
@@ -438,7 +496,9 @@ export default function PropertiesSection() {
                             )}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">On Request</p>
+                          <p className="text-sm text-muted-foreground">
+                            On Request
+                          </p>
                         )}
                       </div>
                     )}
@@ -451,7 +511,9 @@ export default function PropertiesSection() {
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                           Type
                         </p>
-                        <p className="text-sm font-semibold text-foreground">{active.propertyType}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {active.propertyType}
+                        </p>
                       </div>
                       {active.rating && active.rating > 0 ? (
                         <div>
@@ -460,8 +522,12 @@ export default function PropertiesSection() {
                           </p>
                           <div className="flex items-center gap-1.5">
                             <Star className="w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-base md:text-lg font-bold text-foreground">{active.rating.toFixed(1)}</span>
-                            <span className="text-xs text-muted-foreground">/ 5</span>
+                            <span className="text-base md:text-lg font-bold text-foreground">
+                              {active.rating.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              / 5
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -491,20 +557,28 @@ export default function PropertiesSection() {
                             className={`flex items-center gap-2 ${i >= 4 ? "hidden md:flex" : ""}`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                            <span className="text-xs md:text-sm text-muted-foreground leading-tight">{amenity}</span>
+                            <span className="text-xs md:text-sm text-muted-foreground leading-tight">
+                              {amenity}
+                            </span>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs md:text-sm font-bold text-foreground mb-1">Location Info</p>
+                      <p className="text-xs md:text-sm font-bold text-foreground mb-1">
+                        Location Info
+                      </p>
                       {active.city && (
                         <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
                           <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">City</p>
-                            <p className="text-xs md:text-sm font-semibold text-foreground">{active.city}</p>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+                              City
+                            </p>
+                            <p className="text-xs md:text-sm font-semibold text-foreground">
+                              {active.city}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -512,17 +586,12 @@ export default function PropertiesSection() {
                         <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
                           <Navigation className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
                           <div>
-                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Address</p>
-                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{active.fullAddress}</p>
-                          </div>
-                        </div>
-                      )}
-                      {active.propertyType && (
-                        <div className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50">
-                          <Building2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Type</p>
-                            <p className="text-xs md:text-sm font-semibold text-foreground">{active.propertyType}</p>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+                              Address
+                            </p>
+                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
+                              {active.fullAddress}
+                            </p>
                           </div>
                         </div>
                       )}
@@ -536,7 +605,9 @@ export default function PropertiesSection() {
                     <div className="space-y-2 md:space-y-3">
                       {active.bookingEngineUrl ? (
                         <button
-                          onClick={() => window.open(active.bookingEngineUrl!, "_blank")}
+                          onClick={() =>
+                            window.open(active.bookingEngineUrl!, "_blank")
+                          }
                           className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                         >
                           {isRestaurant ? "Reserve Table" : "Book Your Stay"}
@@ -557,11 +628,26 @@ export default function PropertiesSection() {
                         </button>
                       )}
                       <div className="grid grid-cols-2 gap-2 md:gap-3">
-                        <button className="py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground">
+                        <button
+                          onClick={() => {
+                            if (active.mobileNumber) {
+                              window.location.href = `tel:${active.mobileNumber}`;
+                            } else {
+                              toast("Phone number not available");
+                            }
+                          }}
+                          className="py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground"
+                        >
                           <Phone size={14} /> Call
                         </button>
                         <button
-                          onClick={() => (window.location.href = `#`)}
+                          onClick={() => {
+                            if (active.email) {
+                              window.location.href = `mailto:${active.email}`;
+                            } else {
+                              toast("Email not available");
+                            }
+                          }}
                           className="py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground"
                         >
                           <Mail size={14} /> Email
@@ -569,7 +655,6 @@ export default function PropertiesSection() {
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             )}

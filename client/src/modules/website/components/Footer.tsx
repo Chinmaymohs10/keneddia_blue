@@ -97,8 +97,8 @@ export default function Footer() {
                 {/* Dark Mode Logo */}
                 {siteContent.brand.logo.darkImage && (
                   <img
-                    src={siteContent.brand.logo.darkImage.src}
-                    alt={siteContent.brand.logo.darkImage.alt}
+                    src={siteContent.brand.logo.image.src}
+                  alt={siteContent.brand.logo.image.alt}
                     className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
                   />
                 )}

@@ -51,6 +51,8 @@ function AddPropertyModal({ onClose, onSuccess }) {
     parentPropertyId: null,
     childPropertyIds: null,
     isActive: true,
+    mobileNumber: "",
+    email: "",
 
     // ✅ NEW FIELD
     nearbyLocations: [
@@ -344,6 +346,43 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   onChange={(e) =>
                     setParentData({ ...parentData, address: e.target.value })
                   }
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  Mobile Number
+                </label>
+
+                <input
+                  type="tel"
+                  className="w-full px-4 py-2.5 border rounded-xl"
+                  value={parentData.mobileNumber}
+                  onChange={(e) =>
+                    setParentData({
+                      ...parentData,
+                      mobileNumber: e.target.value,
+                    })
+                  }
+                  placeholder="9090800700"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                  Email
+                </label>
+
+                <input
+                  type="email"
+                  className="w-full px-4 py-2.5 border rounded-xl"
+                  value={parentData.email}
+                  onChange={(e) =>
+                    setParentData({
+                      ...parentData,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="hello@gmail.com"
                 />
               </div>
               <div className="col-span-2">
