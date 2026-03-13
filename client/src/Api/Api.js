@@ -1,12 +1,12 @@
 import axios from "axios";
 
 // DEV
-// const apiUrl = "http://192.168.0.135:6090/";
+const apiUrl = "http://192.168.0.135:6090/";
 
 // QA (commented as requested)
 // https://backend.kennediablu.com
 // const apiUrl = "http://103.152.79.63:6090/";
-const apiUrl = "https://backend.kennediablu.com/";
+// const apiUrl = "https://backend.kennediablu.com/";
 
 const API = axios.create({ baseURL: apiUrl });
 
@@ -425,5 +425,17 @@ export const deleteComment = (commentId) =>API.delete(`api/v1/comments/${comment
 export const toggleCommentStatus = (data) =>API.put("api/v1/comments/admin/toggle-status", data);
 // toggle reply enable/disable
 export const toggleCommentReplyStatus = (replyId) =>API.put(`api/v1/comments/admin/toggle-reply-status/${replyId}`);
+
+//Event-extra data and post event images api's
+export const uploadEventGallery = (formData) =>API.post("api/v1/event-gallery-upload/upload", formData, {headers: {"Content-Type": "multipart/form-data",},});
+export const getAllUploadedEventFiles = (formData) =>API.get("api/v1/event-gallery-upload/getAllUploadedFiles", {data: formData,});
+export const getEventFilesByUploadedId = (id) =>API.get(`api/v1/event-gallery-upload/getFilesByUploadedId/${id}`);
+// ─────────────────────────────
+// EVENT DETAIL CARD INFO
+// ─────────────────────────────
+export const addEventDetailInfo = (formData) =>API.post("api/v1/event-card/addCard", formData, {headers: {"Content-Type": "multipart/form-data",},});
+export const getEventDetailInfo = () =>API.get("api/v1/event-card/getCards");
+export const getEventDetailInfoById = (id) =>API.get(`api/v1/event-card/getCardById/${id}`);
+export const updateEventDetailInfo = (id, formData) =>API.patch(`api/v1/event-card/updateCard/${id}`, formData, {headers: {"Content-Type": "multipart/form-data",},});
 
 export default API;

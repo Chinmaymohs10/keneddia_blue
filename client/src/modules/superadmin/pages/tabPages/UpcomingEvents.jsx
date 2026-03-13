@@ -14,9 +14,11 @@ import {
   CheckCircle2,
   XCircle,
   Video,
+  Eye,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import CreateEventModal from "../../modals/CreateEventModal";
+import EventExtraInfoModal from "../../modals/EventExtraInfoModal";
 import { getEventsUpdated, updateEventStatus } from "@/Api/Api";
 
 function UpcomingEvents() {
@@ -25,6 +27,8 @@ function UpcomingEvents() {
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [statusLoading, setStatusLoading] = useState(null);
+  const [showExtraInfoModal, setShowExtraInfoModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,6 +91,10 @@ function UpcomingEvents() {
   const handleAddNew = () => {
     setEditingEvent(null);
     setShowModal(true);
+  };
+  const handleOpenExtraInfo = (event) => {
+    setSelectedEvent(event);
+    setShowExtraInfoModal(true);
   };
 
   const handleCloseModal = (shouldRefresh) => {
@@ -352,6 +360,17 @@ function UpcomingEvents() {
                           >
                             <Edit size={16} />
                           </button>
+                          <button
+                            onClick={() => handleOpenExtraInfo(event)}
+                            className="p-2 rounded-lg border bg-white transition-all hover:shadow-sm"
+                            style={{
+                              borderColor: colors.border,
+                              color: colors.primary,
+                            }}
+                            title="View Extra Info"
+                          >
+                            <Eye size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -398,6 +417,14 @@ function UpcomingEvents() {
           isOpen={showModal}
           onClose={handleCloseModal}
           editingEvent={editingEvent}
+        />
+      )}
+      {showExtraInfoModal && selectedEvent && (
+        <EventExtraInfoModal
+          isOpen={showExtraInfoModal}
+          onClose={() => setShowExtraInfoModal(false)}
+          eventId={selectedEvent.id}
+          propertyId={selectedEvent.propertyId}
         />
       )}
     </div>
