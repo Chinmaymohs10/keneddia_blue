@@ -219,7 +219,7 @@ export function UpcomingPropertyEvents({
   propertyId,
   currentEventId,
 }: UpcomingPropertyEventsProps) {
-  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [events, setEvents] = useState<ApiEvent[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [swiper, setSwiper] = useState<any>(null);
 
@@ -277,14 +277,12 @@ export function UpcomingPropertyEvents({
     fetchUpcoming();
   }, [currentEventId]);
 
-  if (loading)
+  if (loading || events === null)
     return (
       <div className="flex items-center justify-center py-10">
         <Loader2 className="w-5 h-5 animate-spin text-[#E33E33]" />
       </div>
     );
-
-  // Don't render the section at all if no matching events
   if (events.length === 0) return null;
 
   return (

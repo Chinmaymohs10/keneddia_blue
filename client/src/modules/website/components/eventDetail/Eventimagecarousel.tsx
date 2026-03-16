@@ -1,13 +1,22 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 export interface CarouselSlide {
   url: string;
+  type?: "IMAGE" | "VIDEO";
   alt?: string;
+  label?: string;
+  id?: string | number;
 }
 
 interface EventImageCarouselProps {
@@ -36,7 +45,7 @@ export function buildCarouselSlides(
   mainUrl: string,
 ): CarouselSlide[] {
   if (!mainUrl) return [];
-  return [{ id: 0, src: mainUrl, label: "Main Visual" }];
+  return [{ id: 0, url: mainUrl, label: "Main Visual", type: "IMAGE" }];
 }
 
 const cardPos = {
@@ -47,6 +56,40 @@ const cardPos = {
 };
 
 // ============================================================================
+// SOUND BUTTON
+// ============================================================================
+function SoundButton({
+  muted,
+  onToggle,
+}: {
+  muted: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+      className="absolute bottom-3 right-3 z-40 flex items-center gap-1.5 bg-black/55 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1.5 rounded-full border border-white/20 hover:bg-[#E33E33]/80 transition-all active:scale-95 shadow-lg"
+      aria-label={muted ? "Unmute" : "Mute"}
+    >
+      {muted ? (
+        <>
+          <VolumeX size={12} />
+          <span>Muted</span>
+        </>
+      ) : (
+        <>
+          <Volume2 size={12} />
+          <span>Sound On</span>
+        </>
+      )}
+    </button>
+  );
+}
+
+// ============================================================================
 // MOBILE CAROUSEL — full-width slider with touch swipe + arrows
 // ============================================================================
 function MobileCarousel({
@@ -54,16 +97,22 @@ function MobileCarousel({
   active,
   setActive,
   total,
+  muted,
+  onToggleMute,
 }: {
   slides: CarouselSlide[];
   active: number;
   setActive: (n: number) => void;
   total: number;
+  muted: boolean;
+  onToggleMute: () => void;
 }) {
   const touchStartX = useRef<number | null>(null);
 
   const prev = () => setActive((active - 1 + total) % total);
   const next = () => setActive((active + 1) % total);
+
+  const currentSlide = slides[active];
 
   return (
     <div
@@ -78,22 +127,31 @@ function MobileCarousel({
         touchStartX.current = null;
       }}
     >
-      {/* Image */}
-      <div className="relative w-full h-[240px] rounded-2xl overflow-hidden">
+      {/* Media container */}
+      <div className="relative w-full h-[240px] rounded-2xl overflow-hidden bg-black">
         <AnimatePresence mode="wait">
-          <motion.img
-            key={active}
-            src={slides[active].src}
-            alt={slides[active].label}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-            }}
-          />
+          {currentSlide.type === "VIDEO" ? (
+            <video
+              key={`mobile-video-${active}`}
+              src={currentSlide.url}
+              autoPlay
+              muted={muted}
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+          ) : (
+            <motion.img
+              key={`mobile-img-${active}`}
+              src={currentSlide.url}
+              alt={currentSlide.alt}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+          )}
         </AnimatePresence>
 
         {/* Gradient overlay bottom */}
@@ -104,6 +162,11 @@ function MobileCarousel({
           <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-1 rounded-full">
             {active + 1} / {total}
           </div>
+        )}
+
+        {/* Sound button — only for video */}
+        {currentSlide.type === "VIDEO" && (
+          <SoundButton muted={muted} onToggle={onToggleMute} />
         )}
 
         {/* Arrow buttons */}
@@ -157,6 +220,8 @@ export default function EventImageCarousel({
   onActiveChange,
 }: EventImageCarouselProps) {
   const [internalActive, setInternalActive] = useState(0);
+  const [muted, setMuted] = useState(true);
+
   const active = externalActive ?? internalActive;
 
   const setActive = (n: number) => {
@@ -180,10 +245,14 @@ export default function EventImageCarousel({
   const next = () => setActive((active + 1) % total);
   const prev = () => setActive((active - 1 + total) % total);
 
+  const toggleMute = () => setMuted((m) => !m);
+
+  const activeSlide = slides[active];
+
   return (
     <div className="relative w-full flex flex-col items-center">
       {/* ── Stage ── */}
-      <div className="relative w-full md:h-[420px] flex items-center justify-center md:overflow-hidden">
+      <div className="relative w-full h-[240px] md:h-[420px] flex items-center justify-center overflow-hidden rounded-2xl bg-black">
         {/* Ambient glow — desktop only */}
         <div className="hidden md:block absolute inset-x-0 top-1/2 -translate-y-1/2 h-48 bg-[#E33E33]/10 blur-[100px] pointer-events-none" />
 
@@ -201,30 +270,47 @@ export default function EventImageCarousel({
 
             return (
               <motion.div
-                key={slide.id}
+                key={slide.id ?? idx}
                 animate={cardPos[pos]}
                 transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
-                className={`absolute inset-0 m-auto w-[72%] h-[92%] rounded-2xl overflow-hidden shadow-2xl border border-white/10 ${
+                className={`absolute inset-0 m-auto w-[72%] h-[92%] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black ${
                   pos === "center"
                     ? "cursor-default"
                     : "cursor-pointer pointer-events-auto"
                 }`}
                 onClick={() => pos !== "center" && setActive(idx)}
               >
-                <img
-                  src={slide.url}
-                  alt={slide.alt || "event-image"}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE;
-                  }}
-                />
+                {slide.type === "VIDEO" ? (
+                  <video
+                    src={slide.url}
+                    autoPlay
+                    muted={muted}
+                    loop
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <img
+                    src={slide.url}
+                    alt={slide.alt || "event-image"}
+                    className="w-full h-full object-contain"
+                  />
+                )}
+
                 {pos === "center" && (
                   <>
-                    <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+                    {/* Bottom gradient */}
+                    <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+
+                    {/* Maximize icon hint */}
                     <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm p-1.5 rounded-full border border-white/20 opacity-60">
                       <Maximize2 size={12} className="text-white" />
                     </div>
+
+                    {/* Sound control — only for video */}
+                    {slide.type === "VIDEO" && (
+                      <SoundButton muted={muted} onToggle={toggleMute} />
+                    )}
                   </>
                 )}
               </motion.div>
@@ -238,6 +324,8 @@ export default function EventImageCarousel({
           active={active}
           setActive={setActive}
           total={total}
+          muted={muted}
+          onToggleMute={toggleMute}
         />
 
         {/* Desktop arrow buttons — only when multiple slides */}
@@ -274,17 +362,23 @@ export default function EventImageCarousel({
               className="flex items-center justify-center gap-3 text-center"
             >
               <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#E33E33]">
-                {slides[active].label}
+                {activeSlide.label}
               </span>
               <span className="text-[10px] text-muted-foreground">
                 {active + 1} of {total}
               </span>
+              {/* Video type badge */}
+              {activeSlide.type === "VIDEO" && (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 bg-zinc-800/50 px-2 py-0.5 rounded-full">
+                  Video
+                </span>
+              )}
             </motion.div>
           </AnimatePresence>
 
           {/* Pill dots */}
           <div className="flex justify-center gap-1.5 mt-3">
-            {slides.map((_, i) => (
+            {slides.map((s, i) => (
               <button
                 key={i}
                 onClick={() => setActive(i)}

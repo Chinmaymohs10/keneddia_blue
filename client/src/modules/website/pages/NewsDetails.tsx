@@ -374,21 +374,73 @@ export default function NewsDetails() {
             <h1 className="text-3xl md:text-5xl font-serif font-bold mb-6 leading-tight">
               {newsItem.title}
             </h1>
-            <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-muted-foreground pb-6 border-b border-border">
-              <span className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" />{" "}
-                {formatDate(newsItem.newsDate || newsItem.dateBadge)}
-              </span>
-              {newsItem.authorName && (
+
+            <div className="flex items-center justify-between pb-6 border-b border-border flex-wrap gap-4">
+              {/* META INFO */}
+              <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <span className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-primary" />{" "}
-                  {newsItem.authorName}
+                  <Calendar className="w-4 h-4 text-primary" />
+                  {formatDate(newsItem.newsDate || newsItem.dateBadge)}
                 </span>
-              )}
-              <span className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />{" "}
-                {newsItem.readTime || "5 min read"}
-              </span>
+
+                {newsItem.authorName && (
+                  <span className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    {newsItem.authorName}
+                  </span>
+                )}
+
+                <span className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  {newsItem.readTime || "5 min read"}
+                </span>
+              </div>
+
+              {/* SHARE ICONS */}
+              <div className="flex items-center gap-3">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(shareUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-green-500 hover:text-white transition-all"
+                >
+                  <MessageCircle size={16} />
+                </a>
+
+                <a
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"
+                >
+                  <Facebook size={16} />
+                </a>
+
+                <a
+                  href={`https://twitter.com/intent/tweet?url=${shareUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                >
+                  <Twitter size={16} />
+                </a>
+
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-[#0A66C2] hover:text-white transition-all"
+                >
+                  <Linkedin size={16} />
+                </a>
+
+                <a
+                  href={`mailto:?subject=${newsItem.title}&body=${shareUrl}`}
+                  className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-secondary transition-all"
+                >
+                  <Mail size={16} />
+                </a>
+              </div>
             </div>
           </header>
 

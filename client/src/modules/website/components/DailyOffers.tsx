@@ -59,8 +59,13 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
 
   useEffect(() => {
     if (!expiresAt) return;
+
     const i = setInterval(() => {
-      const diff = new Date(expiresAt).getTime() - Date.now();
+      const expiry = new Date(expiresAt);
+      expiry.setHours(23, 59, 59, 999);
+
+      const diff = expiry.getTime() - Date.now();
+
       if (diff <= 0) {
         setLabel("Expired");
         setIsExpired(true);
@@ -72,6 +77,7 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
         setIsExpired(false);
       }
     }, 1000);
+
     return () => clearInterval(i);
   }, [expiresAt]);
 
@@ -125,10 +131,14 @@ export default function DailyOffers() {
         const todayName = DAYS[new Date().getDay()];
 
         const active = list.filter((o: any) => {
-          const notExpired =
-            !o.expiresAt || new Date(o.expiresAt).getTime() > now;
+          let notExpired = true;
 
-          // If activeDays is empty/null → show every day; otherwise check today
+          if (o.expiresAt) {
+            const expiry = new Date(o.expiresAt);
+            expiry.setHours(23, 59, 59, 999);
+            notExpired = expiry.getTime() > now;
+          }
+
           const isDayActive =
             !o.activeDays?.length || o.activeDays.includes(todayName);
 

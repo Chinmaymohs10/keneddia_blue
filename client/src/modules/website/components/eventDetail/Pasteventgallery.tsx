@@ -1,7 +1,14 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useScroll, useTransform } from "framer-motion";
-import { Camera, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Volume2,
+  VolumeX,
+  Play,
+} from "lucide-react";
 
 // ============================================================================
 // TYPES
@@ -10,26 +17,62 @@ interface GalleryItem {
   id: number;
   src: string;
   label: string;
+  type?: "IMAGE" | "VIDEO";
 }
 
 interface PastEventGalleryProps {
   eventId: string | number;
-  images: { url: string; alt?: string }[];
+  images: { url: string; alt?: string; type?: "IMAGE" | "VIDEO" }[];
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+function isVideoUrl(url: string) {
+  return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
 }
 
 // ============================================================================
 // FLOATING GALLERY CARD
 // ============================================================================
-function FloatingGalleryCard({ item }: { item: GalleryItem }) {
+function FloatingGalleryCard({
+  item,
+  muted,
+  onToggleMute,
+}: {
+  item: GalleryItem;
+  muted: boolean;
+  onToggleMute: () => void;
+}) {
+  const isVideo = item.type === "VIDEO" || isVideoUrl(item.src);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
+
   return (
-    <div className="relative group w-[180px] h-[260px] shrink-0 rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-      
-      {/* Image */}
-      <img
-        src={item.src}
-        alt={item.label}
-        className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
-      />
+    <div className="relative group w-[200px] h-[280px] shrink-0 rounded-2xl overflow-hidden shadow-xl border border-white/10 bg-zinc-900 flex items-center justify-center">
+      {/* Media */}
+      {isVideo ? (
+        <video
+          ref={videoRef}
+          src={item.src}
+          autoPlay
+          muted={muted}
+          loop
+          playsInline
+          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+        />
+      ) : (
+        <img
+          src={item.src}
+          alt={item.label}
+          className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-105"
+        />
+      )}
 
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
@@ -43,6 +86,30 @@ function FloatingGalleryCard({ item }: { item: GalleryItem }) {
       <div className="absolute top-3 right-3 bg-black/20 backdrop-blur-md p-1.5 rounded-full border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
         <Maximize2 size={12} className="text-white" />
       </div>
+
+      {/* Video badge */}
+      {isVideo && (
+        <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20 flex items-center gap-1">
+          <Play size={8} className="text-[#E33E33] fill-[#E33E33]" />
+          <span className="text-[9px] text-white font-bold uppercase tracking-widest">
+            Video
+          </span>
+        </div>
+      )}
+
+      {/* Sound toggle — only for video, shown on hover */}
+      {isVideo && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleMute();
+          }}
+          className="absolute bottom-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded-full border border-white/20 text-white text-[9px] font-bold hover:bg-[#E33E33]/80 active:scale-95"
+        >
+          {muted ? <VolumeX size={10} /> : <Volume2 size={10} />}
+          <span>{muted ? "Muted" : "Sound"}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -50,62 +117,78 @@ function FloatingGalleryCard({ item }: { item: GalleryItem }) {
 // ============================================================================
 // PAST EVENT GALLERY
 // ============================================================================
-export default function PastEventGallery({ images }: PastEventGalleryProps) {
+// Change the function signature to:
+export default function PastEventGallery({
+  eventId,
+  images = [],
+}: PastEventGalleryProps) {
   const [isPaused, setIsPaused] = useState(false);
-  const [manualOffset, setManualOffset] = useState(0);
+  const [muted, setMuted] = useState(true);
 
-  // Map API images
+  const trackRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number>(0);
+  const posRef = useRef(0);
+  const manualOffsetRef = useRef(0);
+
+  const CARD_W = 200 + 20; // card width + gap
+
   const items: GalleryItem[] = images.map((img, i) => ({
     id: i,
     src: img.url,
     label: img.alt || `Highlight ${i + 1}`,
+    type: img.type ?? (isVideoUrl(img.url) ? "VIDEO" : "IMAGE"),
   }));
 
   const { scrollYProgress } = useScroll();
   const bgX = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
 
-  const track1Variants = {
-    animate: {
-      x: ["-15%", "15%"],
-      transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "mirror" as const,
-          duration: 18,
-          ease: "linear",
-        },
-      },
-    },
-  };
+  // Duplicate enough for seamless loop — need at least 3 full copies
+  const looped =
+    items.length < 4
+      ? [...items, ...items, ...items, ...items]
+      : [...items, ...items, ...items];
 
-  const track2Variants = {
-    animate: {
-      x: ["15%", "-15%"],
-      transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "mirror" as const,
-          duration: 26,
-          ease: "linear",
-        },
-      },
-    },
-  };
+  // Width of one full set — used as the wrap boundary
+  const totalW = items.length * CARD_W;
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    const step = () => {
+      // Auto-scroll
+      if (!isPaused) {
+        posRef.current -= 0.6;
+      }
+
+      // Apply manual nudge with easing
+      if (Math.abs(manualOffsetRef.current) > 0.1) {
+        posRef.current += manualOffsetRef.current * 0.12;
+        manualOffsetRef.current *= 0.88;
+      }
+
+      // Seamless wrap — stay within [-totalW, 0)
+      if (posRef.current <= -totalW) posRef.current += totalW;
+      if (posRef.current > 0) posRef.current -= totalW;
+
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateX(${posRef.current}px)`;
+      }
+
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [isPaused, totalW, items.length]);
 
   if (items.length === 0) return null;
 
-  const track1Items =
-    items.length < 4 ? [...items, ...items, ...items] : [...items, ...items];
-
-  const track2Items = [...items].reverse();
-  const track2Doubled =
-    track2Items.length < 4
-      ? [...track2Items, ...track2Items, ...track2Items]
-      : [...track2Items, ...track2Items];
+  const nudge = (dir: 1 | -1) => {
+    manualOffsetRef.current += dir * 200;
+  };
 
   return (
     <section className="space-y-5">
-      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -120,14 +203,13 @@ export default function PastEventGallery({ images }: PastEventGalleryProps) {
 
         <div className="flex gap-2">
           <button
-            onClick={() => setManualOffset((p) => p + 120)}
+            onClick={() => nudge(1)}
             className="p-2 rounded-full border border-border hover:bg-[#E33E33] hover:text-white transition-all active:scale-95"
           >
             <ChevronLeft size={14} />
           </button>
-
           <button
-            onClick={() => setManualOffset((p) => p - 120)}
+            onClick={() => nudge(-1)}
             className="p-2 rounded-full border border-border hover:bg-[#E33E33] hover:text-white transition-all active:scale-95"
           >
             <ChevronRight size={14} />
@@ -137,7 +219,7 @@ export default function PastEventGallery({ images }: PastEventGalleryProps) {
 
       {/* Floating Canvas */}
       <div
-        className="relative h-[360px] rounded-[2rem] overflow-hidden border border-border/50 bg-zinc-50 dark:bg-zinc-950 shadow-inner"
+        className="relative h-[380px] rounded-[2rem] overflow-hidden border border-border/50 bg-zinc-50 dark:bg-zinc-950 shadow-inner"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -149,29 +231,21 @@ export default function PastEventGallery({ images }: PastEventGalleryProps) {
           MOMENTS MEMORIES MOMENTS
         </motion.div>
 
-        {/* Track 1 */}
-        <motion.div
-          variants={track1Variants}
-          animate={isPaused ? {} : "animate"}
-          style={{ translateX: manualOffset }}
-          className="absolute top-1/2 -translate-y-1/2 flex gap-5 whitespace-nowrap"
+        {/* Single infinite track */}
+        <div
+          ref={trackRef}
+          className="absolute top-1/2 -translate-y-1/2 flex gap-5 will-change-transform"
+          style={{ width: "max-content" }}
         >
-          {track1Items.map((item, i) => (
-            <FloatingGalleryCard key={`t1-${i}`} item={item} />
+          {looped.map((item, i) => (
+            <FloatingGalleryCard
+              key={`item-${i}`}
+              item={item}
+              muted={muted}
+              onToggleMute={() => setMuted((m) => !m)}
+            />
           ))}
-        </motion.div>
-
-        {/* Track 2 */}
-        <motion.div
-          variants={track2Variants}
-          animate={isPaused ? {} : "animate"}
-          style={{ translateX: -manualOffset }}
-          className="absolute top-1/2 -translate-y-1/2 flex gap-5 whitespace-nowrap opacity-0 pointer-events-none"
-        >
-          {track2Doubled.map((item, i) => (
-            <FloatingGalleryCard key={`t2-${i}`} item={item} />
-          ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

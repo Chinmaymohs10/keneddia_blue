@@ -100,7 +100,7 @@ interface ApiEvent {
   title: string;
   propertyName?: string;
   propertyId?: number | string;
-   propertyTypeId?: number | string | null;
+  propertyTypeId?: number | string | null;
   locationName: string;
   eventDate: string;
   description: string;
@@ -194,7 +194,9 @@ function SidebarBookingCard({
             {event.typeName}
           </span>
         )}
-        <p className="text-base font-bold leading-snug">{displayPropertyName}</p>
+        <p className="text-base font-bold leading-snug">
+          {displayPropertyName}
+        </p>
       </div>
 
       {/* Event info */}
@@ -236,7 +238,9 @@ function SidebarBookingCard({
         ) : (
           <div className="flex items-baseline gap-1.5">
             <IndianRupee className="w-4 h-4" />
-            <span className="text-3xl font-black tracking-tighter">{price}</span>
+            <span className="text-3xl font-black tracking-tighter">
+              {price}
+            </span>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">
               {priceLabel}
             </span>
@@ -486,8 +490,12 @@ export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<ApiEvent | null>(null);
   const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>([]);
-  const [heroSlides, setHeroSlides] = useState<{ url: string; alt?: string }[]>([]);
-  const [pastEventImages, setPastEventImages] = useState<{ url: string; alt?: string }[]>([]);
+  const [heroSlides, setHeroSlides] = useState<
+    { url: string; type: "IMAGE" | "VIDEO"; alt?: string }[]
+  >([]);
+  const [pastEventImages, setPastEventImages] = useState<
+    { url: string; type: "IMAGE" | "VIDEO"; alt?: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -516,8 +524,7 @@ export default function EventDetails() {
   const fetchInterestList = async (eventId: string) => {
     try {
       const res = await getEventInterestByEventId(eventId);
-      const data: InterestEntry[] =
-        res?.data?.data ?? res?.data ?? res ?? [];
+      const data: InterestEntry[] = res?.data?.data ?? res?.data ?? res ?? [];
       setInterestList(Array.isArray(data) ? data : []);
     } catch {
       setInterestList([]);
@@ -587,13 +594,21 @@ export default function EventDetails() {
 
         setHeroSlides(
           heroMedias
-            .filter((m) => m.type === "IMAGE" && m.url)
-            .map((m) => ({ url: m.url, alt: m.alt || "event-image" })),
+            .filter((m) => m.url)
+            .map((m) => ({
+              url: m.url,
+              type: m.type,
+              alt: m.alt || "event-media",
+            })),
         );
         setPastEventImages(
           pastMedias
-            .filter((m) => m.type === "IMAGE" && m.url)
-            .map((m) => ({ url: m.url, alt: m.alt || "past-event" })),
+            .filter((m) => m.url)
+            .map((m) => ({
+              url: m.url,
+              type: m.type,
+              alt: m.alt || "past-event",
+            })),
         );
       } catch (err) {
         console.error("Failed to fetch event details:", err);
@@ -752,15 +767,6 @@ export default function EventDetails() {
                       interested
                     </span>
                   )}
-                  {lastBookCount > 0 && (
-                    <span>
-                      ·{" "}
-                      <span className="font-bold text-foreground">
-                        {lastBookCount}
-                      </span>{" "}
-                      booked
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -868,7 +874,9 @@ export default function EventDetails() {
                     <div className="flex items-start gap-3">
                       <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <h3 className="text-sm font-bold mb-2">You Should Know</h3>
+                        <h3 className="text-sm font-bold mb-2">
+                          You Should Know
+                        </h3>
                         <ul className="space-y-1.5 text-xs text-muted-foreground">
                           <li className="flex items-start gap-2">
                             <span className="shrink-0">•</span>
@@ -886,7 +894,9 @@ export default function EventDetails() {
                     <div className="flex items-start gap-3">
                       <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <h3 className="text-sm font-bold mb-2">Contactless M-Ticket</h3>
+                        <h3 className="text-sm font-bold mb-2">
+                          Contactless M-Ticket
+                        </h3>
                         <p className="text-xs text-muted-foreground">
                           Instant delivery via SMS and email. Simply show your
                           phone at the gate.

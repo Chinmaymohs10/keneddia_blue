@@ -53,21 +53,27 @@ const CATEGORY_OPTIONS = [
   { value: "hero_slider", label: "Hero Slider" },
   { value: "past_event", label: "Past Event" },
 ];
+const MEDIA_TYPES = [
+  { value: "image", label: "Images", accept: "image/*" },
+  { value: "video", label: "Videos", accept: "video/*" },
+];
+const PAGE_SIZE = 5;
 
 function GalleryTab({ eventId }) {
   const [existing, setExisting] = useState([]);
   const [stagedFiles, setStagedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("hero_slider");
+  const [selectedMediaType, setSelectedMediaType] = useState("image");
   const [fetchStatus, setFetchStatus] = useState("loading");
   const [uploadStatus, setUploadStatus] = useState("idle");
   const [uploadMsg, setUploadMsg] = useState("");
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const inputRef = useRef(null);
-
-  // ── Replace (edit) a single existing image ──
   const replaceInputRef = useRef(null);
-  const replacingRef = useRef(null); // { groupId, mediaId }
-  const [replacingId, setReplacingId] = useState(null); // mediaId currently being replaced
+  const replacingRef = useRef(null);
+  const [replacingId, setReplacingId] = useState(null);
 
   const openReplaceFilePicker = (groupId, mediaId) => {
     replacingRef.current = { groupId, mediaId };
@@ -94,7 +100,7 @@ function GalleryTab({ eventId }) {
         );
       }
       setUploadStatus("success");
-      setUploadMsg("Image replaced successfully.");
+      setUploadMsg("Media replaced successfully.");
     } catch {
       setUploadStatus("error");
       setUploadMsg("Replace failed. Please try again.");
@@ -110,24 +116,26 @@ function GalleryTab({ eventId }) {
         setFetchStatus("loading");
         const res = await getEventFilesByUploadedId(eventId);
         const data = res?.data?.data ?? res?.data ?? {};
-        // support both array and object with medias
         const mediaList = Array.isArray(data)
           ? data.flatMap((d) =>
               (d.medias || []).map((m) => ({
                 ...m,
                 category: d.category,
-                groupId: d.id, // ← store upload-group id for replace API
+                groupId: d.id,
               })),
             )
           : data.medias || [];
         setExisting(mediaList);
-        setFetchStatus("idle");
       } catch {
+      } finally {
         setFetchStatus("idle");
       }
     };
     fetchGallery();
   }, [eventId]);
+
+  const currentAccept =
+    MEDIA_TYPES.find((t) => t.value === selectedMediaType)?.accept ?? "image/*";
 
   const handleFilePick = (e) => {
     const files = Array.from(e.target.files || []);
@@ -164,7 +172,7 @@ function GalleryTab({ eventId }) {
       setPreviewUrls([]);
       setUploadStatus("success");
       setUploadMsg(
-        `${uploaded.length || stagedFiles.length} image(s) uploaded as "${CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label}".`,
+        `${uploaded.length || stagedFiles.length} file(s) uploaded.`,
       );
     } catch {
       setUploadStatus("error");
@@ -172,7 +180,7 @@ function GalleryTab({ eventId }) {
     }
   };
 
-  // Group existing by category for display
+  // Grouped + paginated existing
   const grouped = existing.reduce((acc, m) => {
     const cat = m.category || "uncategorized";
     if (!acc[cat]) acc[cat] = [];
@@ -180,147 +188,258 @@ function GalleryTab({ eventId }) {
     return acc;
   }, {});
 
+  const allExisting = existing; // for total count
+  const totalPages = Math.ceil(allExisting.length / PAGE_SIZE);
+  const pagedItems = allExisting.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
+
+  // Re-group paged items
+  const pagedGrouped = pagedItems.reduce((acc, m) => {
+    const cat = m.category || "uncategorized";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(m);
+    return acc;
+  }, {});
+
+  const isVideo = (url = "") => /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <StatusBanner status={uploadStatus} message={uploadMsg} />
 
-      {/* Existing gallery grouped by category */}
-      {fetchStatus === "loading" ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
-      ) : existing.length > 0 ? (
-        <div className="space-y-5">
-          {Object.entries(grouped).map(([cat, medias]) => (
-            <div key={cat}>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground normal-case font-semibold text-[11px]">
-                  {CATEGORY_OPTIONS.find((c) => c.value === cat)?.label || cat}
-                </span>
-                <span className="text-muted-foreground font-normal">
-                  ({medias.length})
-                </span>
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {medias.map((m) => (
-                  <div
-                    key={m.mediaId}
-                    className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
-                  >
-                    <img
-                      src={m.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Replace overlay */}
-                    <button
-                      onClick={() => openReplaceFilePicker(m.groupId, m.mediaId)}
-                      disabled={replacingId === m.mediaId}
-                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      {replacingId === m.mediaId ? (
-                        <Loader2 className="w-5 h-5 text-white animate-spin" />
-                      ) : (
-                        <Pencil className="w-5 h-5 text-white" />
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground text-center py-4">
-          No gallery images uploaded yet.
+      {/* ── Upload Section (always on top) ── */}
+      <div className="rounded-2xl border border-border bg-secondary/20 p-5 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Upload Media
         </p>
-      )}
 
-      {/* Staged preview */}
-      {stagedFiles.length > 0 && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
-            Ready to Upload ({stagedFiles.length})
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {previewUrls.map((url, i) => (
-              <div
-                key={i}
-                className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
-              >
-                <img src={url} alt="" className="w-full h-full object-cover" />
-                <button
-                  onClick={() => removeStaged(i)}
-                  className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Media Type
+            </label>
+            <select
+              value={selectedMediaType}
+              onChange={(e) => setSelectedMediaType(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              {MEDIA_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
-
-      {/* Category selector + upload area */}
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Upload Category
-          </label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            {CATEGORY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <button
           onClick={() => inputRef.current?.click()}
-          className="w-full border-2 border-dashed border-border hover:border-primary rounded-2xl py-7 flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          className="w-full border-2 border-dashed border-border hover:border-primary rounded-2xl py-6 flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
         >
           <ImagePlus className="w-7 h-7" />
-          <span className="text-sm font-semibold">Click to add images</span>
-          <span className="text-xs">JPG, PNG, WebP accepted</span>
+          <span className="text-sm font-semibold">
+            Click to add {selectedMediaType === "video" ? "videos" : "images"}
+          </span>
+          <span className="text-xs">
+            {selectedMediaType === "video"
+              ? "MP4, WebM, MOV accepted"
+              : "JPG, PNG, WebP accepted"}
+          </span>
         </button>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={currentAccept}
           multiple
           className="hidden"
           onChange={handleFilePick}
         />
-        {/* Hidden single-file input for replace */}
         <input
           ref={replaceInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           className="hidden"
           onChange={handleReplaceFilePick}
         />
+
+        {/* Staged previews */}
+        {stagedFiles.length > 0 && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+              Ready to Upload ({stagedFiles.length})
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {previewUrls.map((url, i) => (
+                <div
+                  key={i}
+                  className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
+                >
+                  {stagedFiles[i]?.type?.startsWith("video") ? (
+                    <video
+                      src={url}
+                      className="w-full h-full object-cover"
+                      muted
+                    />
+                  ) : (
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <button
+                    onClick={() => removeStaged(i)}
+                    className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {stagedFiles.length > 0 && (
+          <button
+            onClick={handleUpload}
+            disabled={uploadStatus === "loading"}
+            className="w-full py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60 text-sm uppercase tracking-wider"
+          >
+            {uploadStatus === "loading" ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4" />
+            )}
+            Upload {stagedFiles.length}{" "}
+            {selectedMediaType === "video" ? "Video" : "Image"}
+            {stagedFiles.length > 1 ? "s" : ""} as{" "}
+            {CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label}
+          </button>
+        )}
       </div>
 
-      {stagedFiles.length > 0 && (
+      {/* ── Existing Gallery (collapsible) ── */}
+      <div className="rounded-2xl border border-border overflow-hidden">
         <button
-          onClick={handleUpload}
-          disabled={uploadStatus === "loading"}
-          className="w-full py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60 text-sm uppercase tracking-wider"
+          onClick={() => setGalleryOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-3.5 bg-secondary/30 hover:bg-secondary/50 transition-colors"
         >
-          {uploadStatus === "loading" ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Upload className="w-4 h-4" />
-          )}
-          Upload {stagedFiles.length} Image{stagedFiles.length > 1 ? "s" : ""}{" "}
-          as {CATEGORY_OPTIONS.find((c) => c.value === selectedCategory)?.label}
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Uploaded Media ({existing.length})
+          </span>
+          <span className="text-muted-foreground text-xs">
+            {galleryOpen ? "▲ Hide" : "▼ Show"}
+          </span>
         </button>
-      )}
+
+        {galleryOpen && (
+          <div className="p-5 space-y-5">
+            {fetchStatus === "loading" ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : existing.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No media uploaded yet.
+              </p>
+            ) : (
+              <>
+                {Object.entries(pagedGrouped).map(([cat, medias]) => (
+                  <div key={cat}>
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-secondary text-foreground normal-case font-semibold text-[11px]">
+                        {CATEGORY_OPTIONS.find((c) => c.value === cat)?.label ||
+                          cat}
+                      </span>
+                      <span className="text-muted-foreground font-normal">
+                        ({medias.length})
+                      </span>
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {medias.map((m) => (
+                        <div
+                          key={m.mediaId}
+                          className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
+                        >
+                          {isVideo(m.url) ? (
+                            <video
+                              src={m.url}
+                              className="w-full h-full object-cover"
+                              muted
+                            />
+                          ) : (
+                            <img
+                              src={m.url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <button
+                            onClick={() =>
+                              openReplaceFilePicker(m.groupId, m.mediaId)
+                            }
+                            disabled={replacingId === m.mediaId}
+                            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            {replacingId === m.mediaId ? (
+                              <Loader2 className="w-5 h-5 text-white animate-spin" />
+                            ) : (
+                              <Pencil className="w-5 h-5 text-white" />
+                            )}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold disabled:opacity-40 hover:bg-secondary transition-colors"
+                    >
+                      ← Prev
+                    </button>
+                    <span className="text-xs text-muted-foreground">
+                      Page {page} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={page === totalPages}
+                      className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold disabled:opacity-40 hover:bg-secondary transition-colors"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -359,8 +478,8 @@ function CardsTab({ eventId, propertyId, propertyTypeId }) {
         const list = Array.isArray(rawList)
           ? rawList
           : rawList
-          ? [rawList]
-          : [];
+            ? [rawList]
+            : [];
 
         // Sort descending by id → first item is the latest
         const sorted = [...list].sort((a, b) => b.id - a.id);

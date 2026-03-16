@@ -50,6 +50,8 @@ interface RatingHeader {
 
 const isYoutubeUrl = (url: string): boolean =>
   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isInstagramUrl = (url: string): boolean =>
+  /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
 
 const getYoutubeId = (url: string): string | null => {
   if (!url) return null;
@@ -63,10 +65,23 @@ const getYoutubeId = (url: string): string | null => {
   if (embedMatch) return embedMatch[1];
   return null;
 };
+const getInstagramId = (url: string): string | null => {
+  if (!url) return null;
+  // strip query string before matching
+  const clean = url.trim().split("?")[0].replace(/\/$/, "");
+  const match = clean.match(/instagram\.com\/(?:reel|p|tv)\/([A-Za-z0-9_\-]+)/);
+  return match ? match[1] : null;
+};
 
 const getYoutubeThumbnail = (url: string): string => {
   const id = getYoutubeId(url);
   return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
+};
+const getInstagramThumbnail = (url: string): string | null => {
+  const id = getInstagramId(url);
+  if (!id) return null;
+
+  return `https://www.instagram.com/p/${id}/media/?size=l`;
 };
 
 const buildMediaList = (
@@ -91,16 +106,22 @@ const buildMediaList = (
     item.mediaList.forEach((m: any) => {
       const url = m.url || m.imageUrl || m.videoUrl;
       if (!url) return;
-      const isVid =
-        m.type === "VIDEO" ||
-        isYoutubeUrl(url) ||
-        url.match(/\.(mp4|webm|mov|ogg)$/i);
-      add(isVid ? "video" : "image", url);
+      if (isInstagramUrl(url)) {
+        add("video", url);
+      } else {
+        const isVid =
+          m.type === "VIDEO" ||
+          isYoutubeUrl(url) ||
+          url.match(/\.(mp4|webm|mov|ogg)$/i);
+
+        add(isVid ? "video" : "image", url);
+      }
     });
   }
 
   if (item.videoUrl) {
     const isVid =
+      isInstagramUrl(item.videoUrl) ||
       isYoutubeUrl(item.videoUrl) ||
       item.videoUrl.match(/\.(mp4|webm|mov|ogg)$/i);
     if (isVid) add("video", item.videoUrl);
@@ -143,6 +164,20 @@ export default function OurStoryPreview() {
   const [isMobile, setIsMobile] = useState(false);
   const [isSectionVisible, setIsSectionVisible] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [instaEmbeds, setInstaEmbeds] = useState<Record<string, string>>({});
+
+  const fetchInstaEmbed = async (url: string) => {
+    if (instaEmbeds[url]) return;
+    try {
+      const res = await fetch(
+        `https://api.instagram.com/oembed/?url=${encodeURIComponent(url)}&omitscript=true`,
+      );
+      const data = await res.json();
+      setInstaEmbeds((prev) => ({ ...prev, [url]: data.thumbnail_url }));
+    } catch {
+      setInstaEmbeds((prev) => ({ ...prev, [url]: "" }));
+    }
+  };
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 1024);
@@ -251,8 +286,11 @@ export default function OurStoryPreview() {
 
   const handleYtLinkChange = (val: string) => {
     setYtLink(val);
-    if (val.trim() && !isYoutubeUrl(val)) {
-      setYtError("Please enter a valid YouTube URL");
+
+    const trimmed = val.trim();
+
+    if (trimmed && !isYoutubeUrl(trimmed) && !isInstagramUrl(trimmed)) {
+      setYtError("Please enter a valid YouTube or Instagram Reel URL");
     } else {
       setYtError("");
     }
@@ -285,7 +323,7 @@ export default function OurStoryPreview() {
       if (!mediaUploading) setShowPopup(true);
       return;
     }
-    if (ytLink.trim() && !isYoutubeUrl(ytLink)) {
+    if (ytLink.trim() && !isYoutubeUrl(ytLink) && !isInstagramUrl(ytLink)) {
       setYtError("Please enter a valid YouTube URL before submitting");
       return;
     }
@@ -333,6 +371,34 @@ export default function OurStoryPreview() {
     const isMuted = !mutedVideos.has(videoKey); // Inverted: default muted
 
     if (m.type === "video") {
+      if (isInstagramUrl(m.url)) {
+        const id = getInstagramId(m.url);
+        if (!id) return null;
+
+        const embedUrl = `https://www.instagram.com/reel/${id}/embed/captioned/`;
+
+        return (
+          <div key={idx} className="relative w-full h-full bg-black overflow-hidden">
+            <iframe
+              src={embedUrl}
+              title="Instagram Reel"
+              className="w-full h-full"
+              style={{ border: "none" }}
+              loading="lazy"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowFullScreen
+            />
+            <a
+              href={m.url}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-colors"
+            >
+              Open
+            </a>
+          </div>
+        );
+      }
       if (isYoutubeUrl(m.url)) {
         const videoId = getYoutubeId(m.url);
         if (!videoId) return null;
@@ -674,7 +740,7 @@ export default function OurStoryPreview() {
                     type="url"
                     value={ytLink}
                     onChange={(e) => handleYtLinkChange(e.target.value)}
-                    placeholder="Paste YouTube link (optional)"
+                    placeholder="Paste YouTube or Instagram Reel link"
                     className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
                   />
                   {ytLink && (
