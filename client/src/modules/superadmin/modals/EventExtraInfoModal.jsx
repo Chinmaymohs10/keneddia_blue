@@ -11,10 +11,12 @@ import {
   Ticket,
   FileEdit,
   Images,
+  Pencil,
 } from "lucide-react";
 import {
   uploadEventGallery,
   getEventFilesByUploadedId,
+  replaceEventGalleryMedia,
   addEventDetailInfo,
   getEventDetailInfoById,
   updateEventDetailInfo,
@@ -62,6 +64,46 @@ function GalleryTab({ eventId }) {
   const [uploadMsg, setUploadMsg] = useState("");
   const inputRef = useRef(null);
 
+  // ── Replace (edit) a single existing image ──
+  const replaceInputRef = useRef(null);
+  const replacingRef = useRef(null); // { groupId, mediaId }
+  const [replacingId, setReplacingId] = useState(null); // mediaId currently being replaced
+
+  const openReplaceFilePicker = (groupId, mediaId) => {
+    replacingRef.current = { groupId, mediaId };
+    setReplacingId(mediaId);
+    replaceInputRef.current?.click();
+  };
+
+  const handleReplaceFilePick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !replacingRef.current) return;
+    const { groupId, mediaId } = replacingRef.current;
+    try {
+      setUploadStatus("loading");
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await replaceEventGalleryMedia(groupId, mediaId, fd);
+      const updated = res?.data?.data ?? res?.data ?? null;
+      if (updated) {
+        setExisting((prev) =>
+          prev.map((m) =>
+            m.mediaId === mediaId ? { ...m, url: updated.url ?? m.url } : m,
+          ),
+        );
+      }
+      setUploadStatus("success");
+      setUploadMsg("Image replaced successfully.");
+    } catch {
+      setUploadStatus("error");
+      setUploadMsg("Replace failed. Please try again.");
+    } finally {
+      setReplacingId(null);
+      replacingRef.current = null;
+    }
+  };
+
   useEffect(() => {
     const fetchGallery = async () => {
       try {
@@ -71,7 +113,11 @@ function GalleryTab({ eventId }) {
         // support both array and object with medias
         const mediaList = Array.isArray(data)
           ? data.flatMap((d) =>
-              (d.medias || []).map((m) => ({ ...m, category: d.category })),
+              (d.medias || []).map((m) => ({
+                ...m,
+                category: d.category,
+                groupId: d.id, // ← store upload-group id for replace API
+              })),
             )
           : data.medias || [];
         setExisting(mediaList);
@@ -159,13 +205,25 @@ function GalleryTab({ eventId }) {
                 {medias.map((m) => (
                   <div
                     key={m.mediaId}
-                    className="relative rounded-xl overflow-hidden aspect-square bg-muted"
+                    className="relative rounded-xl overflow-hidden aspect-square bg-muted group"
                   >
                     <img
                       src={m.url}
                       alt=""
                       className="w-full h-full object-cover"
                     />
+                    {/* Replace overlay */}
+                    <button
+                      onClick={() => openReplaceFilePicker(m.groupId, m.mediaId)}
+                      disabled={replacingId === m.mediaId}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      {replacingId === m.mediaId ? (
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      ) : (
+                        <Pencil className="w-5 h-5 text-white" />
+                      )}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -237,6 +295,14 @@ function GalleryTab({ eventId }) {
           multiple
           className="hidden"
           onChange={handleFilePick}
+        />
+        {/* Hidden single-file input for replace */}
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleReplaceFilePick}
         />
       </div>
 

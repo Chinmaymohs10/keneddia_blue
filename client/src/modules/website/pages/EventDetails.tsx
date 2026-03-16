@@ -505,9 +505,11 @@ export default function EventDetails() {
     weekday: "long",
   });
 
-  const descriptionPreview =
-    event.description?.slice(0, 150) || "Event description details.";
-  const shouldShowReadMore = (event.description?.length || 0) > 150;
+  const fullDescription = event.longDesc || "";
+
+  const descriptionPreview = fullDescription.slice(0, 150);
+
+  const shouldShowReadMore = fullDescription.length > 150;
 
   const displayPropertyName = event.propertyName?.trim() || "";
 
@@ -591,7 +593,7 @@ export default function EventDetails() {
               <section className="space-y-3">
                 <h2 className="text-lg font-bold">About the Event</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {showFullDescription ? event.description : descriptionPreview}
+                  {showFullDescription ? fullDescription : descriptionPreview}
                 </p>
                 {shouldShowReadMore && (
                   <button

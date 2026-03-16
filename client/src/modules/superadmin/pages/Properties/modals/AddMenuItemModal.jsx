@@ -430,10 +430,10 @@ function AddMenuItemModal({
       setError("Item name is required.");
       return;
     }
-    if (!form.verticalCardId) {
-      setError("Please select a vertical.");
-      return;
-    }
+    // if (!form.verticalCardId) {
+    //   setError("Please select a vertical.");
+    //   return;
+    // }
     if (!form.type_id) {
       setError("Please select an item type.");
       return;
@@ -445,7 +445,9 @@ function AddMenuItemModal({
       const fd = new FormData();
       fd.append("itemName", form.itemName.trim());
       fd.append("description", form.description);
-      fd.append("verticalCardId", form.verticalCardId); // ← verticalCardId:4
+      if (form.verticalCardId) {
+        fd.append("verticalCardId", form.verticalCardId);
+      }
       fd.append("type_id", form.type_id);
       fd.append("foodType", form.foodType);
       fd.append("signatureItem", String(form.signatureItem));

@@ -430,6 +430,11 @@ export const toggleCommentReplyStatus = (replyId) =>API.put(`api/v1/comments/adm
 export const uploadEventGallery = (formData) =>API.post("api/v1/event-gallery-upload/upload", formData, {headers: {"Content-Type": "multipart/form-data",},});
 export const getAllUploadedEventFiles = (formData) =>API.get("api/v1/event-gallery-upload/getAllUploadedFiles", {data: formData,});
 export const getEventFilesByUploadedId = (id) =>API.get(`api/v1/event-gallery-upload/getGalleryEventUploadsByEventId/${id}`);
+export const replaceEventGalleryMedia = (galleryUploadId, mediaId, payload) =>
+  API.patch(
+    `api/v1/event-gallery-upload/replaceMedia/${galleryUploadId}/${mediaId}`,
+    payload
+  );
 // ─────────────────────────────
 // EVENT DETAIL CARD INFO
 // ─────────────────────────────

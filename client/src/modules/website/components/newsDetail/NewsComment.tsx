@@ -352,7 +352,12 @@ export default function NewsComment({ newsId }: NewsCommentProps) {
       setLoading(true);
       try {
         const res = await getCommentsByNews(newsId);
-        setComments(res.data || []);
+
+        const enabledComments = (res.data || []).filter(
+          (comment: ApiComment) => comment.enabled,
+        );
+
+        setComments(enabledComments);
       } catch {
         setComments([]);
       } finally {

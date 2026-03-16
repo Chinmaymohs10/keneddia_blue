@@ -379,9 +379,26 @@ const AddMediaModal = ({
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    const valid = files.filter(
-      (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
-    );
+    const valid = files.filter((f) => {
+      // const ext = f.name.split(".").pop()?.toLowerCase();
+
+      const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+      const heicMimes = [
+        "image/heic",
+        "image/heif",
+        "image/heic-sequence",
+        "image/heif-sequence",
+      ];
+      const isImage =
+        f.type.startsWith("image/") ||
+        heicMimes.includes(f.type) ||
+        ext === "heic" ||
+        ext === "heif";
+
+      const isVideo = f.type.startsWith("video/");
+
+      return isImage || isVideo;
+    });
     if (valid.length !== files.length)
       showError("Some files were skipped. Only images and videos are allowed.");
     setSelectedFiles((prev) => {
@@ -403,7 +420,22 @@ const AddMediaModal = ({
   const handleEditFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+    const heicMimes = [
+      "image/heic",
+      "image/heif",
+      "image/heic-sequence",
+      "image/heif-sequence",
+    ];
+    const isImage =
+      f.type.startsWith("image/") ||
+      heicMimes.includes(f.type) ||
+      ext === "heic" ||
+      ext === "heif";
+
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
       showError("Only images and videos are allowed.");
       return;
     }
@@ -653,7 +685,7 @@ const AddMediaModal = ({
                       Replace Media (optional)
                       <input
                         type="file"
-                        accept="image/*,video/*"
+                        accept="image/*,image/heic,image/heif,video/*"
                         className="hidden"
                         onChange={handleEditFileSelect}
                         disabled={uploading}
@@ -674,7 +706,7 @@ const AddMediaModal = ({
                         type="file"
                         id="file-upload"
                         multiple
-                        accept="image/*,video/*"
+                        accept="image/*,image/heic,image/heif,video/*"
                         onChange={handleFileSelect}
                         className="hidden"
                         disabled={uploading}
@@ -701,67 +733,96 @@ const AddMediaModal = ({
                         Selected Files ({selectedFiles.length})
                       </label>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {selectedFiles.map((file, index) => (
-                          <div
-                            key={index}
-                            className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100"
-                          >
-                            {file.type.startsWith("image/") ? (
-                              <img
-                                src={previews[index]}
-                                alt={file.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
-                                <svg
-                                  className="w-12 h-12 text-gray-400"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                                </svg>
-                                <span className="text-xs text-gray-500 mt-2">
-                                  Video
+                        {selectedFiles.map((file, index) => {
+                          const ext =
+                            file.name.split(".").pop()?.toLowerCase() ?? "";
+                          const isHeic =
+                            ext === "heic" ||
+                            ext === "heif" ||
+                            file.type === "image/heic" ||
+                            file.type === "image/heif" ||
+                            file.type === "image/heic-sequence" ||
+                            file.type === "image/heif-sequence";
+                          const isVideo = file.type.startsWith("video/");
+                          const isImage =
+                            !isVideo &&
+                            !isHeic &&
+                            file.type.startsWith("image/");
+
+                          return (
+                            <div
+                              key={index}
+                              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100"
+                            >
+                              {isImage ? (
+                                <img
+                                  src={previews[index]}
+                                  alt={file.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : isHeic ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
+                                  <PhotoIcon className="w-10 h-10 text-gray-400" />
+                                  <span className="text-[11px] font-semibold text-gray-500 mt-1 uppercase tracking-wide">
+                                    HEIC
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">
+                                    Preview unavailable
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-200">
+                                  <svg
+                                    className="w-12 h-12 text-gray-400"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                  >
+                                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                                  </svg>
+                                  <span className="text-xs text-gray-500 mt-2">
+                                    Video
+                                  </span>
+                                </div>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => removeFile(index)}
+                                disabled={uploading}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                              >
+                                <XCircleIcon className="w-5 h-5" />
+                              </button>
+
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1.5 flex items-center gap-1.5">
+                                <span className="text-[10px] text-gray-300 shrink-0">
+                                  Order
+                                </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={displayOrders[index] ?? ""}
+                                  onChange={(e) =>
+                                    setDisplayOrders((prev) => {
+                                      const u = [...prev];
+                                      u[index] =
+                                        e.target.value === ""
+                                          ? ""
+                                          : Number(e.target.value);
+                                      return u;
+                                    })
+                                  }
+                                  onClick={(e) => e.stopPropagation()}
+                                  disabled={uploading}
+                                  className="w-12 px-1 py-0.5 text-xs text-center bg-white/20 border border-white/30 rounded text-white focus:outline-none focus:bg-white/30 disabled:opacity-50"
+                                />
+                                <span className="text-[10px] text-gray-400 truncate flex-1 text-right">
+                                  {file.name}
                                 </span>
                               </div>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => removeFile(index)}
-                              disabled={uploading}
-                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                            >
-                              <XCircleIcon className="w-5 h-5" />
-                            </button>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-1.5 flex items-center gap-1.5">
-                              <span className="text-[10px] text-gray-300 shrink-0">
-                                Order
-                              </span>
-                              <input
-                                type="number"
-                                min={0}
-                                value={displayOrders[index] ?? ""}
-                                onChange={(e) =>
-                                  setDisplayOrders((prev) => {
-                                    const u = [...prev];
-                                    u[index] =
-                                      e.target.value === ""
-                                        ? ""
-                                        : Number(e.target.value);
-                                    return u;
-                                  })
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                                disabled={uploading}
-                                className="w-12 px-1 py-0.5 text-xs text-center bg-white/20 border border-white/30 rounded text-white focus:outline-none focus:bg-white/30 disabled:opacity-50"
-                              />
-                              <span className="text-[10px] text-gray-400 truncate flex-1 text-right">
-                                {file.name}
-                              </span>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

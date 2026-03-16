@@ -13,8 +13,6 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   PencilIcon,
-  EyeIcon,
-  EyeSlashIcon,
   FunnelIcon,
   XMarkIcon,
   ChevronLeftIcon,
@@ -24,13 +22,44 @@ import {
   BuildingStorefrontIcon,
   ArrowsUpDownIcon,
 } from "@heroicons/react/24/outline";
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { colors } from "@/lib/colors/colors";
 import { deleteGalleryById, getGalleryByPropertyId } from "@/Api/Api";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import AddMediaModal from "../modals/AddMediaModal";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48];
+
+// ── HEIC detection ────────────────────────────────────────────────────────────
+function isHeicUrl(url = "") {
+  const lower = (url || "").toLowerCase();
+  return lower.endsWith(".heic") || lower.endsWith(".heif");
+}
+
+// ── HEIC-aware image component ────────────────────────────────────────────────
+function MediaImage({ src, alt = "", className = "", thumbMode = false }) {
+  if (isHeicUrl(src)) {
+    return (
+      <div
+        className={`flex flex-col items-center justify-center bg-gray-100 ${className}`}
+      >
+        <PhotoIcon
+          className={`text-gray-400 ${thumbMode ? "w-5 h-5" : "w-8 h-8"}`}
+        />
+        <span
+          className={`font-semibold text-gray-500 uppercase tracking-wide mt-1 ${
+            thumbMode ? "text-[8px]" : "text-[10px]"
+          }`}
+        >
+          HEIC
+        </span>
+        {!thumbMode && (
+          <span className="text-[9px] text-gray-400">Preview unavailable</span>
+        )}
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} className={className} />;
+}
 
 /* ── tiny helpers ──────────────────────────────────────────────────────────── */
 const Badge = ({ label, color = "blue" }) => {
@@ -75,14 +104,13 @@ const GalleryTab = ({ propertyData }) => {
   const [deletingId, setDeletingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
-  const [showInactive, setShowInactive] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(12);
   const [search, setSearch] = useState("");
   const [filterVertical, setFilterVertical] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("active"); // active | inactive | all
-  const [sortBy, setSortBy] = useState("displayOrder"); // displayOrder | id | category
+  const [filterStatus, setFilterStatus] = useState("active");
+  const [sortBy, setSortBy] = useState("displayOrder");
   const [sortDir, setSortDir] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -134,20 +162,16 @@ const GalleryTab = ({ propertyData }) => {
   const processed = useMemo(() => {
     let list = [...allItems];
 
-    // status filter
     if (filterStatus === "active") list = list.filter((i) => i.isActive);
     else if (filterStatus === "inactive")
       list = list.filter((i) => !i.isActive);
 
-    // vertical filter
     if (filterVertical !== "all")
       list = list.filter((i) => String(i.vertical?.id) === filterVertical);
 
-    // category filter
     if (filterCategory !== "all")
       list = list.filter((i) => i.categoryName === filterCategory);
 
-    // search (fileName or categoryName or verticalName)
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -158,7 +182,6 @@ const GalleryTab = ({ propertyData }) => {
       );
     }
 
-    // sort
     list.sort((a, b) => {
       let va, vb;
       if (sortBy === "displayOrder") {
@@ -197,7 +220,6 @@ const GalleryTab = ({ propertyData }) => {
     safePage * pageSize + pageSize,
   );
 
-  // reset to page 0 on filter changes
   useEffect(() => {
     setPage(0);
   }, [filterStatus, filterVertical, filterCategory, search, pageSize]);
@@ -248,7 +270,6 @@ const GalleryTab = ({ propertyData }) => {
     }
   };
 
-  /* ── vertical color map ── */
   const verticalColors = ["blue", "purple", "amber", "green"];
   const verticalColorMap = useMemo(() => {
     const m = {};
@@ -512,9 +533,9 @@ const GalleryTab = ({ propertyData }) => {
                     : "border-gray-100 hover:border-blue-300"
                 }`}
               >
-                {/* Image */}
+                {/* Image / HEIC placeholder */}
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img
+                  <MediaImage
                     src={item.media?.url}
                     alt={item.categoryName || "gallery"}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -523,7 +544,6 @@ const GalleryTab = ({ propertyData }) => {
 
                 {/* Meta strip */}
                 <div className="px-3 py-2.5 space-y-1.5 border-t border-gray-100">
-                  {/* Vertical */}
                   {item.vertical?.verticalName && (
                     <div className="flex items-center gap-1.5">
                       <BuildingStorefrontIcon className="w-3 h-3 text-gray-400 shrink-0" />
@@ -532,7 +552,6 @@ const GalleryTab = ({ propertyData }) => {
                       </span>
                     </div>
                   )}
-                  {/* Category + Order */}
                   <div className="flex items-center justify-between gap-1">
                     <Badge
                       label={item.categoryName || "—"}
@@ -542,7 +561,6 @@ const GalleryTab = ({ propertyData }) => {
                       #{item.displayOrder ?? "—"}
                     </span>
                   </div>
-                  {/* Status */}
                   <div className="flex items-center gap-1">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${item.isActive ? "bg-green-500" : "bg-red-400"}`}
@@ -632,11 +650,13 @@ const GalleryTab = ({ propertyData }) => {
                     className={`transition-colors hover:bg-blue-50/30 ${!item.isActive ? "opacity-60" : ""}`}
                   >
                     <td className="px-4 py-3">
+                      {/* List thumbnail — HEIC-aware */}
                       <div className="w-16 h-12 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 shrink-0">
-                        <img
+                        <MediaImage
                           src={item.media?.url}
                           alt=""
                           className="w-full h-full object-cover"
+                          thumbMode
                         />
                       </div>
                     </td>
