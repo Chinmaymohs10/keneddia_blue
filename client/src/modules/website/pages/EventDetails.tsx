@@ -16,26 +16,26 @@ import {
   Info,
   MessageCircle,
   Facebook,
-  Instagram,
   Linkedin,
   Twitter,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { getEventsUpdated } from "@/Api/Api";
-import NotFound from "./not-found";
-import { getEventDetailInfoById, getEventFilesByUploadedId } from "@/Api/Api";
-// ── Split components ──
-import EventImageCarousel, {
-  buildCarouselSlides,
-} from "@/modules/website/components/eventDetail/Eventimagecarousel";
-import PastEventGallery from "@/modules/website/components/eventDetail/Pasteventgallery";
 import {
-  UpcomingPropertyEvents,
-  FALLBACK_PROPERTY_NAME,
-} from "@/modules/website/components/eventDetail/Eventcards";
+  getEventsUpdated,
+  getEventDetailInfoById,
+  getEventFilesByUploadedId,
+  addEventInterest,
+  addEventBooking,
+  getEventInterestByEventId,
+} from "@/Api/Api";
+import NotFound from "./not-found";
+import EventImageCarousel from "@/modules/website/components/eventDetail/Eventimagecarousel";
+import PastEventGallery from "@/modules/website/components/eventDetail/Pasteventgallery";
+import { UpcomingPropertyEvents } from "@/modules/website/components/eventDetail/Eventcards";
 
 // ============================================================================
 // FALLBACK CONSTANTS
@@ -64,7 +64,6 @@ interface EventFileGroup {
   medias: MediaItem[];
 }
 
-// ── Media DTO attached to each detail info entry ──
 interface MediaResponseDTO {
   mediaId: number;
   type: "IMAGE" | "VIDEO";
@@ -75,7 +74,6 @@ interface MediaResponseDTO {
   height: number | null;
 }
 
-// ── Updated: all nullable fields + mediaResponseDTO ──
 interface EventDetailInfo {
   id: number;
   propertyId: number;
@@ -102,6 +100,7 @@ interface ApiEvent {
   title: string;
   propertyName?: string;
   propertyId?: number | string;
+  propertyTypeId?: number | string;
   locationName: string;
   eventDate: string;
   description: string;
@@ -113,6 +112,23 @@ interface ApiEvent {
   time?: string;
   price?: number | string | null;
 }
+
+// ── Interest/Booking API response entry ──
+interface InterestEntry {
+  id: number;
+  propertyId: number;
+  propertyTypeId: number;
+  eventId: number;
+  interactionType: "INTERESTED" | "BOOK";
+  interestCount: number | null;
+  bookCount: number | null;
+  name: string;
+  phoneNumber: number;
+  emailId: string;
+  guestNumber: number | null;
+}
+
+type ModalMode = "book" | "interest";
 
 // ── Time formatter: "HH:MM:SS" → "12:17 PM" ──
 function formatTime(timeStr: string | null): string {
@@ -142,7 +158,7 @@ interface SidebarBookingCardProps {
     color: string;
     link: string;
   }[];
-  setBookingModal: (v: boolean) => void;
+  setBookingModal: () => void;
 }
 
 function SidebarBookingCard({
@@ -178,9 +194,7 @@ function SidebarBookingCard({
             {event.typeName}
           </span>
         )}
-        <p className="text-base font-bold leading-snug">
-          {displayPropertyName}
-        </p>
+        <p className="text-base font-bold leading-snug">{displayPropertyName}</p>
       </div>
 
       {/* Event info */}
@@ -222,9 +236,7 @@ function SidebarBookingCard({
         ) : (
           <div className="flex items-baseline gap-1.5">
             <IndianRupee className="w-4 h-4" />
-            <span className="text-3xl font-black tracking-tighter">
-              {price}
-            </span>
+            <span className="text-3xl font-black tracking-tighter">{price}</span>
             <span className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">
               {priceLabel}
             </span>
@@ -235,7 +247,7 @@ function SidebarBookingCard({
       {/* Actions */}
       <div className="space-y-3">
         <button
-          onClick={() => setBookingModal(true)}
+          onClick={setBookingModal}
           className="w-full py-3.5 bg-[#E33E33] text-white font-black rounded-xl hover:shadow-lg transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
         >
           Book Now
@@ -285,66 +297,248 @@ function SidebarBookingCard({
 }
 
 // ============================================================================
+// UNIFIED BOOKING / INTEREST MODAL
+// ============================================================================
+interface BookingModalProps {
+  isOpen: boolean;
+  mode: ModalMode;
+  event: ApiEvent;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function BookingModal({
+  isOpen,
+  mode,
+  event,
+  onClose,
+  onSuccess,
+}: BookingModalProps) {
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    totalGuest: "2",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  // Reset form whenever modal opens or mode changes
+  useEffect(() => {
+    if (isOpen) {
+      setForm({ name: "", phone: "", email: "", totalGuest: "2" });
+      setSubmitted(false);
+    }
+  }, [isOpen, mode]);
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.phone) return;
+    setSubmitting(true);
+    try {
+      const base = {
+        propertyId: event.propertyId ? Number(event.propertyId) : undefined,
+        propertyTypeId: event.propertyTypeId
+          ? Number(event.propertyTypeId)
+          : undefined,
+        eventId: Number(event.id),
+        name: form.name,
+        phoneNumber: Number(form.phone),
+        emailId: form.email || undefined,
+      };
+
+      if (mode === "interest") {
+        await addEventInterest(base);
+      } else {
+        await addEventBooking({
+          ...base,
+          guestNumber: Number(form.totalGuest) || 1,
+        });
+      }
+
+      setSubmitted(true);
+      // Show success state briefly then close + refresh
+      setTimeout(() => {
+        onSuccess();
+      }, 1500);
+    } catch {
+      // keep modal open on error so user can retry
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const isBook = mode === "book";
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative text-left border border-zinc-100 dark:border-white/5"
+      >
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        {submitted ? (
+          /* ── Success state ── */
+          <div className="flex flex-col items-center justify-center py-8 gap-4">
+            <CheckCircle2 className="w-16 h-16 text-green-500" />
+            <h3 className="text-xl font-bold dark:text-white text-center">
+              {isBook ? "Booking Confirmed!" : "You're on the list!"}
+            </h3>
+            <p className="text-sm text-zinc-400 text-center">
+              {isBook
+                ? "We've received your reservation. See you there!"
+                : "We'll keep you updated about this event."}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Heading */}
+            <h3 className="text-2xl font-serif mb-1 dark:text-white">
+              {isBook ? "Reserve your spot" : "Mark as Interested"}
+            </h3>
+            <p className="text-xs text-zinc-500 mb-1 italic">{event.title}</p>
+            <p className="text-xs text-zinc-400 mb-6">
+              Please provide your details below.
+            </p>
+
+            <div className="space-y-4">
+              <Input
+                placeholder="Your Name *"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+              />
+              <Input
+                placeholder="Phone Number *"
+                type="tel"
+                value={form.phone}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, phone: e.target.value }))
+                }
+                className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+              />
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, email: e.target.value }))
+                }
+                className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+              />
+
+              {/* Guest count — only for booking */}
+              {isBook && (
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
+                    Number of Guests
+                  </label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="Total Guests"
+                    value={form.totalGuest}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, totalGuest: e.target.value }))
+                    }
+                    className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                  />
+                </div>
+              )}
+
+              {/* {isBook && (
+                <p className="text-[11px] text-[#E33E33] font-semibold flex items-center gap-1.5 px-1">
+                  <span>🎟️</span>
+                  10% off for couples — use code{" "}
+                  <span className="font-black tracking-wide">COUPLE10</span>
+                </p>
+              )} */}
+
+              <button
+                disabled={!form.name || !form.phone || submitting}
+                onClick={handleSubmit}
+                className="w-full h-14 bg-[#E33E33] disabled:opacity-50 text-white rounded-2xl font-black uppercase shadow-lg hover:bg-[#E33E33]/90 transition-all active:scale-95 text-xs tracking-widest flex items-center justify-center"
+              >
+                {submitting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : isBook ? (
+                  "Confirm Reservation"
+                ) : (
+                  "I'm Interested"
+                )}
+              </button>
+            </div>
+          </>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+// ============================================================================
 // MAIN PAGE
 // ============================================================================
 export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<ApiEvent | null>(null);
-
-  // ── Changed: array of detail info entries ──
   const [detailInfoList, setDetailInfoList] = useState<EventDetailInfo[]>([]);
-
-  const [heroSlides, setHeroSlides] = useState<{ url: string; alt?: string }[]>(
-    [],
-  );
-  const [pastEventImages, setPastEventImages] = useState<
-    { url: string; alt?: string }[]
-  >([]);
+  const [heroSlides, setHeroSlides] = useState<{ url: string; alt?: string }[]>([]);
+  const [pastEventImages, setPastEventImages] = useState<{ url: string; alt?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [interestedCount, setInterestedCount] = useState(2847);
-  const [isInterested, setIsInterested] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
-
   const [showShareReactions, setShowShareReactions] = useState(false);
 
-  // ── Booking modal state ──
+  // ── Interest / booking ──
+  const [interestList, setInterestList] = useState<InterestEntry[]>([]);
+  const [isInterested, setIsInterested] = useState(false);
   const [bookingModal, setBookingModal] = useState(false);
-  const [bookingForm, setBookingForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    date: new Date().toISOString().split("T")[0],
-    time: "19:00",
-    totalGuest: "2",
-  });
-  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("book");
 
-  const handleBookingSubmit = async () => {
-    if (!bookingForm.name || !bookingForm.phone) return;
-    setBookingSubmitting(true);
-    // TODO: wire to your API
-    await new Promise((r) => setTimeout(r, 1200));
-    setBookingSubmitting(false);
-    setBookingModal(false);
-    setBookingForm({
-      name: "",
-      phone: "",
-      email: "",
-      date: new Date().toISOString().split("T")[0],
-      time: "19:00",
-      totalGuest: "2",
-    });
+  // ── Derived counts ──
+  // Total INTERESTED entries = interest count
+  const interestedCount = interestList.filter(
+    (e) => e.interactionType === "INTERESTED",
+  ).length;
+
+  // Last BOOK entry's bookCount = cumulative book counter from API
+  const bookEntries = interestList.filter((e) => e.interactionType === "BOOK");
+  const lastBookCount =
+    bookEntries.length > 0
+      ? (bookEntries[bookEntries.length - 1].bookCount ?? bookEntries.length)
+      : 0;
+
+  // ── Fetch interest/booking list ──
+  const fetchInterestList = async (eventId: string) => {
+    try {
+      const res = await getEventInterestByEventId(eventId);
+      const data: InterestEntry[] =
+        res?.data?.data ?? res?.data ?? res ?? [];
+      setInterestList(Array.isArray(data) ? data : []);
+    } catch {
+      setInterestList([]);
+    }
   };
 
-  // ── Fetch event base info (from events list) ──
+  // ── Fetch event base info ──
   useEffect(() => {
     const fetchEventBase = async () => {
       try {
         const response = await getEventsUpdated({});
         const rawEvents: ApiEvent[] = response?.data || response || [];
         const foundEvent = rawEvents.find((e) => e.id.toString() === id);
-
         setEvent(foundEvent || null);
       } catch {
         setEvent(null);
@@ -353,12 +547,12 @@ export default function EventDetails() {
     fetchEventBase();
   }, [id]);
 
+  // ── Fetch detail info + media + interest list ──
   useEffect(() => {
     if (!id) return;
 
     const fetchDetails = async () => {
       setLoading(true);
-
       try {
         let detailRes: any = null;
         let filesRes: any = null;
@@ -375,73 +569,40 @@ export default function EventDetails() {
           console.error("Media API failed:", err);
         }
 
-        // -------------------------------
-        // DETAIL INFO — API returns array
-        // -------------------------------
+        // DETAIL INFO — API returns array, sort by id desc
         const rawList =
           detailRes?.data?.data ?? detailRes?.data ?? detailRes ?? [];
-
         const list: EventDetailInfo[] = Array.isArray(rawList)
           ? rawList
           : rawList
             ? [rawList]
             : [];
+        setDetailInfoList([...list].sort((a, b) => b.id - a.id));
 
-        // Sort descending by id → latest (highest id) first
-        const sorted = [...list].sort((a, b) => b.id - a.id);
-
-        setDetailInfoList(sorted);
-
-        // -------------------------------
         // MEDIA FILE GROUPS
-        // -------------------------------
         const fileGroups: EventFileGroup[] =
           filesRes?.data?.data || filesRes?.data || filesRes || [];
-
-        console.log("MEDIA RAW RESPONSE:", filesRes);
-        console.log("FILE GROUPS:", fileGroups);
 
         const heroMedias: MediaItem[] = [];
         const pastMedias: MediaItem[] = [];
 
         fileGroups.forEach((group) => {
           if (!group?.category) return;
-
-          const category = group.category.trim().toLowerCase();
-
-          console.log("CATEGORY FOUND:", category);
-
-          if (category === "hero_slider") {
-            heroMedias.push(...(group.medias || []));
-          }
-
-          if (category === "past_event") {
-            pastMedias.push(...(group.medias || []));
-          }
+          const cat = group.category.trim().toLowerCase();
+          if (cat === "hero_slider") heroMedias.push(...(group.medias || []));
+          if (cat === "past_event") pastMedias.push(...(group.medias || []));
         });
 
-        console.log("HERO MEDIAS:", heroMedias);
-        console.log("PAST MEDIAS:", pastMedias);
-
-        const heroSlidesFormatted = heroMedias
-          .filter((m) => m.type === "IMAGE" && m.url)
-          .map((m) => ({
-            url: m.url,
-            alt: m.alt || "event-image",
-          }));
-
-        const pastSlidesFormatted = pastMedias
-          .filter((m) => m.type === "IMAGE" && m.url)
-          .map((m) => ({
-            url: m.url,
-            alt: m.alt || "past-event",
-          }));
-
-        console.log("HERO SLIDES FINAL:", heroSlidesFormatted);
-        console.log("PAST SLIDES FINAL:", pastSlidesFormatted);
-
-        setHeroSlides(heroSlidesFormatted);
-        setPastEventImages(pastSlidesFormatted);
+        setHeroSlides(
+          heroMedias
+            .filter((m) => m.type === "IMAGE" && m.url)
+            .map((m) => ({ url: m.url, alt: m.alt || "event-image" })),
+        );
+        setPastEventImages(
+          pastMedias
+            .filter((m) => m.type === "IMAGE" && m.url)
+            .map((m) => ({ url: m.url, alt: m.alt || "past-event" })),
+        );
       } catch (err) {
         console.error("Failed to fetch event details:", err);
         setDetailInfoList([]);
@@ -451,6 +612,7 @@ export default function EventDetails() {
     };
 
     fetchDetails();
+    fetchInterestList(id);
   }, [id]);
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -491,10 +653,9 @@ export default function EventDetails() {
 
   if (!event) return <NotFound />;
 
-  // ── Latest detail entry (highest id) drives the sidebar ──
   const latestDetail = detailInfoList[0] ?? null;
-
   const carouselSlides = heroSlides;
+
   const eventDate = new Date(event.eventDate || Date.now());
   const formattedDate = eventDate.toLocaleDateString("en-US", {
     day: "numeric",
@@ -506,23 +667,34 @@ export default function EventDetails() {
   });
 
   const fullDescription = event.longDesc || "";
-
   const descriptionPreview = fullDescription.slice(0, 150);
-
   const shouldShowReadMore = fullDescription.length > 150;
-
   const displayPropertyName = event.propertyName?.trim() || "";
+
+  // ── Interested button handler — opens interest modal ──
+  const handleInterestedClick = () => {
+    if (isInterested) return;
+    setIsInterested(true);
+    setModalMode("interest");
+    setBookingModal(true);
+  };
+
+  // ── Book Now handler — opens booking modal ──
+  const handleBookNow = () => {
+    setModalMode("book");
+    setBookingModal(true);
+  };
 
   const sidebarProps: SidebarBookingCardProps = {
     event,
-    detailInfo: latestDetail, // ← always the latest entry
+    detailInfo: latestDetail,
     displayPropertyName,
     formattedDay,
     formattedDate,
     showShareReactions,
     setShowShareReactions,
     socialPlatforms,
-    setBookingModal,
+    setBookingModal: handleBookNow,
   };
 
   return (
@@ -542,14 +714,14 @@ export default function EventDetails() {
           <div className="flex flex-col lg:flex-row items-start gap-8">
             {/* ── LEFT COLUMN ── */}
             <div className="flex-1 min-w-0 space-y-8 w-full">
-              {/* ── 1. HEADER ── */}
+              {/* 1. HEADER */}
               <div className="space-y-3">
                 <h1 className="text-2xl md:text-4xl font-bold leading-tight">
                   {event.title}
                 </h1>
               </div>
 
-              {/* ── 2. IMAGE CAROUSEL — uses hero_slider media ── */}
+              {/* 2. IMAGE CAROUSEL */}
               <div className="rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-900/50 border border-border/50 py-4 px-2">
                 <EventImageCarousel
                   slides={carouselSlides}
@@ -558,38 +730,52 @@ export default function EventDetails() {
                 />
               </div>
 
-              {/* ── BOOKING CARD — mobile only, after hero ── */}
+              {/* BOOKING CARD — mobile only */}
               <div className="block lg:hidden">
                 <SidebarBookingCard {...sidebarProps} />
               </div>
 
-              {/* ── 2b. INTERESTED STRIP ── */}
+              {/* 2b. INTERESTED STRIP */}
               <div className="flex items-center gap-3 py-3 border-y border-border/50">
                 <button
-                  onClick={() => {
-                    setIsInterested(!isInterested);
-                    setInterestedCount((prev) =>
-                      isInterested ? prev - 1 : prev + 1,
-                    );
-                  }}
+                  onClick={handleInterestedClick}
+                  disabled={isInterested}
                   className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-sm font-medium transition-all ${
                     isInterested
-                      ? "bg-[#E33E33]/10 border-[#E33E33] text-[#E33E33]"
+                      ? "bg-[#E33E33]/10 border-[#E33E33] text-[#E33E33] cursor-default"
                       : "border-border hover:bg-secondary"
                   }`}
                 >
                   <Users className="w-4 h-4" />
-                  {isInterested ? "Interested" : "I'm Interested"}
+                  {isInterested ? "Interested ✓" : "I'm Interested"}
                 </button>
-                <span className="text-xs text-muted-foreground">
-                  {interestedCount.toLocaleString()} people interested
-                </span>
+
+                {/* Live counts from API */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  {interestedCount > 0 && (
+                    <span>
+                      <span className="font-bold text-foreground">
+                        {interestedCount.toLocaleString()}
+                      </span>{" "}
+                      interested
+                    </span>
+                  )}
+                  {lastBookCount > 0 && (
+                    <span>
+                      ·{" "}
+                      <span className="font-bold text-foreground">
+                        {lastBookCount}
+                      </span>{" "}
+                      booked
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* ── 3. PAST EVENT GALLERY — uses past_event media ── */}
+              {/* 3. PAST EVENT GALLERY */}
               <PastEventGallery eventId={event.id} images={pastEventImages} />
 
-              {/* ── 4. ABOUT ── */}
+              {/* 4. ABOUT */}
               <section className="space-y-3">
                 <h2 className="text-lg font-bold">About the Event</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -613,10 +799,9 @@ export default function EventDetails() {
                 )}
               </section>
 
-              {/* ── 5. INFO CARDS — only the latest entry (highest id) ── */}
+              {/* 5. INFO CARDS — latest entry only */}
               {latestDetail ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Card 1 */}
                   <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
                     <div className="flex items-start gap-3">
                       <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -650,7 +835,6 @@ export default function EventDetails() {
                     </div>
                   </section>
 
-                  {/* Card 2 */}
                   <section className="p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
                     <div className="flex items-start gap-3">
                       <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
@@ -687,15 +871,12 @@ export default function EventDetails() {
                   </section>
                 </div>
               ) : (
-                // ── Fallback when API returns no detail info at all ──
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <section className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
                     <div className="flex items-start gap-3">
                       <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <h3 className="text-sm font-bold mb-2">
-                          You Should Know
-                        </h3>
+                        <h3 className="text-sm font-bold mb-2">You Should Know</h3>
                         <ul className="space-y-1.5 text-xs text-muted-foreground">
                           <li className="flex items-start gap-2">
                             <span className="shrink-0">•</span>
@@ -713,9 +894,7 @@ export default function EventDetails() {
                     <div className="flex items-start gap-3">
                       <Ticket className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <h3 className="text-sm font-bold mb-2">
-                          Contactless M-Ticket
-                        </h3>
+                        <h3 className="text-sm font-bold mb-2">Contactless M-Ticket</h3>
                         <p className="text-xs text-muted-foreground">
                           Instant delivery via SMS and email. Simply show your
                           phone at the gate.
@@ -726,14 +905,14 @@ export default function EventDetails() {
                 </div>
               )}
 
-              {/* ── 6. UPCOMING EVENTS ── */}
+              {/* 6. UPCOMING EVENTS */}
               <UpcomingPropertyEvents
                 propertyId={event.propertyId}
                 currentEventId={event.id}
               />
             </div>
 
-            {/* ── STICKY SIDEBAR — desktop only ── */}
+            {/* STICKY SIDEBAR — desktop only */}
             <aside className="hidden lg:block lg:sticky lg:top-28 w-full lg:w-[350px] shrink-0 lg:self-start pb-10">
               <SidebarBookingCard {...sidebarProps} />
             </aside>
@@ -743,98 +922,24 @@ export default function EventDetails() {
 
       <Footer />
 
-      {/* ── BOOKING MODAL ── */}
+      {/* UNIFIED BOOKING / INTEREST MODAL */}
       <AnimatePresence>
         {bookingModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative text-left border border-zinc-100 dark:border-white/5"
-            >
-              {/* Close */}
-              <button
-                onClick={() => setBookingModal(false)}
-                className="absolute top-6 right-6 p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-              {/* Heading */}
-              <h3 className="text-2xl font-serif mb-1 dark:text-white">
-                Reserve your spot
-              </h3>
-              <p className="text-xs text-zinc-500 mb-1 italic">{event.title}</p>
-              <p className="text-xs text-zinc-400 mb-6">
-                Please provide your details below for the reservation.
-              </p>
-
-              <div className="space-y-4">
-                <Input
-                  placeholder="Your Name"
-                  value={bookingForm.name}
-                  onChange={(e) =>
-                    setBookingForm((f) => ({ ...f, name: e.target.value }))
-                  }
-                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                />
-                <Input
-                  placeholder="Phone Number"
-                  value={bookingForm.phone}
-                  onChange={(e) =>
-                    setBookingForm((f) => ({ ...f, phone: e.target.value }))
-                  }
-                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                />
-                <Input
-                  type="email"
-                  placeholder="Email Address"
-                  value={bookingForm.email}
-                  onChange={(e) =>
-                    setBookingForm((f) => ({ ...f, email: e.target.value }))
-                  }
-                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                />
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
-                    Number of Guests
-                  </label>
-                  <Input
-                    type="number"
-                    min="1"
-                    placeholder="Total Guests"
-                    value={bookingForm.totalGuest}
-                    onChange={(e) =>
-                      setBookingForm((f) => ({
-                        ...f,
-                        totalGuest: e.target.value,
-                      }))
-                    }
-                    className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                  />
-                </div>
-                <p className="text-[11px] text-[#E33E33] font-semibold flex items-center gap-1.5 px-1">
-                  <span>🎟️</span>
-                  10% off for couples — use code{" "}
-                  <span className="font-black tracking-wide">COUPLE10</span>
-                </p>
-                <button
-                  disabled={
-                    !bookingForm.name || !bookingForm.phone || bookingSubmitting
-                  }
-                  onClick={handleBookingSubmit}
-                  className="w-full h-14 bg-[#E33E33] disabled:opacity-50 text-white rounded-2xl font-black uppercase shadow-lg hover:bg-[#E33E33]/90 transition-all active:scale-95 text-xs tracking-widest flex items-center justify-center"
-                >
-                  {bookingSubmitting ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    "Confirm Reservation"
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          </div>
+          <BookingModal
+            isOpen={bookingModal}
+            mode={modalMode}
+            event={event}
+            onClose={() => {
+              setBookingModal(false);
+              // Revert interested state if user closed without submitting
+              if (modalMode === "interest") setIsInterested(false);
+            }}
+            onSuccess={() => {
+              setBookingModal(false);
+              // Refresh counts from API after successful submit
+              if (id) fetchInterestList(id);
+            }}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -443,4 +443,14 @@ export const getEventDetailInfo = () =>API.get("api/v1/event-card/getCards");
 export const getEventDetailInfoById = (id) =>API.get(`api/v1/event-card/getCardsByEventId/${id}`);
 export const updateEventDetailInfo = (id, formData) =>API.patch(`api/v1/event-card/updateCard/${id}`, formData, {headers: {"Content-Type": "multipart/form-data",},});
 
+// ─────────────────────────────
+// EVENT INTEREST & BOOKING
+// ─────────────────────────────
+
+export const addEventInterest = (data) =>API.post("api/v1/book-interested/addInterest", data);
+export const addEventBooking = (data) =>API.post("api/v1/book-interested/addBookNow", data);
+export const getEventInterestByEventId = (eventId) =>API.get(`api/v1/book-interested/getByEventId/${eventId}`);
+export const getBookByEventId = (eventId) =>API.get(`api/v1/book-interested/getBookByEventId/${eventId}`);
+export const getBookInterestedById = (id) =>API.get(`api/v1/book-interested/getByBookInterestedId/${id}`);
+
 export default API;

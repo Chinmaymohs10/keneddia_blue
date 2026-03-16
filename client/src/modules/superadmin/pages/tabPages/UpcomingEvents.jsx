@@ -15,10 +15,12 @@ import {
   XCircle,
   Video,
   Eye,
+  Heart,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import CreateEventModal from "../../modals/CreateEventModal";
 import EventExtraInfoModal from "../../modals/EventExtraInfoModal";
+import EventBookingInfoModal from "../../modals/EventBookingInfoModal";
 import { getEventsUpdated, updateEventStatus } from "@/Api/Api";
 
 function UpcomingEvents() {
@@ -29,6 +31,7 @@ function UpcomingEvents() {
   const [statusLoading, setStatusLoading] = useState(null);
   const [showExtraInfoModal, setShowExtraInfoModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -101,6 +104,10 @@ function UpcomingEvents() {
     setShowModal(false);
     setEditingEvent(null);
     if (shouldRefresh) fetchEvents();
+  };
+  const handleOpenBookingModal = (event) => {
+    setSelectedEvent(event);
+    setShowBookingModal(true);
   };
 
   const formatDate = (dateString) => {
@@ -325,6 +332,17 @@ function UpcomingEvents() {
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-center gap-2">
                           <button
+                            onClick={() => handleOpenBookingModal(event)}
+                            className="p-2 rounded-lg border bg-white transition-all hover:shadow-sm"
+                            style={{
+                              borderColor: colors.border,
+                              color: "#E33E33",
+                            }}
+                            title="Interested / Bookings"
+                          >
+                            <Heart size={16} />
+                          </button>
+                          <button
                             onClick={() =>
                               handleStatusToggle(event.id, event.active)
                             }
@@ -423,6 +441,14 @@ function UpcomingEvents() {
         <EventExtraInfoModal
           isOpen={showExtraInfoModal}
           onClose={() => setShowExtraInfoModal(false)}
+          eventId={selectedEvent.id}
+          propertyId={selectedEvent.propertyId}
+        />
+      )}
+      {showBookingModal && selectedEvent && (
+        <EventBookingInfoModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
           eventId={selectedEvent.id}
           propertyId={selectedEvent.propertyId}
         />
