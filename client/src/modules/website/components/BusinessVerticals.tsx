@@ -13,14 +13,12 @@ import { useState, useEffect } from "react";
 import { getKennediaGroup } from "@/Api/Api";
 
 const IconMap: Record<string, any> = {
-  // Uppercase keys
   HOTEL: Building2,
   CAFE: Coffee,
   BAR: Wine,
   EVENT: Briefcase,
   MUSIC: Music,
   RESTAURANT: UtensilsCrossed,
-  // Lowercase / mixed keys from API
   Hotel: Building2,
   Restaurant: UtensilsCrossed,
   Cafe: Coffee,
@@ -36,9 +34,8 @@ const truncateDescription = (text: string, maxWords: number = 6): string => {
   return words.slice(0, maxWords).join(" ") + "...";
 };
 
-// Filter out divisions with missing required fields
 const isValidDivision = (div: any): boolean => {
-  return !!(div.title?.trim() && div.icon?.trim());
+  return !!(div.title?.trim() && (div.icon?.trim() || div.icons?.url));
 };
 
 export default function BusinessVerticals() {
@@ -77,8 +74,10 @@ export default function BusinessVerticals() {
     fetchData();
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
   if (loading) return null;
   if (!groupData) return null;
+
   return (
     <section className="py-2 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative">
       <div className="container mx-auto px-6 relative z-10">
@@ -92,12 +91,18 @@ export default function BusinessVerticals() {
         </div>
 
         {isMobile ? (
-          <MobileTimeline verticals={groupData.divisions} />
+          <MobileTimeline
+            verticals={groupData.divisions}
+            logoIcon={groupData.icon}
+            logoText={groupData.logoText}
+            logoSubText={groupData.logoSubText}
+          />
         ) : (
           <DesktopTree
             divisions={groupData.divisions}
             logoText={groupData.logoText}
             logoSubText={groupData.logoSubText}
+            logoIcon={groupData.icon}
           />
         )}
       </div>
@@ -105,7 +110,7 @@ export default function BusinessVerticals() {
   );
 }
 
-function DesktopTree({ divisions, logoText, logoSubText }: any) {
+function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
   const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
   const sortedDivisions = safeDivisions
     .sort((a, b) => a.displayOrder - b.displayOrder)
@@ -115,21 +120,33 @@ function DesktopTree({ divisions, logoText, logoSubText }: any) {
     <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
       {/* Center Logo */}
       <div className="relative z-20 mb-16">
-        <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20">
-          <div className="text-center">
-            <h2 className="text-2xl font-serif font-bold text-foreground leading-none">
-              {logoText}
-            </h2>
-            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">
-              {logoSubText}
-            </p>
-          </div>
+        <div className="bg-card shadow-xl border border-primary/20 flex items-center justify-center relative z-20 px-6 py-4 rounded-xl">
+          {logoIcon?.url ? (
+            <img
+              src={logoIcon.url}
+              alt={logoIcon.alt || logoText || "Group Logo"}
+              className="max-h-20 w-auto object-contain"
+            />
+          ) : (
+            <div className="text-center px-2">
+              <h2 className="text-2xl font-serif font-bold text-foreground leading-none">
+                {logoText}
+              </h2>
+              <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">
+                {logoSubText}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Connector line from logo to horizontal bar */}
         <div className="absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" />
       </div>
 
+      {/* Horizontal connector bar */}
       <div className="relative w-4/5 h-[1px] bg-primary/20 mb-8" />
 
+      {/* Branch nodes */}
       <div className="flex justify-between items-start w-full px-4 relative -mt-8">
         {sortedDivisions.map((v: any, i: number) => (
           <BranchNode key={v.id} item={v} index={i} />
@@ -142,10 +159,19 @@ function DesktopTree({ divisions, logoText, logoSubText }: any) {
 function BranchNode({ item, index }: any) {
   const Icon = IconMap[item.icon] || Building2;
   const hasLink = !!item.ctaLink?.trim();
+  const iconImageUrl = item.icons?.url;
 
   const cardContent = (
-    <div className="w-16 h-16 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all">
-      <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary" />
+    <div className="w-20 h-20 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all p-1">
+      {iconImageUrl ? (
+        <img
+          src={iconImageUrl}
+          alt={item.icons?.alt || item.title || "Division icon"}
+          className="w-full h-full object-contain"
+        />
+      ) : (
+        <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+      )}
     </div>
   );
 
@@ -156,6 +182,7 @@ function BranchNode({ item, index }: any) {
       transition={{ delay: index * 0.1 }}
       className="flex flex-col items-center text-center group relative flex-1"
     >
+      {/* Vertical connector from bar to card */}
       <div className="h-8 w-[1px] bg-primary/20 mb-4" />
 
       {hasLink ? (
@@ -182,44 +209,79 @@ function BranchNode({ item, index }: any) {
   );
 }
 
-function MobileTimeline({ verticals }: any) {
+function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }: any) {
   const safeVerticals = Array.isArray(verticals) ? verticals.slice(0, 5) : [];
 
   return (
-    <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 py-4">
-      {safeVerticals.map((v: any) => {
-        const Icon = IconMap[v.icon] || Building2;
-        const hasLink = !!v.ctaLink?.trim();
-
-        const cardContent = (
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-full text-primary">
-              <Icon className="w-4 h-4" />
-            </div>
-            <h3 className="text-base font-bold">{v.title}</h3>
-            {hasLink && (
-              <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
-            )}
-          </div>
-        );
-
-        return hasLink ? (
-          <Link
-            key={v.id}
-            to={v.ctaLink}
-            className="block bg-card p-4 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all"
-          >
-            {cardContent}
-          </Link>
+    <div className="flex flex-col items-center gap-6 py-4">
+      {/* Logo at top of mobile timeline */}
+      <div className="bg-card shadow-xl border border-primary/20 px-4 py-3 rounded-xl flex items-center justify-center">
+        {logoIcon?.url ? (
+          <img
+            src={logoIcon.url}
+            alt={logoIcon.alt || logoText || "Group Logo"}
+            className="max-h-12 w-auto object-contain"
+          />
         ) : (
-          <div
-            key={v.id}
-            className="block bg-card p-4 rounded-xl border border-border"
-          >
-            {cardContent}
+          <div className="text-center px-1">
+            <p className="text-sm font-serif font-bold text-foreground leading-none">
+              {logoText}
+            </p>
+            <p className="text-[8px] uppercase tracking-widest text-primary mt-0.5 font-bold">
+              {logoSubText}
+            </p>
           </div>
-        );
-      })}
+        )}
+      </div>
+
+      {/* Dashed vertical connector */}
+      <div className="w-[1px] h-6 border-l border-dashed border-primary/30" />
+
+      {/* Division cards */}
+      <div className="relative pl-6 border-l border-dashed border-primary/20 space-y-8 w-full">
+        {safeVerticals.map((v: any) => {
+          const Icon = IconMap[v.icon] || Building2;
+          const hasLink = !!v.ctaLink?.trim();
+          const iconImageUrl = v.icons?.url;
+
+          const cardContent = (
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0">
+                {iconImageUrl ? (
+                  <img
+                    src={iconImageUrl}
+                    alt={v.icons?.alt || v.title || "Division icon"}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Icon className="w-4 h-4 text-primary" />
+                )}
+              </div>
+              <h3 className="text-base font-bold">{v.title}</h3>
+              {hasLink && (
+                <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
+              )}
+            </div>
+          );
+
+          return hasLink ? (
+            <Link
+              key={v.id}
+              to={v.ctaLink}
+              className="block bg-card p-4 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all"
+            >
+              {cardContent}
+            </Link>
+          ) : (
+            <div
+              key={v.id}
+              className="block bg-card p-4 rounded-xl border border-border"
+            >
+              {cardContent}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { colors } from "@/lib/colors/colors";
 import {
   Plus,
@@ -7,12 +7,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Upload,
+  X,
+  ImageIcon,
 } from "lucide-react";
 import {
   createOrUpdateKennediaGroup,
   getKennediaGroup,
   enableKennediaDivision,
   disableKennediaDivision,
+  uploadMedia,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -23,6 +27,15 @@ const RequiredLabel = ({ children }) => (
     style={{ color: colors.textPrimary }}
   >
     {children} <span className="text-red-500">*</span>
+  </label>
+);
+
+const OptionalLabel = ({ children }) => (
+  <label
+    className="block text-xs font-semibold mb-1"
+    style={{ color: colors.textPrimary }}
+  >
+    {children}
   </label>
 );
 
@@ -38,6 +51,138 @@ const fieldCls = (hasError) =>
       : "border-gray-200 focus:ring-blue-100 focus:border-blue-400"
   }`;
 
+// ── Image Upload Widget ────────────────────────────────────────────────────
+/**
+ * Props:
+ *   label        – field label string
+ *   required     – show red asterisk
+ *   previewUrl   – existing image URL (from fetched data)
+ *   mediaId      – existing mediaId
+ *   onUploaded   – callback({ mediaId, url }) after successful upload
+ *   size         – "sm" | "md" (default "md")
+ */
+function ImageUploader({
+  label,
+  required = false,
+  previewUrl,
+  mediaId,
+  onUploaded,
+  size = "md",
+}) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState(null);
+
+  const displayUrl = localPreview || previewUrl || null;
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await uploadMedia(formData);
+
+      // Response is directly the mediaId number (e.g. 926)
+      const newMediaId = res?.data ?? res;
+
+      if (!newMediaId) throw new Error("No mediaId returned from upload");
+
+      // URL not returned — keep local objectUrl as preview
+      onUploaded({ mediaId: newMediaId, url: objectUrl });
+      toast.success("Image uploaded successfully");
+    } catch (err) {
+      console.error("Upload failed:", err);
+      toast.error("Image upload failed. Please try again.");
+      setLocalPreview(null);
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleClear = () => {
+    setLocalPreview(null);
+    onUploaded({ mediaId: null, url: null });
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const thumbSize = size === "sm" ? "w-14 h-14" : "w-20 h-20";
+  const btnText = mediaId || localPreview ? "Change" : "Upload";
+
+  return (
+    <div>
+      {required ? (
+        <OptionalLabel>{label}</OptionalLabel>
+      ) : (
+        <OptionalLabel>{label}</OptionalLabel>
+      )}
+
+      <div className="flex items-center gap-3">
+        {/* Thumbnail preview */}
+        <div
+          className={`${thumbSize} rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0 relative`}
+        >
+          {uploading ? (
+            <Loader2 size={20} className="animate-spin text-blue-400" />
+          ) : displayUrl ? (
+            <>
+              <img
+                src={displayUrl}
+                alt="preview"
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={handleClear}
+                className="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                title="Remove image"
+              >
+                <X size={10} />
+              </button>
+            </>
+          ) : (
+            <ImageIcon size={20} className="text-gray-300" />
+          )}
+        </div>
+
+        {/* Upload button */}
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-gray-200 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <Upload size={12} />
+            {uploading ? "Uploading…" : btnText}
+          </button>
+          {mediaId && (
+            <span className="text-[10px] text-gray-400">
+              Media ID: {mediaId}
+            </span>
+          )}
+        </div>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────
 function KennediaGroup() {
   const [headerSettings, setHeaderSettings] = useState({
     mainTitle: "",
@@ -47,12 +192,17 @@ function KennediaGroup() {
     logoText: "",
     logoSubText: "",
   });
+
+  // Header logo image
+  const [headerIcon, setHeaderIcon] = useState({
+    mediaId: null,
+    url: null,
+  });
+
   const [businessDivisions, setBusinessDivisions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [existingData, setExistingData] = useState(null);
-
-  // ── Validation errors ────────────────────────────────────────────────────
   const [errors, setErrors] = useState({});
 
   const clearError = (key) =>
@@ -81,11 +231,23 @@ function KennediaGroup() {
             logoText: data.logoText || "",
             logoSubText: data.logoSubText || "",
           });
+
+          // Restore header icon
+          if (data.icon?.mediaId) {
+            setHeaderIcon({
+              mediaId: data.icon.mediaId,
+              url: data.icon.url || null,
+            });
+          }
+
           if (data.divisions && Array.isArray(data.divisions)) {
             setBusinessDivisions(
               data.divisions.map((div) => ({
                 id: div.id,
                 icon: div.icon || "",
+                // Restore per-division icon image
+                iconMediaId: div.icons?.mediaId || null,
+                iconUrl: div.icons?.url || null,
                 title: div.title || "",
                 description: div.description || "",
                 ctaLink: div.ctaLink || "",
@@ -113,7 +275,6 @@ function KennediaGroup() {
   // ── Validate ─────────────────────────────────────────────────────────────
   const validate = () => {
     const newErrors = {};
-
     if (!headerSettings.mainTitle.trim())
       newErrors.mainTitle = "Main title is required";
     if (!headerSettings.subTitle.trim())
@@ -122,7 +283,6 @@ function KennediaGroup() {
       newErrors.logoText = "Logo text is required";
     if (!centerLogoSettings.logoSubText.trim())
       newErrors.logoSubText = "Logo subtext is required";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -130,9 +290,7 @@ function KennediaGroup() {
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleToggleStatus = async (division) => {
     if (!division.isExisting) {
-      toast.error(
-        "Please save the group first before toggling status of new items",
-      );
+      toast.error("Please save the group first before toggling status");
       return;
     }
     try {
@@ -162,6 +320,8 @@ function KennediaGroup() {
       {
         id: Date.now(),
         icon: "",
+        iconMediaId: null,
+        iconUrl: null,
         title: "",
         description: "",
         ctaLink: "",
@@ -178,6 +338,15 @@ function KennediaGroup() {
         d.id === id ? { ...d, [field]: value } : d,
       ),
     );
+
+  // Called when division icon image is uploaded
+  const handleDivisionIconUploaded = (divId, { mediaId, url }) => {
+    setBusinessDivisions((prev) =>
+      prev.map((d) =>
+        d.id === divId ? { ...d, iconMediaId: mediaId, iconUrl: url } : d,
+      ),
+    );
+  };
 
   const handleMoveDivision = (index, direction) => {
     if (
@@ -209,12 +378,16 @@ function KennediaGroup() {
         subTitle: headerSettings.subTitle,
         logoText: centerLogoSettings.logoText,
         logoSubText: centerLogoSettings.logoSubText,
+        // Include header icon mediaId only if set
+        ...(headerIcon.mediaId ? { iconMediaId: headerIcon.mediaId } : {}),
         divisions: businessDivisions.map((div) => ({
           icon: div.icon,
           title: div.title,
           description: div.description,
           ctaLink: div.ctaLink,
           displayOrder: div.displayOrder,
+          // Include division icon mediaId only if set
+          ...(div.iconMediaId ? { iconMediaId: div.iconMediaId } : {}),
         })),
       };
       await createOrUpdateKennediaGroup(payload);
@@ -264,7 +437,6 @@ function KennediaGroup() {
         </div>
 
         <div className="space-y-3">
-          {/* Main Title */}
           <div>
             <RequiredLabel>Main Title</RequiredLabel>
             <input
@@ -283,7 +455,6 @@ function KennediaGroup() {
             <ErrorMsg msg={errors.mainTitle} />
           </div>
 
-          {/* Subtitle */}
           <div>
             <RequiredLabel>Subtitle</RequiredLabel>
             <input
@@ -321,8 +492,7 @@ function KennediaGroup() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Logo Text */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <RequiredLabel>Logo Text</RequiredLabel>
             <input
@@ -341,7 +511,6 @@ function KennediaGroup() {
             <ErrorMsg msg={errors.logoText} />
           </div>
 
-          {/* Logo Subtext */}
           <div>
             <RequiredLabel>Logo Subtext</RequiredLabel>
             <input
@@ -359,6 +528,20 @@ function KennediaGroup() {
             />
             <ErrorMsg msg={errors.logoSubText} />
           </div>
+        </div>
+
+        {/* Header / Group Logo Image */}
+        <div
+          className="rounded-lg p-3 border"
+          style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
+        >
+          <ImageUploader
+            label="Group Logo Image (replaces logo text in center circle)"
+            previewUrl={headerIcon.url}
+            mediaId={headerIcon.mediaId}
+            onUploaded={({ mediaId, url }) => setHeaderIcon({ mediaId, url })}
+            size="md"
+          />
         </div>
       </div>
 
@@ -394,6 +577,7 @@ function KennediaGroup() {
                 opacity: division.isActive ? 1 : 0.6,
               }}
             >
+              {/* Row 1: icon key, title, description, display order */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <input
                   type="text"
@@ -402,7 +586,7 @@ function KennediaGroup() {
                     handleDivisionChange(division.id, "icon", e.target.value)
                   }
                   className="w-full px-2.5 py-1.5 rounded border text-sm border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none"
-                  placeholder="Icon"
+                  placeholder="Icon key (e.g. HOTEL)"
                 />
                 <input
                   type="text"
@@ -434,6 +618,7 @@ function KennediaGroup() {
                 />
               </div>
 
+              {/* Row 2: CTA Link */}
               <div className="mt-3">
                 <input
                   type="text"
@@ -446,6 +631,26 @@ function KennediaGroup() {
                 />
               </div>
 
+              {/* Row 3: Division Icon Image Upload */}
+              <div
+                className="mt-3 p-3 rounded-lg border"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: colors.contentBg,
+                }}
+              >
+                <ImageUploader
+                  label="Division Icon Image (overrides icon key fallback)"
+                  previewUrl={division.iconUrl}
+                  mediaId={division.iconMediaId}
+                  onUploaded={(payload) =>
+                    handleDivisionIconUploaded(division.id, payload)
+                  }
+                  size="sm"
+                />
+              </div>
+
+              {/* Row 4: order controls + status toggle */}
               <div
                 className="flex items-center justify-between mt-3 pt-3 border-t"
                 style={{ borderColor: colors.border }}
@@ -455,6 +660,7 @@ function KennediaGroup() {
                     onClick={() => handleMoveDivision(index, "up")}
                     disabled={index === 0}
                     className="p-1.5 rounded border disabled:opacity-30"
+                    title="Move up"
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -462,6 +668,7 @@ function KennediaGroup() {
                     onClick={() => handleMoveDivision(index, "down")}
                     disabled={index === businessDivisions.length - 1}
                     className="p-1.5 rounded border disabled:opacity-30"
+                    title="Move down"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -496,7 +703,6 @@ function KennediaGroup() {
         className="rounded-lg p-4 sm:p-5 shadow-sm"
         style={{ backgroundColor: colors.contentBg }}
       >
-        {/* Summary of errors above submit */}
         {Object.keys(errors).length > 0 && (
           <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-xs font-bold text-red-600 mb-1">
