@@ -170,9 +170,12 @@ export default function HotelOffersCarousel() {
           let notExpired = true;
 
           if (o.expiresAt) {
-            const expiry = new Date(o.expiresAt);
-            expiry.setHours(23, 59, 59, 999);
-            notExpired = expiry.getTime() > now;
+            // ✅ Normalize date (fix timezone issue)
+            const expiry = new Date(o.expiresAt + "T23:59:59");
+
+            const now = new Date();
+
+            notExpired = expiry.getTime() >= now.getTime();
           }
 
           const isDayActive =
