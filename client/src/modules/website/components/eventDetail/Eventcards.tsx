@@ -12,6 +12,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
@@ -63,6 +64,7 @@ export function UpcomingEventCard({
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate = useNavigate();
 
   const isVideo = ev.image?.type === "VIDEO" || ev.image?.url?.includes(".mp4");
 
@@ -90,6 +92,7 @@ export function UpcomingEventCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
+      onClick={() => navigate(`/events/${ev.id}`)}
       className="group h-[480px] bg-card border border-border/60 rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media */}
@@ -166,13 +169,15 @@ export function UpcomingEventCard({
             <p className="text-white/80 text-xs mb-5 line-clamp-2 italic">
               {ev.description}
             </p>
-            <Link
-              to={`/events/${ev.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
-            >
-              View Details <ArrowRight size={14} />
-            </Link>
+            {ev.ctaText?.trim() && (
+              <Link
+                to={`/events/${ev.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+              >
+                {ev.ctaText} <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
         )}
       </div>
@@ -193,13 +198,15 @@ export function UpcomingEventCard({
             {ev.description}
           </p>
           <div className="mt-auto pt-4 border-t border-dashed border-border">
-            <Link
-              to={`/events/${ev.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#E33E33]/90 active:scale-95 transition-all"
-            >
-              View Details <ArrowRight size={13} />
-            </Link>
+            {ev.ctaText?.trim() && (
+              <Link
+                to={`/events/${ev.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center justify-center gap-2 bg-[#E33E33] text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+              >
+                {ev.ctaText} <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
         </div>
       )}
