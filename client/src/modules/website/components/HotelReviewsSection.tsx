@@ -440,6 +440,12 @@ export default function HotelReviewsSection() {
                     breakpoints={{ 768: { slidesPerView: 3 } }}
                     autoplay={{ delay: 6000, disableOnInteraction: false }}
                     onSwiper={(s) => (swiperRef.current = s)}
+                    onMouseEnter={() => {
+                      swiperRef.current?.autoplay?.stop();
+                    }}
+                    onMouseLeave={() => {
+                      swiperRef.current?.autoplay?.start();
+                    }}
                     className="h-full w-full"
                   >
                     {guestExperiences.map((item) => {
