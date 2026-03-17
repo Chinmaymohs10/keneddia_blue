@@ -42,6 +42,9 @@ interface ApiProperty {
 }
 
 const SUBTITLE_LIMIT = 120;
+// ── PROD BASE URLS ─────────────────────────────
+const HOTEL_BASE_URL = "https://hotels.kennediablu.com";
+const RESTAURANT_BASE_URL = "https://restaurants.kennediablu.com/";
 
 const CarouselItem = ({
   property,
@@ -59,6 +62,7 @@ const CarouselItem = ({
   nextProperty: ApiProperty | null;
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
 
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
   const nextImageUrl =
@@ -183,7 +187,16 @@ const CarouselItem = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              window.open(propertyPath, "_blank", "noopener,noreferrer");
+
+              const isRestaurant =
+                property.propertyType?.toLowerCase() === "restaurant";
+                 navigate(`/${propertyPath}`);
+
+              // const finalUrl = isRestaurant
+              //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
+              //   : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+
+              // window.open(finalUrl, "_blank", "noopener,noreferrer");
             }}
             className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >
@@ -615,12 +628,35 @@ export default function PropertiesSection() {
                         </button>
                       ) : (
                         <button
+                          // onClick={() => {
+                          // const path = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
+                          //   active.propertyName || active.city || "property",
+                          //   active.propertyId,
+                          // )}`;
+                          // navigate(path);
+                          // }}
                           onClick={() => {
-                            const path = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
+                            const propertyPath = `${createCitySlug(
+                              active.city || active.propertyName,
+                            )}/${createHotelSlug(
                               active.propertyName || active.city || "property",
                               active.propertyId,
                             )}`;
-                            navigate(path);
+
+                            const isRestaurant =
+                              active.propertyType?.toLowerCase() ===
+                              "restaurant";
+                              navigate(`/${propertyPath}`);
+
+                            // const finalUrl = isRestaurant
+                            //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
+                            //   : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+
+                            // window.open(
+                            //   finalUrl,
+                            //   "_blank",
+                            //   "noopener,noreferrer",
+                            // );
                           }}
                           className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                         >
