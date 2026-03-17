@@ -157,23 +157,18 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
 }
 
 function BranchNode({ item, index }: any) {
-  const Icon = IconMap[item.icon] || Building2;
   const hasLink = !!item.ctaLink?.trim();
   const iconImageUrl = item.icons?.url;
 
-  const cardContent = (
-    <div className="w-20 h-20 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mb-4 group-hover:-translate-y-2 transition-all p-1">
-      {iconImageUrl ? (
-        <img
-          src={iconImageUrl}
-          alt={item.icons?.alt || item.title || "Division icon"}
-          className="w-full h-full object-contain"
-        />
-      ) : (
-        <Icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-      )}
+  const cardContent = iconImageUrl ? (
+    <div className="mb-3 flex items-center justify-center">
+      <img
+        src={iconImageUrl}
+        alt={item.title}
+        className="h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition"
+      />
     </div>
-  );
+  ) : null;
 
   return (
     <motion.div
@@ -223,11 +218,11 @@ function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }: any) {
             className="max-h-12 w-auto object-contain"
           />
         ) : (
-          <div className="text-center px-1">
-            <p className="text-sm font-serif font-bold text-foreground leading-none">
+          <div className="text-center px-2">
+            <h2 className="text-2xl font-serif font-bold text-foreground leading-none">
               {logoText}
-            </p>
-            <p className="text-[8px] uppercase tracking-widest text-primary mt-0.5 font-bold">
+            </h2>
+            <p className="text-[10px] uppercase tracking-widest text-primary mt-1 font-bold">
               {logoSubText}
             </p>
           </div>
@@ -247,14 +242,12 @@ function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }: any) {
           const cardContent = (
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0">
-                {iconImageUrl ? (
+                {iconImageUrl && (
                   <img
                     src={iconImageUrl}
-                    alt={v.icons?.alt || v.title || "Division icon"}
-                    className="w-full h-full object-contain"
+                    alt={v.title}
+                    className="h-6 w-auto object-contain opacity-90"
                   />
-                ) : (
-                  <Icon className="w-4 h-4 text-primary" />
                 )}
               </div>
               <h3 className="text-base font-bold">{v.title}</h3>
