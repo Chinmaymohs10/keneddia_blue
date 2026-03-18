@@ -111,6 +111,7 @@ export default function HotelDetail() {
     propertySlug: string;
     propertyId: string;
   }>();
+  const navigate = useNavigate();
   const slugTail = propertySlug?.split("-").pop() || "";
   const propertyIdFromUrl = Number(propertyId || slugTail) || null;
   const [hotel, setHotel] = useState<HotelData | null>(null);
@@ -295,9 +296,10 @@ export default function HotelDetail() {
         );
 
         const matched = flattened.find(
-          (m: any) => Number(m.parent.id) === Number(propertyIdFromUrl),
+          (m: any) =>
+            Number(m.parent.id) === Number(propertyIdFromUrl) &&
+            m.listing?.isActive === true,
         );
-
         if (!matched) {
           setError("Property Not Found");
           return;
@@ -353,6 +355,8 @@ export default function HotelDetail() {
                 ? dynamicNearby
                 : [],
         });
+        console.log("LISTING:", listing);
+        console.log("TAGLINE:", listing?.tagline);
 
         // Secondary Data Fetches
         fetchRooms(parent.id);
@@ -495,8 +499,10 @@ export default function HotelDetail() {
     () => [
       { id: "room-options", label: "Room Options" },
       { id: "about-hotel", label: "About Hotel" },
+      { id: "events", label: "Upcoming Events" }, // renamed
       { id: "amenities", label: "Amenities" },
-      { id: "events", label: "Events" },
+      { id: "food-dining", label: "Food & Dining" }, // ✅ NEW
+      { id: "reviews", label: "Guest Reviews" }, // moved up
       { id: "location", label: "Location" },
       { id: "policies", label: "Guest Policies" },
     ],
@@ -561,90 +567,84 @@ export default function HotelDetail() {
               animate="animate"
               className="space-y-3 w-full text-left"
             >
-              <motion.div variants={fadeIn} className="flex items-center gap-3">
-                <span className="inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
-                  {hotel.type}
-                </span>
-                {hotel.rating && (
-                  <div className="flex items-center gap-1.5 bg-green-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
-                    <span>{hotel.rating}</span>
-                    <Star className="w-3 h-3 fill-white" />
-                  </div>
-                )}
-              </motion.div>
+              {/* ROW 1 — TAGLINE */}
+              {hotel.tagline && (
+                <motion.div variants={fadeIn}>
+                  <span className="inline-block text-[11px] font-semibold text-red-500 bg-red-500/10 px-3 py-1 rounded-md">
+                    {hotel.tagline}
+                  </span>
+                </motion.div>
+              )}
+
+              {/* ROW 2 — TITLE */}
               <motion.h1
                 variants={fadeIn}
                 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 dark:text-white"
               >
                 {hotel.name}
               </motion.h1>
-              <div className="space-y-2">
+
+              {/* ROW 3 — LOCATION */}
+              <motion.div
+                variants={fadeIn}
+                className="flex items-center gap-2 text-muted-foreground text-sm flex-wrap"
+              >
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  {hotel.location}, {hotel.city}
+                </span>
+
+                {hotel.coordinates && (
+                  <a
+                    href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-red-500 font-medium hover:underline ml-2"
+                  >
+                    View Map
+                  </a>
+                )}
+              </motion.div>
+
+              {/* ROW 4 — NEARBY */}
+              {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
                 <motion.div
                   variants={fadeIn}
-                  className="flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground"
+                  className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap"
                 >
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      {hotel.location}, {hotel.city}
-                    </span>
+                  {hotel.nearbyPlaces.slice(0, 2).map((place: any, i) => (
+                    <div key={i} className="flex items-center gap-1.5">
+                      {/* ICON */}
+                      <Navigation className="w-3 h-3 text-primary" />
+
+                      {/* TEXT */}
+                      <span>
+                        {place.distance
+                          ? `${place.distance} from ${place.name}`
+                          : place.name}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* ROW 5 — RATING */}
+              {hotel.rating && (
+                <motion.div
+                  variants={fadeIn}
+                  className="flex items-center gap-4 pt-1"
+                >
+                  {/* RATING BADGE */}
+                  <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded flex items-center gap-1">
+                    {hotel.rating} <Star className="w-3 h-3 fill-white" />
                   </div>
-                  {hotel.coordinates && (
-                    <a
-                      href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
-                    >
-                      <Navigation className="w-4 h-4" /> View Map
-                    </a>
-                  )}
+
+                  {/* REVIEWS (static for now, matches UI) */}
+                  <span className="text-sm text-foreground underline cursor-pointer">
+                    2156 Verified Reviews
+                  </span>
                 </motion.div>
-                <motion.div
-                  variants={fadeIn}
-                  className="flex flex-wrap items-center gap-4 pt-1"
-                >
-                  {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
-                    <motion.div
-                      variants={fadeIn}
-                      className="flex flex-wrap items-center gap-4 pt-1 text-xs text-muted-foreground/80"
-                    >
-                      {hotel.nearbyPlaces.map((place: any, i) => {
-                        const mapLink =
-                          place.googleMapLink ||
-                          (place.coordinates
-                            ? `https://www.google.com/maps?q=${place.coordinates.lat},${place.coordinates.lng}`
-                            : null);
-
-                        return (
-                          <div key={i} className="flex items-center gap-1.5">
-                            <div className="w-1 h-1 rounded-full bg-primary/40" />
-
-                            {mapLink ? (
-                              <a
-                                href={mapLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:text-primary hover:underline transition cursor-pointer"
-                              >
-                                {place.name}
-                              </a>
-                            ) : (
-                              <span>{place.name}</span>
-                            )}
-
-                            {place.distance && (
-                              <span className="text-[10px] opacity-70">
-                                ({place.distance})
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </motion.div>
-              </div>
+              )}
             </motion.div>
 
             <div className="flex gap-3 relative">
@@ -774,6 +774,43 @@ export default function HotelDetail() {
                   locationId={hotel.locationId}
                   locationName={hotel.city}
                 />
+              </section>
+              <section id="amenities" className="scroll-mt-32 border-t pt-10">
+                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-8">
+                  Amenities
+                </h2>
+
+                {hotel.amenities.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-10">
+                    {hotel.amenities.map((a, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        {/* Circle Icon */}
+                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+                          <Check className="w-4 h-4 text-primary" />
+                        </div>
+
+                        {/* Text */}
+                        <span className="text-sm md:text-base text-foreground font-medium">
+                          {a}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Amenities information will be updated soon.
+                  </div>
+                )}
+              </section>
+              <section id="food-dining" className="scroll-mt-32 border-t pt-10">
+                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                  Food & Dining
+                </h2>
+
+                <div className="text-muted-foreground text-sm">
+                  {/* Replace this later with real API data */}
+                  Dining options and restaurant details will be available soon.
+                </div>
               </section>
               <section id="location" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
