@@ -17,7 +17,12 @@ const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
-  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
+  {
+    type: "link",
+    label: "RESERVATION",
+    key: "reservation",
+    href: "#reservation",
+  },
   { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
@@ -30,7 +35,10 @@ export default function RestaurantHomepage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Main Navbar with Restaurant-specific items */}
-      <Navbar navItems={RESTAURANT_NAV_ITEMS} logo={siteContent.brand.logo} />
+      <Navbar
+        navItems={RESTAURANT_NAV_ITEMS}
+        logo={siteContent.brand.logo_restaurant}
+      />
 
       {/* Main Content */}
       <main>
@@ -44,7 +52,7 @@ export default function RestaurantHomepage() {
 
         {/* About Section */}
         <AboutRestaurant />
-        
+
         {/* Banquets & Catering */}
         <BanquetsAndCatering />
 

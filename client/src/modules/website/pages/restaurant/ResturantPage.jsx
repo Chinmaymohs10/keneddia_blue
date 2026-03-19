@@ -138,7 +138,7 @@ export default function RestaurantHomepage() {
     <div className="min-h-screen bg-background">
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
-        logo={siteContent.brand.logo_hotel}
+        logo={siteContent.brand.logo_restaurant}
       />
 
       <main>

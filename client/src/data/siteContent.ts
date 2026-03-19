@@ -17,6 +17,10 @@ import aboutLeader from "@assets/generated_images/luxury_hotel_awards_trophy.png
 import logoHotelDark from "@assets/logo/kb-hotel-dark.png";
 import logoHotelLight from "@assets/logo/kb-hotel-light.png";
 
+//restaurant logos
+import logoRestaurantDark from "@assets/logo/kb-restaurant-dark.png";
+import logoRestaurantLight from "@assets/logo/kb-restaurant-light.png";
+
 
 // Hotel Images (Mapping generic luxury to cities)
 import hotelMumbai from "@assets/generated_images/opulent_hotel_lobby_in_dubai.png"; // Generic Opulence
@@ -80,6 +84,20 @@ export const siteContent = {
         priority: false
       },
       fallbackText: "KENNEDIA BLU HOTELS"
+    },
+    logo_restaurant: {
+      text: "Kennedia Blu Restaurants",
+      image: {
+        src: logoRestaurantLight,   // light mode
+        alt: "Kennedia Blu Restaurants Logo",
+        priority: false
+      },
+      darkImage: {
+        src: logoRestaurantDark,    // dark mode
+        alt: "Kennedia Blu Restaurants Dark Logo",
+        priority: false
+      },
+      fallbackText: "KENNEDIA BLU RESTAURANTS"
     },
     logo_cafe: {
       text: "Kennedia Blu Cafes",
