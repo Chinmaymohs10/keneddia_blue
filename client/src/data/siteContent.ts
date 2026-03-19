@@ -48,6 +48,10 @@ import cafeLibrary from "@assets/generated_images/cozy_library_cafe.png";
 import mapImage from "@assets/generated_images/world_map_with_golden_pins.png";
 import cafeUpscale from "@assets/generated_images/upscale_cafe_interior.png";
 
+// footer img
+import footer_img from "@assets/logo/footer-img.png";
+
+
 export const siteContent = {
   brand: {
     name: "Kennedia Blu",
@@ -107,6 +111,11 @@ export const siteContent = {
     logo_bar: {
       text: "Kennedia Blu Bars",
       image: { src: brandLogoBar, alt: "Kennedia Blu Bar Logo", priority: false },
+      fallbackText: "KENNEDIA BLU BARS"
+    },
+    footer: {
+      text: "Kennedia Blu footer",
+      image: { src: footer_img, alt: "Kennedia Blu Bar Logo", priority: false },
       fallbackText: "KENNEDIA BLU BARS"
     }
   },

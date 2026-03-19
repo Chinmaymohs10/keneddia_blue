@@ -89,16 +89,16 @@ export default function Footer() {
               <div className="relative">
                 {/* Light Mode Logo */}
                 <img
-                  src={siteContent.brand.logo.image.src}
-                  alt={siteContent.brand.logo.image.alt}
+                  src={siteContent.brand.footer.image.src}
+                  alt={siteContent.brand.footer.image.alt}
                   className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
                 />
 
                 {/* Dark Mode Logo */}
                 {siteContent.brand.logo.darkImage && (
                   <img
-                    src={siteContent.brand.logo.image.src}
-                  alt={siteContent.brand.logo.image.alt}
+                    src={siteContent.brand.footer.image.src}
+                  alt={siteContent.brand.footer.image.alt}
                     className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
                   />
                 )}
