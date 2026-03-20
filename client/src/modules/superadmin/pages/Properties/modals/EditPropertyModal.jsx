@@ -137,8 +137,8 @@ function EditPropertyModal({
 
   // ── Handle file selection ──────────────────────────────────────────────────
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setNewFiles(files);
+    const file = e.target.files?.[0];
+    setNewFiles(file ? [file] : []);
   };
 
   const removeNewFile = (index) => {
@@ -774,17 +774,16 @@ function EditPropertyModal({
                   >
                     <Upload size={32} className="mx-auto text-gray-300 mb-2" />
                     <p className="text-sm font-bold text-gray-500">
-                      Click to select photos
+                      Click to select photo
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {newFiles.length > 0
-                        ? `${newFiles.length} file${newFiles.length > 1 ? "s" : ""} selected`
+                        ? `${newFiles.length} file selected`
                         : "PNG, JPG, WEBP supported"}
                     </p>
                     <input
                       id="edit-media-input"
                       type="file"
-                      multiple
                       accept="image/*"
                       className="hidden"
                       onChange={handleFileChange}
