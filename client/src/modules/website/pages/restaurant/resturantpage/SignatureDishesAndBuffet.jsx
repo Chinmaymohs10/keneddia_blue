@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -243,6 +243,9 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
   const [menuLoading, setMenuLoading] = useState(true);
   const [isMenuDescriptionExpanded, setIsMenuDescriptionExpanded] =
     useState(false);
+  const [showMenuDescriptionToggle, setShowMenuDescriptionToggle] =
+    useState(false);
+  const menuDescriptionRef = useRef(null);
 
   const [bookingModal, setBookingModal] = useState({
     isOpen: false,
@@ -372,6 +375,22 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
       .catch(() => {})
       .finally(() => setMenuLoading(false));
   }, [propertyId]);
+
+  useEffect(() => {
+    const el = menuDescriptionRef.current;
+    if (!el || !menuHeader?.description) {
+      setShowMenuDescriptionToggle(false);
+      return;
+    }
+
+    const checkOverflow = () => {
+      setShowMenuDescriptionToggle(el.scrollHeight > el.clientHeight + 1);
+    };
+
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [menuHeader?.description, isMenuDescriptionExpanded]);
 
   const handleBookingSubmit = async () => {
     if (!bookingModal.item) return;
@@ -511,6 +530,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   {menuHeader.description && (
                     <div className="max-w-[80%]">
                       <div
+                        ref={menuDescriptionRef}
                         className={`text-zinc-500 dark:text-zinc-400 text-sm font-light leading-relaxed break-words ${
                           isMenuDescriptionExpanded
                             ? "max-h-32 overflow-y-auto pr-2"
@@ -519,15 +539,19 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                       >
                         {menuHeader.description}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsMenuDescriptionExpanded((prev) => !prev)
-                        }
-                        className="mt-2 text-xs font-semibold text-primary hover:underline"
-                      >
-                        {isMenuDescriptionExpanded ? "Show less" : "Show more .."}
-                      </button>
+                      {showMenuDescriptionToggle && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setIsMenuDescriptionExpanded((prev) => !prev)
+                          }
+                          className="mt-2 text-xs font-semibold text-primary hover:underline"
+                        >
+                          {isMenuDescriptionExpanded
+                            ? "Show less"
+                            : "Show more .."}
+                        </button>
+                      )}
                     </div>
                   )}
                 </>

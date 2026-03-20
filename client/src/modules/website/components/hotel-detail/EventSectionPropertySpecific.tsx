@@ -13,6 +13,7 @@ import {
 import { motion } from "framer-motion";
 import { getEventsUpdated } from "@/Api/Api";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface EventImage {
   mediaId: number;
@@ -49,6 +50,7 @@ interface EventSectionPropertySpecificProps {
 
 /* ================= EVENT CARD — matches EventsSection exactly ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
+  const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -80,6 +82,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
+      onClick={() => navigate(`/events/${event.id}`)}
       className="group h-[520px] bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media Container */}
@@ -159,14 +162,16 @@ function EventCard({ event, index }: { event: Event; index: number }) {
             </p>
             <div className="flex gap-2">
               {event.ctaText?.trim() && (
-                <a
-                  href={event.ctaLink || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/events/${event.id}`);
+                  }}
                   className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
                 >
                   {event.ctaText} <ArrowRight size={14} />
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -190,14 +195,16 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           </p>
           <div className="mt-auto pt-4 border-t border-dashed border-border flex gap-2">
             {event.ctaText?.trim() && (
-              <a
-                href={event.ctaLink || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/events/${event.id}`);
+                }}
                 className="flex-1 bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform hover:opacity-90"
               >
                 {event.ctaText} <ArrowRight size={14} />
-              </a>
+              </button>
             )}
           </div>
         </div>
