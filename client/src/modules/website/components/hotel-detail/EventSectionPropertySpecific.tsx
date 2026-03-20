@@ -48,7 +48,7 @@ interface EventSectionPropertySpecificProps {
   locationName?: string;
 }
 
-/* ================= EVENT CARD — matches EventsSection exactly ================= */
+/* ================= EVENT CARD ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
   const navigate = useNavigate();
   const [isBanner, setIsBanner] = useState(false);
@@ -83,7 +83,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(`/events/${event.id}`)}
-      className="group h-[520px] bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
+      className="group w-full max-w-[300px] h-[520px] mx-auto bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
     >
       {/* Media Container */}
       <div
@@ -95,9 +95,19 @@ function EventCard({ event, index }: { event: Event; index: number }) {
           isVideo ? (
             <>
               <video
+                src={event.image.url}
+                className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-50"
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-hidden="true"
+              />
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-md" />
+              <video
                 ref={videoRef}
                 src={event.image.url}
-                className="w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
+                className="relative z-10 w-full h-full object-contain object-top transition-transform duration-700 group-hover:scale-105"
                 autoPlay
                 loop
                 muted
@@ -122,17 +132,25 @@ function EventCard({ event, index }: { event: Event; index: number }) {
               </button>
             </>
           ) : (
-            <img
-              src={event.image.url}
-              alt={event.image.alt || event.title}
-              className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-              onLoad={(e) =>
-                analyzeMediaSize(
-                  e.currentTarget.naturalWidth,
-                  e.currentTarget.naturalHeight,
-                )
-              }
-            />
+            <>
+              <img
+                src={event.image.url}
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-50"
+              />
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-md" />
+              <img
+                src={event.image.url}
+                alt={event.image.alt || event.title}
+                className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                onLoad={(e) =>
+                  analyzeMediaSize(
+                    e.currentTarget.naturalWidth,
+                    e.currentTarget.naturalHeight,
+                  )
+                }
+              />
+            </>
           )
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -221,6 +239,30 @@ export default function EventSectionPropertySpecific({
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Each card is (100% / 2.2) wide so 2 full cards + ~20% of 3rd are visible.
+  // We slide by one card width at a time = 100 / 2.2 ≈ 45.45% of track width.
+  // The track width = events.length * cardWidthPct + gaps, but since we use %
+  // on the card itself relative to the *overflow container*, we translate
+  // using the card's own percentage share of that container.
+  //
+  // Simpler approach that's reliable:
+  // card flex-basis = calc(45.45% - gap)  →  2 visible + 20% peek
+  // translate step  = calc(45.45%)        →  shift exactly one card slot
+  const CARD_PCT = 100 / 2.2; // ≈ 45.45 — portion of container each card occupies
+
+  // Refs to avoid stale closures inside the interval
+  const isHoveredRef = useRef(false);
+  const eventsLengthRef = useRef(0);
+
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
+
+  useEffect(() => {
+    eventsLengthRef.current = events.length;
+  }, [events.length]);
 
   useEffect(() => {
     fetchEvents();
@@ -259,13 +301,28 @@ export default function EventSectionPropertySpecific({
     }
   };
 
+  // Loop through all events one by one; wrap back to 0 after last.
+  const totalSlides = events.length;
+
   const handlePrevious = () =>
-    setCurrentIndex((prev) =>
-      prev === 0 ? Math.max(0, events.length - 2) : prev - 1,
-    );
+    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
 
   const handleNext = () =>
-    setCurrentIndex((prev) => (prev >= events.length - 2 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
+
+  // Auto-slide: only when > 2 events; pauses on hover via ref.
+  useEffect(() => {
+    if (events.length <= 2) return;
+
+    const interval = window.setInterval(() => {
+      if (isHoveredRef.current) return;
+      setCurrentIndex((prev) =>
+        prev === eventsLengthRef.current - 1 ? 0 : prev + 1,
+      );
+    }, 3500);
+
+    return () => window.clearInterval(interval);
+  }, [events.length]);
 
   if (loading) {
     return (
@@ -293,24 +350,49 @@ export default function EventSectionPropertySpecific({
   /* ── Single event ── */
   if (events.length === 1) {
     return (
-      <div className="max-w-sm">
+      <div className="w-full max-w-sm">
         <EventCard event={events[0]} index={0} />
       </div>
     );
   }
 
-  /* ── Multiple events carousel ── */
+  /* ── 2 events: side by side, no carousel ── */
+  if (events.length === 2) {
+    return (
+      <div className="grid grid-cols-2 gap-4 w-full">
+        {events.map((event, index) => (
+          <EventCard key={event.id} event={event} index={index} />
+        ))}
+      </div>
+    );
+  }
+
+  /* ── 3+ events: peek carousel — fits 100% of parent width ── */
   return (
-    <div className="relative">
-      <div className="overflow-hidden">
+    <div
+      className="relative w-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Clip to parent width — no overflow, no layout shift */}
+      <div className="overflow-hidden w-full">
         <div
-          className="flex transition-transform duration-500 ease-out gap-5"
-          style={{ transform: `translateX(-${currentIndex * (100 / 2)}%)` }}
+          className="flex transition-transform duration-500 ease-out"
+          style={{
+            gap: "16px",
+            // Shift by currentIndex × one card slot width.
+            // One card slot = CARD_PCT% of the container.
+            transform: `translateX(calc(-${currentIndex} * (${CARD_PCT}% + 16px / 2.2)))`,
+          }}
         >
           {events.map((event, index) => (
             <div
               key={event.id}
-              className="min-w-[calc(50%-10px)] flex-shrink-0"
+              className="flex-shrink-0"
+              style={{
+                // 2 full cards + 20% peek of the 3rd = CARD_PCT% each
+                width: `calc(${CARD_PCT}% - 10px)`,
+              }}
             >
               <EventCard event={event} index={index} />
             </div>
@@ -318,42 +400,39 @@ export default function EventSectionPropertySpecific({
         </div>
       </div>
 
-      {/* Nav arrows */}
-      {events.length > 2 && (
-        <>
-          <button
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-40"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={currentIndex >= events.length - 2}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white border border-border rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-all z-10 disabled:opacity-40"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </>
-      )}
+      {/* Prev arrow — sits inside the container, overlapping left edge */}
+      <button
+        onClick={handlePrevious}
+        className="absolute left-1 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-black/60 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+        aria-label="Previous"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+
+      {/* Next arrow — sits inside the container, overlapping right edge */}
+      <button
+        onClick={handleNext}
+        className="absolute right-1 top-1/2 -translate-y-1/2 z-10 bg-white/90 dark:bg-black/60 border border-border rounded-full p-2 shadow-md hover:bg-primary hover:text-white transition-all backdrop-blur-sm"
+        aria-label="Next"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
 
       {/* Dots */}
-      {events.length > 2 && (
-        <div className="flex justify-center gap-2 mt-5">
-          {Array.from({ length: Math.ceil(events.length / 2) }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`h-2 rounded-full transition-all ${
-                Math.floor(currentIndex / 2) === idx
-                  ? "bg-primary w-6"
-                  : "bg-border hover:bg-muted-foreground w-2"
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      <div className="flex justify-center gap-2 mt-4">
+        {events.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`h-1.5 rounded-full transition-all ${
+              currentIndex === idx
+                ? "bg-primary w-5"
+                : "bg-border hover:bg-muted-foreground w-1.5"
+            }`}
+            aria-label={`Go to slide ${idx + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
