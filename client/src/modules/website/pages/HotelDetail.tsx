@@ -421,34 +421,44 @@ export default function HotelDetail() {
     try {
       setRoomsLoading(true);
       const res = await getRoomsByPropertyId(propId);
-      setRooms(
-        Array.isArray(res?.data)
-          ? res.data.map((r: any) => ({
-              id: r.roomId.toString(),
-              name: r.roomName || r.roomNumber,
-              type: r.roomTypeName || r.roomType,
-              description: r.description || "",
-              basePrice: r.basePrice || 0,
-              maxOccupancy: r.maxOccupancy || 1,
-              roomSize: r.roomSize ?? null,
-              roomSizeUnit: r.roomSizeUnit || "SQ_FT",
-              isAvailable: r.status === "AVAILABLE",
-              amenities:
-                r.amenitiesAndFeatures?.map((a: RoomAmenity) => a.name) || [],
-              highlightedAmenities:
-                r.amenitiesAndFeatures
-                  ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
-                  .map((a: RoomAmenity) => a.name) || [],
-              image: {
-                src:
-                  r.media?.find((item: any) => item.type === "IMAGE")?.url ||
-                  r.media?.[0]?.url ||
-                  "/images/room-placeholder.jpg",
-                alt: r.roomName,
-              },
-            }))
-          : [],
-      );
+      const mappedRooms = Array.isArray(res?.data)
+        ? res.data.map((r: any) => ({
+            id: r.roomId.toString(),
+            name: r.roomName || r.roomNumber,
+            type: r.roomTypeName || r.roomType,
+            description: r.description || "",
+            basePrice: r.basePrice || 0,
+            maxOccupancy: r.maxOccupancy || 1,
+            roomSize: r.roomSize ?? null,
+            roomSizeUnit: r.roomSizeUnit || "SQ_FT",
+            isAvailable: r.status === "AVAILABLE",
+            amenities:
+              r.amenitiesAndFeatures?.map((a: RoomAmenity) => a.name) || [],
+            highlightedAmenities:
+              r.amenitiesAndFeatures
+                ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
+                .map((a: RoomAmenity) => a.name) || [],
+            image: {
+              src:
+                r.media?.find((item: any) => item.type === "IMAGE")?.url ||
+                r.media?.[0]?.url ||
+                "/images/room-placeholder.jpg",
+              alt: r.roomName,
+            },
+          }))
+        : [];
+
+      setRooms(mappedRooms);
+      setSelectedRoomId((currentSelectedRoomId) => {
+        if (
+          currentSelectedRoomId &&
+          mappedRooms.some((room: any) => room.id === currentSelectedRoomId)
+        ) {
+          return currentSelectedRoomId;
+        }
+
+        return mappedRooms.find((room: any) => room.isAvailable)?.id || null;
+      });
     } finally {
       setRoomsLoading(false);
     }

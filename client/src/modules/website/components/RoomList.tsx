@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 interface RoomListProps {
   rooms: Room[];
   selectedRoomId: string | null;
-  onSelectRoom: (roomId: string) => void;
+  onSelectRoom: (roomId: string | null) => void;
   policyHighlightText?: string;
 }
 
@@ -36,6 +36,10 @@ export default function RoomList({
 
   const toggleExpand = (id: string) => {
     setExpandedRoom(expandedRoom === id ? null : id);
+  };
+
+  const toggleRoomSelection = (roomId: string) => {
+    onSelectRoom(selectedRoomId === roomId ? null : roomId);
   };
 
   const formatPrice = (amount: number) => {
@@ -74,7 +78,7 @@ export default function RoomList({
                   ? "border-primary ring-2 ring-primary ring-offset-2"
                   : "border-border hover:shadow-md"
               }`}
-              onClick={() => isAvailable && onSelectRoom(room.id)}
+              onClick={() => isAvailable && toggleRoomSelection(room.id)}
             >
               <div className="flex flex-col md:flex-row cursor-pointer">
                 <div className="w-full md:w-[280px] h-56 md:h-auto relative flex-shrink-0">
@@ -204,7 +208,7 @@ export default function RoomList({
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSelectRoom(room.id);
+                      toggleRoomSelection(room.id);
                     }}
                     disabled={!isAvailable}
                     variant={isSelected ? "default" : "secondary"}
@@ -213,7 +217,7 @@ export default function RoomList({
                     {isAvailable
                       ? isSelected
                         ? "Selected"
-                        : "Select Room"
+                        : "Book Now"
                       : "Unavailable"}
                   </Button>
 
