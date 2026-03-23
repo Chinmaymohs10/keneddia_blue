@@ -16,6 +16,7 @@ import {
   Volume2,
   VolumeX,
   Image as ImageIcon,
+  RotateCcw,
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
@@ -281,7 +282,22 @@ export default function EventsListing() {
               style={{ scrollbarGutter: "stable" }}
             >
               <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center justify-between bg-card px-6 pb-4 pt-1">
-                <h3 className="text-lg font-serif shrink-0">Filters</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-serif shrink-0">Filters</h3>
+                  <button
+                    type="button"
+                    onClick={() => hasActiveFilters && setFilters(defaultFilters)}
+                    disabled={!hasActiveFilters}
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                      hasActiveFilters
+                        ? "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "border-border/60 bg-background text-muted-foreground/40 cursor-not-allowed"
+                    }`}
+                  >
+                    <RotateCcw size={13} />
+                    Clear
+                  </button>
+                </div>
                 <X
                   className="lg:hidden cursor-pointer"
                   onClick={() => setFilterSidebarOpen(false)}
@@ -370,17 +386,6 @@ export default function EventsListing() {
                 </div>
               </div>
 
-              {hasActiveFilters && (
-                <div className="sticky bottom-0 -mx-6 mt-10 border-t border-border/50 bg-card px-6 pb-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setFilters(defaultFilters)}
-                    className="w-full rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/10"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              )}
             </aside>
 
             {/* Content Area */}
@@ -414,9 +419,10 @@ export default function EventsListing() {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setFilterSidebarOpen(true)}
-                    className="lg:hidden p-2 border rounded-lg"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted lg:hidden"
                   >
-                    <SlidersHorizontal size={18} />
+                    <SlidersHorizontal size={16} />
+                    Filters
                   </button>
                   <div className="flex bg-muted p-1 rounded-lg border border-border/50">
                     <button
@@ -436,15 +442,26 @@ export default function EventsListing() {
               </div>
 
               {loading ? (
-                <div className="flex justify-center py-20">
+                <div className="flex min-h-[420px] justify-center py-20">
                   <Loader2 className="animate-spin text-primary" />
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div className="flex min-h-[420px] items-center justify-center rounded-2xl border border-dashed border-border/70 bg-card/60 px-6 text-center">
+                  <div className="max-w-sm space-y-2">
+                    <h3 className="text-xl font-serif text-foreground">
+                      No events found
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Try clearing or adjusting your filters to see more events.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div
                   className={
                     viewMode === "card"
-                      ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                      : "flex flex-col gap-6"
+                      ? "grid min-h-[420px] grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+                      : "flex min-h-[420px] flex-col gap-6"
                   }
                 >
                   <AnimatePresence mode="popLayout">
