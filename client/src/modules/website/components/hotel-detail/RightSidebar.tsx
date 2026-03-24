@@ -143,15 +143,6 @@ export default function RightSidebar({
   const cityKey = hotel.city?.toLowerCase().trim() || "";
   const availableLinks = OTA_LINKS[cityKey];
 
-  // Debug - remove after testing
-  console.log("🏨 OTA Links Debug:", {
-    rawCity: hotel.city,
-    cityKey,
-    availableLinks,
-    hasLinks: !!availableLinks,
-    availableKeys: Object.keys(OTA_LINKS),
-  });
-
   return (
     <div className="space-y-6 sticky top-24">
       {/* Price Summary Card */}

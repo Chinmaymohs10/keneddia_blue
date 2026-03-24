@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { addDays, format } from "date-fns";
-import { Calendar as CalendarIcon, Users } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import Calendar from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -29,22 +29,31 @@ export default function FindYourStay({
   initialGuests,
   onChange,
 }: FindYourStayProps) {
+  const fallbackDate: [Date | null, Date | null] = [
+    new Date(),
+    addDays(new Date(), 2),
+  ];
   const [date, setDate] = useState<CalendarValue>(
-    initialDate || [new Date(), addDays(new Date(), 2)],
+    initialDate || fallbackDate,
   );
 
   const [guests, setGuests] = useState(
     initialGuests || { adults: 2, children: 0, rooms: 1 },
   );
-
   const [guestOpen, setGuestOpen] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   const startDate = Array.isArray(date) ? date[0] : date;
   const endDate = Array.isArray(date) ? date[1] : null;
 
-  /* ----------------------------------------
-   * Emit data to parent
-   * -------------------------------------- */
+  useEffect(() => {
+    setDate(initialDate || fallbackDate);
+  }, [initialDate]);
+
+  useEffect(() => {
+    setGuests(initialGuests || { adults: 2, children: 0, rooms: 1 });
+  }, [initialGuests]);
+
   const emitChange = () => {
     onChange?.({
       checkIn: startDate ?? null,
@@ -55,9 +64,14 @@ export default function FindYourStay({
     });
   };
 
-  useEffect(() => {
+  const handleUpdateStay = async () => {
+    if (!startDate || !endDate || isApplying) return;
+
+    setIsApplying(true);
+    await new Promise((resolve) => window.setTimeout(resolve, 700));
     emitChange();
-  }, [startDate, endDate, guests]);
+    setIsApplying(false);
+  };
 
   return (
     <motion.div
@@ -189,10 +203,17 @@ export default function FindYourStay({
         <div>
           <Button
             className="w-full lg:w-auto px-8 py-4 text-sm font-bold uppercase tracking-wider"
-            onClick={emitChange}
-            disabled={!startDate || !endDate}
+            onClick={handleUpdateStay}
+            disabled={!startDate || !endDate || isApplying}
           >
-            Update Stay
+            {isApplying ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Stay"
+            )}
           </Button>
         </div>
       </div>

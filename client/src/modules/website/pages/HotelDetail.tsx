@@ -221,6 +221,32 @@ export default function HotelDetail() {
       searchData.checkOut.getTime() - searchData.checkIn.getTime();
     return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
   }, [searchData.checkIn, searchData.checkOut]);
+
+  const lowestPricedAvailableRoom = useMemo(() => {
+    const availableRooms = rooms.filter((room) => room.isAvailable);
+    if (availableRooms.length === 0) return null;
+
+    return availableRooms.reduce((lowest, room) =>
+      room.basePrice < lowest.basePrice ? room : lowest,
+    );
+  }, [rooms]);
+
+  const effectiveSelectedRoomId = useMemo(() => {
+    if (
+      selectedRoomId &&
+      rooms.some((room) => room.id === selectedRoomId && room.isAvailable)
+    ) {
+      return selectedRoomId;
+    }
+
+    return lowestPricedAvailableRoom?.id || null;
+  }, [lowestPricedAvailableRoom, rooms, selectedRoomId]);
+
+  const effectiveSelectedRoom = useMemo(
+    () => rooms.find((room) => room.id === effectiveSelectedRoomId) || null,
+    [effectiveSelectedRoomId, rooms],
+  );
+
   const fetchNearbyFromOSM = async (
     lat: number,
     lng: number,
@@ -457,7 +483,12 @@ export default function HotelDetail() {
           return currentSelectedRoomId;
         }
 
-        return mappedRooms.find((room: any) => room.isAvailable)?.id || null;
+        const availableRooms = mappedRooms.filter((room: any) => room.isAvailable);
+        if (availableRooms.length === 0) return null;
+
+        return availableRooms.reduce((lowest: any, room: any) =>
+          room.basePrice < lowest.basePrice ? room : lowest,
+        ).id;
       });
     } finally {
       setRoomsLoading(false);
@@ -797,7 +828,7 @@ export default function HotelDetail() {
                 ) : rooms.length > 0 ? (
                   <RoomList
                     rooms={rooms}
-                    selectedRoomId={selectedRoomId}
+                    selectedRoomId={effectiveSelectedRoomId}
                     onSelectRoom={setSelectedRoomId}
                     policyHighlightText="Free Cancellation"
                   />
@@ -998,7 +1029,7 @@ export default function HotelDetail() {
             <aside className="hidden lg:block">
               <RightSidebar
                 hotel={hotel}
-                selectedRoom={rooms.find((r) => r.id === selectedRoomId)}
+                selectedRoom={effectiveSelectedRoom}
                 onBookNow={handleBookNow}
                 checkInDate={searchData.checkIn}
                 checkOutDate={searchData.checkOut}
@@ -1010,7 +1041,7 @@ export default function HotelDetail() {
 
         <MobileBookingBar
           hotel={hotel}
-          selectedRoom={rooms.find((r) => r.id === selectedRoomId)}
+          selectedRoom={effectiveSelectedRoom}
           checkInDate={searchData.checkIn}
           checkOutDate={searchData.checkOut}
           numberOfNights={numberOfNights}
