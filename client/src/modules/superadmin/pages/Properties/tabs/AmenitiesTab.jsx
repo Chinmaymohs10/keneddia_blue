@@ -3,7 +3,6 @@ import { PlusIcon, BoltIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { colors } from "@/lib/colors/colors";
 import AddAmenityModal from "../modals/AddAmenityModal";
 import {
-  amenitiesHighlight,
   getAllAmenityFeatures,
   GetAllPropertyDetails,
 } from "@/Api/Api";
@@ -12,7 +11,6 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [localAmenities, setLocalAmenities] = useState([]);
-  const [togglingAmenityId, setTogglingAmenityId] = useState(null);
 
   // --- Data Extraction Logic ---
   const extractAmenities = useCallback((rawItem, masterAmenities = []) => {
@@ -37,7 +35,6 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
           id: matchedAmenity?.id ?? null,
           name: amenity,
           isActive: matchedAmenity?.isActive ?? true,
-          showHighlight: Boolean(matchedAmenity?.showHighlight),
         });
         return;
       }
@@ -51,9 +48,6 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
           id: amenity.id ?? matchedAmenity?.id ?? null,
           name: amenity.name || "Unnamed Amenity",
           isActive: amenity.isActive ?? matchedAmenity?.isActive ?? true,
-          showHighlight: Boolean(
-            amenity.showHighlight ?? matchedAmenity?.showHighlight,
-          ),
         });
       }
     });
@@ -104,26 +98,6 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
     if (refreshData) refreshData(); // Trigger parent refresh if needed
   };
 
-  const handleHighlightToggle = async (amenity) => {
-    if (!amenity?.id) return;
-
-    const nextValue = !amenity.showHighlight;
-    setTogglingAmenityId(amenity.id);
-
-    try {
-      await amenitiesHighlight(amenity.id, nextValue);
-      setLocalAmenities((prev) =>
-        prev.map((item) =>
-          item.id === amenity.id ? { ...item, showHighlight: nextValue } : item,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating amenity highlight:", error);
-    } finally {
-      setTogglingAmenityId(null);
-    }
-  };
-
   return (
     <div className="relative">
       <div className="flex justify-between items-center mb-6">
@@ -133,7 +107,7 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
             {loading && <ArrowPathIcon className="w-4 h-4 animate-spin text-blue-500" />}
           </h2>
           <p className="text-xs text-gray-500 font-medium">
-            Verified features for {propertyData?.propertyName || "this property"}
+            Basic amenities for {propertyData?.propertyName || "this property"}
           </p>
         </div>
         <button
@@ -164,33 +138,8 @@ const AmenitiesTab = ({ propertyData, refreshData }) => {
                     <span className="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                       Active
                     </span>
-                    {amenity.showHighlight && (
-                      <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                        Highlighted
-                      </span>
-                    )}
                   </div>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                  Show Highlight
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleHighlightToggle(amenity)}
-                  disabled={!amenity.id || togglingAmenityId === amenity.id}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    amenity.showHighlight ? "bg-amber-500" : "bg-gray-300"
-                  } ${!amenity.id ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      amenity.showHighlight ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
               </div>
             </div>
           ))

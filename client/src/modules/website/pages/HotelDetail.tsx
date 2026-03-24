@@ -36,6 +36,7 @@ import {
   getAllGalleries,
   getAllPropertyPolicies,
   getGalleryByPropertyId,
+  getAllDiningByPropertyId,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -44,6 +45,7 @@ import RightSidebar from "@/modules/website/components/hotel-detail/RightSidebar
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import MobileBookingBar from "@/modules/website/components/Mobilebookingbar";
 import ReviewsSection from "../components/hotel-detail/ReviewsSection";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
 // Interfaces
 interface PropertyMedia {
@@ -90,6 +92,9 @@ interface HotelData {
   amenities: string[];
   image: { src: string; alt: string };
   nearbyPlaces?: string[];
+  dining?: Restaurant[];
+  checkIn?: string;
+  checkOut?: string;
 }
 
 interface PolicyData {
@@ -128,15 +133,14 @@ const fadeIn = {
 };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 interface Restaurant {
-  id: number;
+  id: number | string;
   name: string;
   cuisine: string;
   timings: string;
   image?: string;
-}
-
-interface FoodDiningSectionProps {
-  restaurants?: Restaurant[];
+  description?: string;
+  attachedRestaurantName?: string;
+  attachRestaurantId?: number | string;
 }
 
 const VERIFIED_REVIEWS_SCALE = 1000000;
@@ -182,6 +186,55 @@ const sampleRestaurants: Restaurant[] = [
     image: undefined,
   },
 ];
+
+const normalizeDiningList = (response: any) => {
+  const data = response?.data?.data || response?.data || response || [];
+  return Array.isArray(data) ? data : [];
+};
+
+const buildRestaurantPathMap = (rawData: ApiPropertyData[]) => {
+  return (Array.isArray(rawData) ? rawData : []).reduce(
+    (acc: Record<string, string>, item: ApiPropertyData) => {
+      const parent = item?.propertyResponseDTO;
+      const listings = item?.propertyListingResponseDTOS || [];
+      const listing =
+        listings.find((entry: any) => entry?.isActive) || listings[0] || null;
+      const typeName = String(
+        listing?.propertyType || parent?.propertyTypes?.[0] || "",
+      )
+        .trim()
+        .toLowerCase();
+
+      if (!parent?.id || typeName !== "restaurant") {
+        return acc;
+      }
+
+      const cityName =
+        listing?.city || parent?.locationName || parent?.city || "restaurant";
+      const propertyName =
+        listing?.propertyName?.trim() ||
+        listing?.mainHeading ||
+        parent?.propertyName ||
+        "restaurant";
+
+      acc[String(parent.id)] = `/${createCitySlug(cityName)}/${createHotelSlug(propertyName, parent.id)}`;
+      return acc;
+    },
+    {},
+  );
+};
+
+const mapDiningItem = (item: any): Restaurant => ({
+  id: item?.id ?? `dining-${item?.attachRestaurantId ?? "item"}`,
+  name: item?.part1 || item?.attachRestaurantName || "Dining Experience",
+  cuisine: item?.attachRestaurantName || item?.part2 || "Restaurant",
+  timings: item?.time || "Timings available on request",
+  image: item?.image?.url || undefined,
+  description: item?.part2 || "",
+  attachedRestaurantName: item?.attachRestaurantName || "",
+  attachRestaurantId: item?.attachRestaurantId ?? undefined,
+});
+
 export default function HotelDetail() {
   const { citySlug, propertySlug, propertyId } = useParams<{
     citySlug: string;
@@ -195,6 +248,10 @@ export default function HotelDetail() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
   const [policies, setPolicies] = useState<PolicyData | null>(null);
+  const [diningItems, setDiningItems] = useState<Restaurant[]>([]);
+  const [restaurantPaths, setRestaurantPaths] = useState<Record<string, string>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [roomsLoading, setRoomsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -293,6 +350,11 @@ export default function HotelDetail() {
   const effectiveSelectedRoom = useMemo(
     () => rooms.find((room) => room.id === effectiveSelectedRoomId) || null,
     [effectiveSelectedRoomId, rooms],
+  );
+
+  const diningSectionItems = useMemo(
+    () => (diningItems.length > 0 ? diningItems : sampleRestaurants),
+    [diningItems],
   );
 
   const fetchNearbyFromOSM = async (
@@ -403,6 +465,7 @@ export default function HotelDetail() {
         setLoading(true);
         const response = await GetAllPropertyDetails();
         const rawData = response?.data || response;
+        setRestaurantPaths(buildRestaurantPathMap(rawData));
 
         const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
           (item: ApiPropertyData) => {
@@ -467,6 +530,8 @@ export default function HotelDetail() {
             .map((amenity: unknown) => getAmenityName(amenity))
             .filter(Boolean),
           bookingEngineUrl: parent.bookingEngineUrl || null,
+          checkIn: "2:00 PM",
+          checkOut: "11:00 AM",
           image: { src: listing?.media?.[0]?.url || "", alt: displayName },
           nearbyPlaces:
             parent.nearbyLocations?.length > 0
@@ -484,6 +549,7 @@ export default function HotelDetail() {
         // Secondary Data Fetches
         fetchRooms(parent.id);
         fetchGallery(parent.id);
+        fetchDining(parent.id);
         fetchPolicies(parent.id);
       } catch (err) {
         console.error("Property Fetch Error:", err);
@@ -563,6 +629,21 @@ export default function HotelDetail() {
       setGalleryData([]);
     }
   };
+
+  const fetchDining = async (propId: number) => {
+    try {
+      const res = await getAllDiningByPropertyId(propId);
+      const items = normalizeDiningList(res)
+        .filter((item: any) => item?.isActive ?? true)
+        .map((item: any) => mapDiningItem(item));
+
+      setDiningItems(items);
+    } catch (error) {
+      console.error("DINING FETCH ERROR:", error);
+      setDiningItems([]);
+    }
+  };
+
   const fetchPolicies = async (propId: number) => {
     try {
       const res = await getAllPropertyPolicies(propId);
@@ -570,7 +651,18 @@ export default function HotelDetail() {
       const matched = Array.isArray(data)
         ? data.find((p: any) => Number(p.propertyId) === Number(propId))
         : data;
-      if (matched) setPolicies(matched);
+      if (matched) {
+        setPolicies(matched);
+        setHotel((currentHotel) =>
+          currentHotel
+            ? {
+                ...currentHotel,
+                checkIn: matched.checkInTime || currentHotel.checkIn,
+                checkOut: matched.checkOutTime || currentHotel.checkOut,
+              }
+            : currentHotel,
+        );
+      }
     } catch (err) {
       console.error(err);
     }
@@ -785,7 +877,7 @@ export default function HotelDetail() {
                   </div>
 
                   {hotel.verifiedReviews ? (
-                    <span className="text-sm text-foreground">
+                    <span className="text-sm text-foreground font-semibold">
                       {hotel.verifiedReviews} Verified Reviews
                     </span>
                   ) : null}
@@ -899,31 +991,35 @@ export default function HotelDetail() {
               </section>
 
               <section id="about-hotel" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
-                  About {hotel.name}
-                </h2>
-                <div className="text-muted-foreground leading-relaxed text-base space-y-4">
-                  {hotel.description?.split("\n\n").map((para, index) => (
-                    <p key={index}>{para.trim()}</p>
-                  ))}
-                </div>
-              </section>
-
-              {hotel.amenities.length > 0 && (
-                <section id="amenities" className="scroll-mt-32 border-t pt-10">
-                  <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                    Amenities
+                <div className="border-b border-border pb-10">
+                  <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
+                    About {hotel.name}
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {hotel.amenities.map((a, i) => (
-                      <div key={i} className="flex items-center gap-3 text-sm">
-                        <Check className="text-primary w-4 h-4 flex-shrink-0" />
-                        <span>{a}</span>
-                      </div>
+                  <div className="max-w-4xl text-base leading-relaxed text-muted-foreground space-y-4">
+                    {hotel.description?.split("\n\n").map((para, index) => (
+                      <p key={index}>{para.trim()}</p>
                     ))}
                   </div>
-                </section>
-              )}
+
+                  {hotel.amenities.length > 0 && (
+                    <div id="amenities" className="mt-8">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {hotel.amenities.map((amenity, index) => (
+                          <div
+                            key={`${amenity}-${index}`}
+                            className="rounded-md border border-border bg-card px-3 py-4 text-center shadow-sm transition-colors hover:border-primary/30"
+                          >
+                            <Star className="mx-auto mb-2 h-4 w-4 text-primary" />
+                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-foreground leading-snug">
+                              {amenity}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
 
               <section id="events" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
@@ -934,30 +1030,94 @@ export default function HotelDetail() {
                   locationName={hotel.city}
                 />
               </section>
-              <section id="amenities" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-8">
-                  Amenities
+              <section id="food-dining" className="scroll-mt-32 border-t pt-10">
+                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                  Food & Dining
                 </h2>
 
-                {hotel.amenities.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-10">
-                    {hotel.amenities.map((a, i) => (
-                      <div key={i} className="flex items-center gap-4">
-                        {/* Circle Icon */}
-                        <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
-                          <Check className="w-4 h-4 text-primary" />
-                        </div>
+                {diningItems.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {diningSectionItems.map((restaurant) => {
+                      const restaurantPath = restaurant.attachRestaurantId
+                        ? restaurantPaths[String(restaurant.attachRestaurantId)]
+                        : null;
 
-                        {/* Text */}
-                        <span className="text-sm md:text-base text-foreground font-medium">
-                          {a}
-                        </span>
+                      return (
+                        <div
+                          key={restaurant.id}
+                          className={`rounded-xl border border-border bg-card overflow-hidden shadow-sm transition-shadow duration-200 ${
+                            restaurantPath
+                              ? "cursor-pointer hover:shadow-md"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            if (restaurantPath) navigate(restaurantPath);
+                          }}
+                          role={restaurantPath ? "button" : undefined}
+                          tabIndex={restaurantPath ? 0 : undefined}
+                          onKeyDown={(event) => {
+                            if (
+                              restaurantPath &&
+                              (event.key === "Enter" || event.key === " ")
+                            ) {
+                              event.preventDefault();
+                              navigate(restaurantPath);
+                            }
+                          }}
+                        >
+                        <div className="relative w-full h-44 bg-muted flex items-center justify-center">
+                          {restaurant.image ? (
+                            <img
+                              src={restaurant.image}
+                              alt={restaurant.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <UtensilsCrossed
+                              className="w-10 h-10 text-muted-foreground/50"
+                              strokeWidth={1.5}
+                            />
+                          )}
+                        </div>
+                        <div className="p-4 space-y-1">
+                          <p className="text-base font-semibold text-foreground leading-snug">
+                            {restaurant.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {restaurant.cuisine}
+                          </p>
+                          {restaurant.description &&
+                          restaurant.description !== restaurant.cuisine ? (
+                            <p className="text-sm text-muted-foreground/90">
+                              {restaurant.description}
+                            </p>
+                          ) : null}
+                          {restaurant.attachedRestaurantName ? (
+                            <div className="pt-2 text-sm">
+                              <span className="text-red-600 font-semibold">
+                                Restaurant:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {restaurant.attachedRestaurantName}
+                              </span>
+                            </div>
+                          ) : null}
+                          <div className="pt-2 flex items-center gap-1 text-sm">
+                            <span className="text-red-600 font-semibold">
+                              Open:
+                            </span>
+                            <span className="text-muted-foreground">
+                              {restaurant.timings}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">
-                    Amenities information will be updated soon.
+                  <div className="rounded-xl border border-dashed border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+                    No food and dining highlights available for this property.
                   </div>
                 )}
               </section>

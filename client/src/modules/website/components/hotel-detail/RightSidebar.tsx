@@ -28,14 +28,9 @@ interface Hotel {
   city: string;
   price: string;
   rating?: number | null;
-  reviews?: number;
+  verifiedReviews?: number | null;
   amenities?: string[];
   nearbyPlaces?: { name: string; distance: string; type?: string }[];
-  dining?: {
-    name: string;
-    cuisine: string;
-    image?: { src: string; alt: string };
-  }[];
   events?: {
     title: string;
     date: string;
@@ -462,7 +457,7 @@ export default function RightSidebar({
       </div>
 
       {/* Reviews Snapshot */}
-      {/* {hotel.rating && (
+      {hotel.rating && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
           <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
             Guest Reviews
@@ -482,15 +477,15 @@ export default function RightSidebar({
                 {hotel.rating}/5
               </p>
               <p className="text-xs text-muted-foreground">
-                {hotel.reviews || 0} Verified Reviews
+                {hotel.verifiedReviews || 0} Verified Reviews
               </p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground italic">
-            "Exceptional stay with wonderful staff..."
+          <p className="text-xs text-muted-foreground">
+            Based on {hotel.verifiedReviews || 0} verified reviews
           </p>
         </div>
-      )} */}
+      )}
 
       {/* Amenities Snapshot */}
       {hotel.amenities && hotel.amenities.length > 0 && (
@@ -545,52 +540,6 @@ export default function RightSidebar({
           </div>
         </div>
       )}
-
-      {/* Food & Dining Snapshot */}
-      {hotel.dining && hotel.dining.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-          <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
-            Dining
-            <span
-              className="text-[10px] text-primary cursor-pointer hover:underline font-normal"
-              onClick={() => scrollToSection("food-dining")}
-            >
-              View Details
-            </span>
-          </h4>
-          <div className="space-y-3">
-            {hotel.dining.slice(0, 2).map((place, idx) => (
-              <div
-                key={idx}
-                className="flex gap-3 items-center group cursor-pointer"
-                onClick={() => scrollToSection("food-dining")}
-              >
-                <div className="w-10 h-10 rounded-lg bg-secondary overflow-hidden shrink-0">
-                  {place.image ? (
-                    <OptimizedImage
-                      {...place.image}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Utensils className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-foreground truncate">
-                    {place.name}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {place.cuisine}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Policies Snapshot */}
       <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4">
         <div className="flex items-start gap-3">

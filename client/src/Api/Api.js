@@ -464,4 +464,18 @@ export const getEventInterestByEventId = (eventId) =>API.get(`api/v1/book-intere
 export const getBookByEventId = (eventId) =>API.get(`api/v1/book-interested/getBookByEventId/${eventId}`);
 export const getBookInterestedById = (id) =>API.get(`api/v1/book-interested/getByBookInterestedId/${id}`);
 
+//hotel dining section
+// ================= DINING APIs =================
+
+// CREATE Dining
+export const createDining = (formData) =>API.post("api/v1/dining/createDining", formData);
+// GET all Dining
+export const getAllDining = () =>API.get("api/v1/dining/getAllDining");
+// GET Dining by Property ID
+export const getAllDiningByPropertyId = (propertyId) =>API.get(`api/v1/dining/getAllDiningByPropertyId/${propertyId}`);
+// TOGGLE Dining (Active/Inactive + update fields)
+export const toggleDining = (id, formData) =>API.patch(`api/v1/dining/toggle/${id}`, formData);
+// UPDATE Dining
+export const updateDining = (id, formData) =>API.put(`api/v1/dining/updateDining/${id}`, formData);
+
 export default API;

@@ -23,6 +23,7 @@ import AmenitiesTab from "./tabs/AmenitiesTab";
 import GalleryTab from "./tabs/GalleryTab";
 import PricingTab from "./tabs/PricingTab";
 import PoliciesTab from "./tabs/PoliciesTab";
+import FoodDiningTab from "./tabs/FoodDiningTab";
 
 import ResturantVerticals from "./tabs/resturant/ResturantVerticals";
 import EventsTab from "./tabs/resturant/EventsTab";
@@ -54,6 +55,7 @@ const PropertyDetail = ({ property, onBack }) => {
       id: base?.id,
       propertyName: base?.propertyName,
       propertyTypes: base?.propertyTypes ?? [],
+      propertyTypeIds: base?.propertyTypeIds ?? [],
       propertyCategories: base?.propertyCategories ?? [],
       address: base?.address,
       area: base?.area,
@@ -70,6 +72,7 @@ const PropertyDetail = ({ property, onBack }) => {
       isActive: base?.isActive,
       // ---- Listing (flattened) ----
       propertyType: listing?.propertyType || base?.propertyTypes?.[0] || "",
+      propertyTypeId: base?.propertyTypeIds?.[0] ?? null,
       city: listing?.city || base?.locationName,
       mainHeading: listing?.mainHeading,
       subTitle: listing?.subTitle,
@@ -193,6 +196,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "overview",
       "rooms",
       "amenities",
+      "food&dining",
       "gallery",
       "policies",
       "comment reviews",
@@ -255,6 +259,13 @@ const PropertyDetail = ({ property, onBack }) => {
         return <RoomsTab {...commonProps} />;
       case "amenities":
         return <AmenitiesTab {...commonProps} />;
+      case "food&dining":
+        return (
+          <FoodDiningTab
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
       case "gallery":
         return (
           <GalleryTab {...commonProps} propertyData1={currentPropertyInfo} />
