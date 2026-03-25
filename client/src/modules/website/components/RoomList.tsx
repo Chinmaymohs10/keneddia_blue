@@ -39,7 +39,7 @@ export default function RoomList({
   };
 
   const toggleRoomSelection = (roomId: string) => {
-    onSelectRoom(selectedRoomId === roomId ? null : roomId);
+    onSelectRoom(roomId);
   };
 
   const formatPrice = (amount: number) => {
@@ -173,11 +173,6 @@ export default function RoomList({
                     </span>
                   </div> */}
 
-                  {isSelected && (
-                    <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded flex items-center gap-1 shadow-lg">
-                      <Check className="w-3 h-3" /> Selected
-                    </div>
-                  )}
                 </div>
 
                 {/* Content Section */}
@@ -310,14 +305,10 @@ export default function RoomList({
                       toggleRoomSelection(room.id);
                     }}
                     disabled={!isAvailable}
-                    variant={isSelected ? "default" : "secondary"}
+                    variant="default"
                     className="w-full md:w-auto min-w-[140px]"
                   >
-                    {isAvailable
-                      ? isSelected
-                        ? "Selected"
-                        : "Book Now"
-                      : "Unavailable"}
+                    {isAvailable ? "Book" : "Unavailable"}
                   </Button>
 
                   {!isAvailable && (

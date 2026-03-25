@@ -899,6 +899,12 @@ export default function HotelDetail() {
     }
   };
 
+  const handleRoomBook = (roomId: string | null) => {
+    if (!roomId) return;
+    setSelectedRoomId(roomId);
+    handleBookNow();
+  };
+
   const topGridImages = useMemo(() => {
     return galleryData.filter((g) => g.media?.url).map((g) => g.media);
   }, [galleryData]);
@@ -1157,7 +1163,7 @@ export default function HotelDetail() {
                   <RoomList
                     rooms={rooms}
                     selectedRoomId={effectiveSelectedRoomId}
-                    onSelectRoom={setSelectedRoomId}
+                    onSelectRoom={handleRoomBook}
                     policyHighlightText="Free Cancellation"
                   />
                 ) : (
