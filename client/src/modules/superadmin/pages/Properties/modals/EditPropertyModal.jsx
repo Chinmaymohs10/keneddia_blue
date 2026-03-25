@@ -102,6 +102,9 @@ function EditPropertyModal({
   const p = item?.propertyResponseDTO || {};
   const listing = item?.propertyListingResponseDTOS?.[0] || {};
   const parsedRating = parseCombinedRating(listing.rating);
+  const [locationInputMode, setLocationInputMode] = useState(
+    p.addressUrl ? "addressUrl" : "coordinates",
+  );
 
   // ── Existing media (max 3) ─────────────────────────────────────────────────
   const existingMedia = (listing.media || []).slice(0, 3);
@@ -132,6 +135,7 @@ function EditPropertyModal({
     propertyTypeIds: resolveTypeIds(),
     propertyCategoryIds: resolveCategoryIds(),
     address: p.address || "",
+    addressUrl: p.addressUrl || "",
     area: p.area || "",
     pincode: p.pincode || "",
     locationId: p.locationId || "",
@@ -216,6 +220,16 @@ function EditPropertyModal({
     }));
   };
 
+  const handleLocationModeChange = (mode) => {
+    setLocationInputMode(mode);
+    setForm((prev) => ({
+      ...prev,
+      addressUrl: mode === "addressUrl" ? prev.addressUrl : "",
+      latitude: mode === "coordinates" ? prev.latitude : "",
+      longitude: mode === "coordinates" ? prev.longitude : "",
+    }));
+  };
+
   // ── Upload media via PropertyEdiMedia ──────────────────────────────────────
   const handleMediaUpload = async () => {
     if (!newFiles.length) return;
@@ -255,6 +269,16 @@ function EditPropertyModal({
     e.preventDefault();
     setSaving(true);
     try {
+      if (locationInputMode === "coordinates") {
+        if (!form.latitude || !form.longitude) {
+          toast.error("Enter both latitude and longitude");
+          return;
+        }
+      } else if (!form.addressUrl) {
+        toast.error("Enter the main address URL");
+        return;
+      }
+
       const combinedRatingValue = isHotelType
         ? encodeCombinedRating(form.rating, form.verifiedUsers)
         : form.rating !== ""
@@ -266,6 +290,8 @@ function EditPropertyModal({
         propertyTypeIds: form.propertyTypeIds,
         propertyCategoryIds: form.propertyCategoryIds,
         address: form.address,
+        addressUrl:
+          locationInputMode === "addressUrl" ? form.addressUrl || null : null,
         area: form.area,
         pincode: form.pincode,
         locationId: form.locationId ? Number(form.locationId) : null,
@@ -276,8 +302,14 @@ function EditPropertyModal({
           ? Number(form.parentPropertyId)
           : null,
         childPropertyIds: null,
-        latitude: form.latitude !== "" ? Number(form.latitude) : "",
-        longitude: form.longitude !== "" ? Number(form.longitude) : "",
+        latitude:
+          locationInputMode === "coordinates" && form.latitude !== ""
+            ? Number(form.latitude)
+            : null,
+        longitude:
+          locationInputMode === "coordinates" && form.longitude !== ""
+            ? Number(form.longitude)
+            : null,
         isActive: form.isActive,
         mainHeading: form.mainHeading,
         subTitle: form.subTitle,
@@ -463,6 +495,57 @@ function EditPropertyModal({
                 />
               </Field>
 
+              <Field label="Main Location Input" icon={Navigation} span={2}>
+                <div className="grid grid-cols-2 gap-3 rounded-xl border border-gray-200 p-1 bg-gray-50">
+                  <button
+                    type="button"
+                    onClick={() => handleLocationModeChange("coordinates")}
+                    className={`rounded-lg px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${
+                      locationInputMode === "coordinates"
+                        ? "bg-white shadow-sm"
+                        : "text-gray-500"
+                    }`}
+                    style={{
+                      color:
+                        locationInputMode === "coordinates"
+                          ? colors.primary
+                          : undefined,
+                    }}
+                  >
+                    Latitude / Longitude
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLocationModeChange("addressUrl")}
+                    className={`rounded-lg px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${
+                      locationInputMode === "addressUrl"
+                        ? "bg-white shadow-sm"
+                        : "text-gray-500"
+                    }`}
+                    style={{
+                      color:
+                        locationInputMode === "addressUrl"
+                          ? colors.primary
+                          : undefined,
+                    }}
+                  >
+                    Address URL
+                  </button>
+                </div>
+              </Field>
+
+              {locationInputMode === "addressUrl" && (
+                <Field label="Main Address URL" icon={LinkIcon} span={2}>
+                  <input
+                    type="url"
+                    value={form.addressUrl}
+                    onChange={(e) => set("addressUrl", e.target.value)}
+                    placeholder="https://maps.google.com/..."
+                    className={inputCls}
+                  />
+                </Field>
+              )}
+
               <Field label="Area">
                 <input
                   type="text"
@@ -562,29 +645,33 @@ function EditPropertyModal({
               </Field>
 
               {/* ─── COORDINATES ──────────────────────────────────── */}
-              <Section label="Coordinates" icon={Navigation} />
+              {locationInputMode === "coordinates" && (
+                <>
+                  <Section label="Coordinates" icon={Navigation} />
 
-              <Field label="Latitude" icon={Navigation}>
-                <input
-                  type="number"
-                  value={form.latitude}
-                  onChange={(e) => set("latitude", e.target.value)}
-                  placeholder="e.g. 12.9716"
-                  step="any"
-                  className={inputCls}
-                />
-              </Field>
+                  <Field label="Latitude" icon={Navigation}>
+                    <input
+                      type="number"
+                      value={form.latitude}
+                      onChange={(e) => set("latitude", e.target.value)}
+                      placeholder="e.g. 12.9716"
+                      step="any"
+                      className={inputCls}
+                    />
+                  </Field>
 
-              <Field label="Longitude" icon={Navigation}>
-                <input
-                  type="number"
-                  value={form.longitude}
-                  onChange={(e) => set("longitude", e.target.value)}
-                  placeholder="e.g. 77.5946"
-                  step="any"
-                  className={inputCls}
-                />
-              </Field>
+                  <Field label="Longitude" icon={Navigation}>
+                    <input
+                      type="number"
+                      value={form.longitude}
+                      onChange={(e) => set("longitude", e.target.value)}
+                      placeholder="e.g. 77.5946"
+                      step="any"
+                      className={inputCls}
+                    />
+                  </Field>
+                </>
+              )}
               {/* ─── NEARBY LOCATIONS ───────────────────────── */}
               <Section label="Nearby Locations" icon={MapPin} />
 

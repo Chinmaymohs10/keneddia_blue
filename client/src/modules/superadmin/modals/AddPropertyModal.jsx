@@ -34,6 +34,7 @@ import { toast } from "react-hot-toast";
 function AddPropertyModal({ onClose, onSuccess }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [locationInputMode, setLocationInputMode] = useState("coordinates");
 
   // --- STEP 1: Parent Property State ---
   const [parentData, setParentData] = useState({
@@ -41,6 +42,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
     propertyTypeIds: "",
     propertyCategoryIds: [],
     address: "",
+    addressUrl: null,
     area: "",
     pincode: "",
     locationId: "",
@@ -143,6 +145,16 @@ function AddPropertyModal({ onClose, onSuccess }) {
     }
   };
 
+  const handleLocationModeChange = (mode) => {
+    setLocationInputMode(mode);
+    setParentData((prev) => ({
+      ...prev,
+      addressUrl: mode === "addressUrl" ? prev.addressUrl : null,
+      latitude: mode === "coordinates" ? prev.latitude : "",
+      longitude: mode === "coordinates" ? prev.longitude : "",
+    }));
+  };
+
   const handleFinalSubmit = async () => {
     if (
       !parentData.propertyName ||
@@ -155,6 +167,15 @@ function AddPropertyModal({ onClose, onSuccess }) {
     if (!listingData.mainHeading) {
       setCurrentStep(2);
       return toast.error("Please complete the required fields in Step 2");
+    }
+    if (locationInputMode === "coordinates") {
+      if (!parentData.latitude || !parentData.longitude) {
+        setCurrentStep(1);
+        return toast.error("Enter both latitude and longitude");
+      }
+    } else if (!parentData.addressUrl) {
+      setCurrentStep(1);
+      return toast.error("Enter the main address URL");
     }
 
     setLoading(true);
@@ -172,10 +193,16 @@ function AddPropertyModal({ onClose, onSuccess }) {
         propertyTypeIds: [parseInt(parentData.propertyTypeIds)],
         locationId: parseInt(parentData.locationId),
         assignedAdminId: parseInt(parentData.assignedAdminId),
-        latitude: parentData.latitude ? parseFloat(parentData.latitude) : null,
-        longitude: parentData.longitude
-          ? parseFloat(parentData.longitude)
-          : null,
+        addressUrl:
+          locationInputMode === "addressUrl" ? parentData.addressUrl : null,
+        latitude:
+          locationInputMode === "coordinates" && parentData.latitude
+            ? parseFloat(parentData.latitude)
+            : null,
+        longitude:
+          locationInputMode === "coordinates" && parentData.longitude
+            ? parseFloat(parentData.longitude)
+            : null,
 
         // ✅ CLEAN EMPTY LOCATIONS
         nearbyLocations: parentData.nearbyLocations.filter(
@@ -336,6 +363,47 @@ function AddPropertyModal({ onClose, onSuccess }) {
                 </select>
               </div>
               <div className="col-span-2">
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-3 block">
+                  Main Location Input
+                </label>
+                <div className="grid grid-cols-2 gap-3 rounded-xl border p-1 bg-gray-50">
+                  <button
+                    type="button"
+                    onClick={() => handleLocationModeChange("coordinates")}
+                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
+                      locationInputMode === "coordinates"
+                        ? "bg-white text-primary shadow-sm"
+                        : "text-gray-500"
+                    }`}
+                    style={{
+                      color:
+                        locationInputMode === "coordinates"
+                          ? colors.primary
+                          : undefined,
+                    }}
+                  >
+                    Latitude / Longitude
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLocationModeChange("addressUrl")}
+                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
+                      locationInputMode === "addressUrl"
+                        ? "bg-white text-primary shadow-sm"
+                        : "text-gray-500"
+                    }`}
+                    style={{
+                      color:
+                        locationInputMode === "addressUrl"
+                          ? colors.primary
+                          : undefined,
+                    }}
+                  >
+                    Address URL
+                  </button>
+                </div>
+              </div>
+              <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
                   Address
                 </label>
@@ -348,6 +416,64 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   }
                 />
               </div>
+              {locationInputMode === "addressUrl" ? (
+                <div className="col-span-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                    Main Address URL
+                  </label>
+                  <input
+                    type="url"
+                    className="w-full px-4 py-2.5 border rounded-xl"
+                    value={parentData.addressUrl ?? ""}
+                    onChange={(e) =>
+                      setParentData({
+                        ...parentData,
+                        addressUrl: e.target.value || null,
+                      })
+                    }
+                    placeholder="https://maps.google.com/..."
+                  />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="w-full px-4 py-2.5 border rounded-xl"
+                      value={parentData.latitude}
+                      onChange={(e) =>
+                        setParentData({
+                          ...parentData,
+                          latitude: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 28.6139"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="w-full px-4 py-2.5 border rounded-xl"
+                      value={parentData.longitude}
+                      onChange={(e) =>
+                        setParentData({
+                          ...parentData,
+                          longitude: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 77.2090"
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
                   Mobile Number
@@ -400,37 +526,6 @@ function AddPropertyModal({ onClose, onSuccess }) {
                     })
                   }
                   placeholder="https://book.example.com/property"
-                />
-              </div>
-              {/* NEW FIELDS STEP 1 */}
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                  Latitude
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  className="w-full px-4 py-2.5 border rounded-xl"
-                  value={parentData.latitude}
-                  onChange={(e) =>
-                    setParentData({ ...parentData, latitude: e.target.value })
-                  }
-                  placeholder="e.g. 28.6139"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                  Longitude
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  className="w-full px-4 py-2.5 border rounded-xl"
-                  value={parentData.longitude}
-                  onChange={(e) =>
-                    setParentData({ ...parentData, longitude: e.target.value })
-                  }
-                  placeholder="e.g. 77.2090"
                 />
               </div>
               <div className="col-span-2 mt-6">

@@ -463,7 +463,7 @@ export default function RightSidebar({
             Guest Reviews
             <span
               className="text-[10px] text-primary cursor-pointer hover:underline font-normal"
-              onClick={() => scrollToSection("guest-reviews")}
+              onClick={() => scrollToSection("reviews")}
             >
               View All
             </span>

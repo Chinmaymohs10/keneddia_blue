@@ -77,6 +77,7 @@ interface HotelData {
   propertyId: number;
   name: string;
   bookingEngineUrl?: string | null;
+  addressUrl?: string | null;
   location: string;
   city: string;
   locationId: number;
@@ -357,6 +358,11 @@ export default function HotelDetail() {
     [diningItems],
   );
 
+  const aboutAmenitiesPreview = useMemo(
+    () => hotel?.amenities?.slice(0, 4) ?? [],
+    [hotel],
+  );
+
   const fetchNearbyFromOSM = async (
     lat: number,
     lng: number,
@@ -515,6 +521,7 @@ export default function HotelDetail() {
           propertyId: parent.id,
           locationId: parent.locationId,
           name: displayName,
+          addressUrl: parent.addressUrl || null,
           location: listing?.fullAddress || parent.address,
           city: parent.locationName,
           type:
@@ -828,9 +835,12 @@ export default function HotelDetail() {
                   {hotel.location}, {hotel.city}
                 </span>
 
-                {hotel.coordinates && (
+                {(hotel.addressUrl || hotel.coordinates) && (
                   <a
-                    href={`https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`}
+                    href={
+                      hotel.addressUrl ||
+                      `https://www.google.com/maps?q=${hotel.coordinates?.lat},${hotel.coordinates?.lng}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-red-500 font-medium hover:underline ml-2"
@@ -991,7 +1001,7 @@ export default function HotelDetail() {
               </section>
 
               <section id="about-hotel" className="scroll-mt-32 border-t pt-10">
-                <div className="border-b border-border pb-10">
+                <div className="pb-10">
                   <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
                     About {hotel.name}
                   </h2>
@@ -1001,16 +1011,16 @@ export default function HotelDetail() {
                     ))}
                   </div>
 
-                  {hotel.amenities.length > 0 && (
-                    <div id="amenities" className="mt-8">
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {hotel.amenities.map((amenity, index) => (
+                  {aboutAmenitiesPreview.length > 0 && (
+                    <div className="mt-8">
+                      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                        {aboutAmenitiesPreview.map((amenity, index) => (
                           <div
                             key={`${amenity}-${index}`}
-                            className="rounded-md border border-border bg-card px-3 py-4 text-center shadow-sm transition-colors hover:border-primary/30"
+                            className="rounded-md border border-border bg-card px-4 py-4 text-center shadow-sm transition-colors hover:border-primary/30"
                           >
-                            <Star className="mx-auto mb-2 h-4 w-4 text-primary" />
-                            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-foreground leading-snug">
+                            <Star className="mx-auto mb-2 h-4 w-4 text-red-500" />
+                            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-foreground leading-snug">
                               {amenity}
                             </p>
                           </div>
@@ -1020,6 +1030,33 @@ export default function HotelDetail() {
                   )}
                 </div>
               </section>
+
+              {hotel.amenities.length > 0 && (
+                <section id="amenities" className="scroll-mt-32 border-t pt-10">
+                  <div className="pb-10">
+                    <div className="mb-6 flex items-center justify-between gap-4">
+                      <h2 className="text-2xl md:text-3xl font-serif font-bold">
+                        Amenities
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-y-6 gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
+                      {hotel.amenities.map((amenity, index) => (
+                        <div
+                          key={`${amenity}-${index}`}
+                          className="flex items-center gap-3"
+                        >
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-red-500">
+                            <Check className="h-4 w-4" />
+                          </div>
+                          <p className="text-base text-foreground">
+                            {amenity}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
 
               <section id="events" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
