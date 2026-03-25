@@ -65,6 +65,23 @@ export default function RoomList({
     return Math.round(discountedPrice * 1.2);
   };
 
+  const getDiscountPercent = (room: Room) => {
+    if (typeof room.discountPercent === "number" && room.discountPercent > 0) {
+      return Math.round(room.discountPercent);
+    }
+
+    const originalPrice = getOriginalPrice(room);
+    const discountedPrice = getDiscountedPrice(room);
+
+    if (originalPrice > discountedPrice && discountedPrice > 0) {
+      return Math.round(
+        ((originalPrice - discountedPrice) / originalPrice) * 100,
+      );
+    }
+
+    return 0;
+  };
+
   const formatRoomSize = (room: Room) => {
     if (!room.roomSize) return null;
 
@@ -106,6 +123,7 @@ export default function RoomList({
           const isSelected = selectedRoomId === room.id;
           const isAvailable = room.isAvailable === true;
           const roomSizeText = formatRoomSize(room);
+          const discountPercent = getDiscountPercent(room);
           const highlightedAmenities = (
             room.highlightedAmenities?.length
               ? room.highlightedAmenities
@@ -186,6 +204,16 @@ export default function RoomList({
 
                       {/* Mobile Price */}
                       <div className="md:hidden text-right">
+                        {discountPercent > 0 && (
+                          <p className="mb-1 inline-flex rounded-full bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">
+                            {discountPercent}% OFF
+                          </p>
+                        )}
+                        {discountPercent > 0 && (
+                          <p className="text-xs text-muted-foreground line-through">
+                            {formatPrice(getOriginalPrice(room))}
+                          </p>
+                        )}
                         <p className="text-lg font-bold text-primary">
                           {formatPrice(getDiscountedPrice(room))}
                         </p>
@@ -255,9 +283,16 @@ export default function RoomList({
                   }`}
                 >
                   <div className="hidden md:block mb-4">
-                    <p className="text-xs text-muted-foreground line-through">
-                      {formatPrice(getOriginalPrice(room))}
-                    </p>
+                    {discountPercent > 0 && (
+                      <p className="mb-2 inline-flex rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-600">
+                        {discountPercent}% Off
+                      </p>
+                    )}
+                    {discountPercent > 0 && (
+                      <p className="text-xs text-muted-foreground line-through">
+                        {formatPrice(getOriginalPrice(room))}
+                      </p>
+                    )}
                     <p className="text-2xl font-serif font-bold text-primary">
                       {formatPrice(getDiscountedPrice(room))}
                     </p>

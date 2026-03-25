@@ -6,6 +6,9 @@ export interface Room {
   name: string;
   description: string;
   basePrice: number;
+  originalPrice?: number | null;
+  strikePrice?: number | null;
+  discountPercent?: number | null;
   maxOccupancy: number;
   amenities: Array<string | { id?: number; name?: string; showHighlight?: boolean | null }>;
   image: ImageAsset;

@@ -573,29 +573,52 @@ export default function HotelDetail() {
       setRoomsLoading(true);
       const res = await getRoomsByPropertyId(propId);
       const mappedRooms = Array.isArray(res?.data)
-        ? res.data.map((r: any) => ({
-            id: r.roomId.toString(),
-            name: r.roomName || r.roomNumber,
-            type: r.roomTypeName || r.roomType,
-            description: r.description || "",
-            basePrice: r.basePrice || 0,
-            maxOccupancy: r.maxOccupancy || 1,
-            roomSize: r.roomSize ?? null,
-            roomSizeUnit: r.roomSizeUnit || "SQ_FT",
-            isAvailable: r.status === "AVAILABLE",
-            amenities: r.amenitiesAndFeatures || [],
-            highlightedAmenities:
-              r.amenitiesAndFeatures
-                ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
-                || [],
-            image: {
-              src:
-                r.media?.find((item: any) => item.type === "IMAGE")?.url ||
-                r.media?.[0]?.url ||
-                "/images/room-placeholder.jpg",
-              alt: r.roomName,
-            },
-          }))
+        ? res.data.map((r: any) => {
+            const discountedPrice = Number(
+              r.discountedPrice ?? r.offerPrice ?? r.finalPrice ?? r.basePrice ?? r.price ?? 0,
+            );
+            const explicitOriginalPrice = Number(
+              r.originalPrice ?? r.strikePrice ?? r.mrp ?? r.listPrice ?? 0,
+            );
+            const explicitDiscountPercent = Number(
+              r.discountPercent ?? r.discountPercentage ?? 0,
+            );
+            const resolvedDiscountPercent =
+              explicitDiscountPercent > 0
+                ? Math.round(explicitDiscountPercent)
+                : explicitOriginalPrice > discountedPrice && discountedPrice > 0
+                  ? Math.round(
+                      ((explicitOriginalPrice - discountedPrice) / explicitOriginalPrice) * 100,
+                    )
+                  : 0;
+
+            return {
+              id: r.roomId.toString(),
+              name: r.roomName || r.roomNumber,
+              type: r.roomTypeName || r.roomType,
+              description: r.description || "",
+              basePrice: discountedPrice,
+              originalPrice: explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
+              strikePrice: explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
+              discountPercent: resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
+              maxOccupancy: r.maxOccupancy || 1,
+              roomSize: r.roomSize ?? null,
+              roomSizeUnit: r.roomSizeUnit || "SQ_FT",
+              isAvailable: r.status === "AVAILABLE",
+              amenities: r.amenitiesAndFeatures || [],
+              highlightedAmenities:
+                r.amenitiesAndFeatures
+                  ?.filter((a: RoomAmenity) => Boolean(a.showHighlight))
+                  || [],
+              image: {
+                src:
+                  r.media?.find((item: any) => item.type === "IMAGE")?.url ||
+                  r.media?.[0]?.url ||
+                  "/images/room-placeholder.jpg",
+                alt: r.roomName,
+              },
+            };
+          })
         : [];
 
       setRooms(mappedRooms);
