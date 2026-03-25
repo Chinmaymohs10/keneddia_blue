@@ -28,6 +28,24 @@ interface ReviewsSectionProps {
   propertyId: number | null;
 }
 
+function filterEnabledReplies(replies: ApiComment[] = []): ApiComment[] {
+  return replies
+    .filter((reply) => reply?.enabled !== false)
+    .map((reply) => ({
+      ...reply,
+      replies: filterEnabledReplies(reply.replies || []),
+    }));
+}
+
+function filterEnabledComments(comments: ApiComment[] = []): ApiComment[] {
+  return comments
+    .filter((comment) => comment?.enabled !== false)
+    .map((comment) => ({
+      ...comment,
+      replies: filterEnabledReplies(comment.replies || []),
+    }));
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(isoString: string): string {
@@ -178,13 +196,14 @@ function ReplyThread({ commentId, replyCount }: ReplyThreadProps) {
   const [replies, setReplies] = useState<ApiComment[]>([]);
   const [loading, setLoading] = useState(false);
 
+  if (replyCount === 0) return null;
+
   const loadThread = async () => {
     if (expanded) { setExpanded(false); return; }
-    if (replyCount === 0) return;
     setLoading(true);
     try {
       const res = await getCommentThread(commentId);
-      setReplies(res.data?.replies || []);
+      setReplies(filterEnabledReplies(res.data?.replies || []));
       setExpanded(true);
     } catch {
       // silently fail
@@ -262,7 +281,10 @@ function ReviewCard({ comment }: ReviewCardProps) {
 
       <p className="text-sm text-foreground/80 leading-relaxed mb-2">{text}</p>
 
-      <ReplyThread commentId={comment.id} replyCount={comment.replies?.length ?? 0} />
+      <ReplyThread
+        commentId={comment.id}
+        replyCount={(comment.replies || []).filter((reply) => reply?.enabled !== false).length}
+      />
     </div>
   );
 }
@@ -288,7 +310,7 @@ export default function ReviewsSection({ propertyId }: ReviewsSectionProps) {
       setLoading(true);
       try {
         const res = await getCommentsByProperty(propertyId);
-        setComments(res.data || []);
+        setComments(filterEnabledComments(res.data || []));
       } catch {
         setComments([]);
       } finally {
