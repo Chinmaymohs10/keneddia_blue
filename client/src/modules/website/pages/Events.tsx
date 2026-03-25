@@ -472,7 +472,7 @@ export default function EventsListing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className={`group bg-card border rounded-2xl overflow-hidden flex transition-all duration-500 hover:shadow-xl ${viewMode === "card" ? "flex-col h-[520px]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
+                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col h-[520px]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
                       >
                         <EventMedia
                           event={event}

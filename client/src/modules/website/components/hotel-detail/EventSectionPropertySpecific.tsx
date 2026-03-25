@@ -84,7 +84,7 @@ function EventCard({ event, index }: { event: Event; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group w-full max-w-[300px] h-[520px] mx-auto bg-card border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
+      className="group w-full max-w-[300px] h-[520px] mx-auto bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer"
     >
       {/* Media Container */}
       <div

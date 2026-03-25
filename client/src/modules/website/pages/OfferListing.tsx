@@ -113,8 +113,8 @@ function OfferCard({ offer, isListView }: { offer: Offer; isListView: boolean })
   const expired = offer.isExpiredOffer;
 
   return (
-    <div className={`group bg-card border rounded-2xl overflow-hidden flex transition-all duration-500 hover:shadow-xl
-      ${isListView ? "flex-col md:flex-row h-auto md:min-h-56" : "flex-col"}
+    <div className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl
+      ${isListView ? "flex-col md:flex-row h-auto md:min-h-56" : "flex-col h-[520px]"}
       ${expired ? "opacity-60 grayscale-[40%]" : "hover:border-primary/30"}`}
     >
       {/* ── Media ── */}

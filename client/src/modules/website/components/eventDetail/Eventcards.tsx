@@ -94,7 +94,7 @@ export function UpcomingEventCard({
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
       onClick={() => navigate(buildEventDetailPath(ev))}
-      className="group h-[480px] bg-card border border-border/60 rounded-2xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer"
+      className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer"
     >
       {/* Media */}
       <div

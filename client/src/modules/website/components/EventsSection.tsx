@@ -116,14 +116,14 @@ export default function EventsSection() {
 
         <Swiper
           modules={[Autoplay, Pagination, Navigation]}
-          spaceBetween={20}
+          spaceBetween={16}
           slidesPerView={1}
           autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
           onSwiper={setSwiper}
           breakpoints={{
             640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-            1280: { slidesPerView: 4 },
+            768: { slidesPerView: 3 },
+            1200: { slidesPerView: 4 },
           }}
           className="!pb-12"
         >
@@ -192,8 +192,8 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group h-[520px] border border-border/60 rounded-[1rem] overflow-hidden flex flex-col shadow-sm relative transition-all duration-500 hover:shadow-xl cursor-pointer bg-black"
+      onClick={() => navigate(buildEventDetailPath(event))}
+      className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer"
     >
       {isFullFrame ? (
         /* ── FULL-FRAME MODE ─────────────────────────────────────────────── */

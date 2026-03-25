@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Navigation } from "swiper/modules";
 import { motion } from "framer-motion";
@@ -302,6 +302,18 @@ export default function Hero() {
     swiperInstance.autoplay?.stop();
   }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
 
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (slides.length <= 1) return [];
+
+    return Array.from({ length: slides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % slides.length;
+      return {
+        slide: slides[index],
+        index,
+      };
+    });
+  }, [activeIndex, slides]);
+
   // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
   const renderDesktopMedia = useCallback(
     (slide: HeroSlide, index: number) => {
@@ -591,29 +603,6 @@ export default function Hero() {
         Also capped thumbnail count rendering to what fits.
       */}
       <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
-        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
-          {slides.map((slide, index) => (
-            <motion.div
-              key={`thumbnail-${index}-${currentTheme}`}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15 + 0.5 }}
-              onClick={() => handleThumbnailClick(index)}
-              className={`relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
-                activeIndex === index
-                  ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
-                  : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-              }`}
-            >
-              {renderThumbnail(slide)}
-              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
-                  {slide.subtitle || slide.title}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
         <div className="flex items-center gap-3 md:gap-4 lg:gap-6 pr-2">
           <div className="flex items-center gap-1.5 md:gap-2">
             {slides.map((_, index) => (
@@ -642,6 +631,25 @@ export default function Hero() {
               <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
             </button>
           </div>
+        </div>
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
+          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
+            <motion.div
+              key={`thumbnail-${index}-${currentTheme}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: thumbOrder * 0.15 + 0.5 }}
+              onClick={() => handleThumbnailClick(index)}
+              className="relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+            >
+              {renderThumbnail(slide)}
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
+                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
+                  {slide.subtitle || slide.title}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
