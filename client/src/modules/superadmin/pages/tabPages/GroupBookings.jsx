@@ -25,6 +25,7 @@ import {
   updateGroupBooking,
   getGroupBookings,
   GetAllPropertyDetails,
+  getPropertyTypes,
 } from "@/Api/Api";
 import { getAllGroupBookingEnquiries } from "@/Api/RestaurantApi";
 import { toast } from "react-hot-toast";
@@ -61,10 +62,26 @@ function formatEnquiryDetails(rawQuery) {
     });
 }
 
+function getPrimaryPropertyTypeName(propertyLike) {
+  if (!propertyLike) return "";
+  const dto = propertyLike.propertyResponseDTO || propertyLike;
+  const rawType = Array.isArray(dto?.propertyTypes)
+    ? dto.propertyTypes[0]
+    : dto?.propertyTypes || "";
+
+  if (typeof rawType === "string") return rawType;
+  if (rawType && typeof rawType === "object") {
+    return rawType.typeName || rawType.name || rawType.propertyType || "";
+  }
+
+  return "";
+}
+
 export default function GroupBookings() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [bookings, setBookings] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
@@ -86,13 +103,19 @@ export default function GroupBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const [bookingRes, propertyRes] = await Promise.all([
+      const [bookingRes, propertyRes, propertyTypeRes] = await Promise.all([
         getGroupBookings(),
         GetAllPropertyDetails(),
+        getPropertyTypes(),
       ]);
       setBookings(bookingRes?.data || []);
       setProperties(
         Array.isArray(propertyRes) ? propertyRes : propertyRes?.data || [],
+      );
+      setPropertyTypes(
+        Array.isArray(propertyTypeRes)
+          ? propertyTypeRes
+          : propertyTypeRes?.data || [],
       );
     } catch {
       toast.error("Failed to load group bookings");
@@ -139,23 +162,32 @@ export default function GroupBookings() {
     const map = {};
     properties.forEach((p) => {
       const dto = p.propertyResponseDTO || p;
-      const firstType = Array.isArray(dto.propertyTypes)
-        ? dto.propertyTypes[0]
-        : dto.propertyTypes || "";
+      const firstType = getPrimaryPropertyTypeName(dto);
       map[dto.id] = firstType;
     });
     return map;
   }, [properties]);
+
+  const propertyTypeIdByName = useMemo(() => {
+    const map = {};
+    propertyTypes.forEach((type) => {
+      const name = String(type?.typeName || type?.name || type?.propertyType || "")
+        .trim()
+        .toLowerCase();
+      const id = type?.id;
+      if (name && id) {
+        map[name] = id;
+      }
+    });
+    return map;
+  }, [propertyTypes]);
 
   const propertyTypeOptions = useMemo(() => {
     return Array.from(
       new Set(
         [
           ...properties.map((p) => {
-            const dto = p.propertyResponseDTO || p;
-            return Array.isArray(dto.propertyTypes)
-              ? dto.propertyTypes[0]
-              : dto.propertyTypes;
+            return getPrimaryPropertyTypeName(p);
           }),
           ...enquiries.map((e) => e.propertyTypeName),
         ].filter(Boolean),
@@ -168,9 +200,7 @@ export default function GroupBookings() {
     properties.forEach((p) => {
       const dto = p.propertyResponseDTO || p;
       const name = dto.propertyName;
-      const firstType = Array.isArray(dto.propertyTypes)
-        ? dto.propertyTypes[0]
-        : dto.propertyTypes || "";
+      const firstType = getPrimaryPropertyTypeName(dto);
       if (name && firstType) map[String(name).trim().toLowerCase()] = firstType;
     });
     return map;
@@ -302,17 +332,32 @@ export default function GroupBookings() {
     );
     if (!selectedProp) return;
     const dto = selectedProp.propertyResponseDTO || selectedProp;
-    const listing = selectedProp.propertyListingResponseDTOS?.[0];
+    const propertyTypeName = getPrimaryPropertyTypeName(dto);
+    const matchedPropertyTypeId =
+      propertyTypeIdByName[String(propertyTypeName).trim().toLowerCase()] || "";
+
     setForm({
       ...form,
       propertyId: dto.id,
-      propertyTypeId: listing?.id ?? "",
+      propertyTypeId: matchedPropertyTypeId,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) return toast.error("Title is required");
+
+    const selectedProp = form.propertyId
+      ? properties.find(
+          (p) =>
+            String(p.propertyResponseDTO?.id || p.id) === String(form.propertyId),
+        )
+      : null;
+    const selectedDto = selectedProp?.propertyResponseDTO || selectedProp || null;
+    const selectedPropertyTypeName = getPrimaryPropertyTypeName(selectedDto);
+    const resolvedPropertyTypeId = selectedPropertyTypeName
+      ? propertyTypeIdByName[String(selectedPropertyTypeName).trim().toLowerCase()] || ""
+      : "";
 
     const fd = new FormData();
     if (file) fd.append("files", file);
@@ -323,7 +368,7 @@ export default function GroupBookings() {
     if (form.enquiryIds) fd.append("enquiryIds", form.enquiryIds);
     if (form.numberOfPersons) fd.append("numberOfPersons", form.numberOfPersons);
     if (form.propertyId) fd.append("propertyId", form.propertyId);
-    fd.append("propertyTypeId", form.propertyTypeId ?? "");
+    fd.append("propertyTypeId", resolvedPropertyTypeId || form.propertyTypeId || "");
 
     try {
       setSubmitting(true);
@@ -491,7 +536,7 @@ export default function GroupBookings() {
 
       {activeTab === "enquiries" && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { label: "Total", value: enquiries.length, color: "text-gray-700", bg: "bg-gray-50" },
               { label: "Today", value: todayEnquiryCount, color: "text-blue-600", bg: "bg-blue-50" },
@@ -502,7 +547,7 @@ export default function GroupBookings() {
                 <p className={`text-xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
               </div>
             ))}
-          </div>
+          </div> */}
 
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -776,14 +821,14 @@ export default function GroupBookings() {
                     placeholder="CTA Link"
                   />
                 </div>
-                <input
+                {/* <input
                   type="number"
                   min="1"
                   value={form.enquiryIds}
                   onChange={(e) => setForm({ ...form, enquiryIds: e.target.value })}
                   className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm outline-none"
                   placeholder="Enquiry ID"
-                />
+                /> */}
               </div>
               <div className="px-6 py-4 border-t flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2 rounded-lg border text-sm font-semibold text-gray-600">
