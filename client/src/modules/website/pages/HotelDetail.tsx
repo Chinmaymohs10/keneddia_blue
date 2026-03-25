@@ -37,6 +37,7 @@ import {
   getAllPropertyPolicies,
   getGalleryByPropertyId,
   getAllDiningByPropertyId,
+  getAllBookingChannelPartners,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -250,6 +251,7 @@ export default function HotelDetail() {
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([]);
   const [policies, setPolicies] = useState<PolicyData | null>(null);
   const [diningItems, setDiningItems] = useState<Restaurant[]>([]);
+  const [bookingPartners, setBookingPartners] = useState<any[]>([]);
   const [restaurantPaths, setRestaurantPaths] = useState<Record<string, string>>(
     {},
   );
@@ -557,6 +559,7 @@ export default function HotelDetail() {
         fetchRooms(parent.id);
         fetchGallery(parent.id);
         fetchDining(parent.id);
+        fetchBookingPartners(parent.id);
         fetchPolicies(parent.id);
       } catch (err) {
         console.error("Property Fetch Error:", err);
@@ -657,6 +660,24 @@ export default function HotelDetail() {
     } catch (error) {
       console.error("❌ GALLERY FETCH ERROR:", error);
       setGalleryData([]);
+    }
+  };
+
+  const fetchBookingPartners = async (propId: number) => {
+    try {
+      const res = await getAllBookingChannelPartners();
+      const raw = res?.data || res || [];
+      const list = Array.isArray(raw) ? raw : raw?.content || [];
+      setBookingPartners(
+        list.filter(
+          (item: any) =>
+            String(item?.propertyId || "") === String(propId) &&
+            item?.isActive !== false,
+        ),
+      );
+    } catch (error) {
+      console.error("Booking channel partners fetch error:", error);
+      setBookingPartners([]);
     }
   };
 
@@ -1313,6 +1334,7 @@ export default function HotelDetail() {
                 checkInDate={searchData.checkIn}
                 checkOutDate={searchData.checkOut}
                 numberOfNights={numberOfNights}
+                bookingPartners={bookingPartners}
               />
             </aside>
           </div>

@@ -478,4 +478,16 @@ export const toggleDining = (id, formData) =>API.patch(`api/v1/dining/toggle/${i
 // UPDATE Dining
 export const updateDining = (id, formData) =>API.put(`api/v1/dining/updateDining/${id}`, formData);
 
+// ================= BOOKING CHANNEL PARTNER APIs =================
+
+// CREATE
+export const createBookingChannelPartner = (data) =>API.post("api/v1/booking-channel-partners", data);
+// GET ALL
+export const getAllBookingChannelPartners = () =>API.get("api/v1/booking-channel-partners");
+// UPDATE
+export const updateBookingChannelPartner = (id, data) =>API.put(`api/v1/booking-channel-partners/${id}`, data);
+// TOGGLE STATUS (Active / Inactive)
+export const updateBookingChannelPartnerStatus = (id, isActive) =>API.patch(`api/v1/booking-channel-partners/${id}/status`,null,{
+params: { isActive },});
+
 export default API;

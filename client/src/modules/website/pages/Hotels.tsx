@@ -11,6 +11,7 @@ import HotelReviewsSection from "@/modules/website/components/HotelReviewsSectio
 import QuickBooking from "@/modules/website/components/QuickBooking";
 import GroupBookingSection from "@/modules/website/components/GroupBookingSection";
 import WhatsAppButton from "@/modules/website/components/WhatsAppButton";
+import SpecialOfferPopup from "@/modules/website/components/SpecialOfferPopup";
 import HotelHeroSection from "../components/hotel/HotelHeroSection";
 
 // Assets
@@ -254,6 +255,7 @@ export default function Hotels() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Navbar navItems={HOTEL_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
+      <SpecialOfferPopup />
 
       {/* 1. HERO SECTION — extracted component */}
       <HotelHeroSection slides={heroSlides} loading={loading} />

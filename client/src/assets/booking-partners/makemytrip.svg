@@ -1,0 +1,6 @@
+<svg width="160" height="64" viewBox="0 0 160 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="64" rx="12" fill="#FFF1F2"/>
+  <rect x="8" y="8" width="42" height="48" rx="10" fill="#DF1F26"/>
+  <text x="29" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="white">MMT</text>
+  <text x="60" y="38" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#111827">MakeMyTrip</text>
+</svg>

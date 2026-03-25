@@ -1,0 +1,6 @@
+<svg width="160" height="64" viewBox="0 0 160 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="64" rx="12" fill="#FEF2F2"/>
+  <rect x="10" y="10" width="38" height="44" rx="8" fill="#D32F2F"/>
+  <text x="29" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="white">H</text>
+  <text x="58" y="38" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Hotels.com</text>
+</svg>

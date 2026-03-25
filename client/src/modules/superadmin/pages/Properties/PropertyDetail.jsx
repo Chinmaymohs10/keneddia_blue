@@ -24,6 +24,7 @@ import GalleryTab from "./tabs/GalleryTab";
 import PricingTab from "./tabs/PricingTab";
 import PoliciesTab from "./tabs/PoliciesTab";
 import FoodDiningTab from "./tabs/FoodDiningTab";
+import BookingPartnersTab from "./tabs/BookingPartnersTab";
 
 import ResturantVerticals from "./tabs/resturant/ResturantVerticals";
 import EventsTab from "./tabs/resturant/EventsTab";
@@ -197,6 +198,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "rooms",
       "amenities",
       "food&dining",
+      "booking partners",
       "gallery",
       "policies",
       "comment reviews",
@@ -262,6 +264,13 @@ const PropertyDetail = ({ property, onBack }) => {
       case "food&dining":
         return (
           <FoodDiningTab
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        );
+      case "booking partners":
+        return (
+          <BookingPartnersTab
             propertyData={currentPropertyInfo}
             refreshData={fetchAllData}
           />

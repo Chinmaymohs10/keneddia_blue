@@ -4,15 +4,18 @@ import {
   Check,
   MapPin,
   Star,
-  Utensils,
-  ChevronRight,
   Info,
   MessageSquare,
-  Calendar,
   Navigation,
   ExternalLink,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import makemytripLogo from "@/assets/booking-partners/makemytrip.svg";
+import goibiboLogo from "@/assets/booking-partners/goibibo.svg";
+import agodaLogo from "@/assets/booking-partners/agoda.svg";
+import hotelsLogo from "@/assets/booking-partners/hotels.svg";
+import bookingLogo from "@/assets/booking-partners/booking.svg";
+import genericPartnerLogo from "@/assets/booking-partners/generic.svg";
 
 interface Room {
   id: string;
@@ -51,41 +54,30 @@ interface RightSidebarProps {
   checkInDate: Date | null;
   checkOutDate: Date | null;
   numberOfNights: number;
+  bookingPartners?: Array<{
+    id: number | string;
+    title?: string;
+    url?: string;
+    textField?: string;
+    icon?: { url?: string | null } | null;
+    isActive?: boolean;
+  }>;
 }
 
-// Configuration for third-party booking links based on city
-const OTA_LINKS: Record<
-  string,
-  { goibibo?: string; mmt?: string; agoda?: string; hotels?: string }
-> = {
-  bangalore: {
-    goibibo:
-      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-bangalore-8194858207990819191/",
-    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-bangalore.html",
-    hotels: "https://in.hotels.com/ho3985157152/",
-  },
-  bengaluru: {
-    goibibo:
-      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-bangalore-8194858207990819191/",
-    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-bangalore.html",
-    hotels: "https://in.hotels.com/ho3985157152/",
-  },
-  varanasi: {
-    mmt: "https://www.makemytrip.com/hotels/kennedia_international_hotel_and_suites-details-varanasi.html",
-    goibibo:
-      "https://www.goibibo.com/hotels/kennedia-international-and-suites-hotel-in-varanasi-7481286019158286391/",
-    agoda:
-      "https://www.agoda.com/en-in/kennedia-international-hotel-and-suites/hotel/varanasi-in.html?cid=1844104&ds=pFc0pg7XB95WTT9A",
-  },
-};
+const normalizePartnerName = (value?: string) =>
+  (value || "").trim().toLowerCase().replace(/\s+/g, " ");
 
-// All possible OTA platforms - shown for all cities, but only clickable where links exist
-const ALL_OTAS = [
-  { key: "mmt", name: "MakeMyTrip", shortName: "MMT", color: "#df1f26" },
-  { key: "goibibo", name: "Goibibo", shortName: "GO", color: "#2276e3" },
-  { key: "agoda", name: "Agoda", shortName: "", color: "" },
-  { key: "hotels", name: "Hotels.com", shortName: "", color: "#d32f2f" },
-] as const;
+const PARTNER_LOGOS: Record<string, string> = {
+  makemytrip: makemytripLogo,
+  "make my trip": makemytripLogo,
+  mmt: makemytripLogo,
+  goibibo: goibiboLogo,
+  agoda: agodaLogo,
+  "hotels.com": hotelsLogo,
+  hotels: hotelsLogo,
+  "booking.com": bookingLogo,
+  booking: bookingLogo,
+};
 
 export default function RightSidebar({
   hotel,
@@ -94,6 +86,7 @@ export default function RightSidebar({
   checkInDate,
   checkOutDate,
   numberOfNights,
+  bookingPartners = [],
 }: RightSidebarProps) {
   const scrollToSection = (id: string, offset = 150) => {
     const element = document.getElementById(id);
@@ -150,9 +143,9 @@ export default function RightSidebar({
     return "https://www.openstreetmap.org/export/embed.html?bbox=72.82,18.91,72.85,18.93&layer=mapnik&marker=18.922,72.8347";
   };
 
-  // Get dynamic links based on normalized city name
-  const cityKey = hotel.city?.toLowerCase().trim() || "";
-  const availableLinks = OTA_LINKS[cityKey];
+  const visibleBookingPartners = bookingPartners.filter(
+    (partner) => partner?.isActive !== false && partner?.url,
+  );
 
   return (
     <div className="space-y-6 sticky top-24">
@@ -268,128 +261,44 @@ export default function RightSidebar({
         </div>
       </div>
 
-      {/* OTA Links - Always show all platforms, but gray out unavailable ones */}
-      <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-        <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
-          View on Other Platforms
-        </h4>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {ALL_OTAS.map((ota) => {
-            const link =
-              availableLinks?.[ota.key as keyof typeof availableLinks];
-            const isAvailable = !!link;
+      {visibleBookingPartners.length > 0 && (
+        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
+            View on Other Platforms
+          </h4>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {visibleBookingPartners.map((partner) => {
+              const fallbackLogo =
+                PARTNER_LOGOS[normalizePartnerName(partner.title)] ||
+                genericPartnerLogo;
+              const logoSrc = partner?.icon?.url || fallbackLogo;
 
-            const Component = isAvailable ? "a" : "div";
-            const componentProps = isAvailable
-              ? { href: link, target: "_blank", rel: "noopener noreferrer" }
-              : {};
-
-            if (ota.key === "mmt") {
               return (
-                <Component
-                  key={ota.key}
-                  {...componentProps}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
-                    isAvailable
-                      ? "border-[#df1f26]/20 bg-[#df1f26]/5 hover:bg-[#df1f26]/10 cursor-pointer"
-                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
-                  } group`}
+                <a
+                  key={partner.id}
+                  href={partner.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20"
+                  title={partner.title || "Booking Partner"}
                 >
-                  <span
-                    className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? "text-[#df1f26]" : "text-muted-foreground"}`}
-                  >
-                    MMT
-                  </span>
-                  <span className="text-[11px] font-bold text-foreground">
-                    MakeMyTrip
-                  </span>
-                  {isAvailable && (
-                    <ExternalLink className="w-3 h-3 text-[#df1f26] opacity-50 group-hover:opacity-100" />
-                  )}
-                </Component>
-              );
-            }
-
-            if (ota.key === "goibibo") {
-              return (
-                <Component
-                  key={ota.key}
-                  {...componentProps}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
-                    isAvailable
-                      ? "border-[#2276e3]/20 bg-[#2276e3]/5 hover:bg-[#2276e3]/10 cursor-pointer"
-                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
-                  } group`}
-                >
-                  <span
-                    className={`text-[10px] font-black tracking-tighter uppercase ${isAvailable ? "text-[#2276e3]" : "text-muted-foreground"}`}
-                  >
-                    GO
-                  </span>
-                  <span className="text-[11px] font-bold text-foreground">
-                    Goibibo
-                  </span>
-                  {isAvailable && (
-                    <ExternalLink className="w-3 h-3 text-[#2276e3] opacity-50 group-hover:opacity-100" />
-                  )}
-                </Component>
-              );
-            }
-
-            if (ota.key === "agoda") {
-              return (
-                <Component
-                  key={ota.key}
-                  {...componentProps}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
-                    isAvailable
-                      ? "border-border bg-secondary/30 hover:bg-secondary/50 cursor-pointer"
-                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
-                  } group`}
-                >
-                  <div className="flex gap-0.5">
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-[#5e96d2]" : "bg-muted-foreground"}`}
-                    />
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-[#f34f36]" : "bg-muted-foreground"}`}
+                  <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
+                    <img
+                      src={logoSrc}
+                      alt={partner.title || "Booking Partner"}
+                      className="h-full w-full object-contain"
                     />
                   </div>
-                  <span className="text-[11px] font-bold text-foreground">
-                    Agoda
+                  <span className="max-w-[120px] truncate text-[11px] font-bold text-foreground">
+                    {partner.title || "Booking Partner"}
                   </span>
-                  {isAvailable && (
-                    <ExternalLink className="w-3 h-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
-                  )}
-                </Component>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                </a>
               );
-            }
-
-            if (ota.key === "hotels") {
-              return (
-                <Component
-                  key={ota.key}
-                  {...componentProps}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg transition-all ${
-                    isAvailable
-                      ? "border-[#d32f2f]/20 bg-[#d32f2f]/5 hover:bg-[#d32f2f]/10 cursor-pointer"
-                      : "border-border/50 bg-secondary/10 opacity-40 cursor-not-allowed"
-                  } group`}
-                >
-                  <span
-                    className={`text-[11px] font-bold ${isAvailable ? "text-[#d32f2f]" : "text-muted-foreground"}`}
-                  >
-                    Hotels.com
-                  </span>
-                  {isAvailable && (
-                    <ExternalLink className="w-3 h-3 text-[#d32f2f] opacity-50 group-hover:opacity-100" />
-                  )}
-                </Component>
-              );
-            }
-          })}
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* MAP PREVIEW CARD */}
       <div className="rounded-2xl overflow-hidden border border-border shadow-md group">
