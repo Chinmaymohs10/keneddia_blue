@@ -137,6 +137,8 @@ export default function Navbar({
 
   const location = useLocation();
   const navigate = useNavigate();
+  const showQuickBook = location.pathname === "/" || location.pathname === "/hotels";
+  const transparentMode = !scrolled;
 
   const openBooking = (category: "hotel" | "dining" | "delivery") => {
     setBookingCategory(category);
@@ -227,7 +229,7 @@ export default function Navbar({
   const navbarClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
     scrolled
       ? "bg-white dark:bg-background/95 dark:backdrop-blur-sm shadow-md py-2 border-b border-border/10"
-      : "bg-white dark:bg-transparent backdrop-blur-none dark:xl:backdrop-blur-none shadow-md xl:shadow-none py-2 xl:py-4"
+      : "bg-white/10 backdrop-blur-[2px] shadow-md xl:shadow-none py-2 xl:py-4"
   }`;
 
   return (
@@ -265,6 +267,7 @@ export default function Navbar({
               <NavItem
                 key={item.key}
                 item={item}
+                transparentMode={transparentMode}
                 activeDropdown={activeDropdown}
                 setActiveDropdown={setActiveDropdown}
                 handleHashLink={handleHashLink}
@@ -279,29 +282,35 @@ export default function Navbar({
 
           {/* Desktop Right Actions */}
           <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
-            <div className="relative group">
-              <button className="flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap">
-                <span>Quick Book</span>
-                <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
-              </button>
-              <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
-                <div className="py-1">
-                  {QUICK_BOOKING_OPTIONS.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => openBooking(option.category)}
-                      className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+            {showQuickBook && (
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 px-3 2xl:px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs 2xl:text-sm font-medium rounded-full hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer whitespace-nowrap">
+                  <span>Quick Book</span>
+                  <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
+                </button>
+                <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-xl rounded-xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right cursor-pointer">
+                  <div className="py-1">
+                    {QUICK_BOOKING_OPTIONS.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => openBooking(option.category)}
+                        className="block w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <Link
               to="/login"
-              className="flex items-center gap-1.5 px-3 2xl:px-5 py-2 text-foreground/80 hover:text-primary transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer"
+              className={`flex items-center gap-1.5 px-3 2xl:px-5 py-2 transition-colors text-xs 2xl:text-sm font-medium whitespace-nowrap cursor-pointer ${
+                transparentMode
+                  ? "text-white hover:text-white/80"
+                  : "text-foreground/80 hover:text-primary"
+              }`}
             >
               <LogIn className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
               LOGIN
@@ -312,19 +321,29 @@ export default function Navbar({
 
           {/* Mobile Actions */}
           <div className="xl:hidden flex items-center gap-3">
-            <button
-              onClick={() => setBookingOpen(true)}
-              className="text-foreground hover:text-primary transition-colors cursor-pointer"
-              aria-label="Quick Book"
-            >
-              <Calendar className="w-5 h-5" />
-            </button>
+            {showQuickBook && (
+              <button
+                onClick={() => openBooking("hotel")}
+                className={`transition-colors cursor-pointer ${
+                  transparentMode
+                    ? "text-white hover:text-white/80"
+                    : "text-foreground hover:text-primary"
+                }`}
+                aria-label="Quick Book"
+              >
+                <Calendar className="w-5 h-5" />
+              </button>
+            )}
 
             <ThemeToggle />
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-foreground hover:text-primary transition-colors relative cursor-pointer"
+              className={`transition-colors relative cursor-pointer ${
+                transparentMode
+                  ? "text-white hover:text-white/80"
+                  : "text-foreground hover:text-primary"
+              }`}
               aria-label="Toggle menu"
             >
               <svg
@@ -363,6 +382,7 @@ export default function Navbar({
           mobileMenuOpen={mobileMenuOpen}
           mobileExpandedMenu={mobileExpandedMenu}
           setMobileExpandedMenu={setMobileExpandedMenu}
+          transparentMode={transparentMode}
           navItems={navItems}
           handleHashLink={handleHashLink}
         />
@@ -384,6 +404,7 @@ export default function Navbar({
 // Desktop Nav Item Component
 interface NavItemProps {
   item: NavItem;
+  transparentMode: boolean;
   activeDropdown: string | null;
   setActiveDropdown: (key: string | null) => void;
   handleHashLink: (
@@ -395,6 +416,7 @@ interface NavItemProps {
 
 function NavItem({
   item,
+  transparentMode,
   activeDropdown,
   setActiveDropdown,
   handleHashLink,
@@ -410,7 +432,11 @@ function NavItem({
           to={item.href}
           onClick={(e) => handleHashLink(e, item.href)}
           className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${
-            isActive ? "text-primary" : "text-foreground hover:text-primary"
+            isActive
+              ? "text-primary"
+              : transparentMode
+                ? "text-white hover:text-white/80"
+                : "text-foreground hover:text-primary"
           }`}
         >
           {item.label}
@@ -428,7 +454,11 @@ function NavItem({
     >
       <button
         className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-colors relative whitespace-nowrap cursor-pointer ${
-          isActive ? "text-primary" : "text-foreground hover:text-primary"
+          isActive
+            ? "text-primary"
+            : transparentMode
+              ? "text-white hover:text-white/80"
+              : "text-foreground hover:text-primary"
         }`}
       >
         {item.label}
@@ -539,6 +569,7 @@ interface MobileMenuProps {
   mobileMenuOpen: boolean;
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
+  transparentMode: boolean;
   navItems: NavItem[];
   handleHashLink: (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -550,6 +581,7 @@ function MobileMenu({
   mobileMenuOpen,
   mobileExpandedMenu,
   setMobileExpandedMenu,
+  transparentMode,
   navItems,
   handleHashLink,
 }: MobileMenuProps) {
@@ -570,7 +602,11 @@ function MobileMenu({
                   key={item.key}
                   to={item.href}
                   onClick={(e) => handleHashLink(e, item.href)}
-                  className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition-colors border-b border-border/5 cursor-pointer"
+                  className={`block px-4 py-3 text-sm font-medium transition-colors border-b border-border/5 cursor-pointer ${
+                    transparentMode
+                      ? "text-white hover:bg-accent hover:text-white/80"
+                      : "text-foreground hover:bg-accent hover:text-primary"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -580,6 +616,7 @@ function MobileMenu({
                   item={item}
                   mobileExpandedMenu={mobileExpandedMenu}
                   setMobileExpandedMenu={setMobileExpandedMenu}
+                  transparentMode={transparentMode}
                   handleHashLink={handleHashLink}
                 />
               ),
@@ -589,7 +626,11 @@ function MobileMenu({
               <Link
                 to="/login"
                 onClick={(e) => handleHashLink(e, "/login")}
-                className="flex items-center justify-center gap-2 py-2.5 bg-transparent border border-border/20 text-foreground text-sm font-medium rounded-full hover:border-primary hover:text-primary hover:bg-primary/10 transition-all cursor-pointer"
+                className={`flex items-center justify-center gap-2 py-2.5 bg-transparent border text-sm font-medium rounded-full transition-all cursor-pointer ${
+                  transparentMode
+                    ? "border-white/30 text-white hover:border-white/50 hover:text-white hover:bg-white/10"
+                    : "border-border/20 text-foreground hover:border-primary hover:text-primary hover:bg-primary/10"
+                }`}
               >
                 <LogIn className="w-4 h-4" />
                 LOGIN
@@ -607,6 +648,7 @@ interface MobileDropdownProps {
   item: Exclude<NavItem, { type: "link" }>;
   mobileExpandedMenu: string | null;
   setMobileExpandedMenu: (key: string | null) => void;
+  transparentMode: boolean;
   handleHashLink: (
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string,
@@ -617,6 +659,7 @@ function MobileDropdown({
   item,
   mobileExpandedMenu,
   setMobileExpandedMenu,
+  transparentMode,
   handleHashLink,
 }: MobileDropdownProps) {
   const isExpanded = mobileExpandedMenu === item.key;
@@ -625,7 +668,11 @@ function MobileDropdown({
     <div className="border-b border-border/5">
       <button
         onClick={() => setMobileExpandedMenu(isExpanded ? null : item.key)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 hover:text-primary transition-colors relative cursor-pointer"
+        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors relative cursor-pointer ${
+          transparentMode
+            ? "text-white hover:bg-accent/50 hover:text-white/80"
+            : "text-foreground hover:bg-accent/50 hover:text-primary"
+        }`}
       >
         <span className="flex items-center gap-2">
           {item.label}
