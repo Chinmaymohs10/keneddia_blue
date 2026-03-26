@@ -51,23 +51,19 @@ export default function RoomList({
     if (typeof originalPrice === "number" && originalPrice > 0) {
       return originalPrice;
     }
-
-    const discountedPrice = getDiscountedPrice(room);
-    return Math.round(discountedPrice * 1.2);
+    return getDiscountedPrice(room);
   };
 
   const getDiscountPercent = (room: Room) => {
-    if (typeof room.discountPercent === "number" && room.discountPercent > 0) {
-      return Math.round(room.discountPercent);
-    }
+    const discountPercent =
+      typeof room.discountPercent === "number" && room.discountPercent > 0
+        ? room.discountPercent
+        : typeof room.discount === "number"
+          ? room.discount
+          : 0;
 
-    const originalPrice = getOriginalPrice(room);
-    const discountedPrice = getDiscountedPrice(room);
-
-    if (originalPrice > discountedPrice && discountedPrice > 0) {
-      return Math.round(
-        ((originalPrice - discountedPrice) / originalPrice) * 100,
-      );
+    if (discountPercent > 0) {
+      return Math.round(discountPercent);
     }
 
     return 0;

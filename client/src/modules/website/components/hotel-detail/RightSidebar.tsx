@@ -167,48 +167,6 @@ export default function RightSidebar({
         </div>
 
         <div className="relative z-10 text-left">
-          {/* {checkInDate && checkOutDate && (
-            <div className="mb-4 pb-4 border-b border-border">
-              <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
-                <div className="text-left">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                    Check-in
-                  </p>
-                  <p className="font-semibold text-foreground text-xs">
-                    {format(checkInDate, "dd MMM")}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {format(checkInDate, "EEE")}
-                  </p>
-                </div>
-
-                <div className="text-center px-2">
-                  <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg px-3 py-2">
-                    <Calendar className="w-4 h-4 text-primary mb-1" />
-                    <p className="font-bold text-primary text-sm">
-                      {numberOfNights}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground uppercase">
-                      {numberOfNights === 1 ? "Night" : "Nights"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                    Check-out
-                  </p>
-                  <p className="font-semibold text-foreground text-xs">
-                    {format(checkOutDate, "dd MMM")}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {format(checkOutDate, "EEE")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )} */}
-
           <div className="flex justify-between items-end mb-4 text-left">
             <div className="text-left w-full">
               {selectedRoom ? (
@@ -269,46 +227,6 @@ export default function RightSidebar({
           </p>
         </div>
       </div>
-
-      {visibleBookingPartners.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
-            View on Other Platforms
-          </h4>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {visibleBookingPartners.map((partner) => {
-              const fallbackLogo =
-                PARTNER_LOGOS[normalizePartnerName(partner.title)] ||
-                genericPartnerLogo;
-              const logoSrc = partner?.icon?.url || fallbackLogo;
-
-              return (
-                <a
-                  key={partner.id}
-                  href={partner.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20"
-                  title={partner.title || "Booking Partner"}
-                >
-                  <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
-                    <img
-                      src={logoSrc}
-                      alt={partner.title || "Booking Partner"}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                  <span className="max-w-[120px] truncate text-[11px] font-bold text-foreground">
-                    {partner.title || "Booking Partner"}
-                  </span>
-                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* MAP PREVIEW CARD */}
       <div className="rounded-2xl overflow-hidden border border-border shadow-md group">
         {/* MAP IFRAME PREVIEW */}
@@ -373,7 +291,6 @@ export default function RightSidebar({
           </a>
         </div>
       </div>
-
       {/* Reviews Snapshot */}
       {hotel.rating && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
@@ -404,7 +321,6 @@ export default function RightSidebar({
           </p> */}
         </div>
       )}
-
       {/* Amenities Snapshot */}
       {hotel.amenities && hotel.amenities.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
@@ -432,7 +348,6 @@ export default function RightSidebar({
           </div>
         </div>
       )}
-
       {/* Nearby Snapshot */}
       {hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
@@ -458,6 +373,7 @@ export default function RightSidebar({
           </div>
         </div>
       )}
+
       {/* Policies Snapshot */}
       <div className="bg-secondary/10 border border-secondary/20 rounded-xl p-4">
         <div className="flex items-start gap-3">
@@ -489,53 +405,42 @@ export default function RightSidebar({
           </div>
         </div>
       </div>
-
-      {/* Upcoming Events */}
-      {hotel.events && hotel.events.length > 0 && (
+      {visibleBookingPartners.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-          <h4 className="text-sm font-serif font-bold text-foreground mb-3 flex items-center justify-between">
-            Upcoming Events
-            <span className="text-[10px] text-primary cursor-pointer hover:underline font-normal">
-              View All
-            </span>
+          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
+            View on Other Platforms
           </h4>
-          <div className="space-y-4">
-            {hotel.events.slice(0, 3).map((event, idx) => (
-              <div key={idx} className="flex gap-3 group cursor-pointer">
-                <div className="w-14 h-14 rounded-lg bg-secondary overflow-hidden shrink-0 relative">
-                  <OptimizedImage
-                    {...event.image}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-0 left-0 bg-primary/90 text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded-br-md">
-                    {event.date.split(",")[0]}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {visibleBookingPartners.map((partner) => {
+              const fallbackLogo =
+                PARTNER_LOGOS[normalizePartnerName(partner.title)] ||
+                genericPartnerLogo;
+              const logoSrc = partner?.icon?.url || fallbackLogo;
+
+              return (
+                <a
+                  key={partner.id}
+                  href={partner.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-2 rounded-lg border border-border bg-secondary/10 px-3 py-2 transition-all hover:bg-secondary/20"
+                  title={partner.title || "Booking Partner"}
+                >
+                  <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
+                    <img
+                      src={logoSrc}
+                      alt={partner.title || "Booking Partner"}
+                      className="h-full w-full object-contain"
+                    />
                   </div>
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h5 className="text-xs font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h5>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      {event.date} • {event.time}
-                    </span>
-                  </div>
-                  {event.tag && (
-                    <span className="inline-block mt-1 text-[9px] font-semibold text-primary bg-primary/10 px-1.5 rounded w-fit">
-                      {event.tag}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+                  <span className="max-w-[120px] truncate text-[11px] font-bold text-foreground">
+                    {partner.title || "Booking Partner"}
+                  </span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                </a>
+              );
+            })}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mt-4 text-xs font-medium"
-          >
-            Enquire for Events
-          </Button>
         </div>
       )}
 

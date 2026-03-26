@@ -35,6 +35,7 @@ const AddRoomModal = ({
     roomName: "",
     description: "",
     basePrice: "",
+    discount: "",
     maxOccupancy: 2,
     roomSize: "",
     roomSizeUnit: "SQ_FT",
@@ -116,6 +117,7 @@ const AddRoomModal = ({
           roomName: initialData.roomName || "",
           description: initialData.description || "",
           basePrice: initialData.basePrice || "",
+          discount: initialData.discount ?? "",
           maxOccupancy: initialData.maxOccupancy || 2,
           roomSize: initialData.roomSize || "",
           roomSizeUnit: initialData.roomSizeUnit || "SQ_FT",
@@ -148,6 +150,7 @@ const AddRoomModal = ({
           roomName: "",
           description: "",
           basePrice: "",
+          discount: "",
           maxOccupancy: 2,
           roomSize: "",
           roomSizeUnit: "SQ_FT",
@@ -524,6 +527,8 @@ const AddRoomModal = ({
       const payload = {
         ...restFormData,
         basePrice: parseFloat(formData.basePrice),
+        discount:
+          formData.discount === "" ? null : parseFloat(formData.discount),
         maxOccupancy: parseInt(formData.maxOccupancy),
         roomSize: formData.roomSize ? parseFloat(formData.roomSize) : null,
         floorNumber: parseInt(formData.floorNumber),
@@ -675,6 +680,25 @@ const AddRoomModal = ({
                       value={formData.basePrice}
                       onChange={handleNumberChange}
                       required
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                    Discount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+                      Rs.
+                    </span>
+                    <input
+                      type="number"
+                      name="discount"
+                      value={formData.discount}
+                      onChange={handleNumberChange}
+                      min="0"
                       className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
                       placeholder="0.00"
                     />
@@ -1052,3 +1076,4 @@ const AddRoomModal = ({
 };
 
 export default AddRoomModal;
+

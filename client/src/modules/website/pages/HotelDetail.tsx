@@ -648,30 +648,20 @@ export default function HotelDetail() {
       const res = await getRoomsByPropertyId(propId);
       const mappedRooms = Array.isArray(res?.data)
         ? res.data.map((r: any) => {
-            const discountedPrice = Number(
-              r.discountedPrice ??
-                r.offerPrice ??
-                r.finalPrice ??
-                r.basePrice ??
-                r.price ??
-                0,
-            );
-            const explicitOriginalPrice = Number(
-              r.originalPrice ?? r.strikePrice ?? r.mrp ?? r.listPrice ?? 0,
-            );
-            const explicitDiscountPercent = Number(
-              r.discountPercent ?? r.discountPercentage ?? 0,
-            );
+            const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
+            const discountPercentage = Number(r.discount ?? 0);
+            const discountedPrice =
+              originalBasePrice > 0
+                ? Math.max(
+                    0,
+                    originalBasePrice -
+                      (originalBasePrice * discountPercentage) / 100,
+                  )
+                : 0;
             const resolvedDiscountPercent =
-              explicitDiscountPercent > 0
-                ? Math.round(explicitDiscountPercent)
-                : explicitOriginalPrice > discountedPrice && discountedPrice > 0
-                  ? Math.round(
-                      ((explicitOriginalPrice - discountedPrice) /
-                        explicitOriginalPrice) *
-                        100,
-                    )
-                  : 0;
+              originalBasePrice > 0 && discountPercentage > 0
+                ? Math.round(discountPercentage)
+                : 0;
 
             return {
               id: r.roomId.toString(),
@@ -679,10 +669,9 @@ export default function HotelDetail() {
               type: r.roomTypeName || r.roomType,
               description: r.description || "",
               basePrice: discountedPrice,
-              originalPrice:
-                explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
-              strikePrice:
-                explicitOriginalPrice > 0 ? explicitOriginalPrice : null,
+              originalPrice: originalBasePrice > 0 ? originalBasePrice : null,
+              strikePrice: originalBasePrice > 0 ? originalBasePrice : null,
+              discount: discountPercentage > 0 ? discountPercentage : null,
               discountPercent:
                 resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
               maxOccupancy: r.maxOccupancy || 1,
@@ -1452,59 +1441,10 @@ export default function HotelDetail() {
                   </div>
                 </section>
               )}
-              {/* <section id="food-dining" className="scroll-mt-32 border-t pt-10">
-                <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                  Food & Dining
-                </h2>
-
-                {(() => {
-                  const displayRestaurants = hotel.restaurants?.length
-                    ? hotel.restaurants
-                    : sampleRestaurants; // ✅ fallback to sample data
-
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {displayRestaurants.map((restaurant) => (
-                        <div
-                          key={restaurant.id}
-                          className="rounded-xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
-                        >
-                          <div className="relative w-full h-44 bg-muted flex items-center justify-center">
-                            {restaurant.image ? (
-                              <img
-                                src={restaurant.image}
-                                alt={restaurant.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <UtensilsCrossed
-                                className="w-10 h-10 text-muted-foreground/50"
-                                strokeWidth={1.5}
-                              />
-                            )}
-                          </div>
-                          <div className="p-4 space-y-1">
-                            <p className="text-base font-semibold text-foreground leading-snug">
-                              {restaurant.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {restaurant.cuisine}
-                            </p>
-                            <div className="pt-2 flex items-center gap-1 text-sm">
-                              <span className="text-red-600 font-semibold">
-                                Open:
-                              </span>
-                              <span className="text-muted-foreground">
-                                {restaurant.timings}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </section> */}
+               <section id="reviews" className="scroll-mt-32 border-t pt-10">
+                <ReviewsSection propertyId={propertyIdFromUrl} />
+              </section>
+             
               <section id="location" className="scroll-mt-32 border-t pt-10">
                 <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                   Location
@@ -1571,9 +1511,6 @@ export default function HotelDetail() {
                     </div>
                   </div>
                 </div>
-              </section>
-              <section id="reviews" className="scroll-mt-32 border-t pt-10">
-                <ReviewsSection propertyId={propertyIdFromUrl} />
               </section>
             </div>
             <aside className="hidden lg:block">

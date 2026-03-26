@@ -265,7 +265,12 @@ const RoomsTab = ({ propertyData }) => {
                 </td>
 
                 <td className="px-6 py-4 text-sm font-bold text-gray-900">
-                  ₹{room.basePrice?.toLocaleString()}
+                  <div className="space-y-1">
+                    <div>{`${room.basePrice?.toLocaleString()}`}</div>
+                    <div className="text-[11px] font-medium text-emerald-600">
+                      {`Discount: ${Number(room.discount || 0).toLocaleString()}%`}
+                    </div>
+                  </div>
                 </td>
 
                 <td className="px-6 py-4 text-sm text-gray-600 font-medium">
