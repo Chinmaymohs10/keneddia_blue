@@ -144,7 +144,14 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   );
 
   const getThumbnailMedia = useCallback(
-    (slide: HeroSlide) => {
+    (slide?: HeroSlide | null) => {
+      if (!slide) {
+        return {
+          mediaUrl: "",
+          mediaType: "image" as const,
+        };
+      }
+
       const subMedia = selectMediaByTheme(
         currentTheme,
         slide.subAll || [],
@@ -252,7 +259,9 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   );
 
   const renderThumbnail = useCallback(
-    (slide: HeroSlide) => {
+    (slide?: HeroSlide | null) => {
+      if (!slide) return null;
+
       const { mediaUrl, mediaType } = getThumbnailMedia(slide);
       if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
 

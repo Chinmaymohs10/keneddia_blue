@@ -307,11 +307,15 @@ export default function Hero() {
 
     return Array.from({ length: slides.length - 1 }, (_, offset) => {
       const index = (activeIndex + offset + 1) % slides.length;
+      const slide = slides[index];
+
+      if (!slide) return null;
+
       return {
-        slide: slides[index],
+        slide,
         index,
       };
-    });
+    }).filter(Boolean);
   }, [activeIndex, slides]);
 
   // ── Desktop media (object-cover, full bleed) — UNCHANGED ──────────────────
@@ -394,7 +398,9 @@ export default function Hero() {
 
   // ── Thumbnail — always an image ────────────────────────────────────────────
   const renderThumbnail = useCallback(
-    (slide: HeroSlide) => {
+    (slide?: HeroSlide | null) => {
+      if (!slide) return null;
+
       const thumbnailUrl = slide.thumbnail;
       if (!thumbnailUrl || imageErrors.has(thumbnailUrl)) return null;
 
