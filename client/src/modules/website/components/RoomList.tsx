@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ChevronUp,
   Expand,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -25,14 +24,6 @@ export default function RoomList({
   policyHighlightText = "Free Cancellation",
 }: RoomListProps) {
   const [expandedRoom, setExpandedRoom] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
-
-  const totalPages = Math.ceil(rooms.length / itemsPerPage);
-  const currentRooms = rooms.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
 
   const toggleExpand = (id: string) => {
     setExpandedRoom(expandedRoom === id ? null : id);
@@ -119,7 +110,7 @@ export default function RoomList({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {currentRooms.map((room) => {
+        {rooms.map((room) => {
           const isSelected = selectedRoomId === room.id;
           const isAvailable = room.isAvailable === true;
           const roomSizeText = formatRoomSize(room);
@@ -322,33 +313,6 @@ export default function RoomList({
           );
         })}
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-
-          <span className="text-sm font-medium mx-2">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

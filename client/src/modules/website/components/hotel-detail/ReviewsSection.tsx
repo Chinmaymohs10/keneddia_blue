@@ -295,7 +295,7 @@ export default function ReviewsSection({ propertyId }: ReviewsSectionProps) {
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 4;
 
   // Write review flow
   const [newComment, setNewComment] = useState("");
@@ -319,6 +319,13 @@ export default function ReviewsSection({ propertyId }: ReviewsSectionProps) {
     };
     fetch();
   }, [propertyId]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(comments.length / itemsPerPage));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [comments.length, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(comments.length / itemsPerPage);
   const currentComments = comments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
