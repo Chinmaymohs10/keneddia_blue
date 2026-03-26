@@ -39,8 +39,6 @@ import {
   getGalleryByPropertyId,
   getAllDiningByPropertyId,
   getAllBookingChannelPartners,
-  getEventsUpdated,
-  getEventFilesByUploadedId,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -240,6 +238,25 @@ const mapDiningItem = (item: any): Restaurant => ({
   attachedRestaurantName: item?.attachRestaurantName || "",
   attachRestaurantId: item?.attachRestaurantId ?? undefined,
 });
+
+const normalizeGalleryMedia = (galleryResponse: any): PropertyMedia[] => {
+  const rawGallery =
+    galleryResponse?.data?.content ||
+    galleryResponse?.data ||
+    galleryResponse ||
+    [];
+
+  return (Array.isArray(rawGallery) ? rawGallery : [])
+    .filter(
+      (item: any) =>
+        item?.isActive &&
+        item?.media?.url &&
+        !item?.vertical &&
+        String(item?.categoryName || "").toLowerCase() !== "3d",
+    )
+    .map((item: any) => item.media)
+    .filter((media: PropertyMedia) => Boolean(media?.url));
+};
 
 export default function HotelDetail() {
   const { citySlug, propertySlug, propertyId } = useParams<{
@@ -741,12 +758,6 @@ export default function HotelDetail() {
       const baseItems = normalizeDiningList(res)
         .filter((item: any) => item?.isActive ?? true)
         .map((item: any) => mapDiningItem(item));
-      const eventsRes = await getEventsUpdated();
-      const allEvents = Array.isArray(eventsRes?.data)
-        ? eventsRes.data
-        : Array.isArray(eventsRes)
-          ? eventsRes
-          : [];
 
       const items = await Promise.all(
         baseItems.map(async (item: Restaurant) => {
@@ -771,38 +782,21 @@ export default function HotelDetail() {
             };
           }
 
-          const matchedEvent = allEvents.find(
-            (event: any) =>
-              String(event?.propertyId || "") ===
-                String(item.attachRestaurantId) && event?.active === true,
-          );
-
-          if (!matchedEvent?.id) {
-            return {
-              ...item,
-              mediaSlides: ownSlides,
-            };
-          }
-
           try {
-            const filesRes = await getEventFilesByUploadedId(matchedEvent.id);
-            const groups = filesRes?.data?.data || filesRes?.data || filesRes || [];
-            const groupList = Array.isArray(groups) ? groups : [];
-            const heroSlides = groupList
-              .filter(
-                (group: any) =>
-                  String(group?.category || "").trim().toLowerCase() ===
-                  "hero_slider",
-              )
-              .flatMap((group: any) => group?.medias || [])
-              .filter((media: PropertyMedia) => Boolean(media?.url));
+            const galleryRes = await getGalleryByPropertyId(
+              Number(item.attachRestaurantId),
+            );
+            const restaurantGallerySlides = normalizeGalleryMedia(galleryRes);
 
             return {
               ...item,
-              mediaSlides: [...ownSlides, ...heroSlides],
+              mediaSlides:
+                restaurantGallerySlides.length > 0
+                  ? restaurantGallerySlides
+                  : ownSlides,
             };
           } catch (error) {
-            console.error("DINING EVENT MEDIA FETCH ERROR:", error);
+            console.error("DINING RESTAURANT GALLERY FETCH ERROR:", error);
             return {
               ...item,
               mediaSlides: ownSlides,
@@ -1235,6 +1229,17 @@ export default function HotelDetail() {
                 <div id="food-dining" className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
+                      Events
+                    </h2>
+                    <EventSectionPropertySpecific
+                      locationId={hotel.locationId}
+                      locationName={hotel.city}
+                      singleCard
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
                       Food & Dining
                     </h2>
 
@@ -1419,17 +1424,6 @@ export default function HotelDetail() {
                         No food and dining highlights available for this property.
                       </div>
                     )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-serif font-bold mb-6">
-                      Events
-                    </h2>
-                    <EventSectionPropertySpecific
-                      locationId={hotel.locationId}
-                      locationName={hotel.city}
-                      singleCard
-                    />
                   </div>
                 </div>
               </section>
