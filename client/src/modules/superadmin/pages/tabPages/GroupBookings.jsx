@@ -41,7 +41,7 @@ const EMPTY_FORM = {
   propertyTypeId: "",
 };
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 5;
 const ENQUIRY_PAGE_SIZE = 7;
 
 function formatEnquiryDetails(rawQuery) {
@@ -296,6 +296,21 @@ export default function GroupBookings() {
   const today = new Date().toISOString().split("T")[0];
   const todayEnquiryCount = enquiries.filter((e) => e.enquiryDate === today).length;
 
+  useEffect(() => {
+    setPage((prev) =>
+      Math.min(prev, Math.max(1, Math.ceil(filteredBookings.length / PAGE_SIZE))),
+    );
+  }, [filteredBookings.length]);
+
+  useEffect(() => {
+    setEnquiryPage((prev) =>
+      Math.min(
+        prev,
+        Math.max(1, Math.ceil(filteredEnquiries.length / ENQUIRY_PAGE_SIZE)),
+      ),
+    );
+  }, [filteredEnquiries.length]);
+
   const openAdd = () => {
     setEditItem(null);
     setForm(EMPTY_FORM);
@@ -493,42 +508,151 @@ export default function GroupBookings() {
               <p className="text-sm">No bookings found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginatedBookings.map((item) => (
-                <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                  {item.media?.[0]?.url ? (
-                    <img src={item.media[0].url} alt={item.title} className="w-full h-40 object-cover" />
-                  ) : (
-                    <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-300 text-xs">
-                      No Image
-                    </div>
-                  )}
-                  <div className="p-4 flex flex-col flex-1">
-                    <div className="flex items-start justify-between mb-1 gap-2">
-                      <h3 className="font-bold text-gray-800 text-sm line-clamp-1 flex-1">{item.title}</h3>
-                      {item.numberOfPersons && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/5 text-primary shrink-0">
-                          <Users size={10} /> {item.numberOfPersons}
-                        </span>
-                      )}
-                    </div>
-                    {item.propertyId && propertyNameById[item.propertyId] && (
-                      <span className="flex items-center gap-1 text-[10px] text-gray-400 mb-2">
-                        <Building2 size={10} /> {propertyNameById[item.propertyId]}
-                      </span>
-                    )}
-                    <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
-                    <div className="mt-auto pt-3">
-                      <button
-                        onClick={() => openEdit(item)}
-                        className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+            <div className="rounded-xl border border-gray-100 overflow-hidden bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      {[
+                        { label: "ID" },
+                        { label: "Image" },
+                        { label: "Title" },
+                        { label: "Property" },
+                        { label: "Property Type" },
+                        { label: "Persons" },
+                        { label: "Description" },
+                        { label: "Action" },
+                      ].map(({ label }) => (
+                        <th
+                          key={label}
+                          className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap"
+                        >
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {paginatedBookings.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className="bg-white hover:bg-gray-50/50 transition-colors"
                       >
-                        <Pencil size={12} /> Edit
-                      </button>
-                    </div>
+                        <td className="px-4 py-3 text-[11px] font-mono text-gray-400 whitespace-nowrap">
+                          {(page - 1) * PAGE_SIZE + index + 1}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.media?.[0]?.url ? (
+                            <img
+                              src={item.media[0].url}
+                              alt={item.title}
+                              className="h-12 w-16 rounded-md object-cover border border-gray-100"
+                            />
+                          ) : (
+                            <div className="flex h-12 w-16 items-center justify-center rounded-md border border-dashed border-gray-200 bg-gray-50 text-[10px] text-gray-300">
+                              No Image
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
+                          {item.title || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">
+                          {item.propertyId && propertyNameById[item.propertyId]
+                            ? propertyNameById[item.propertyId]
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                          {item.propertyTypeName ||
+                            (item.propertyId
+                              ? propertyTypeByPropertyId[item.propertyId]
+                              : "") ||
+                            "—"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {item.numberOfPersons ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/5 px-2 py-0.5 text-[10px] font-bold text-primary">
+                              <Users size={10} /> {item.numberOfPersons}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-600 max-w-[280px]">
+                          <p className="line-clamp-2">{item.description || "—"}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                          >
+                            <Pencil size={12} /> Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
+                  <p className="text-xs text-gray-400">
+                    Page <span className="font-semibold text-gray-600">{page}</span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-gray-600">{totalPages}</span>
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronLeft size={15} />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(
+                        (p) =>
+                          p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                      )
+                      .reduce((acc, p, idx, arr) => {
+                        if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                        acc.push(p);
+                        return acc;
+                      }, [])
+                      .map((p, idx) =>
+                        p === "..." ? (
+                          <span
+                            key={`booking-ellipsis-${idx}`}
+                            className="px-2 text-gray-400 text-xs"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => setPage(p)}
+                            className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                              page === p
+                                ? "text-white shadow-sm"
+                                : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                            }`}
+                            style={page === p ? { backgroundColor: colors.primary } : {}}
+                          >
+                            {p}
+                          </button>
+                        ),
+                      )}
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronRight size={15} />
+                    </button>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </>
