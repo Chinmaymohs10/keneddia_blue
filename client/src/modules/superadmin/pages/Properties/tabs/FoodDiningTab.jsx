@@ -188,18 +188,8 @@ const FoodDiningTab = ({ propertyData }) => {
       return;
     }
 
-    if (!resolvedPropertyTypeId) {
-      showError("Property type ID is missing");
-      return;
-    }
-
     if (!formData.attachRestaurantId) {
       showError("Please select a restaurant");
-      return;
-    }
-
-    if (!editingItem && !formData.imageFile) {
-      showError("Please upload a dining image");
       return;
     }
 
@@ -406,7 +396,6 @@ const FoodDiningTab = ({ propertyData }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, part1: e.target.value }))
                     }
-                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
                     placeholder="Delux Dining"
                   />
@@ -422,7 +411,6 @@ const FoodDiningTab = ({ propertyData }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, part2: e.target.value }))
                     }
-                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
                     placeholder="BalconyExperience"
                   />
@@ -438,7 +426,6 @@ const FoodDiningTab = ({ propertyData }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, time: e.target.value }))
                     }
-                    required
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
                     placeholder="7 PM - 11 PM"
                   />
@@ -446,7 +433,7 @@ const FoodDiningTab = ({ propertyData }) => {
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-500 mb-2">
-                    Attach Restaurant
+                    Attach Restaurant <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.attachRestaurantId}

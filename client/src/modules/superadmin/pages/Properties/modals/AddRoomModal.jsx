@@ -689,20 +689,15 @@ const AddRoomModal = ({
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
                     Discount
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
-                      Rs.
-                    </span>
-                    <input
-                      type="number"
-                      name="discount"
-                      value={formData.discount}
-                      onChange={handleNumberChange}
-                      min="0"
-                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    name="discount"
+                    value={formData.discount}
+                    onChange={handleNumberChange}
+                    min="0"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    placeholder="0.00"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">

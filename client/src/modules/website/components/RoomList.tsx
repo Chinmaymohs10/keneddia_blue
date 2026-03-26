@@ -21,7 +21,7 @@ export default function RoomList({
   rooms,
   selectedRoomId,
   onSelectRoom,
-  policyHighlightText = "Free Cancellation",
+  policyHighlightText,
 }: RoomListProps) {
   const [expandedRoom, setExpandedRoom] = useState<string | null>(null);
 
@@ -202,10 +202,12 @@ export default function RoomList({
                       </div>
                     </div>
 
-                    <div className="mb-3 flex items-center gap-2 text-sm font-medium text-green-600">
-                      <Check className="h-4 w-4" />
-                      <span>{policyHighlightText}</span>
-                    </div>
+                    {policyHighlightText ? (
+                      <div className="mb-3 flex items-center gap-2 text-sm font-medium text-green-600">
+                        <Check className="h-4 w-4" />
+                        <span>{policyHighlightText}</span>
+                      </div>
+                    ) : null}
 
                     <div className="mb-4 flex flex-wrap items-center gap-2">
                       <span className="rounded-md bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-stone-700">

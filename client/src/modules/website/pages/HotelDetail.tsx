@@ -174,23 +174,6 @@ const parseCombinedRatingMeta = (value: unknown) => {
 };
 
 // Sample data — replace with API data when available
-const sampleRestaurants: Restaurant[] = [
-  {
-    id: 1,
-    name: "The Royal Durbbar",
-    cuisine: "Awadhi",
-    timings: "7:00 PM - 11:30 PM",
-    image: undefined,
-  },
-  {
-    id: 2,
-    name: "24/7 Pavilion",
-    cuisine: "Multi-Cuisine",
-    timings: "24 Hours",
-    image: undefined,
-  },
-];
-
 const normalizeDiningList = (response: any) => {
   const data = response?.data?.data || response?.data || response || [];
   return Array.isArray(data) ? data : [];
@@ -231,9 +214,9 @@ const buildRestaurantPathMap = (rawData: ApiPropertyData[]) => {
 
 const mapDiningItem = (item: any): Restaurant => ({
   id: item?.id ?? `dining-${item?.attachRestaurantId ?? "item"}`,
-  name: item?.part1 || item?.attachRestaurantName || "Dining Experience",
-  cuisine: item?.attachRestaurantName || item?.part2 || "Restaurant",
-  timings: item?.time || "Timings available on request",
+  name: item?.part1 || "",
+  cuisine: item?.attachRestaurantName || item?.part2 || "",
+  timings: item?.time || "",
   image: item?.image?.url || undefined,
   description: item?.part2 || "",
   attachedRestaurantName: item?.attachRestaurantName || "",
@@ -380,7 +363,7 @@ export default function HotelDetail() {
   );
 
   const diningSectionItems = useMemo(
-    () => (diningItems.length > 0 ? diningItems : sampleRestaurants),
+    () => diningItems,
     [diningItems],
   );
 
@@ -435,6 +418,21 @@ export default function HotelDetail() {
     () => hotel?.amenities?.slice(0, 4) ?? [],
     [hotel],
   );
+
+  const roomPolicyHighlightText = useMemo(() => {
+    const normalizedFreeCancellation = "free cancellation";
+
+    const matchedPolicy = (policies?.policies || []).find((policy) => {
+      const normalizedPolicyName = String(policy?.name || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
+
+      return policy?.isActive && normalizedPolicyName === normalizedFreeCancellation;
+    });
+
+    return matchedPolicy?.name || "";
+  }, [policies]);
 
   const fetchNearbyFromOSM = async (
     lat: number,
@@ -1157,7 +1155,7 @@ export default function HotelDetail() {
                     rooms={rooms}
                     selectedRoomId={effectiveSelectedRoomId}
                     onSelectRoom={handleRoomBook}
-                    policyHighlightText="Free Cancellation"
+                    policyHighlightText={roomPolicyHighlightText}
                   />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
@@ -1324,12 +1322,16 @@ export default function HotelDetail() {
                                       )}
                                     </div>
                                     <div className="p-4 space-y-1">
-                                      <p className="text-base font-semibold text-foreground leading-snug">
-                                        {restaurant.name}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        {restaurant.cuisine}
-                                      </p>
+                                      {restaurant.name ? (
+                                        <p className="text-base font-semibold text-foreground leading-snug">
+                                          {restaurant.name}
+                                        </p>
+                                      ) : null}
+                                      {restaurant.cuisine ? (
+                                        <p className="text-sm text-muted-foreground">
+                                          {restaurant.cuisine}
+                                        </p>
+                                      ) : null}
                                       {restaurant.description &&
                                       restaurant.description !==
                                         restaurant.cuisine ? (
@@ -1347,14 +1349,16 @@ export default function HotelDetail() {
                                           </span>
                                         </div>
                                       ) : null}
-                                      <div className="pt-2 flex items-center gap-1 text-sm">
-                                        <span className="text-red-600 font-semibold">
-                                          Open:
-                                        </span>
-                                        <span className="text-muted-foreground">
-                                          {restaurant.timings}
-                                        </span>
-                                      </div>
+                                      {restaurant.timings ? (
+                                        <div className="pt-2 flex items-center gap-1 text-sm">
+                                          <span className="text-red-600 font-semibold">
+                                            Open:
+                                          </span>
+                                          <span className="text-muted-foreground">
+                                            {restaurant.timings}
+                                          </span>
+                                        </div>
+                                      ) : null}
                                     </div>
                                   </div>
                                 </div>
