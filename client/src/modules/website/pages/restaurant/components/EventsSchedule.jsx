@@ -44,11 +44,11 @@ const EventLayer = ({ event, index, scrollYProgress }) => {
   return (
     <motion.div
       style={{ y, opacity, zIndex: index + 10 }}
-      className="absolute inset-0 w-full h-full bg-[#050505] flex items-center overflow-hidden"
+      className="absolute inset-0 flex h-full w-full items-center overflow-hidden bg-white dark:bg-[#050505]"
     >
       <motion.div style={{ scale: imgScale }} className="absolute inset-0 z-0">
         <img src={event.img} className="w-full h-full object-cover opacity-40 grayscale-[0.6]" alt="" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent dark:from-black dark:via-black/80 dark:to-transparent" />
       </motion.div>
 
       <div className="container mx-auto px-6 md:px-20 relative z-10">
@@ -58,13 +58,13 @@ const EventLayer = ({ event, index, scrollYProgress }) => {
             <span className="text-primary text-xs font-black uppercase tracking-[0.5em]">{event.type}</span>
           </div>
 
-          <h1 className="text-6xl md:text-9xl font-serif text-white leading-none tracking-tighter">
+          <h1 className="text-6xl font-serif leading-none tracking-tighter text-zinc-900 dark:text-white md:text-9xl">
             {event.title.split(' ').map((word, i) => (
               <span key={i} className={i % 2 !== 0 ? "italic text-white/20 block md:inline" : "block md:inline"}>{word} </span>
             ))}
           </h1>
 
-          <div className="flex flex-wrap gap-8 py-4 border-y border-white/10 w-fit">
+          <div className="flex w-fit flex-wrap gap-8 border-y border-zinc-200 py-4 dark:border-white/10">
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-primary" />
               <span className="text-white font-serif italic text-xl">{event.date}</span>
@@ -101,13 +101,13 @@ export default function EventsSchedule() {
   };
 
   return (
-    <section ref={targetRef} className="relative h-[300vh] bg-[#050505]">
+    <section ref={targetRef} className="relative h-[300vh] bg-white transition-colors duration-500 dark:bg-[#050505]">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         
         {/* REVERSE PARALLAX BACKGROUND */}
         <motion.div 
           style={{ x: bgX }}
-          className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[25rem] font-black text-white/[0.01] pointer-events-none select-none italic"
+          className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[25rem] font-black text-zinc-900/[0.03] pointer-events-none select-none italic dark:text-white/[0.01]"
         >
           MOMENTS MOMENTS MOMENTS
         </motion.div>
@@ -123,7 +123,7 @@ export default function EventsSchedule() {
         <div className="absolute bottom-[10%] w-full z-[100] px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-8">
           
           {/* NAVIGATION DOCK (Center on Mobile, Left on Desktop) */}
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md p-2 rounded-full border border-white/10">
+          <div className="flex items-center gap-4 rounded-full border border-zinc-200 bg-white/80 p-2 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
             {EVENTS.map((_, idx) => (
               <button
                 key={idx}
@@ -155,7 +155,7 @@ export default function EventsSchedule() {
           >
             <Button 
               variant="outline"
-              className="rounded-full border-primary/30 bg-black/50 text-primary hover:bg-primary hover:text-white transition-all gap-2 h-14 px-8 shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+              className="h-14 gap-2 rounded-full border border-primary/30 bg-white/85 px-8 text-primary shadow-[0_0_20px_rgba(234,179,8,0.1)] transition-all hover:bg-primary hover:text-white dark:bg-black/50"
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             >
               <MousePointer2 className="w-4 h-4" />

@@ -19,12 +19,12 @@ export default function AboutRestaurant() {
     <section 
       ref={containerRef}
       id="about" 
-      className="relative py-24 bg-[#050505] overflow-hidden"
+      className="relative overflow-hidden bg-white py-24 transition-colors duration-500 dark:bg-[#050505]"
     >
       {/* BACKGROUND DECORATIVE LAYER */}
       <motion.div 
         style={{ x: textX }}
-        className="absolute top-1/3 left-0 whitespace-nowrap text-[15rem] font-black text-white/[0.02] pointer-events-none select-none italic uppercase z-0"
+        className="absolute top-1/3 left-0 whitespace-nowrap text-[15rem] font-black text-zinc-900/[0.03] pointer-events-none select-none italic uppercase z-0 dark:text-white/[0.02]"
       >
         Authentic Heritage Ghaziabad
       </motion.div>
@@ -61,13 +61,13 @@ export default function AboutRestaurant() {
             {/* Offer Card: Buffet */}
             <motion.div
               style={{ y: titleY }} // Linked to headline speed
-              className="absolute -bottom-10 right-0 md:right-10 bg-zinc-900 border border-white/10 p-6 md:p-8 shadow-2xl max-w-[260px]"
+              className="absolute -bottom-10 right-0 max-w-[260px] border border-zinc-200 bg-white p-6 shadow-2xl md:right-10 md:p-8 dark:border-white/10 dark:bg-zinc-900"
             >
               <div className="flex items-center gap-2 mb-3 text-primary">
                 <Sparkles className="w-3 h-3" />
                 <span className="text-[9px] font-bold uppercase tracking-widest">Featured</span>
               </div>
-              <h4 className="text-white font-serif text-xl mb-2">Grand Lunch Buffet</h4>
+              <h4 className="mb-2 font-serif text-xl text-zinc-900 dark:text-white">Grand Lunch Buffet</h4>
               <div className="flex items-baseline gap-2">
                 <span className="text-primary font-serif text-2xl">₹899</span>
                 <span className="text-white/30 text-[10px] uppercase font-bold tracking-widest">Daily • 12-4 PM</span>
@@ -86,9 +86,9 @@ export default function AboutRestaurant() {
                 </span>
               </div>
 
-              <h2 className="text-5xl md:text-7xl font-serif text-white leading-tight tracking-tight">
+              <h2 className="text-5xl font-serif leading-tight tracking-tight text-zinc-900 dark:text-white md:text-7xl">
                 A Symphony of <br />
-                <span className="italic text-white/40 italic decoration-primary/20 underline decoration-1 underline-offset-[12px]">
+                <span className="italic decoration-primary/20 underline decoration-1 underline-offset-[12px] text-zinc-400 dark:text-white/40">
                   Fine Flavors.
                 </span>
               </h2>
@@ -99,10 +99,10 @@ export default function AboutRestaurant() {
               style={{ y: descY }}
               className="space-y-8"
             >
-              <div className="space-y-6 text-white/70 text-lg md:text-xl leading-relaxed font-light">
+              <div className="space-y-6 text-lg font-light leading-relaxed text-zinc-600 dark:text-white/70 md:text-xl">
                 <p>
                   We believe dining is more than just a meal; it’s a 
-                  <span className="text-white font-medium"> curated premium experience</span> designed 
+                  <span className="font-medium text-zinc-900 dark:text-white"> curated premium experience</span> designed 
                   to ground you in the moment. 
                 </p>
                 <p>
@@ -113,7 +113,7 @@ export default function AboutRestaurant() {
               </div>
 
               {/* Functional Details */}
-              <div className="grid grid-cols-2 gap-8 pt-10 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-8 border-t border-zinc-200 pt-10 dark:border-white/10">
                 <div className="group">
                   <h4 className="text-white/40 font-bold text-[9px] uppercase tracking-widest mb-3 flex items-center gap-2">
                     <Clock className="w-3 h-3 text-primary" /> Availability

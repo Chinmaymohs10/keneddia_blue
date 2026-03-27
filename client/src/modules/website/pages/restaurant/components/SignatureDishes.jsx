@@ -22,7 +22,7 @@ const DISHES_ROW_2 = [
 const ALL_DISHES = [...DISHES_ROW_1, ...DISHES_ROW_2];
 
 const DishCard = ({ dish }) => (
-  <motion.div className="relative flex-shrink-0 w-[280px] h-[340px] bg-zinc-900 border border-white/5 overflow-hidden group">
+  <motion.div className="relative h-[340px] w-[280px] flex-shrink-0 overflow-hidden border border-zinc-200 bg-zinc-50 group dark:border-white/5 dark:bg-zinc-900">
     <div className="absolute inset-0 overflow-hidden">
       <motion.img 
         src={dish.img} 
@@ -63,7 +63,7 @@ export default function SignatureDishes() {
   const currentItems = ALL_DISHES.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <section ref={containerRef} className="relative py-24 bg-[#050505] overflow-hidden">
+    <section ref={containerRef} className="relative overflow-hidden bg-white py-24 transition-colors duration-500 dark:bg-[#050505]">
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-12 gap-12">
           
@@ -71,7 +71,7 @@ export default function SignatureDishes() {
           <div className="lg:col-span-3 h-fit sticky top-24 space-y-8">
             <div className="space-y-2">
               <span className="text-primary text-[10px] font-black uppercase tracking-[0.5em]">The Masters</span>
-              <h2 className="text-white text-4xl font-serif leading-tight">Curated By <br/><span className="italic text-white/40">Experts</span></h2>
+              <h2 className="text-4xl font-serif leading-tight text-zinc-900 dark:text-white">Curated By <br/><span className="italic text-zinc-400 dark:text-white/40">Experts</span></h2>
             </div>
             <div className="space-y-6">
               {[
@@ -83,7 +83,7 @@ export default function SignatureDishes() {
                     <img src={chef.img} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-serif">{chef.name}</p>
+                    <p className="text-sm font-serif text-zinc-900 dark:text-white">{chef.name}</p>
                     <p className="text-white/30 text-[9px] uppercase tracking-widest">{chef.role}</p>
                   </div>
                 </div>
@@ -96,7 +96,7 @@ export default function SignatureDishes() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-[1px] bg-primary/40" />
-                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Spicy Darbar</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/40">Spicy Darbar</span>
               </div>
               <motion.div style={{ x: smoothRow1 }} className="flex gap-6">
                 {DISHES_ROW_1.map(dish => <DishCard key={dish.id} dish={dish} />)}
@@ -105,7 +105,7 @@ export default function SignatureDishes() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-end gap-2">
-                <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Chinese & Fusion</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-white/40">Chinese & Fusion</span>
                 <div className="w-8 h-[1px] bg-primary/40" />
               </div>
               <motion.div style={{ x: smoothRow2 }} className="flex gap-6">
@@ -120,10 +120,10 @@ export default function SignatureDishes() {
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 40 }}
-                  className="pt-20 space-y-10 border-t border-white/5"
+                  className="space-y-10 border-t border-zinc-200 pt-20 dark:border-white/5"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-2xl font-serif text-white italic">Manual Exploration</h3>
+                    <h3 className="text-2xl font-serif italic text-zinc-900 dark:text-white">Manual Exploration</h3>
                     <div className="flex items-center gap-4">
                       <button 
                         disabled={currentPage === 1}
@@ -145,9 +145,9 @@ export default function SignatureDishes() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                     {currentItems.map(dish => (
-                      <motion.div key={dish.id} layout className="bg-white/5 p-4 border border-white/5 flex flex-col">
+                      <motion.div key={dish.id} layout className="flex flex-col border border-zinc-200 bg-zinc-50 p-4 dark:border-white/5 dark:bg-white/5">
                         <img src={dish.img} className="aspect-square object-cover mb-4 grayscale-[0.5]" alt="" />
-                        <h4 className="text-white font-serif text-lg mb-1">{dish.name}</h4>
+                        <h4 className="mb-1 font-serif text-lg text-zinc-900 dark:text-white">{dish.name}</h4>
                         <p className="text-primary text-sm font-serif mb-4">{dish.price}</p>
                         <Button size="sm" variant="outline" className="rounded-none border-white/10 text-[9px] uppercase tracking-widest group">
                           View Details <ArrowUpRight className="ml-2 w-3 h-3 group-hover:translate-x-1" />
@@ -167,7 +167,7 @@ export default function SignatureDishes() {
           <Button 
             onClick={() => setIsExpanded(!isExpanded)}
             variant="outline"
-            className="rounded-none border-primary/20 bg-transparent text-white hover:bg-primary hover:text-black transition-all h-14 px-12 text-[10px] font-bold uppercase tracking-widest"
+            className="h-14 rounded-none border-primary/20 bg-transparent px-12 text-[10px] font-bold uppercase tracking-widest text-zinc-900 transition-all hover:bg-primary hover:text-black dark:text-white"
           >
             {isExpanded ? "Close Explorer" : "Explore Full Menu Details"}
           </Button>

@@ -40,12 +40,12 @@ export default function BanquetsAndCatering() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-16 bg-[#050505] overflow-hidden min-h-[700px]"
+      className="relative min-h-[700px] overflow-hidden bg-white py-16 transition-colors duration-500 dark:bg-[#050505]"
     >
       {/* BACKGROUND REVERSE TEXT - Reduced Size */}
       <motion.div 
         style={{ x: textX, opacity: 0.02 }}
-        className="absolute top-1/4 left-0 whitespace-nowrap text-[10rem] md:text-[12rem] font-black text-white pointer-events-none select-none italic uppercase z-0"
+        className="absolute top-1/4 left-0 whitespace-nowrap text-[10rem] font-black text-zinc-900/[0.04] pointer-events-none select-none italic uppercase z-0 md:text-[12rem] dark:text-white"
       >
         Celebrations Gatherings Events
       </motion.div>
@@ -59,8 +59,8 @@ export default function BanquetsAndCatering() {
               Event Services
             </span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-serif text-white leading-tight">
-            Memories <span className="italic text-white/30">Beyond Dining.</span>
+          <h2 className="text-4xl font-serif leading-tight text-zinc-900 dark:text-white md:text-6xl">
+            Memories <span className="italic text-zinc-400 dark:text-white/30">Beyond Dining.</span>
           </h2>
         </div>
 
@@ -76,7 +76,7 @@ export default function BanquetsAndCatering() {
                 className="group relative h-[360px] cursor-pointer"
               >
                 {/* 1. Transparent Layer: Backdrop Blur & Glass */}
-                <div className="absolute inset-0 z-10 bg-white/[0.02] backdrop-blur-md border border-white/10 group-hover:border-primary/40 transition-all duration-500 overflow-hidden">
+                <div className="absolute inset-0 z-10 overflow-hidden border border-zinc-200 bg-white/70 backdrop-blur-md transition-all duration-500 group-hover:border-primary/40 dark:border-white/10 dark:bg-white/[0.02]">
                   
                   {/* 2. Image Layer: Faded & Subtle */}
                   <img
@@ -95,8 +95,8 @@ export default function BanquetsAndCatering() {
                 {/* Content Layer */}
                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-20">
                   <div className="flex justify-between items-start">
-                    <div className="w-10 h-10 rounded-none border border-white/20 flex items-center justify-center backdrop-blur-xl group-hover:bg-primary group-hover:border-primary transition-all duration-500">
-                      <item.Icon className="w-4 h-4 text-white group-hover:text-black" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-none border border-zinc-200 backdrop-blur-xl transition-all duration-500 group-hover:border-primary group-hover:bg-primary dark:border-white/20">
+                      <item.Icon className="h-4 w-4 text-zinc-900 group-hover:text-black dark:text-white" />
                     </div>
                     <span className="text-[9px] text-white/20 font-black tracking-widest uppercase">
                       Vertical 0{index + 1}
@@ -104,7 +104,7 @@ export default function BanquetsAndCatering() {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-serif text-white group-hover:text-primary transition-colors">
+                    <h3 className="text-2xl font-serif text-zinc-900 transition-colors group-hover:text-primary dark:text-white">
                       {item.title}
                     </h3>
                     <p className="text-white/40 text-[11px] leading-relaxed max-w-[180px] opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
@@ -131,7 +131,7 @@ export default function BanquetsAndCatering() {
           
           <Button
             onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-            className="group relative bg-transparent border border-white/20 text-white hover:border-primary px-10 h-14 rounded-none text-[9px] font-bold uppercase tracking-[0.3em] transition-all overflow-hidden"
+            className="group relative h-14 overflow-hidden rounded-none border border-zinc-300 bg-transparent px-10 text-[9px] font-bold uppercase tracking-[0.3em] text-zinc-900 transition-all hover:border-primary dark:border-white/20 dark:text-white"
           >
             <span className="relative z-10">Enquire Now</span>
             <div className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-300" />

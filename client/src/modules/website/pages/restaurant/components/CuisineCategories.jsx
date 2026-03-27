@@ -50,13 +50,13 @@ export default function CuisineCategories() {
   return (
     <section 
       ref={containerRef}
-      className="relative py-24 bg-[#050505] overflow-hidden"
+      className="relative overflow-hidden bg-white py-24 transition-colors duration-500 dark:bg-[#050505]"
     >
       {/* BACKGROUND ANIMATION LAYER - Centered on Header */}
       <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none z-0">
         <motion.div 
           style={{ x: textX, opacity: bgOpacity }}
-          className="absolute top-20 left-0 whitespace-nowrap text-[12rem] md:text-[18rem] font-black text-white/[0.03] select-none italic"
+          className="absolute top-20 left-0 whitespace-nowrap text-[12rem] font-black text-zinc-900/[0.04] select-none italic md:text-[18rem] dark:text-white/[0.03]"
         >
           DESTINATION DESTINATION
         </motion.div>
@@ -82,10 +82,10 @@ export default function CuisineCategories() {
               </span>
             </div>
             
-            <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.1] mb-2 tracking-tight">
+            <h2 className="mb-2 text-5xl font-serif leading-[1.1] tracking-tight text-zinc-900 dark:text-white md:text-7xl lg:text-8xl">
               One Location.
             </h2>
-            <h2 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white/40 italic leading-[1.1] tracking-tight">
+            <h2 className="text-5xl font-serif italic leading-[1.1] tracking-tight text-zinc-400 dark:text-white/40 md:text-7xl lg:text-8xl">
               Multiple Memories.
             </h2>
           </motion.div>
@@ -106,7 +106,7 @@ export default function CuisineCategories() {
               }}
               className="group relative h-[480px] cursor-pointer"
             >
-              <div className="relative h-full w-full overflow-hidden bg-zinc-900 border border-white/10 group-hover:border-primary/40 transition-all duration-500">
+              <div className="relative h-full w-full overflow-hidden border border-zinc-200 bg-zinc-50 transition-all duration-500 group-hover:border-primary/40 dark:border-white/10 dark:bg-zinc-900">
                 
                 {/* Image Component */}
                 <div className="absolute inset-0">
