@@ -138,9 +138,9 @@ export default function Navbar({
   const location = useLocation();
   const navigate = useNavigate();
   const showQuickBook =
-    location.pathname === "/" || location.pathname === "/hotels";
+    location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage";
   const useWhiteTextOnTransparent =
-    location.pathname === "/" || location.pathname === "/hotels";
+    location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage";
   const transparentMode = !scrolled;
   const transparentTextClass = useWhiteTextOnTransparent
     ? "text-white hover:text-white/80"

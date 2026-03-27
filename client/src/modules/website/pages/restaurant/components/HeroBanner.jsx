@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Menu, Wine, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +11,7 @@ const SLIDES = [
     desc: "A curated journey through Chinese, Italian, and Indian Tandoor traditions.",
     img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1600",
     isBYOB: false,
-    bgTitle: "AUTHENTIC"
+    bgTitle: "AUTHENTIC",
   },
   {
     id: 2,
@@ -20,179 +20,263 @@ const SLIDES = [
     desc: "Pair your favorite vintage with our signature Asian Fusion menu.",
     img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
     isBYOB: true,
-    bgTitle: "PREMIUM"
+    bgTitle: "PREMIUM",
   },
   {
     id: 3,
     tag: "The Ambience",
     title: "Modern Spirit, Timeless Flavor",
     desc: "An elegant setting designed for intimate dinners and grand celebrations.",
-    img: "https://images.unsplash.com/photo-1550966841-3ee7adac1661?q=80&w=1600",
+    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
     isBYOB: false,
-    bgTitle: "ELEGANCE"
-  }
+    bgTitle: "ELEGANCE",
+  },
 ];
 
 export default function HeroBanner() {
-  const [current, setCurrent] = useState(0);
-  const containerRef = useRef(null);
-
-  // Scroll logic for Parallax
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
-
-  // TRANSFORMATIONS (The "Reverse" and Storytelling effects)
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]); // Slow descent
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0px", "-150px"]); // Reverse Lift
-  const textX = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]); // Horizontal Slide
-  const cardOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]); // Fade out on scroll
-
-  const nextSlide = () => setCurrent((prev) => (prev + 1) % SLIDES.length);
-  const prevSlide = () => setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 8000);
-    return () => clearInterval(timer);
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % SLIDES.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
   }, []);
 
-  return (
-    <section 
-      ref={containerRef}
-      className="relative h-screen min-h-[700px] w-full overflow-hidden bg-black"
-    >
-      {/* 1. LAYER: Large Background Parallax Text (Reverse Horizontal) */}
-      <motion.div 
-        style={{ x: textX }}
-        className="absolute top-1/4 left-0 whitespace-nowrap text-[20rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic"
-      >
-        {SLIDES[current].bgTitle}
-      </motion.div>
+  const goToSlide = (index) => {
+    setActiveIndex((index + SLIDES.length) % SLIDES.length);
+  };
 
-      {/* 2. LAYER: Background Images (Slow Vertical Parallax) */}
+  const activeSlide = SLIDES[activeIndex];
+
+  return (
+    <section className="relative h-[90vh] w-full overflow-hidden bg-background">
       <AnimatePresence mode="wait">
         <motion.div
-          key={current}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          key={activeSlide.id}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          <motion.div style={{ y: bgY }} className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
-            <img
-              src={SLIDES[current].img}
-              alt="Background"
-              className="h-full w-full object-cover scale-110"
-            />
-          </motion.div>
+          <img
+            src={activeSlide.img}
+            alt={activeSlide.title}
+            className="hidden h-full w-full object-cover md:block"
+          />
+          <img
+            src={activeSlide.img}
+            alt={activeSlide.title}
+            className="block h-full w-full object-cover md:hidden"
+          />
         </motion.div>
       </AnimatePresence>
 
-      {/* 3. LAYER: Main Content (Reverse Vertical Lift) */}
-      <div className="container mx-auto px-6 h-full flex flex-col justify-center relative z-20 pt-16">
-        <motion.div 
-          style={{ y: contentY, opacity: cardOpacity }}
-          className="max-w-2xl"
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`card-${current}`}
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              {/* Ultra-Compact Glass Card */}
-              <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                
-                {/* Meta Row */}
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-[10px] uppercase tracking-[0.5em] text-primary font-bold">
-                    {SLIDES[current].tag}
-                  </span>
-                  {SLIDES[current].isBYOB && (
-                    <span className="flex items-center gap-1.5 bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-[9px] font-black uppercase tracking-tighter">
-                      <Wine className="w-3.5 h-3.5" /> Premium BYOB
-                    </span>
-                  )}
-                </div>
+      <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" />
 
-                {/* Headline */}
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif text-white mb-4 leading-[1.1] tracking-tight">
-                  {SLIDES[current].title}
-                </h1>
-
-                {/* Description */}
-                <p className="text-base md:text-lg text-white/60 mb-8 max-w-md leading-relaxed font-light">
-                  {SLIDES[current].desc}
-                </p>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4 mb-8">
-                  <Button 
-                    size="lg"
-                    className="rounded-none px-8 h-14 bg-primary hover:bg-primary/90 text-white transition-all shadow-xl shadow-primary/20 group"
-                  >
-                    <Calendar className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> 
-                    Reserve a Table
-                  </Button>
-                  
-                  <Button 
-                    size="lg"
-                    variant="outline" 
-                    className="rounded-none px-8 h-14 border-white/20 text-white hover:bg-white hover:text-black transition-colors"
-                  >
-                    <Menu className="w-4 h-4 mr-2" /> Explore Menu
-                  </Button>
-                </div>
-
-                {/* Cuisine Row */}
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-6 border-t border-white/10">
-                  {["Chinese", "Tandoor", "Asian Fusion", "Italian"].map((cuisine) => (
-                    <span key={cuisine} className="text-[10px] uppercase tracking-widest text-white/40 font-bold hover:text-primary transition-colors cursor-default">
-                      • {cuisine}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
+      <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
+        {activeSlide.bgTitle}
       </div>
 
-      {/* 4. LAYER: Navigation & Controls */}
-      <div className="absolute bottom-10 right-6 md:right-16 z-30 flex items-center gap-8">
-        <div className="hidden md:flex flex-col items-end">
-          <div className="flex items-baseline gap-2">
-            <span className="text-white text-5xl font-serif italic tracking-tighter">0{current + 1}</span>
-            <span className="text-white/20 text-xl font-serif">/03</span>
-          </div>
-          <div className="w-32 h-[2px] bg-white/10 relative mt-2 overflow-hidden">
-            <motion.div 
-              className="absolute h-full bg-primary top-0 left-0"
-              initial={{ width: 0 }}
-              animate={{ width: `${((current + 1) / SLIDES.length) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
+      <div className="relative z-10 hidden h-full items-center md:flex">
+        <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
+          <div className="w-full md:w-[70%] xl:w-[60%]">
+            <motion.h1
+              key={`title-${activeSlide.id}`}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.8 }}
+              className="mb-6 text-4xl font-serif font-medium leading-tight text-white drop-shadow-lg md:text-5xl lg:text-6xl"
+            >
+              {activeSlide.title}
+            </motion.h1>
+
+            <motion.p
+              key={`desc-${activeSlide.id}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="mb-10 max-w-2xl text-lg font-light uppercase tracking-[0.18em] text-white/85"
+            >
+              {activeSlide.desc}
+            </motion.p>
           </div>
         </div>
+      </div>
 
-        <div className="flex gap-2">
-          <button 
-            onClick={prevSlide} 
-            className="p-4 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95"
+      <div className="relative z-10 block md:hidden">
+        <div
+          className="relative w-full overflow-hidden bg-black"
+          style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+        >
+          <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={`mobile-${activeSlide.id}`}
+                src={activeSlide.img}
+                alt={activeSlide.title}
+                initial={{ opacity: 0, scale: 1.03 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7 }}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </AnimatePresence>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+            <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
+          </div>
+
+          <div className="absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+
+          <div
+            className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center"
+            style={{ top: "64px", bottom: "2.5rem" }}
           >
-            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-          </button>
-          <button 
-            onClick={nextSlide} 
-            className="p-4 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95"
-          >
-            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <motion.span
+              key={`m-tag-${activeSlide.id}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-2 inline-flex rounded-full bg-white/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
+            >
+              {activeSlide.tag}
+            </motion.span>
+
+            <motion.h1
+              key={`m-title-${activeSlide.id}`}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.6 }}
+              className="mb-2 text-xl font-serif font-semibold leading-snug text-white drop-shadow-md"
+            >
+              {activeSlide.title}
+            </motion.h1>
+
+            <motion.p
+              key={`m-desc-${activeSlide.id}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="mb-4 text-[11px] font-light uppercase tracking-[0.18em] text-white/75"
+            >
+              {activeSlide.desc}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.45, duration: 0.6 }}
+              className="flex flex-wrap items-center justify-center gap-3"
+            >
+              <Button className="h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]">
+                <Calendar className="mr-2 h-3.5 w-3.5" />
+                Reserve
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto rounded-full border-white/30 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md"
+              >
+                <Menu className="mr-2 h-3.5 w-3.5" />
+                Menu
+              </Button>
+            </motion.div>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
+            <button
+              onClick={() => goToSlide(activeIndex - 1)}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              {SLIDES.map((_, index) => (
+                <div
+                  key={`mob-dot-${index}`}
+                  onClick={() => goToSlide(index)}
+                  className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
+                    activeIndex === index
+                      ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                      : "w-4 bg-white/40 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => goToSlide(activeIndex + 1)}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute bottom-48 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
+        <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
+          {SLIDES.map((slide, index) => (
+            <motion.div
+              key={`thumbnail-${slide.id}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.12 + 0.35 }}
+              onClick={() => goToSlide(index)}
+              className={`group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 ${
+                activeIndex === index
+                  ? "z-10 scale-105 ring-2 ring-[#FDFBF7] shadow-2xl"
+                  : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
+              }`}
+            >
+              <img
+                src={slide.img}
+                alt={slide.title}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
+                <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
+                  {slide.tag}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            {SLIDES.map((_, index) => (
+              <div
+                key={`indicator-${index}`}
+                onClick={() => goToSlide(index)}
+                className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
+                  activeIndex === index
+                    ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] md:w-10 lg:w-12"
+                    : "w-4 bg-white/30 hover:bg-white/60 md:w-5 lg:w-6"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="flex gap-2 md:gap-3">
+            <button
+              onClick={() => goToSlide(activeIndex - 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+            >
+              <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
+            </button>
+            <button
+              onClick={() => goToSlide(activeIndex + 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+            >
+              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+            </button>
+          </div>
         </div>
       </div>
     </section>

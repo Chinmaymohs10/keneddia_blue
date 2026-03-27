@@ -46,10 +46,6 @@ export default function RestaurantHomepage() {
         <div id="home">
           <HeroBanner />
         </div>
-
-        {/* Cuisine Categories */}
-        <CuisineCategories />
-
         {/* About Section */}
         <AboutRestaurant />
 
