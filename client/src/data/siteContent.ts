@@ -432,3 +432,114 @@ export const siteContent = {
     ]
   }
 };
+
+export const restaurantEventShowcase = {
+  title: "Upcoming Events",
+  items: [
+    {
+      title: "Jazz Night Under the Stars",
+      date: "Dec 25, 2025",
+      media: {
+        src: barSpeakeasy,
+        alt: "Jazz Night",
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
+      description:
+        "An evening of smooth jazz and signature cocktails at our rooftop lounge.",
+      slug: "jazz-night-under-stars",
+      location: "Mumbai",
+    },
+    {
+      title: "New Year's Eve Gala",
+      date: "Dec 31, 2025",
+      media: {
+        src: heroLobby,
+        alt: "NYE Gala",
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
+      description:
+        "Ring in the new year with a grand celebration featuring live music and gourmet dining.",
+      slug: "new-years-eve-gala",
+      location: "Goa",
+    },
+    {
+      title: "Culinary Masterclass",
+      date: "Jan 15, 2026",
+      media: {
+        src: cafeParisian,
+        alt: "Culinary Class",
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
+      description:
+        "Learn the secrets of fine dining from our executive chefs.",
+      slug: "culinary-masterclass",
+      location: "Paris",
+    },
+    {
+      title: "Chef's Table Reel Experience",
+      date: "Jan 28, 2026",
+      media: {
+        src: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
+        alt: "Chef's Table Reel Experience",
+        type: "VIDEO",
+        width: 720,
+        height: 1280,
+      },
+      description:
+        "A short-form immersive chef's table preview designed in a reel-style portrait format.",
+      slug: "chefs-table-reel-experience",
+      location: "Delhi",
+    },
+    {
+      title: "Sunset Rooftop Sessions",
+      date: "Feb 08, 2026",
+      media: {
+        src: barRooftop,
+        alt: "Sunset Rooftop Sessions",
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
+      description:
+        "Golden hour cocktails, skyline dining, and live acoustic sessions at the rooftop lounge.",
+      slug: "sunset-rooftop-sessions",
+      location: "Bengaluru",
+    },
+    {
+      title: "Weekend Brunch Stories",
+      date: "Feb 14, 2026",
+      media: {
+        src: "https://samplelib.com/lib/preview/mp4/sample-10s.mp4",
+        alt: "Weekend Brunch Stories",
+        type: "VIDEO",
+        width: 1080,
+        height: 1350,
+      },
+      description:
+        "A visual brunch diary with signature plating, live counters, and celebratory dining moments.",
+      slug: "weekend-brunch-stories",
+      location: "Ghaziabad",
+    },
+    {
+      title: "Private Tasting Evening",
+      date: "Feb 22, 2026",
+      media: {
+        src: cafeUpscale,
+        alt: "Private Tasting Evening",
+        type: "IMAGE",
+        width: 1200,
+        height: 800,
+      },
+      description:
+        "Reserve a premium seat for a guided tasting menu crafted around seasonal ingredients.",
+      slug: "private-tasting-evening",
+      location: "Noida",
+    },
+  ],
+};
