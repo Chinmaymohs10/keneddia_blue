@@ -211,7 +211,7 @@ export default function RestaurantNewsSection() {
 
   return (
     <section
-      id="restaurant-news"
+      id="news"
       className="relative overflow-hidden bg-background py-12 md:py-16"
     >
       <div className="container mx-auto px-6 lg:px-12">

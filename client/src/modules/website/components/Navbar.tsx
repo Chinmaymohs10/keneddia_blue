@@ -120,7 +120,7 @@ export default function Navbar({
   logo?: NavbarBrand;
 }) {
   const brandLogo = logo || siteContent.brand.logo;
-  const darkLogo = brandLogo.image;
+  const darkLogo = (brandLogo as any).darkImage || brandLogo.image;
   const lightLogo = brandLogo.subImage || brandLogo.image;
 
   const [scrolled, setScrolled] = useState(false);
@@ -137,11 +137,18 @@ export default function Navbar({
 
   const location = useLocation();
   const navigate = useNavigate();
-  const showQuickBook =
-    location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage";
-  const useWhiteTextOnTransparent =
-    location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage";
+  const isTransparentHeroRoute =
+    location.pathname === "/" ||
+    location.pathname === "/hotels" ||
+    location.pathname === "/restaurant-homepage";
+  const showQuickBook = isTransparentHeroRoute;
+  const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
+  const shouldUseDarkLogoOnTransparentInLightMode =
+    isTransparentHeroRoute && transparentMode;
+  const currentLightModeLogo = shouldUseDarkLogoOnTransparentInLightMode
+    ? darkLogo
+    : lightLogo;
   const transparentTextClass = useWhiteTextOnTransparent
     ? "text-white hover:text-white/80"
     : "text-black hover:text-black/80 dark:text-white dark:hover:text-white/80";
@@ -210,21 +217,15 @@ export default function Navbar({
       const targetElement = document.getElementById(targetId);
 
       if (targetElement) {
-        if (location.pathname === "/") {
-          const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition =
-            elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: NAVBAR_CONFIG.scrollBehavior,
-          });
-        } else {
-          navigate(`/${href}`);
-        }
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition =
+          elementPosition + window.scrollY - NAVBAR_CONFIG.navbarHeight;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: NAVBAR_CONFIG.scrollBehavior,
+        });
       } else {
-        if (location.pathname !== "/") {
-          navigate(`/${href}`);
-        }
+        navigate(`${location.pathname}${href}`);
       }
       setMobileMenuOpen(false);
       setActiveDropdown(null);
@@ -255,15 +256,15 @@ export default function Navbar({
               >
                 {/* Light Mode Logo */}
                 <img
-                  src={brandLogo.image.src}
-                  alt={brandLogo.image.alt}
+                  src={currentLightModeLogo.src}
+                  alt={currentLightModeLogo.alt}
                   className="h-12 xl:h-14 w-auto object-contain dark:hidden"
                 />
 
                 {/* Dark Mode Logo (fallback to light if not provided) */}
                 <img
-                  src={(brandLogo as any).darkImage?.src || brandLogo.image.src}
-                  alt={(brandLogo as any).darkImage?.alt || brandLogo.image.alt}
+                  src={darkLogo.src}
+                  alt={darkLogo.alt}
                   className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
                 />
               </Link>
