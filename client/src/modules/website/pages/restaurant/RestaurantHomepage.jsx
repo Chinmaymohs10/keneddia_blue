@@ -53,20 +53,14 @@ export default function RestaurantHomepage() {
         <RestaurantQuickBooking />
 
         <RestaurantProperties />
-        
+
         <AboutRestaurant />
 
         <RestaurantOffers />
 
         {/* Events Schedule */}
         <EventsSchedule />
-
-        {/* Signature Dishes / Menu */}
-        <SignatureDishes />
-
-        {/* Reservation Form */}
-        <ReservationForm />
-
+        
         {/* Testimonials */}
         <Testimonials />
       </main>

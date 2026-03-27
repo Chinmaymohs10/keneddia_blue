@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight, ExternalLink, MapPin } from "lucide-react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  MapPin,
+  Sparkles,
+  Users,
+  ArrowRight,
+} from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import { Link } from "react-router-dom";
@@ -10,6 +19,27 @@ import { restaurantEventShowcase } from "@/data/siteContent";
 
 import "swiper/css";
 import "swiper/css/pagination";
+
+const groupBookingItems = [
+  {
+    id: 1,
+    title: "Private Dining Celebrations",
+    image:
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    id: 2,
+    title: "Corporate Lunch Packages",
+    image:
+      "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=80",
+  },
+  {
+    id: 3,
+    title: "Festive Group Reservations",
+    image:
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
+  },
+];
 
 function EventCard({ event, index }) {
   const media = event.media;
@@ -113,49 +143,116 @@ export default function EventsSchedule() {
 
   return (
     <section id="events" className="bg-muted py-10">
-      <div className="container mx-auto px-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-serif">
-            {restaurantEventShowcase?.title || "Upcoming Events"}
+      <div className="mx-auto w-[92%] max-w-7xl">
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-serif md:text-3xl">
+            Events & Group Bookings
           </h2>
-          <div className="flex gap-2">
-            <button
-              onClick={() => swiper?.slidePrev()}
-              className="rounded-full p-2 transition-colors hover:bg-white/50"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => swiper?.slideNext()}
-              className="rounded-full p-2 transition-colors hover:bg-white/50"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+          <div className="mx-auto mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
-        <Swiper
-          modules={[Navigation, Autoplay]}
-          slidesPerView={1}
-          spaceBetween={16}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
-            1200: { slidesPerView: 4 },
-          }}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          onSwiper={setSwiper}
-        >
-          {events.map((event, index) => (
-            <SwiperSlide key={event.slug || event.title}>
-              <EventCard event={event} index={index} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)]">
+          <div className="rounded-2xl border bg-card p-5">
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-serif font-semibold">
+                <Sparkles className="h-5 w-5 text-primary" />
+                {restaurantEventShowcase?.title || "Upcoming Events"}
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => swiper?.slidePrev()}
+                  className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={() => swiper?.slideNext()}
+                  className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              slidesPerView={1}
+              spaceBetween={16}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 2.2 },
+              }}
+              autoplay={{
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              onSwiper={setSwiper}
+              className="!pb-2"
+            >
+              {events.map((event, index) => (
+                <SwiperSlide key={event.slug || event.title}>
+                  <EventCard event={event} index={index} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+
+          <div className="flex h-full flex-col rounded-2xl border bg-card p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-serif font-semibold">
+                Group Booking
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {groupBookingItems.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                >
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/30 bg-muted shadow-sm">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h4 className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
+                        {item.title}
+                      </h4>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="h-10 w-10 shrink-0 rounded-full"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
+              <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
+              <div className="absolute -left-12 top-8 h-32 w-32 rounded-full bg-rose-200/35 blur-3xl" />
+              <div className="absolute right-[-20px] top-10 h-36 w-36 rounded-full bg-slate-400/20 blur-3xl" />
+              <div className="absolute bottom-[-18px] right-8 h-36 w-36 rounded-full bg-amber-200/35 blur-3xl" />
+              <div className="absolute bottom-10 left-8 h-24 w-24 rounded-full bg-sky-200/25 blur-3xl" />
+              <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
