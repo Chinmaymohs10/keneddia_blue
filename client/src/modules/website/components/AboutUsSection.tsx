@@ -72,12 +72,24 @@ const getYouTubeEmbedUrl = (url: string) => {
   );
 };
 
-export default function AboutUsSection() {
+export default function AboutUsSection({
+  initialData,
+}: {
+  initialData?: {
+    aboutUsData: AboutUsData | null;
+    ventures: Venture[];
+    recognitions: Recognition[];
+  };
+}) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
-  const [ventures, setVentures] = useState<Venture[]>([]);
-  const [recognitions, setRecognitions] = useState<Recognition[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(
+    initialData?.aboutUsData || null,
+  );
+  const [ventures, setVentures] = useState<Venture[]>(initialData?.ventures || []);
+  const [recognitions, setRecognitions] = useState<Recognition[]>(
+    initialData?.recognitions || [],
+  );
+  const [isLoading, setIsLoading] = useState(!initialData?.aboutUsData);
   const [isPaused, setIsPaused] = useState(false);
 
   const fetchAboutUs = async () => {

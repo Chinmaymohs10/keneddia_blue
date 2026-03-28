@@ -38,10 +38,14 @@ const isValidDivision = (div: any): boolean => {
   return !!(div.title?.trim() && (div.icon?.trim() || div.icons?.url));
 };
 
-export default function BusinessVerticals() {
+export default function BusinessVerticals({
+  initialData = null,
+}: {
+  initialData?: any;
+}) {
   const [isMobile, setIsMobile] = useState(false);
-  const [groupData, setGroupData] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [groupData, setGroupData] = useState<any | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);

@@ -48,9 +48,13 @@ interface NewsItem {
   active: boolean;
 }
 
-export default function NewsPress() {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function NewsPress({
+  initialItems = [],
+}: {
+  initialItems?: NewsItem[];
+}) {
+  const [newsItems, setNewsItems] = useState<NewsItem[]>(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
   const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {

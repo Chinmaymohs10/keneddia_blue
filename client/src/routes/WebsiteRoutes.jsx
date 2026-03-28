@@ -1,9 +1,6 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Route, useParams,Navigate} from "react-router-dom";
 import Home from "@/modules/website/pages/Home";
-import Hotels from "@/modules/website/pages/Hotels";
-import HotelDetail from "@/modules/website/pages/HotelDetail";
-import RoomSelection from "@/modules/website/pages/RoomSelection";
 import Cafes from "@/modules/website/pages/Cafes";
 import Bars from "@/modules/website/pages/Bars";
 import Events from "@/modules/website/pages/Events";
@@ -22,14 +19,38 @@ import HotelOfferDetails from "@/modules/website/pages/hotel/HotelOfferDetails";
 import NewsListing from "@/modules/website/pages/NewsListing";
 import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
-import RestaurantHomepage from "@/modules/website/pages/restaurant/RestaurantHomepage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
-import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
-import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
 import { GetAllPropertyDetails } from "@/Api/Api";
+
+const Hotels = lazy(() => import("@/modules/website/pages/Hotels"));
+const HotelDetail = lazy(() => import("@/modules/website/pages/HotelDetail"));
+const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection"));
+const RestaurantHomepage = lazy(
+  () => import("@/modules/website/pages/restaurant/RestaurantHomepage"),
+);
+const ResturantPage = lazy(
+  () => import("@/modules/website/pages/restaurant/ResturantPage"),
+);
+const ResturantCategoryPageTemplate = lazy(
+  () => import("@/modules/website/pages/restaurant/ResturantCategoryPageTemplate"),
+);
+
+function withRouteSuspense(element) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+          Loading...
+        </div>
+      }
+    >
+      {element}
+    </Suspense>
+  );
+}
 
 function PropertyDetailRoute() {
   const { propertySlug, propertyId } = useParams();
@@ -100,7 +121,9 @@ function PropertyDetailRoute() {
     );
   }
 
-  return resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
+  return resolvedType === "restaurant"
+    ? withRouteSuspense(<ResturantPage />)
+    : withRouteSuspense(<HotelDetail />);
 }
 
 const WebsiteRoutes = [
@@ -108,12 +131,12 @@ const WebsiteRoutes = [
   // <Route key="home" path="/" element={<Hotels />} />,
   // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
   
-  <Route key="hotels" path="/hotels" element={<Hotels />} />,
+  <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
   // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
 
-  <Route key="room-selection" path="/hotels/:hotelId/rooms" element={<RoomSelection />} />,
+  <Route key="room-selection" path="/hotels/:hotelId/rooms" element={withRouteSuspense(<RoomSelection />)} />,
   <Route key="cafes" path="/cafes" element={<Cafes />} />,
   <Route key="bars" path="/bars" element={<Bars />} />,
   <Route key="events" path="/events" element={<Events />} />,
@@ -124,11 +147,11 @@ const WebsiteRoutes = [
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
   <Route key="login" path="/login" element={<Login />} />,
   <Route key="careers" path="/careers" element={<Careers />} />,
-  <Route key="restaurant-homepage" path="/restaurant-homepage" element={<RestaurantHomepage />} />,
-  <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={<ResturantPage />} />,
+  <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
+  <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
   // Restaurant Sub-Verticals
-  <Route path="/:citySlug/:propertySlug/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
+  <Route path="/:citySlug/:propertySlug/:categoryType" element={withRouteSuspense(<ResturantCategoryPageTemplate />)}/>,
 
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,

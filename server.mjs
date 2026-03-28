@@ -31,18 +31,20 @@ const start = async () => {
 
     try {
       if (!isProd) {
+        if (ssrRoutes.has(pathname)) {
+          const templatePath = resolveFromRoot("client", "index.html");
+          const rawTemplate = await fs.readFile(templatePath, "utf-8");
+          const template = await vite.transformIndexHtml(url, rawTemplate);
+          const { render } = await vite.ssrLoadModule("/src/entry-server.jsx");
+          const { html } = await render(url, template);
+          sendHtml(res, html);
+          return;
+        }
+
         vite.middlewares(req, res, async () => {
           const templatePath = resolveFromRoot("client", "index.html");
           const rawTemplate = await fs.readFile(templatePath, "utf-8");
           const template = await vite.transformIndexHtml(url, rawTemplate);
-
-          if (ssrRoutes.has(pathname)) {
-            const { render } = await vite.ssrLoadModule("/src/entry-server.jsx");
-            const { html } = await render(url, template);
-            sendHtml(res, html);
-            return;
-          }
-
           sendHtml(res, template);
         });
         return;

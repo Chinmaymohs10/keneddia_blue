@@ -39,13 +39,20 @@ const getIconComponent = (iconName: string) => {
   return iconMap[iconName.toLowerCase()] || Sparkles;
 };
 
-export default function GlobalPresence() {
+export default function GlobalPresence({
+  initialData,
+}: {
+  initialData?: {
+    locations: { state: string; city: string }[];
+    sectionData: PresenceSectionData | null;
+  };
+}) {
   const [locations, setLocations] = useState<{ state: string; city: string }[]>(
-    [],
+    initialData?.locations || [],
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData?.sectionData);
   const [sectionData, setSectionData] = useState<PresenceSectionData | null>(
-    null,
+    initialData?.sectionData || null,
   );
 
   useEffect(() => {

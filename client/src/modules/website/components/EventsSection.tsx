@@ -42,10 +42,14 @@ interface ApiEvent {
   } | null;
 }
 
-export default function EventsSection() {
+export default function EventsSection({
+  initialEvents = [],
+}: {
+  initialEvents?: ApiEvent[];
+}) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [apiEvents, setApiEvents] = useState<ApiEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [apiEvents, setApiEvents] = useState<ApiEvent[]>(initialEvents);
+  const [loading, setLoading] = useState(initialEvents.length === 0);
 
   useEffect(() => { fetchEventData(); }, []);
 

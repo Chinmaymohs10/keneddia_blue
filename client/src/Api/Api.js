@@ -1,4 +1,5 @@
 import axios from "axios";
+import AuthService from "@/modules/auth/authService";
 
 // DEV
 const apiUrl = "http://192.168.0.135:6090/";
@@ -9,12 +10,20 @@ const apiUrl = "http://192.168.0.135:6090/";
 // const apiUrl = "https://backend.kennediablu.com/";
 
 const API = axios.create({ baseURL: apiUrl });
+const isBrowser = typeof window !== "undefined";
+
+const getStoredToken = () => {
+  if (!isBrowser) return null;
+
+  return (
+    window.sessionStorage.getItem("accessToken") ||
+    window.localStorage.getItem("accessToken")
+  );
+};
 
 API.interceptors.request.use(
   (req) => {
-    const token =
-      sessionStorage.getItem("accessToken") ||
-      localStorage.getItem("accessToken");
+    const token = getStoredToken();
     if (token) req.headers.Authorization = `Bearer ${token}`;
     return req;
   },
@@ -25,7 +34,7 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (isBrowser && error.response?.status === 401) {
       // Token expired or invalid - logout user
       AuthService.logout();
     }

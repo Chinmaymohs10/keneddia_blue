@@ -114,11 +114,19 @@ const buildMediaList = (
   return allMedia;
 };
 
-export default function OurStoryPreview() {
+export default function OurStoryPreview({
+  initialData,
+}: {
+  initialData?: {
+    guestExperiences: ExperienceItem[];
+    sectionHeader: SectionHeader | null;
+    ratingHeader: RatingHeader | null;
+  };
+}) {
   const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>(
-    [],
+    initialData?.guestExperiences || [],
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [mediaPreviews, setMediaPreviews] = useState<
     { type: string; url: string; file: File }[]
   >([]);
@@ -126,7 +134,7 @@ export default function OurStoryPreview() {
   const [ytLink, setYtLink] = useState("");
   const [ytError, setYtError] = useState("");
   const [sectionHeader, setSectionHeader] = useState<SectionHeader | null>(
-    null,
+    initialData?.sectionHeader || null,
   );
   const [authorName, setAuthorName] = useState("");
   const [email, setEmail] = useState("");
@@ -138,7 +146,9 @@ export default function OurStoryPreview() {
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState<Set<string>>(new Set());
   const [mutedVideos, setMutedVideos] = useState<Set<string>>(new Set());
-  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(null);
+  const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(
+    initialData?.ratingHeader || null,
+  );
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);

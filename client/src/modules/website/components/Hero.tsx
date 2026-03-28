@@ -167,12 +167,12 @@ const transformApiDataToSlides = (
   });
 };
 
-export default function Hero() {
+export default function Hero({ initialSlides = [] }: { initialSlides?: HeroSlide[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
-  const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const [slides, setSlides] = useState<HeroSlide[]>(initialSlides);
+  const [isFetching, setIsFetching] = useState(initialSlides.length === 0);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
   const isFetchingRef = useRef(false);
@@ -256,8 +256,10 @@ export default function Hero() {
   }, [currentTheme, updateSlidesForTheme]);
 
   useEffect(() => {
-    sessionStorage.removeItem(CACHE_KEY);
-    fetchHeroSection();
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(CACHE_KEY);
+    }
+    fetchHeroSection(initialSlides.length > 0);
   }, [fetchHeroSection]);
 
   const handleImageError = useCallback((url: string) => {

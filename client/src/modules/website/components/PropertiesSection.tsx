@@ -267,10 +267,14 @@ const CarouselItem = ({
   );
 };
 
-export default function PropertiesSection() {
+export default function PropertiesSection({
+  initialProperties = [],
+}: {
+  initialProperties?: ApiProperty[];
+}) {
   const navigate = useNavigate();
-  const [apiProperties, setApiProperties] = useState<ApiProperty[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [apiProperties, setApiProperties] = useState<ApiProperty[]>(initialProperties);
+  const [loading, setLoading] = useState(initialProperties.length === 0);
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [selectedType, setSelectedType] = useState("All Types");
   const [activeIndex, setActiveIndex] = useState(0);

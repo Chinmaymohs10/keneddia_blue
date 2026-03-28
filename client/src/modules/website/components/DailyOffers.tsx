@@ -101,11 +101,11 @@ function CountdownTimer({ expiresAt }: { expiresAt?: string }) {
     MAIN COMPONENT
 ======================= */
 
-export default function DailyOffers() {
+export default function DailyOffers({ initialOffers = [] }: { initialOffers?: any[] }) {
   const { dailyOffers } = siteContent.text;
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [offers, setOffers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [offers, setOffers] = useState<any[]>(initialOffers);
+  const [loading, setLoading] = useState(initialOffers.length === 0);
 
   useEffect(() => {
     const fetchOffers = async () => {

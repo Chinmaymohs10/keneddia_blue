@@ -4,8 +4,9 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node server.mjs",
+    "dev:csr": "vite",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir ../public_html-ssr",
     "preview": "vite preview"
   },
   "dependencies": {

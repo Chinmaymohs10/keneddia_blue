@@ -1,11 +1,8 @@
 import { renderToString } from "react-dom/server";
-import { StaticRouter } from "react-router-dom";
+import { StaticRouter } from "react-router";
 import App from "./App";
-import { defaultHomePageData, fetchHomePageData } from "@/ssr/homepageData";
-import {
-  defaultHotelsPageData,
-  fetchHotelsPageData,
-} from "@/ssr/hotelsPageData";
+import { fetchHomePageData } from "@/ssr/homepageData";
+import { fetchHotelsPageData } from "@/ssr/hotelsPageData";
 
 const serializeInitialData = (data) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -36,7 +33,7 @@ export async function render(url, template) {
   }
 
   const html = template
-    .replace(`<div id="root"></div>`, `<div id="root">${appHtml}</div>`)
+    .replace(/<div id="root"><\/div>/, `<div id="root">${appHtml}</div>`)
     .replace("</body>", `${initialDataScript}</body>`);
 
   return { html, appHtml, initialData };
