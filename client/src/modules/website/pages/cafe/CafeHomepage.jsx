@@ -31,7 +31,7 @@ export default function CafeHomepage() {
         <div id="home">
           <CafeHeroBanner />
         </div>
-        <CafeQuickBooking />
+        {/* <CafeQuickBooking /> */}
         <CafeProperties />
         <CafeAbout />
         <CafeShowcaseSlider />

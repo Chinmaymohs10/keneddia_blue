@@ -9,7 +9,7 @@ const SLIDES = [
     id: 1,
     tag: "House Roasts",
     title: "Slow Coffee, Warm Light, All-Day Conversations",
-    desc: "Single-origin pours, flaky bakes, and a calm cafe rhythm built for mornings that stretch into evenings.",
+    desc: "Single-origin pours and a calm cafe rhythm built for mornings that stretch into evenings.",
     img: siteContent.images.cafes.parisian.src,
     bgTitle: "AROMA",
   },
