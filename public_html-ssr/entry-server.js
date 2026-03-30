@@ -1601,7 +1601,7 @@ function Navbar$1({
   const [bookingCategory, setBookingCategory] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const isTransparentHeroRoute = location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage";
+  const isTransparentHeroRoute = location.pathname === "/" || location.pathname === "/hotels" || location.pathname === "/restaurant-homepage" || location.pathname === "/cafe-homepage";
   const showQuickBook = isTransparentHeroRoute;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
@@ -15008,7 +15008,7 @@ const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-DRnsmaMY.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-G9Xdl3ou.js")
+  () => import("./assets/CafeHomepage-DbL6h6xG.js")
 );
 const ResturantPage = lazy(
   () => import("./assets/ResturantPage-SgNoM-gi.js")

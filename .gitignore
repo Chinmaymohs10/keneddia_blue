@@ -12,6 +12,8 @@ pnpm-debug.log*
 # ===============================
 dist/
 public_html/
+public_html-ssr/
+ssr-deploy/
 dist-ssr/
 build/
 .out/
@@ -72,3 +74,4 @@ coverage/
 # Misc
 # ===============================
 *.lock
+*.zip

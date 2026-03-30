@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node server.mjs",
     "dev:csr": "vite",
-    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir ../public_html-ssr",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir ../public_html-ssr && node scripts/prepare-ssr-deploy.mjs",
+    "stage:ssr-deploy": "node scripts/prepare-ssr-deploy.mjs",
+    "start": "node server.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
