@@ -59,8 +59,16 @@ export default function CafeHeroBanner() {
           transition={{ duration: 0.9, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          <img src={activeSlide.img} alt={activeSlide.title} className="hidden h-full w-full object-cover md:block" />
-          <img src={activeSlide.img} alt={activeSlide.title} className="block h-full w-full object-cover md:hidden" />
+          <img
+            src={activeSlide.img}
+            alt={activeSlide.title}
+            className="hidden h-full w-full object-cover md:block"
+          />
+          <img
+            src={activeSlide.img}
+            alt={activeSlide.title}
+            className="block h-full w-full object-cover md:hidden"
+          />
         </motion.div>
       </AnimatePresence>
 
@@ -98,8 +106,18 @@ export default function CafeHeroBanner() {
       </div>
 
       <div className="relative z-10 block md:hidden">
-        <div className="relative w-full overflow-hidden bg-black" style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}>
-          <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+        <div
+          className="relative w-full overflow-hidden bg-black"
+          style={{
+            height: "calc(75vw + 64px)",
+            minHeight: "320px",
+            maxHeight: "500px",
+          }}
+        >
+          <div
+            className="absolute inset-x-0 bottom-0 overflow-hidden"
+            style={{ top: "64px" }}
+          >
             <AnimatePresence mode="wait">
               <motion.img
                 key={`mobile-${activeSlide.id}`}
@@ -114,13 +132,19 @@ export default function CafeHeroBanner() {
             </AnimatePresence>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+          <div
+            className="absolute inset-x-0 bottom-0 pointer-events-none"
+            style={{ top: "64px" }}
+          >
             <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
           </div>
 
           <div className="absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
 
-          <div className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center" style={{ top: "64px", bottom: "2.5rem" }}>
+          <div
+            className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center"
+            style={{ top: "64px", bottom: "2.5rem" }}
+          >
             <motion.span
               key={`m-tag-${activeSlide.id}`}
               initial={{ opacity: 0, y: 10 }}
@@ -161,7 +185,10 @@ export default function CafeHeroBanner() {
                 <Calendar className="mr-2 h-3.5 w-3.5" />
                 Reserve
               </Button>
-              <Button variant="outline" className="h-auto rounded-full border-white/30 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md">
+              <Button
+                variant="outline"
+                className="h-auto rounded-full border-white/30 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur-md"
+              >
                 <Coffee className="mr-2 h-3.5 w-3.5" />
                 Menu
               </Button>
@@ -169,7 +196,10 @@ export default function CafeHeroBanner() {
           </div>
 
           <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
-            <button onClick={() => goToSlide(activeIndex - 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20">
+            <button
+              onClick={() => goToSlide(activeIndex - 1)}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <div className="flex items-center gap-1.5">
@@ -178,12 +208,17 @@ export default function CafeHeroBanner() {
                   key={`mob-dot-${index}`}
                   onClick={() => goToSlide(index)}
                   className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
-                    activeIndex === index ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" : "w-4 bg-white/40 hover:bg-white/70"
+                    activeIndex === index
+                      ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                      : "w-4 bg-white/40 hover:bg-white/70"
                   }`}
                 />
               ))}
             </div>
-            <button onClick={() => goToSlide(activeIndex + 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20">
+            <button
+              onClick={() => goToSlide(activeIndex + 1)}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -200,12 +235,20 @@ export default function CafeHeroBanner() {
               transition={{ delay: index * 0.12 + 0.35 }}
               onClick={() => goToSlide(index)}
               className={`group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 ${
-                activeIndex === index ? "z-10 scale-105 ring-2 ring-[#FDFBF7] shadow-2xl" : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
+                activeIndex === index
+                  ? "z-10 scale-105 ring-2 ring-[#FDFBF7] shadow-2xl"
+                  : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
               }`}
             >
-              <img src={slide.img} alt={slide.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <img
+                src={slide.img}
+                alt={slide.title}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
               <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
-                <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">{slide.tag}</p>
+                <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
+                  {slide.tag}
+                </p>
               </div>
             </motion.div>
           ))}
@@ -218,24 +261,35 @@ export default function CafeHeroBanner() {
                 key={`indicator-${index}`}
                 onClick={() => goToSlide(index)}
                 className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
-                  activeIndex === index ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] md:w-10 lg:w-12" : "w-4 bg-white/30 hover:bg-white/60 md:w-5 lg:w-6"
+                  activeIndex === index
+                    ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] md:w-10 lg:w-12"
+                    : "w-4 bg-white/30 hover:bg-white/60 md:w-5 lg:w-6"
                 }`}
               />
             ))}
           </div>
           <div className="flex gap-2 md:gap-3">
-            <button onClick={() => goToSlide(activeIndex - 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10">
+            <button
+              onClick={() => goToSlide(activeIndex - 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+            >
               <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
             </button>
-            <button onClick={() => goToSlide(activeIndex + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10">
+            <button
+              onClick={() => goToSlide(activeIndex + 1)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+            >
               <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
             </button>
           </div>
         </div>
       </div>
-
       <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
-        <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
+        <svg
+          viewBox="0 0 1440 320"
+          className="h-full w-full"
+          preserveAspectRatio="none"
+        >
           <path
             className="fill-background"
             d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
