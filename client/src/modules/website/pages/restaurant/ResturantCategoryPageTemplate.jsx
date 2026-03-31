@@ -12,6 +12,7 @@ import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
 import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import { useSsrData } from "@/ssr/SsrDataContext";
 import {
   getAllGalleries,
   GetAllPropertyDetails,
@@ -235,18 +236,36 @@ function ResturantCategoryPageTemplate() {
     categoryType,
     citySlug: paramCitySlug,
   } = useParams();
+  const { propertyCategory } = useSsrData();
   const slugTail = routePropertySlug?.split("-").pop() || "";
   const propertyId = Number(paramPropertyId || slugTail) || null;
   const navigate = useNavigate();
-  const [propertyData, setPropertyData] = useState(null);
+  const ssrCategoryData =
+    propertyCategory?.propertyId === propertyId &&
+    propertyCategory?.categoryType === categoryType
+      ? propertyCategory.pageData
+      : null;
+  const [propertyData, setPropertyData] = useState(
+    ssrCategoryData?.propertyData || null,
+  );
 
-  const [currentCategory, setCurrentCategory] = useState(null);
-  const [otherVerticals, setOtherVerticals] = useState([]);
-  const [apiMenuItems, setApiMenuItems] = useState([]);
-  const [galleryData, setGalleryData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [citySlug, setCitySlug] = useState(paramCitySlug || "hotel");
+  const [currentCategory, setCurrentCategory] = useState(
+    ssrCategoryData?.currentCategory || null,
+  );
+  const [otherVerticals, setOtherVerticals] = useState(
+    ssrCategoryData?.otherVerticals || [],
+  );
+  const [apiMenuItems, setApiMenuItems] = useState(
+    ssrCategoryData?.apiMenuItems || [],
+  );
+  const [galleryData, setGalleryData] = useState(
+    ssrCategoryData?.galleryData || [],
+  );
+  const [loading, setLoading] = useState(ssrCategoryData ? false : true);
+  const [notFound, setNotFound] = useState(ssrCategoryData?.notFound || false);
+  const [citySlug, setCitySlug] = useState(
+    ssrCategoryData?.citySlug || paramCitySlug || "hotel",
+  );
   const propertySlug = createHotelSlug(
     propertyData?.propertyName || propertyData?.name || "restaurant",
     propertyId,
@@ -260,6 +279,7 @@ function ResturantCategoryPageTemplate() {
 
   useEffect(() => {
     if (!propertyId) return;
+    if (ssrCategoryData) return;
 
     const fetchData = async () => {
       setLoading(true);
@@ -410,7 +430,7 @@ function ResturantCategoryPageTemplate() {
     };
 
     fetchData();
-  }, [propertyId, normalizedSlug]);
+  }, [propertyId, normalizedSlug, ssrCategoryData]);
 
   /* ── Loading ── */
   if (loading) {

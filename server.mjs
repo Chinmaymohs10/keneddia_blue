@@ -24,6 +24,7 @@ const isSsrRoute = (pathname) =>
   pathname === "/events/" ||
   pathname === "/news" ||
   pathname === "/news/" ||
+  /^\/[^/]+\/[^/]+-\d+\/[^/]+\/?$/.test(pathname) ||
   /^\/[^/]+\/[^/]+-\d+\/?$/.test(pathname) ||
   /^\/events\/[^/]+\/?$/.test(pathname) ||
   /^\/news\/[^/]+\/?$/.test(pathname);

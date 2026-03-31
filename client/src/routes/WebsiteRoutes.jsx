@@ -22,6 +22,7 @@ import Careers from "@/modules/website/pages/Careers";
 import Checkout from "@/modules/website/pages/Checkout";
 import HotelDetail from "@/modules/website/pages/HotelDetail";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
+import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
@@ -36,10 +37,6 @@ const RestaurantHomepage = lazy(
 const CafeHomepage = lazy(
   () => import("@/modules/website/pages/cafe/CafeHomepage"),
 );
-const ResturantCategoryPageTemplate = lazy(
-  () => import("@/modules/website/pages/restaurant/ResturantCategoryPageTemplate"),
-);
-
 function withRouteSuspense(element) {
   return (
     <Suspense
@@ -166,7 +163,7 @@ const WebsiteRoutes = [
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 
   // Restaurant Sub-Verticals
-  <Route path="/:citySlug/:propertySlug/:categoryType" element={withRouteSuspense(<ResturantCategoryPageTemplate />)}/>,
+  <Route path="/:citySlug/:propertySlug/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
 
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,
