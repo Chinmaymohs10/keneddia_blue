@@ -49968,6 +49968,16 @@ const toList = (response) => {
   if (Array.isArray(data?.data)) return data.data;
   return [];
 };
+const normalizePropertyItem = (item) => {
+  if (!item) return null;
+  if (item.propertyResponseDTO) {
+    return {
+      ...item.propertyResponseDTO,
+      propertyListings: item.propertyListingResponseDTOS || []
+    };
+  }
+  return item;
+};
 const getItemId = (item) => String(item?.id ?? "");
 const propertyLabel = (item) => item?.propertyName || item?.name || `Property #${item?.id}`;
 const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType || `Type #${item?.id}`;
@@ -50015,7 +50025,7 @@ function SeoManagement() {
       ]);
       setMetaList(toList(metaRes));
       setGoogleList(toList(googleRes));
-      setProperties(toList(propertyRes));
+      setProperties(toList(propertyRes).map(normalizePropertyItem).filter(Boolean));
       setPropertyTypes(toList(propertyTypeRes));
     } catch (error) {
       console.error("SEO load error:", error);
