@@ -49,6 +49,11 @@ import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal
 import MobileBookingBar from "@/modules/website/components/Mobilebookingbar";
 import ReviewsSection from "../components/hotel-detail/ReviewsSection";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import {
+  applySeoToDocument,
+  fetchPropertySeo,
+  resetSeoDocument,
+} from "@/lib/seo";
 
 // Interfaces
 interface PropertyMedia {
@@ -258,6 +263,8 @@ export default function HotelDetail() {
     propertyDetail?.propertyId === propertyIdFromUrl
       ? propertyDetail?.pageData
       : null;
+  const ssrSeo =
+    propertyDetail?.propertyId === propertyIdFromUrl ? propertyDetail?.seo : null;
   const [hotel, setHotel] = useState<HotelData | null>(
     ssrHotelDetail?.hotel || null,
   );
@@ -328,6 +335,31 @@ export default function HotelDetail() {
       link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
     },
   ];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncSeo = async () => {
+      if (!propertyIdFromUrl) return;
+
+      if (ssrSeo) {
+        applySeoToDocument(ssrSeo);
+        return;
+      }
+
+      const seo = await fetchPropertySeo(propertyIdFromUrl);
+      if (isMounted) {
+        applySeoToDocument(seo);
+      }
+    };
+
+    syncSeo();
+
+    return () => {
+      isMounted = false;
+      resetSeoDocument();
+    };
+  }, [propertyIdFromUrl, ssrSeo]);
 
   useEffect(() => {
     if (!datesInitialized && !searchData.checkIn) {

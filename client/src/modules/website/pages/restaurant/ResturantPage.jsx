@@ -13,6 +13,11 @@ import { siteContent } from "@/data/siteContent";
 import { useParams } from "react-router-dom";
 import { GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
 import { useSsrData } from "@/ssr/SsrDataContext";
+import {
+  applySeoToDocument,
+  fetchPropertySeo,
+  resetSeoDocument,
+} from "@/lib/seo";
 
 const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -31,6 +36,8 @@ export default function RestaurantHomepage() {
     propertyDetail?.propertyId === numericPropertyId
       ? propertyDetail.pageData
       : null;
+  const ssrSeo =
+    propertyDetail?.propertyId === numericPropertyId ? propertyDetail?.seo : null;
 
   const [propertyData, setPropertyData] = useState(
     ssrRestaurantDetail?.propertyData || null,
@@ -43,6 +50,31 @@ export default function RestaurantHomepage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncSeo = async () => {
+      if (!numericPropertyId) return;
+
+      if (ssrSeo) {
+        applySeoToDocument(ssrSeo);
+        return;
+      }
+
+      const seo = await fetchPropertySeo(numericPropertyId);
+      if (isMounted) {
+        applySeoToDocument(seo);
+      }
+    };
+
+    syncSeo();
+
+    return () => {
+      isMounted = false;
+      resetSeoDocument();
+    };
+  }, [numericPropertyId, ssrSeo]);
 
   useEffect(() => {
     if (ssrRestaurantDetail || !numericPropertyId) return;
