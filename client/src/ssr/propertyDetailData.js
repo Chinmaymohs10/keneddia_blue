@@ -4,9 +4,11 @@ import {
   getAllDiningByPropertyId,
   getAllPropertyPolicies,
   getGalleryByPropertyId,
+  searchGallery,
   getRoomsByPropertyId,
 } from "@/Api/Api";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
 
 const VERIFIED_REVIEWS_SCALE = 1000000;
 
@@ -113,6 +115,15 @@ const buildRestaurantPathMap = (rawData) => {
     return acc;
   }, {});
 };
+
+const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
+
+const CARD_BG_COLORS = [
+  { bgColor: "bg-orange-50", hoverBg: "hover:bg-orange-100" },
+  { bgColor: "bg-blue-50", hoverBg: "hover:bg-blue-100" },
+  { bgColor: "bg-red-50", hoverBg: "hover:bg-red-100" },
+  { bgColor: "bg-emerald-50", hoverBg: "hover:bg-emerald-100" },
+];
 
 const flattenPropertyDetails = (rawData) =>
   (Array.isArray(rawData) ? rawData : []).flatMap((item) => {
@@ -414,5 +425,138 @@ export async function fetchPropertyDetailPageData(pathname) {
     propertyId: parent.id,
     propertyType,
     pageData,
+  };
+}
+
+export async function fetchPropertyCategoryPageData(pathname) {
+  const match = pathname.match(/^\/([^/]+)\/([^/]+-\d+)\/([^/]+)\/?$/);
+  if (!match) return null;
+
+  const [, paramCitySlug, routePropertySlug, categoryType] = match;
+  const slugTail = routePropertySlug.split("-").pop() || "";
+  const propertyId = Number(slugTail);
+
+  if (!propertyId) return null;
+
+  const propertyRes = await GetAllPropertyDetails();
+  const rawData = propertyRes?.data || propertyRes || [];
+  const matchedProperty = findPropertyById(rawData, propertyId);
+
+  if (!matchedProperty) {
+    return {
+      propertyId,
+      categoryType,
+      pageData: {
+        propertyData: null,
+        currentCategory: null,
+        otherVerticals: [],
+        apiMenuItems: [],
+        galleryData: [],
+        loading: false,
+        notFound: true,
+        citySlug: paramCitySlug || "hotel",
+      },
+    };
+  }
+
+  const { parent, listing } = matchedProperty;
+  const propertyData = {
+    ...parent,
+    ...listing,
+    id: parent.id,
+    propertyId: parent.id,
+    name: listing?.propertyName?.trim() || parent.propertyName,
+    description: listing?.mainHeading || "",
+    location: listing?.fullAddress || parent.address,
+    city: listing?.city || parent.locationName,
+    media: listing?.media?.length > 0 ? listing.media : parent.media || [],
+  };
+  const citySlug = createCitySlug(
+    propertyData.city || propertyData.locationName || propertyData.propertyName,
+  );
+
+  const cardsRes = await getAllVerticalCards();
+  const cards = cardsRes?.data || cardsRes || [];
+  const filtered = cards
+    .filter(
+      (card) => String(card.propertyId) === String(propertyId) && card.isActive,
+    )
+    .sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const mappedVerticals = filtered.map((card, index) => {
+    const slug = generateSlug(card.verticalName);
+    const fallback = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+
+    return {
+      slug,
+      id: card.id,
+      title: card.verticalName || card.itemName,
+      description: card.description || "",
+      image: card.media?.url || "",
+      link: card.link || "",
+      ctaButtonText: card.showOrderButton ? card.extraText || "" : null,
+      lightBgColor: card.cardBackgroundColor || null,
+      bgColor: fallback.bgColor,
+      hoverBg: fallback.hoverBg,
+      isHexColor: !!card.cardBackgroundColor,
+      heroImage: card.media?.url || "",
+      themeColor: card.cardBackgroundColor || null,
+    };
+  });
+
+  const normalizedSlug = categoryType?.toLowerCase().trim();
+  const currentCategory =
+    mappedVerticals.find((item) => item.slug === normalizedSlug) || null;
+  const otherVerticals = mappedVerticals.filter(
+    (item) => item.slug !== normalizedSlug,
+  );
+
+  const menuRes = await getMenuItems();
+  const allItems = menuRes?.data || menuRes || [];
+  const apiMenuItems = allItems.filter(
+    (item) =>
+      String(item.propertyId) === String(propertyId) && item.status !== false,
+  );
+
+  let galleryData = [];
+  if (currentCategory) {
+    const galleryRes = await searchGallery({
+      propertyId,
+      verticalId: currentCategory.id,
+    }).catch(() => null);
+
+    const rawGallery =
+      galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
+
+    galleryData = (Array.isArray(rawGallery) ? rawGallery : [])
+      .filter((item) => item.isActive && item.media?.url)
+      .map((item) => ({
+        id: item.id,
+        media: {
+          mediaId: item.media.mediaId,
+          url: item.media.url,
+          type: item.media.type ?? "IMAGE",
+          fileName: item.media.fileName ?? "",
+          alt: item.media.alt ?? "",
+        },
+        isActive: item.isActive,
+        categoryName: item.categoryName ?? null,
+        displayOrder: item.displayOrder ?? 999,
+      }));
+  }
+
+  return {
+    propertyId,
+    categoryType,
+    pageData: {
+      propertyData,
+      currentCategory,
+      otherVerticals,
+      apiMenuItems,
+      galleryData,
+      loading: false,
+      notFound: !currentCategory,
+      citySlug,
+    },
   };
 }
