@@ -2,6 +2,8 @@ import {
   GetAllPropertyDetails,
   getAllBookingChannelPartners,
   getAllDiningByPropertyId,
+  getAllGoogleTags,
+  getAllMetaData,
   getAllPropertyPolicies,
   getGalleryByPropertyId,
   searchGallery,
@@ -141,6 +143,36 @@ const findPropertyById = (rawData, propertyId) => {
       Number(entry?.parent?.id) === Number(propertyId) &&
       (entry?.listing?.isActive === true || entry?.listing == null),
   );
+};
+
+const selectSeoRecord = (list, propertyId) =>
+  (Array.isArray(list) ? list : [])
+    .filter((item) => {
+      const isActive = Boolean(item?.active ?? item?.status);
+      return (
+        isActive &&
+        String(item?.propertyId ?? "") === String(propertyId ?? "")
+      );
+    })
+    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+
+const fetchSeoForProperty = async (propertyId) => {
+  try {
+    const [metaRes, googleRes] = await Promise.all([
+      getAllMetaData().catch(() => null),
+      getAllGoogleTags().catch(() => null),
+    ]);
+
+    const metaList = metaRes?.data || metaRes || [];
+    const googleList = googleRes?.data || googleRes || [];
+
+    return {
+      metaTag: selectSeoRecord(metaList, propertyId),
+      googleTag: selectSeoRecord(googleList, propertyId),
+    };
+  } catch {
+    return { metaTag: null, googleTag: null };
+  }
 };
 
 const isRestaurantType = (parent, listing) => {
@@ -415,6 +447,7 @@ export async function fetchPropertyDetailPageData(pathname) {
   const propertyType = isRestaurantType(parent, listing)
     ? "restaurant"
     : "hotel";
+  const seo = await fetchSeoForProperty(parent.id);
 
   const pageData =
     propertyType === "restaurant"
@@ -425,6 +458,7 @@ export async function fetchPropertyDetailPageData(pathname) {
     propertyId: parent.id,
     propertyType,
     pageData,
+    seo,
   };
 }
 

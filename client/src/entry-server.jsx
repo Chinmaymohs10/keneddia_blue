@@ -14,6 +14,7 @@ import {
   fetchPropertyCategoryPageData,
   fetchPropertyDetailPageData,
 } from "@/ssr/propertyDetailData";
+import { injectSeoIntoHtml } from "@/lib/seo";
 
 const serializeInitialData = (data) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
@@ -77,7 +78,12 @@ export async function render(url, template) {
     return { appHtml, initialData, initialDataScript };
   }
 
-  const html = template
+  const processedTemplate =
+    initialData?.propertyDetail?.seo
+      ? injectSeoIntoHtml(template, initialData.propertyDetail.seo)
+      : template;
+
+  const html = processedTemplate
     .replace(/<div id="root"><\/div>/, `<div id="root">${appHtml}</div>`)
     .replace("</body>", `${initialDataScript}</body>`);
 
