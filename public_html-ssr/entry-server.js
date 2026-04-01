@@ -23662,7 +23662,7 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-IhcqaRwb.js")
+  () => import("./assets/RestaurantHomepage-Cfym1nY1.js")
 );
 const CafeHomepage = lazy(
   () => import("./assets/CafeHomepage-DVYAF6HU.js")
@@ -53110,6 +53110,7 @@ export {
   Dialog as D,
   Footer as F,
   GetAllPropertyDetails as G,
+  Input as I,
   Label as L,
   Navbar$1 as N,
   OptimizedImage as O,

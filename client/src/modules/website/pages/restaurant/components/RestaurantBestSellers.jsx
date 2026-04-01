@@ -1,60 +1,217 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  ImageOff,
+  Sparkles,
+  Loader2,
+  X,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-const FILTERS = ["Veg", "Non-Veg", "Best Seller"];
+const FILTERS = ["Veg", "Non-Veg"];
 
 const BEST_SELLERS = [
   {
     id: 1,
     title: "Hyderabadi Biryani",
-    description: "Dum-cooked rice, deep spice layers, and signature slow-cooked aroma.",
+    description:
+      "Dum-cooked rice, deep spice layers, and signature slow-cooked aroma.",
     image:
       "https://images.unsplash.com/photo-1701579231305-d84d8af9a3fd?auto=format&fit=crop&w=900&q=80",
-    route: "/restaurant/spicy-darbar",
     tags: ["Non-Veg", "Best Seller"],
+    category: "Main Course",
+    likes: 1240,
   },
   {
     id: 2,
     title: "Kebabs",
-    description: "Charred grills, smoky marinades, and platter-style indulgence.",
+    description:
+      "Charred grills, smoky marinades, and platter-style indulgence.",
     image:
       "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80",
-    route: "/restaurant/luxury-lounge",
     tags: ["Non-Veg", "Best Seller"],
+    category: "Starter",
+    likes: 980,
   },
   {
     id: 3,
-    title: "Korma And Curries",
-    description: "Rich gravies and comforting classics finished with polished presentation.",
+    title: "Butter Chicken",
+    description:
+      "Tandoor-roasted chicken folded into a velvety tomato-butter gravy.",
     image:
-      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80",
-    route: "/restaurant/spicy-darbar",
-    tags: ["Veg", "Best Seller"],
+      "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=80",
+    tags: ["Non-Veg", "Best Seller"],
+    category: "Signature Curry",
+    likes: 1110,
   },
   {
     id: 4,
+    title: "Mutton Rogan Josh",
+    description:
+      "Slow-braised lamb with Kashmiri spice depth and a rich aromatic finish.",
+    image:
+      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80",
+    tags: ["Non-Veg", "Best Seller"],
+    category: "Chef Special",
+    likes: 930,
+  },
+  {
+    id: 5,
+    title: "Prawn Tikka",
+    description:
+      "Juicy prawns charred over flame with citrus, chili, and smoky masala.",
+    image:
+      "https://images.unsplash.com/photo-1625944525533-473f1b3d54b3?auto=format&fit=crop&w=900&q=80",
+    tags: ["Non-Veg", "Best Seller"],
+    category: "Seafood",
+    likes: 845,
+  },
+  {
+    id: 6,
+    title: "Chicken Malai Tikka",
+    description:
+      "Creamy, mildly spiced chicken bites with a soft smoky tandoor finish.",
+    image:
+      "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=900&q=80",
+    tags: ["Non-Veg", "Best Seller"],
+    category: "Starter",
+    likes: 890,
+  },
+  {
+    id: 7,
+    title: "Korma And Curries",
+    description:
+      "Rich gravies and comforting classics finished with polished presentation.",
+    image:
+      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80",
+    tags: ["Veg", "Best Seller"],
+    category: "Signature Curry",
+    likes: 860,
+  },
+  {
+    id: 8,
     title: "Desserts",
-    description: "Signature endings with warm textures, cream notes, and plated elegance.",
+    description:
+      "Signature endings with warm textures, cream notes, and plated elegance.",
     image:
       "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=900&q=80",
-    route: "/restaurant/italian",
     tags: ["Veg", "Best Seller"],
+    category: "Dessert",
+    likes: 710,
   },
-  
+  {
+    id: 9,
+    title: "Paneer Tikka",
+    description:
+      "Charred cottage cheese cubes with peppers, onions, and bold tandoori spice.",
+    image:
+      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80",
+    tags: ["Veg", "Best Seller"],
+    category: "Starter",
+    likes: 920,
+  },
+  {
+    id: 10,
+    title: "Dal Makhani",
+    description:
+      "Black lentils simmered overnight for a creamy, slow-cooked Punjabi classic.",
+    image:
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80",
+    tags: ["Veg", "Best Seller"],
+    category: "Main Course",
+    likes: 875,
+  },
+  {
+    id: 11,
+    title: "Vegetable Biryani",
+    description:
+      "Fragrant basmati layered with garden vegetables, herbs, and saffron notes.",
+    image:
+      "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80",
+    tags: ["Veg", "Best Seller"],
+    category: "Rice Special",
+    likes: 790,
+  },
+  {
+    id: 12,
+    title: "Malai Kofta",
+    description:
+      "Soft paneer-potato dumplings in a silky cashew and tomato-based gravy.",
+    image:
+      "https://images.unsplash.com/photo-1666190092159-3171cf0fbb12?auto=format&fit=crop&w=900&q=80",
+    tags: ["Veg", "Best Seller"],
+    category: "Chef Special",
+    likes: 835,
+  },
 ];
 
+function DishImage({ src, alt }) {
+  const [errored, setErrored] = useState(false);
+
+  if (!src || errored) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-zinc-100">
+        <ImageOff size={32} className="text-zinc-300" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="h-full w-full object-cover"
+      onError={() => setErrored(true)}
+    />
+  );
+}
+
+function AnimatedCounter({ target }) {
+  const [count, setCount] = useState(Math.floor(target * 0.8));
+
+  useEffect(() => {
+    let current = Math.floor(target * 0.8);
+    const increment = Math.max(1, Math.ceil((target - current) / 40));
+    const timer = window.setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setCount(target);
+        window.clearInterval(timer);
+      } else {
+        setCount(current);
+      }
+    }, 20);
+
+    return () => window.clearInterval(timer);
+  }, [target]);
+
+  return <span>{count.toLocaleString()}</span>;
+}
+
 export default function RestaurantBestSellers() {
-  const [activeFilter, setActiveFilter] = useState("Best Seller");
+  const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
+  const [menuItems, setMenuItems] = useState(BEST_SELLERS);
+  const [likedItems, setLikedItems] = useState({});
+  const [likeSubmitting, setLikeSubmitting] = useState(false);
+  const [likeModal, setLikeModal] = useState({
+    isOpen: false,
+    item: null,
+  });
+  const [likeForm, setLikeForm] = useState({
+    name: "",
+    phone: "",
+    description: "",
+  });
 
   const filteredItems = useMemo(() => {
-    if (activeFilter === "Best Seller") {
-      return BEST_SELLERS.filter((item) => item.tags.includes("Best Seller"));
-    }
-    return BEST_SELLERS.filter((item) => item.tags.includes(activeFilter));
-  }, [activeFilter]);
+    return menuItems.filter((item) => item.tags.includes(activeFilter));
+  }, [activeFilter, menuItems]);
 
   const primaryItems = filteredItems.slice(0, 4);
   const extraItems = filteredItems.slice(4);
@@ -64,159 +221,249 @@ export default function RestaurantBestSellers() {
     setExpanded(false);
   };
 
-  return (
-    <section className="bg-background py-10">
-      <div className="container mx-auto px-6">
-        <div className="overflow-hidden rounded-[28px] border border-border/60 bg-gradient-to-br from-[#fffaf0] via-white to-[#fff4d6] shadow-[0_24px_60px_-38px_rgba(0,0,0,0.28)]">
-          <div className="border-b border-border/50 px-6 py-5 md:px-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Menu Spotlight
-                </div>
-                <h2 className="text-2xl font-serif text-foreground md:text-3xl">
-                  Best Seller Categories
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                  Discover the dishes guests keep coming back for, grouped into the strongest-performing menu favorites.
-                </p>
-              </div>
+  const handleLikeSubmit = () => {
+    if (!likeModal.item) return;
 
-              <div className="flex flex-wrap items-center gap-2">
-                {FILTERS.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => handleFilterChange(filter)}
-                    className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                      activeFilter === filter
-                        ? filter === "Veg"
-                          ? "border-emerald-500 bg-emerald-500 text-white"
-                          : filter === "Non-Veg"
-                            ? "border-rose-400 bg-white text-rose-500"
-                            : "border-amber-400 bg-amber-400 text-[#402900]"
-                        : "border-border bg-white/80 text-foreground hover:border-primary/40"
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+    setLikeSubmitting(true);
 
-          <div className="grid grid-cols-2 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5 lg:p-6">
-            {primaryItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
-              >
-                <Link
-                  // to={item.route}
-                  className="group flex h-full flex-col rounded-[24px] border border-[#f2ead4] bg-[#fffbea] p-4 text-center shadow-[0_18px_35px_-28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_22px_45px_-24px_rgba(0,0,0,0.28)]"
-                >
-                  <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full ring-4 ring-white shadow-md sm:h-28 sm:w-28">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
+    window.setTimeout(() => {
+      setMenuItems((prev) =>
+        prev.map((item) =>
+          item.id === likeModal.item.id
+            ? { ...item, likes: item.likes + 1 }
+            : item,
+        ),
+      );
+      setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
+      setLikeModal({ isOpen: false, item: null });
+      setLikeForm({ name: "", phone: "", description: "" });
+      setLikeSubmitting(false);
+      toast.success("Thanks for liking this dish.");
+    }, 500);
+  };
 
-                  <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                    {item.title}
-                  </h3>
+  const closeLikeModal = () => {
+    setLikeModal({ isOpen: false, item: null });
+    setLikeForm({ name: "", phone: "", description: "" });
+    setLikeSubmitting(false);
+  };
 
-                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
+  const renderCard = (item, index, keyPrefix = "") => (
+    <motion.div
+      key={`${keyPrefix}${item.id}`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08 }}
+      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-8 text-center"
+    >
+      <div className="relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white shadow-xl transition-transform duration-700 group-hover:scale-105">
+        <DishImage src={item.image} alt={item.title} />
 
-                  <div className="mt-auto pt-4">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all group-hover:gap-3">
-                      Explore
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setLikeModal({ isOpen: true, item });
+          }}
+          className="absolute right-4 top-4 rounded-full bg-white/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110"
+          aria-label={`Like ${item.title}`}
+        >
+          <Heart
+            size={18}
+            className={likedItems[item.id] ? "fill-primary" : ""}
+          />
+        </button>
+      </div>
 
-          {extraItems.length > 0 && (
-            <div className="border-t border-border/50 px-5 pb-5 pt-1 lg:px-6 lg:pb-6">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setExpanded((current) => !current)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white/80 px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
-                >
-                  {expanded ? "Show Less" : `Show More (${extraItems.length})`}
-                  {expanded ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
+      <span className="mb-2 text-[10px] font-bold uppercase tracking-widest text-primary">
+        {item.category}
+      </span>
 
-              <AnimatePresence initial={false}>
-                {expanded && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, y: 10 }}
-                    animate={{ opacity: 1, height: "auto", y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: 10 }}
-                    transition={{ duration: 0.25 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-                      {extraItems.map((item, index) => (
-                        <motion.div
-                          key={`extra-${item.id}`}
-                          initial={{ opacity: 0, y: 18 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.06 }}
-                        >
-                          <Link
-                            to={item.route}
-                            className="group flex h-full flex-col rounded-[24px] border border-[#f2ead4] bg-[#fffbea] p-4 text-center shadow-[0_18px_35px_-28px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_22px_45px_-24px_rgba(0,0,0,0.28)]"
-                          >
-                            <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full ring-4 ring-white shadow-md sm:h-28 sm:w-28">
-                              <img
-                                src={item.image}
-                                alt={item.title}
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            </div>
+      <div className="flex w-full flex-col items-center">
+        <h3 className="mb-2 text-2xl font-serif leading-tight text-zinc-900">
+          {item.title}
+        </h3>
 
-                            <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                              {item.title}
-                            </h3>
+        {item.description && (
+          <p className="mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500">
+            "{item.description}"
+          </p>
+        )}
 
-                            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                              {item.description}
-                            </p>
-
-                            <div className="mt-auto pt-4">
-                              <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all group-hover:gap-3">
-                                Explore Category
-                                <ArrowRight className="h-4 w-4" />
-                              </span>
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
+        <div className="flex items-center justify-center gap-1.5 text-primary">
+          <Heart size={14} className="fill-primary" />
+          <span className="text-sm font-black">
+            <AnimatedCounter target={item.likes} />+
+          </span>
         </div>
       </div>
+    </motion.div>
+  );
+
+  return (
+    <section className="bg-white pb-2 pt-16">
+      <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
+        <div className="mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row">
+          <div className="min-w-0 flex-1 lg:max-w-[80%]">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              Menu Spotlight
+            </div>
+
+            <h2 className="mb-2 text-3xl font-serif md:text-4xl">
+              Best Seller <span className="italic text-primary">Dishes</span>
+            </h2>
+
+            <div className="max-w-[80%]">
+              <p className="text-sm font-light leading-relaxed text-zinc-500">
+                Discover our best seller selection, then browse it by veg and
+                non-veg in the same signature menu showcase format as the
+                restaurant detail page.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => handleFilterChange(filter)}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                  activeFilter === filter
+                    ? filter === "Veg"
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : filter === "Non-Veg"
+                        ? "border-rose-400 bg-white text-rose-500"
+                        : "border-primary bg-primary text-white"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4">
+          {primaryItems.map((item, index) => renderCard(item, index))}
+        </div>
+
+        {extraItems.length > 0 && (
+          <div className="px-5 pb-5 pt-8 lg:px-0 lg:pb-6">
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setExpanded((current) => !current)}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary"
+              >
+                {expanded ? "Show Less" : `Show More (${extraItems.length})`}
+                {expanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
+            <AnimatePresence initial={false}>
+              {expanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, y: 10 }}
+                  animate={{ opacity: 1, height: "auto", y: 0 }}
+                  exit={{ opacity: 0, height: 0, y: 10 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-20 grid grid-cols-1 gap-x-6 gap-y-20 md:grid-cols-2 lg:grid-cols-4">
+                    {extraItems.map((item, index) =>
+                      renderCard(item, index, "extra-"),
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {likeModal.isOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-md rounded-[2.5rem] border border-zinc-100 bg-white p-10 text-left shadow-2xl"
+            >
+              <button
+                type="button"
+                onClick={closeLikeModal}
+                className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100"
+              >
+                <X size={20} />
+              </button>
+
+              <h3 className="mb-2 text-2xl font-serif text-zinc-900">
+                Show your love
+              </h3>
+              <p className="mb-6 text-xs italic text-zinc-500">
+                Share your details to like{" "}
+                {likeModal.item?.title || "this dish"}.
+              </p>
+
+              <div className="space-y-4">
+                <Input
+                  placeholder="Your Name"
+                  value={likeForm.name}
+                  onChange={(event) =>
+                    setLikeForm((prev) => ({
+                      ...prev,
+                      name: event.target.value,
+                    }))
+                  }
+                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                />
+                <Input
+                  placeholder="Phone Number"
+                  value={likeForm.phone}
+                  onChange={(event) =>
+                    setLikeForm((prev) => ({
+                      ...prev,
+                      phone: event.target.value,
+                    }))
+                  }
+                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                />
+                <Input
+                  placeholder="Leave a comment"
+                  value={likeForm.description}
+                  onChange={(event) =>
+                    setLikeForm((prev) => ({
+                      ...prev,
+                      description: event.target.value,
+                    }))
+                  }
+                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                />
+
+                <Button
+                  disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
+                  onClick={handleLikeSubmit}
+                  className="h-14 w-full rounded-2xl bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95"
+                >
+                  {likeSubmitting ? (
+                    <Loader2 size={18} className="mx-auto animate-spin" />
+                  ) : (
+                    "Submit Like"
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
