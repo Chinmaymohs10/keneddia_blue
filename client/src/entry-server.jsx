@@ -1,70 +1,45 @@
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router";
 import App from "./App";
-import { fetchHomePageData } from "@/ssr/homepageData";
-import { fetchHotelsPageData } from "@/ssr/hotelsPageData";
-import {
-  fetchEventDetailPageData,
-  fetchEventsListingData,
-  fetchNewsDetailPageData,
-  fetchNewsListingData,
-  fetchOfferListingData,
-} from "@/ssr/contentPagesData";
-import {
-  fetchPropertyCategoryPageData,
-  fetchPropertyDetailPageData,
-} from "@/ssr/propertyDetailData";
 import { injectSeoIntoHtml } from "@/lib/seo";
+import { loadInitialDataForUrl } from "@/ssr/loadInitialData";
 
-const serializeInitialData = (data) =>
-  JSON.stringify(data).replace(/</g, "\\u003c");
+let prettierPromise;
+
+async function getPrettier() {
+  if (!prettierPromise) {
+    prettierPromise = import("prettier").catch(() => null);
+  }
+
+  return prettierPromise;
+}
+
+function formatHtmlFallback(html) {
+  return html
+    .replace(/></g, ">\n<")
+    .replace(/^\s*\n/gm, "")
+    .trim();
+}
+
+async function formatHtmlDocument(html) {
+  const prettier = await getPrettier();
+
+  if (!prettier?.format) {
+    return formatHtmlFallback(html);
+  }
+
+  try {
+    return await prettier.format(html, {
+      parser: "html",
+      htmlWhitespaceSensitivity: "ignore",
+    });
+  } catch {
+    return formatHtmlFallback(html);
+  }
+}
 
 export async function render(url, template) {
-  const pathname = new URL(url, "http://localhost").pathname;
-
-  let initialData = {};
-
-  if (pathname === "/") {
-    initialData.home = await fetchHomePageData();
-  }
-
-  if (pathname === "/hotels" || pathname === "/hotels/") {
-    initialData.hotels = await fetchHotelsPageData();
-  }
-
-  if (pathname === "/offers" || pathname === "/offers/") {
-    initialData.offers = await fetchOfferListingData();
-  }
-
-  if (pathname === "/events" || pathname === "/events/") {
-    initialData.events = await fetchEventsListingData();
-  }
-
-  const eventDetailMatch = pathname.match(/^\/events\/([^/]+)\/?$/);
-  if (eventDetailMatch) {
-    initialData.eventDetail = await fetchEventDetailPageData(eventDetailMatch[1]);
-  }
-
-  if (pathname === "/news" || pathname === "/news/") {
-    initialData.news = await fetchNewsListingData();
-  }
-
-  const newsDetailMatch = pathname.match(/^\/news\/([^/]+)\/?$/);
-  if (newsDetailMatch) {
-    initialData.newsDetail = await fetchNewsDetailPageData(newsDetailMatch[1]);
-  }
-
-  const propertyDetailMatch = pathname.match(/^\/([^/]+)\/([^/]+-\d+)\/?$/);
-  if (propertyDetailMatch) {
-    initialData.propertyDetail = await fetchPropertyDetailPageData(pathname);
-  }
-
-  const propertyCategoryMatch = pathname.match(
-    /^\/([^/]+)\/([^/]+-\d+)\/([^/]+)\/?$/,
-  );
-  if (propertyCategoryMatch) {
-    initialData.propertyCategory = await fetchPropertyCategoryPageData(pathname);
-  }
+  const initialData = await loadInitialDataForUrl(url);
 
   const appHtml = renderToString(
     <StaticRouter location={url}>
@@ -72,10 +47,8 @@ export async function render(url, template) {
     </StaticRouter>,
   );
 
-  const initialDataScript = `<script>window.__INITIAL_DATA__=${serializeInitialData(initialData)};</script>`;
-
   if (!template) {
-    return { appHtml, initialData, initialDataScript };
+    return { appHtml, initialData };
   }
 
   const processedTemplate =
@@ -83,9 +56,11 @@ export async function render(url, template) {
       ? injectSeoIntoHtml(template, initialData.propertyDetail.seo)
       : template;
 
-  const html = processedTemplate
-    .replace(/<div id="root"><\/div>/, `<div id="root">${appHtml}</div>`)
-    .replace("</body>", `${initialDataScript}</body>`);
+  const rawHtml = processedTemplate.replace(
+    /<div id="root"><\/div>/,
+    `<div id="root">${appHtml}</div>`,
+  );
+  const html = await formatHtmlDocument(rawHtml);
 
   return { html, appHtml, initialData };
 }
