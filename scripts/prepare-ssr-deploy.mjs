@@ -7,11 +7,12 @@ const rootDir = path.resolve(__dirname, "..");
 const deployDir = path.join(rootDir, "ssr-deploy");
 
 const copyTargets = [
-  "server.mjs",
-  "package.json",
-  "package-lock.json",
-  "public_html",
-  "public_html-ssr",
+  { source: "server.mjs", dest: "server.mjs" },
+  { source: "package.json", dest: "package.json" },
+  { source: "package-lock.json", dest: "package-lock.json" },
+  { source: "public_html", dest: "public_html" },
+  { source: "public_html-ssr", dest: "public_html-ssr" },
+  { source: path.join("client", "index.html"), dest: path.join("client", "index.html") },
 ];
 
 const ensureExists = async (targetPath) => {
@@ -24,15 +25,16 @@ const ensureExists = async (targetPath) => {
 
 const main = async () => {
   await Promise.all(
-    copyTargets.map((target) => ensureExists(path.join(rootDir, target))),
+    copyTargets.map((target) => ensureExists(path.join(rootDir, target.source))),
   );
 
   await fs.rm(deployDir, { recursive: true, force: true });
   await fs.mkdir(deployDir, { recursive: true });
 
   for (const target of copyTargets) {
-    const sourcePath = path.join(rootDir, target);
-    const destPath = path.join(deployDir, target);
+    const sourcePath = path.join(rootDir, target.source);
+    const destPath = path.join(deployDir, target.dest);
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
     await fs.cp(sourcePath, destPath, { recursive: true });
   }
 
@@ -42,6 +44,7 @@ const main = async () => {
     "Contents:",
     "- public_html",
     "- public_html-ssr",
+    "- client/index.html",
     "- server.mjs",
     "- package.json",
     "- package-lock.json",
@@ -50,7 +53,7 @@ const main = async () => {
     "1. npm install --omit=dev",
     "2. npm start",
     "",
-    "Set PORT and NODE_ENV=production as needed before starting.",
+    "NODE_ENV=production is recommended, but server.mjs now auto-detects the production bundle too.",
     "",
   ].join("\n");
 

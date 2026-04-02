@@ -1,14 +1,21 @@
 import fs from "node:fs/promises";
+import { existsSync } from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer as createViteServer } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const isProd =
-  process.env.NODE_ENV === "production" || process.argv.includes("--prod");
-
 const resolveFromRoot = (...parts) => path.resolve(__dirname, ...parts);
+const hasProdClient = existsSync(resolveFromRoot("public_html", "index.html"));
+const hasProdServer = existsSync(
+  resolveFromRoot("public_html-ssr", "entry-server.js"),
+);
+const hasSourceClient = existsSync(resolveFromRoot("client", "index.html"));
+const isProd =
+  process.env.NODE_ENV === "production" ||
+  process.argv.includes("--prod") ||
+  (hasProdClient && hasProdServer && !hasSourceClient);
 const sendHtml = (res, html) => {
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
