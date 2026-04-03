@@ -57,19 +57,13 @@ export default function RestaurantHomepage() {
         </div>
 
         <RestaurantQuickBooking />
-        <RestaurantBestSellers />
-
-        <RestaurantProperties />
-
-        <AboutRestaurant />
-
         <RestaurantOffers />
-
+        <RestaurantProperties />
+         <RestaurantBestSellers />
+        <AboutRestaurant />
         {/* Events Schedule */}
         <EventsSchedule />
-
         <RestaurantNewsSection />
-
         <RestaurantGuestReviews />
         
       </main>

@@ -127,13 +127,13 @@ export default function HeroBanner() {
                   Reserve
                 </span>
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 className="h-auto rounded-full border-white/30 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black"
               >
                 <Menu className="mr-2 h-4 w-4" />
                 Explore Menu
-              </Button>
+              </Button> */}
             </motion.div>
           </div>
         </div>
