@@ -10,6 +10,7 @@ import CafeBestSellers from "./components/CafeBestSellers";
 import CafeShowcaseSlider from "./components/CafeShowcaseSlider";
 import CafeNewsSection from "./components/CafeNewsSection";
 import CafeGuestReviews from "./components/CafeGuestReviews";
+import CafeQuickBooking from "./components/CafeQuickBooking";
 
 const CAFE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -33,10 +34,10 @@ export default function CafeHomepage() {
           <CafeHeroBanner />
         </div>
         {/* <CafeQuickBooking /> */}
-        <CafeProperties />
-        <CafeAbout />
         <CafeCoffeeStory />
+        <CafeProperties />
         <CafeBestSellers />
+        <CafeAbout />
         <CafeShowcaseSlider />
         <CafeNewsSection />
         <CafeGuestReviews />
