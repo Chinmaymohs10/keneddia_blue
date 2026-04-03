@@ -23718,10 +23718,10 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-Cfym1nY1.js")
+  () => import("./assets/RestaurantHomepage-DaNu3uBG.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-DVYAF6HU.js")
+  () => import("./assets/CafeHomepage-Y7o3U-wf.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(

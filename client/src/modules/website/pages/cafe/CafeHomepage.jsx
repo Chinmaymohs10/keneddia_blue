@@ -3,9 +3,10 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import CafeHeroBanner from "./components/CafeHeroBanner";
-import CafeQuickBooking from "./components/CafeQuickBooking";
 import CafeProperties from "./components/CafeProperties";
 import CafeAbout from "./components/CafeAbout";
+import CafeCoffeeStory from "./components/CafeCoffeeStory";
+import CafeBestSellers from "./components/CafeBestSellers";
 import CafeShowcaseSlider from "./components/CafeShowcaseSlider";
 import CafeNewsSection from "./components/CafeNewsSection";
 import CafeGuestReviews from "./components/CafeGuestReviews";
@@ -25,7 +26,7 @@ export default function CafeHomepage() {
 
   return (
     <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
-      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_restaurant} />
+      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       <main>
         <div id="home">
@@ -34,6 +35,8 @@ export default function CafeHomepage() {
         {/* <CafeQuickBooking /> */}
         <CafeProperties />
         <CafeAbout />
+        <CafeCoffeeStory />
+        <CafeBestSellers />
         <CafeShowcaseSlider />
         <CafeNewsSection />
         <CafeGuestReviews />
