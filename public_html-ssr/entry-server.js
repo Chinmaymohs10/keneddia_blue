@@ -23721,7 +23721,7 @@ const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-DaNu3uBG.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-Y7o3U-wf.js")
+  () => import("./assets/CafeHomepage-DQ4U2ovT.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
