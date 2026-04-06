@@ -28,11 +28,8 @@ const META_INITIAL = {
 };
 
 const GOOGLE_INITIAL = {
-  targetType: "property",
-  propertyId: "",
-  propertyTypeId: "",
-  category: "",
-  description: "",
+  headerUrl: "",
+  bodyUrl: "",
 };
 
 const toList = (response) => {
@@ -168,11 +165,14 @@ function SeoManagement() {
     const query = googleSearch.trim().toLowerCase();
     if (!query) return googleList;
     return googleList.filter((item) =>
-      [item.category, item.description, targetLabel(item)]
+      [item.category, item.description]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query)),
     );
-  }, [googleList, googleSearch, propertyMap, propertyTypeMap]);
+  }, [googleList, googleSearch]);
+
+  const hasGoogleEntry = googleList.length > 0;
+  const canCreateGoogle = !hasGoogleEntry || Boolean(editingGoogleId);
 
   const saveMeta = async (event) => {
     event.preventDefault();
@@ -211,15 +211,14 @@ function SeoManagement() {
 
   const saveGoogle = async (event) => {
     event.preventDefault();
-    if (googleForm.targetType === "property" && !googleForm.propertyId) return showError("Select a property");
-    if (googleForm.targetType === "propertyType" && !googleForm.propertyTypeId) return showError("Select a property type");
-    if (!googleForm.category.trim()) return showError("Category is required");
-    if (!googleForm.description.trim()) return showError("Description is required");
+    if (!canCreateGoogle) return showError("Only one Google tag section is allowed");
+    if (!googleForm.headerUrl.trim() && !googleForm.bodyUrl.trim()) {
+      return showError("At least one URL is required");
+    }
 
     const payload = {
-      ...buildTargetPayload(googleForm),
-      category: googleForm.category.trim(),
-      description: googleForm.description.trim(),
+      category: googleForm.headerUrl.trim(),
+      description: googleForm.bodyUrl.trim(),
     };
 
     try {
@@ -260,11 +259,8 @@ function SeoManagement() {
     setActiveSection("google");
     setEditingGoogleId(item.id);
     setGoogleForm({
-      targetType: item.propertyTypeId ? "propertyType" : "property",
-      propertyId: item.propertyId ? String(item.propertyId) : "",
-      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
-      category: item.category || "",
-      description: item.description || "",
+      headerUrl: item.category || "",
+      bodyUrl: item.description || "",
     });
   };
 
@@ -307,7 +303,7 @@ function SeoManagement() {
               <div>
                 <h2 className="text-2xl font-semibold" style={{ color: colors.textPrimary }}>SEO Management</h2>
                 <p className="text-sm mt-1" style={{ color: colors.textSecondary }}>
-                  Manage meta tags and Google tags for properties and homepage property types.
+                  Manage meta tags and a single global Google tag configuration.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -389,21 +385,36 @@ function SeoManagement() {
                 <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6">
                   <SeoFormCard
                     title={editingGoogleId ? "Edit Google Tag" : "Create Google Tag"}
-                    subtitle="Store Google tag details for properties or homepage types."
+                    subtitle={
+                      canCreateGoogle
+                        ? "Store one global Google tag entry with separate header and body URLs."
+                        : "A Google tag entry already exists. Use edit or delete from the table."
+                    }
                     clearable={Boolean(editingGoogleId)}
                     onClear={resetGoogleForm}
                   >
                     <form onSubmit={saveGoogle} className="space-y-4">
-                      <TargetSelector
-                        form={googleForm}
-                        onFormChange={setGoogleForm}
-                        propertyOptions={propertyOptions}
-                        propertyTypeOptions={propertyTypeOptions}
-                        prefix="google"
+                      <Field
+                        label="Header URL"
+                        type="url"
+                        placeholder="https://example.com/header-tag.js"
+                        value={googleForm.headerUrl}
+                        onChange={(value) => setGoogleForm((prev) => ({ ...prev, headerUrl: value }))}
+                        disabled={!canCreateGoogle}
                       />
-                      <Field label="Category" placeholder="header" value={googleForm.category} onChange={(value) => setGoogleForm((prev) => ({ ...prev, category: value }))} />
-                      <TextAreaField label="Description" rows={6} value={googleForm.description} onChange={(value) => setGoogleForm((prev) => ({ ...prev, description: value }))} />
-                      <SubmitButton loading={savingGoogle} label={editingGoogleId ? "Update Google Tag" : "Add Google Tag"} />
+                      <Field
+                        label="Body URL"
+                        type="url"
+                        placeholder="https://example.com/body-tag"
+                        value={googleForm.bodyUrl}
+                        onChange={(value) => setGoogleForm((prev) => ({ ...prev, bodyUrl: value }))}
+                        disabled={!canCreateGoogle}
+                      />
+                      <SubmitButton
+                        loading={savingGoogle}
+                        label={editingGoogleId ? "Update Google Tag" : "Add Google Tag"}
+                        disabled={!canCreateGoogle}
+                      />
                     </form>
                   </SeoFormCard>
 
@@ -418,14 +429,12 @@ function SeoManagement() {
                     <table className="w-full min-w-[760px]">
                       <thead>
                         <tr style={{ backgroundColor: colors.mainBg }}>
-                          <Th>Target</Th><Th>Type</Th><Th>Category</Th><Th>Description</Th><Th>Status</Th><Th align="right">Actions</Th>
+                          <Th>Header URL</Th><Th>Body URL</Th><Th>Status</Th><Th align="right">Actions</Th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {filteredGoogle.map((item) => (
                           <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                            <Td>{targetLabel(item)}</Td>
-                            <Td>{targetTypeLabel(item)}</Td>
                             <Td>{item.category || "-"}</Td>
                             <Td>{item.description || "-"}</Td>
                             <Td><StatusBadge active={item.active ?? item.status} /></Td>
@@ -617,7 +626,7 @@ function SelectField({ id, label, value, onChange, options, placeholder }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
   return (
     <div>
       <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
@@ -628,7 +637,8 @@ function Field({ label, value, onChange, type = "text", placeholder = "" }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none"
+        disabled={disabled}
+        className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
         style={{ borderColor: colors.border, color: colors.textPrimary }}
       />
     </div>
@@ -668,11 +678,11 @@ function SearchBox({ value, onChange, placeholder }) {
   );
 }
 
-function SubmitButton({ loading, label }) {
+function SubmitButton({ loading, label, disabled = false }) {
   return (
     <button
       type="submit"
-      disabled={loading}
+      disabled={loading || disabled}
       className="w-full px-4 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2 disabled:opacity-70"
       style={{ backgroundColor: colors.primary }}
     >

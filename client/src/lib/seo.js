@@ -5,6 +5,8 @@ const DEFAULT_OG_IMAGE = "/og-image.png";
 const DEFAULT_TWITTER_SITE = "@kennediahotels";
 const SEO_MARKER_START = "<!-- dynamic-seo:start -->";
 const SEO_MARKER_END = "<!-- dynamic-seo:end -->";
+const BODY_MARKER_START = "<!-- dynamic-seo-body:start -->";
+const BODY_MARKER_END = "<!-- dynamic-seo-body:end -->";
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -66,6 +68,11 @@ const selectSeoRecord = (list, propertyId) =>
     )
     .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 
+const selectGlobalGoogleTag = (list) =>
+  (Array.isArray(list) ? list : [])
+    .filter((item) => isActiveSeo(item))
+    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+
 export async function fetchPropertySeo(propertyId) {
   if (!propertyId) {
     return { metaTag: null, googleTag: null };
@@ -82,7 +89,21 @@ export async function fetchPropertySeo(propertyId) {
 
     return {
       metaTag: selectSeoRecord(metaList, propertyId),
-      googleTag: selectSeoRecord(googleList, propertyId),
+      googleTag: selectGlobalGoogleTag(googleList),
+    };
+  } catch {
+    return { metaTag: null, googleTag: null };
+  }
+}
+
+export async function fetchGlobalSeo() {
+  try {
+    const googleRes = await getAllGoogleTags().catch(() => null);
+    const googleList = googleRes?.data || googleRes || [];
+
+    return {
+      metaTag: null,
+      googleTag: selectGlobalGoogleTag(googleList),
     };
   } catch {
     return { metaTag: null, googleTag: null };
@@ -105,7 +126,8 @@ export function buildSeoState(seo) {
     keywords,
     canonicalUrl,
     schema,
-    googleTagHtml: googleTag?.description?.trim() || "",
+    googleTagHeadUrl: googleTag?.category?.trim() || "",
+    googleTagBodyUrl: googleTag?.description?.trim() || "",
     ogImage: DEFAULT_OG_IMAGE,
     twitterSite: DEFAULT_TWITTER_SITE,
   };
@@ -141,36 +163,29 @@ const ensureCanonical = (href) => {
 
 const removeInjectedNodes = () => {
   document.head.querySelectorAll("[data-dynamic-seo-script]").forEach((node) => node.remove());
+  document.body?.querySelectorAll("[data-dynamic-seo-body]").forEach((node) => node.remove());
 };
 
-const injectGoogleTagHtml = (html) => {
-  if (!html) return;
+const injectGoogleTagUrls = (headUrl, bodyUrl) => {
+  if (headUrl) {
+    const script = document.createElement("script");
+    script.src = headUrl;
+    script.async = true;
+    script.setAttribute("data-dynamic-seo-script", "google-tag-head");
+    document.head.appendChild(script);
+  }
 
-  const container = document.createElement("div");
-  container.innerHTML = html;
-
-  Array.from(container.childNodes).forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) {
-      return;
-    }
-
-    if (node.nodeName.toLowerCase() === "script") {
-      const script = document.createElement("script");
-      Array.from(node.attributes || []).forEach((attr) =>
-        script.setAttribute(attr.name, attr.value),
-      );
-      script.textContent = node.textContent || "";
-      script.setAttribute("data-dynamic-seo-script", "google-tag");
-      document.head.appendChild(script);
-      return;
-    }
-
-    const clone = node.cloneNode(true);
-    if (clone.nodeType === Node.ELEMENT_NODE) {
-      clone.setAttribute("data-dynamic-seo-script", "google-tag");
-    }
-    document.head.appendChild(clone);
-  });
+  if (bodyUrl && document.body) {
+    const iframe = document.createElement("iframe");
+    iframe.src = bodyUrl;
+    iframe.width = "0";
+    iframe.height = "0";
+    iframe.style.display = "none";
+    iframe.style.visibility = "hidden";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.setAttribute("data-dynamic-seo-body", "google-tag-body");
+    document.body.appendChild(iframe);
+  }
 };
 
 export function applySeoToDocument(seo) {
@@ -235,7 +250,7 @@ export function applySeoToDocument(seo) {
     document.head.appendChild(schemaScript);
   }
 
-  injectGoogleTagHtml(state.googleTagHtml);
+  injectGoogleTagUrls(state.googleTagHeadUrl, state.googleTagBodyUrl);
 }
 
 export function resetSeoDocument() {
@@ -246,7 +261,7 @@ export function injectSeoIntoHtml(template, seo) {
   const state = buildSeoState(seo);
   const titleTag = `<title>${escapeHtml(state.title || DEFAULT_TITLE)}</title>`;
 
-  if (!state.hasDynamicMeta && !state.googleTagHtml) {
+  if (!state.hasDynamicMeta && !state.googleTagHeadUrl && !state.googleTagBodyUrl) {
     const block = `${SEO_MARKER_START}
     ${titleTag}
     ${SEO_MARKER_END}`;
@@ -268,7 +283,17 @@ export function injectSeoIntoHtml(template, seo) {
   const schemaTag = state.schema
     ? `\n    <script type="application/ld+json">${escapeScript(state.schema)}</script>`
     : "";
-  const googleTagBlock = state.googleTagHtml ? `\n    ${state.googleTagHtml}` : "";
+  const googleTagHeadBlock = state.googleTagHeadUrl
+    ? `\n    <script async src="${escapeHtml(state.googleTagHeadUrl)}"></script>`
+    : "";
+  const googleTagBodyBlock = state.googleTagBodyUrl
+    ? `
+    ${BODY_MARKER_START}
+    <iframe src="${escapeHtml(state.googleTagBodyUrl)}" height="0" width="0" style="display:none;visibility:hidden" aria-hidden="true"></iframe>
+    ${BODY_MARKER_END}`
+    : `
+    ${BODY_MARKER_START}
+    ${BODY_MARKER_END}`;
 
   const block = `${SEO_MARKER_START}
     ${titleTag}
@@ -282,7 +307,7 @@ export function injectSeoIntoHtml(template, seo) {
     <meta name="twitter:site" content="${escapeHtml(state.twitterSite)}" />
     ${state.title ? `<meta name="twitter:title" content="${escapeHtml(state.title)}" />` : ""}
     ${state.description ? `<meta name="twitter:description" content="${escapeHtml(state.description)}" />` : ""}
-    <meta name="twitter:image" content="${escapeHtml(state.ogImage)}" />${canonicalTag}${schemaTag}${googleTagBlock}
+    <meta name="twitter:image" content="${escapeHtml(state.ogImage)}" />${canonicalTag}${schemaTag}${googleTagHeadBlock}
     ${SEO_MARKER_END}`;
 
   const existingBlock = new RegExp(
@@ -290,9 +315,18 @@ export function injectSeoIntoHtml(template, seo) {
     "i",
   );
 
-  if (existingBlock.test(template)) {
-    return template.replace(existingBlock, block);
+  const headInjected = existingBlock.test(template)
+    ? template.replace(existingBlock, block)
+    : template.replace("</head>", `  ${block}\n  </head>`);
+
+  const existingBodyBlock = new RegExp(
+    `${BODY_MARKER_START}[\\s\\S]*?${BODY_MARKER_END}`,
+    "i",
+  );
+
+  if (existingBodyBlock.test(headInjected)) {
+    return headInjected.replace(existingBodyBlock, googleTagBodyBlock);
   }
 
-  return template.replace("</head>", `  ${block}\n  </head>`);
+  return headInjected.replace("<body>", `<body>${googleTagBodyBlock}`);
 }

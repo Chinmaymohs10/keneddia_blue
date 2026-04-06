@@ -11,10 +11,13 @@ import {
   fetchPropertyCategoryPageData,
   fetchPropertyDetailPageData,
 } from "@/ssr/propertyDetailData";
+import { fetchGlobalSeo } from "@/lib/seo";
 
 export async function loadInitialDataForUrl(url) {
   const pathname = new URL(url, "http://localhost").pathname;
-  const initialData = {};
+  const initialData = {
+    globalSeo: await fetchGlobalSeo(),
+  };
 
   if (pathname === "/") {
     initialData.home = await fetchHomePageData();

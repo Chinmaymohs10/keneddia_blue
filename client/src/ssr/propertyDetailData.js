@@ -156,6 +156,11 @@ const selectSeoRecord = (list, propertyId) =>
     })
     .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 
+const selectGlobalGoogleTag = (list) =>
+  (Array.isArray(list) ? list : [])
+    .filter((item) => Boolean(item?.active ?? item?.status))
+    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+
 const fetchSeoForProperty = async (propertyId) => {
   try {
     const [metaRes, googleRes] = await Promise.all([
@@ -168,7 +173,7 @@ const fetchSeoForProperty = async (propertyId) => {
 
     return {
       metaTag: selectSeoRecord(metaList, propertyId),
-      googleTag: selectSeoRecord(googleList, propertyId),
+      googleTag: selectGlobalGoogleTag(googleList),
     };
   } catch {
     return { metaTag: null, googleTag: null };

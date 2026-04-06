@@ -52,8 +52,11 @@ export async function render(url, template) {
   }
 
   const processedTemplate =
-    initialData?.propertyDetail?.seo
-      ? injectSeoIntoHtml(template, initialData.propertyDetail.seo)
+    initialData?.propertyDetail?.seo || initialData?.globalSeo
+      ? injectSeoIntoHtml(
+          template,
+          initialData?.propertyDetail?.seo || initialData?.globalSeo,
+        )
       : template;
 
   const rawHtml = processedTemplate.replace(

@@ -16440,6 +16440,8 @@ const DEFAULT_OG_IMAGE = "/og-image.png";
 const DEFAULT_TWITTER_SITE = "@kennediahotels";
 const SEO_MARKER_START = "<!-- dynamic-seo:start -->";
 const SEO_MARKER_END = "<!-- dynamic-seo:end -->";
+const BODY_MARKER_START = "<!-- dynamic-seo-body:start -->";
+const BODY_MARKER_END = "<!-- dynamic-seo-body:end -->";
 const escapeHtml = (value = "") => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const escapeScript = (value = "") => String(value).replace(/<\/script/gi, "<\\/script");
 const isActiveSeo = (item) => Boolean(item?.active ?? item?.status);
@@ -16475,6 +16477,7 @@ const normalizeSchema = (rawSchema, metaTag) => {
 const selectSeoRecord$1 = (list, propertyId) => (Array.isArray(list) ? list : []).filter(
   (item) => isActiveSeo(item) && String(item?.propertyId ?? "") === String(propertyId ?? "")
 ).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+const selectGlobalGoogleTag$1 = (list) => (Array.isArray(list) ? list : []).filter((item) => isActiveSeo(item)).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 async function fetchPropertySeo(propertyId) {
   if (!propertyId) {
     return { metaTag: null, googleTag: null };
@@ -16488,7 +16491,19 @@ async function fetchPropertySeo(propertyId) {
     const googleList = googleRes?.data || googleRes || [];
     return {
       metaTag: selectSeoRecord$1(metaList, propertyId),
-      googleTag: selectSeoRecord$1(googleList, propertyId)
+      googleTag: selectGlobalGoogleTag$1(googleList)
+    };
+  } catch {
+    return { metaTag: null, googleTag: null };
+  }
+}
+async function fetchGlobalSeo() {
+  try {
+    const googleRes = await getAllGoogleTags().catch(() => null);
+    const googleList = googleRes?.data || googleRes || [];
+    return {
+      metaTag: null,
+      googleTag: selectGlobalGoogleTag$1(googleList)
     };
   } catch {
     return { metaTag: null, googleTag: null };
@@ -16509,7 +16524,8 @@ function buildSeoState(seo) {
     keywords,
     canonicalUrl,
     schema,
-    googleTagHtml: googleTag?.description?.trim() || "",
+    googleTagHeadUrl: googleTag?.category?.trim() || "",
+    googleTagBodyUrl: googleTag?.description?.trim() || "",
     ogImage: DEFAULT_OG_IMAGE,
     twitterSite: DEFAULT_TWITTER_SITE
   };
@@ -16540,31 +16556,27 @@ const ensureCanonical = (href) => {
 };
 const removeInjectedNodes = () => {
   document.head.querySelectorAll("[data-dynamic-seo-script]").forEach((node) => node.remove());
+  document.body?.querySelectorAll("[data-dynamic-seo-body]").forEach((node) => node.remove());
 };
-const injectGoogleTagHtml = (html) => {
-  if (!html) return;
-  const container = document.createElement("div");
-  container.innerHTML = html;
-  Array.from(container.childNodes).forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) {
-      return;
-    }
-    if (node.nodeName.toLowerCase() === "script") {
-      const script = document.createElement("script");
-      Array.from(node.attributes || []).forEach(
-        (attr) => script.setAttribute(attr.name, attr.value)
-      );
-      script.textContent = node.textContent || "";
-      script.setAttribute("data-dynamic-seo-script", "google-tag");
-      document.head.appendChild(script);
-      return;
-    }
-    const clone = node.cloneNode(true);
-    if (clone.nodeType === Node.ELEMENT_NODE) {
-      clone.setAttribute("data-dynamic-seo-script", "google-tag");
-    }
-    document.head.appendChild(clone);
-  });
+const injectGoogleTagUrls = (headUrl, bodyUrl) => {
+  if (headUrl) {
+    const script = document.createElement("script");
+    script.src = headUrl;
+    script.async = true;
+    script.setAttribute("data-dynamic-seo-script", "google-tag-head");
+    document.head.appendChild(script);
+  }
+  if (bodyUrl && document.body) {
+    const iframe = document.createElement("iframe");
+    iframe.src = bodyUrl;
+    iframe.width = "0";
+    iframe.height = "0";
+    iframe.style.display = "none";
+    iframe.style.visibility = "hidden";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.setAttribute("data-dynamic-seo-body", "google-tag-body");
+    document.body.appendChild(iframe);
+  }
 };
 function applySeoToDocument(seo) {
   const state = buildSeoState(seo);
@@ -16621,7 +16633,7 @@ function applySeoToDocument(seo) {
     schemaScript.setAttribute("data-dynamic-seo-script", "schema");
     document.head.appendChild(schemaScript);
   }
-  injectGoogleTagHtml(state.googleTagHtml);
+  injectGoogleTagUrls(state.googleTagHeadUrl, state.googleTagBodyUrl);
 }
 function resetSeoDocument() {
   applySeoToDocument({ metaTag: null, googleTag: null });
@@ -16629,7 +16641,7 @@ function resetSeoDocument() {
 function injectSeoIntoHtml(template, seo) {
   const state = buildSeoState(seo);
   const titleTag = `<title>${escapeHtml(state.title || DEFAULT_TITLE)}</title>`;
-  if (!state.hasDynamicMeta && !state.googleTagHtml) {
+  if (!state.hasDynamicMeta && !state.googleTagHeadUrl && !state.googleTagBodyUrl) {
     const block2 = `${SEO_MARKER_START}
     ${titleTag}
     ${SEO_MARKER_END}`;
@@ -16647,8 +16659,14 @@ function injectSeoIntoHtml(template, seo) {
     <link rel="canonical" href="${escapeHtml(state.canonicalUrl)}" />` : "";
   const schemaTag = state.schema ? `
     <script type="application/ld+json">${escapeScript(state.schema)}<\/script>` : "";
-  const googleTagBlock = state.googleTagHtml ? `
-    ${state.googleTagHtml}` : "";
+  const googleTagHeadBlock = state.googleTagHeadUrl ? `
+    <script async src="${escapeHtml(state.googleTagHeadUrl)}"><\/script>` : "";
+  const googleTagBodyBlock = state.googleTagBodyUrl ? `
+    ${BODY_MARKER_START}
+    <iframe src="${escapeHtml(state.googleTagBodyUrl)}" height="0" width="0" style="display:none;visibility:hidden" aria-hidden="true"></iframe>
+    ${BODY_MARKER_END}` : `
+    ${BODY_MARKER_START}
+    ${BODY_MARKER_END}`;
   const block = `${SEO_MARKER_START}
     ${titleTag}
     ${state.description ? `<meta name="description" content="${escapeHtml(state.description)}" />` : ""}
@@ -16661,17 +16679,22 @@ function injectSeoIntoHtml(template, seo) {
     <meta name="twitter:site" content="${escapeHtml(state.twitterSite)}" />
     ${state.title ? `<meta name="twitter:title" content="${escapeHtml(state.title)}" />` : ""}
     ${state.description ? `<meta name="twitter:description" content="${escapeHtml(state.description)}" />` : ""}
-    <meta name="twitter:image" content="${escapeHtml(state.ogImage)}" />${canonicalTag}${schemaTag}${googleTagBlock}
+    <meta name="twitter:image" content="${escapeHtml(state.ogImage)}" />${canonicalTag}${schemaTag}${googleTagHeadBlock}
     ${SEO_MARKER_END}`;
   const existingBlock = new RegExp(
     `${SEO_MARKER_START}[\\s\\S]*?${SEO_MARKER_END}`,
     "i"
   );
-  if (existingBlock.test(template)) {
-    return template.replace(existingBlock, block);
-  }
-  return template.replace("</head>", `  ${block}
+  const headInjected = existingBlock.test(template) ? template.replace(existingBlock, block) : template.replace("</head>", `  ${block}
   </head>`);
+  const existingBodyBlock = new RegExp(
+    `${BODY_MARKER_START}[\\s\\S]*?${BODY_MARKER_END}`,
+    "i"
+  );
+  if (existingBodyBlock.test(headInjected)) {
+    return headInjected.replace(existingBodyBlock, googleTagBodyBlock);
+  }
+  return headInjected.replace("<body>", `<body>${googleTagBodyBlock}`);
 }
 const getAmenityName$4 = (amenity) => {
   if (typeof amenity === "string") return amenity;
@@ -23721,7 +23744,7 @@ const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-DaNu3uBG.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-DQ4U2ovT.js")
+  () => import("./assets/CafeHomepage-Beqai0UW.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
@@ -50233,11 +50256,8 @@ const META_INITIAL = {
   url: ""
 };
 const GOOGLE_INITIAL = {
-  targetType: "property",
-  propertyId: "",
-  propertyTypeId: "",
-  category: "",
-  description: ""
+  headerUrl: "",
+  bodyUrl: ""
 };
 const toList = (response) => {
   const data = response?.data ?? response;
@@ -50351,9 +50371,11 @@ function SeoManagement() {
     const query = googleSearch.trim().toLowerCase();
     if (!query) return googleList;
     return googleList.filter(
-      (item) => [item.category, item.description, targetLabel(item)].filter(Boolean).some((value) => String(value).toLowerCase().includes(query))
+      (item) => [item.category, item.description].filter(Boolean).some((value) => String(value).toLowerCase().includes(query))
     );
-  }, [googleList, googleSearch, propertyMap, propertyTypeMap]);
+  }, [googleList, googleSearch]);
+  const hasGoogleEntry = googleList.length > 0;
+  const canCreateGoogle = !hasGoogleEntry || Boolean(editingGoogleId);
   const saveMeta = async (event) => {
     event.preventDefault();
     if (metaForm.targetType === "property" && !metaForm.propertyId) return showError("Select a property");
@@ -50388,14 +50410,13 @@ function SeoManagement() {
   };
   const saveGoogle = async (event) => {
     event.preventDefault();
-    if (googleForm.targetType === "property" && !googleForm.propertyId) return showError("Select a property");
-    if (googleForm.targetType === "propertyType" && !googleForm.propertyTypeId) return showError("Select a property type");
-    if (!googleForm.category.trim()) return showError("Category is required");
-    if (!googleForm.description.trim()) return showError("Description is required");
+    if (!canCreateGoogle) return showError("Only one Google tag section is allowed");
+    if (!googleForm.headerUrl.trim() && !googleForm.bodyUrl.trim()) {
+      return showError("At least one URL is required");
+    }
     const payload = {
-      ...buildTargetPayload(googleForm),
-      category: googleForm.category.trim(),
-      description: googleForm.description.trim()
+      category: googleForm.headerUrl.trim(),
+      description: googleForm.bodyUrl.trim()
     };
     try {
       setSavingGoogle(true);
@@ -50433,11 +50454,8 @@ function SeoManagement() {
     setActiveSection("google");
     setEditingGoogleId(item.id);
     setGoogleForm({
-      targetType: item.propertyTypeId ? "propertyType" : "property",
-      propertyId: item.propertyId ? String(item.propertyId) : "",
-      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
-      category: item.category || "",
-      description: item.description || ""
+      headerUrl: item.category || "",
+      bodyUrl: item.description || ""
     });
   };
   const removeMeta = async (id) => {
@@ -50472,7 +50490,7 @@ function SeoManagement() {
     /* @__PURE__ */ jsx("div", { className: "p-6 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [
       /* @__PURE__ */ jsxs("div", { children: [
         /* @__PURE__ */ jsx("h2", { className: "text-2xl font-semibold", style: { color: colors.textPrimary }, children: "SEO Management" }),
-        /* @__PURE__ */ jsx("p", { className: "text-sm mt-1", style: { color: colors.textSecondary }, children: "Manage meta tags and Google tags for properties and homepage property types." })
+        /* @__PURE__ */ jsx("p", { className: "text-sm mt-1", style: { color: colors.textSecondary }, children: "Manage meta tags and a single global Google tag configuration." })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
         /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "meta", onClick: () => setActiveSection("meta"), icon: Tag, label: "Meta Tag" }),
@@ -50552,23 +50570,40 @@ function SeoManagement() {
         SeoFormCard,
         {
           title: editingGoogleId ? "Edit Google Tag" : "Create Google Tag",
-          subtitle: "Store Google tag details for properties or homepage types.",
+          subtitle: canCreateGoogle ? "Store one global Google tag entry with separate header and body URLs." : "A Google tag entry already exists. Use edit or delete from the table.",
           clearable: Boolean(editingGoogleId),
           onClear: resetGoogleForm,
           children: /* @__PURE__ */ jsxs("form", { onSubmit: saveGoogle, className: "space-y-4", children: [
             /* @__PURE__ */ jsx(
-              TargetSelector,
+              Field,
               {
-                form: googleForm,
-                onFormChange: setGoogleForm,
-                propertyOptions,
-                propertyTypeOptions,
-                prefix: "google"
+                label: "Header URL",
+                type: "url",
+                placeholder: "https://example.com/header-tag.js",
+                value: googleForm.headerUrl,
+                onChange: (value) => setGoogleForm((prev) => ({ ...prev, headerUrl: value })),
+                disabled: !canCreateGoogle
               }
             ),
-            /* @__PURE__ */ jsx(Field, { label: "Category", placeholder: "header", value: googleForm.category, onChange: (value) => setGoogleForm((prev) => ({ ...prev, category: value })) }),
-            /* @__PURE__ */ jsx(TextAreaField, { label: "Description", rows: 6, value: googleForm.description, onChange: (value) => setGoogleForm((prev) => ({ ...prev, description: value })) }),
-            /* @__PURE__ */ jsx(SubmitButton, { loading: savingGoogle, label: editingGoogleId ? "Update Google Tag" : "Add Google Tag" })
+            /* @__PURE__ */ jsx(
+              Field,
+              {
+                label: "Body URL",
+                type: "url",
+                placeholder: "https://example.com/body-tag",
+                value: googleForm.bodyUrl,
+                onChange: (value) => setGoogleForm((prev) => ({ ...prev, bodyUrl: value })),
+                disabled: !canCreateGoogle
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              SubmitButton,
+              {
+                loading: savingGoogle,
+                label: editingGoogleId ? "Update Google Tag" : "Add Google Tag",
+                disabled: !canCreateGoogle
+              }
+            )
           ] })
         }
       ),
@@ -50583,16 +50618,12 @@ function SeoManagement() {
           emptyMessage: "No Google tags found.",
           children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[760px]", children: [
             /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
-              /* @__PURE__ */ jsx(Th, { children: "Target" }),
-              /* @__PURE__ */ jsx(Th, { children: "Type" }),
-              /* @__PURE__ */ jsx(Th, { children: "Category" }),
-              /* @__PURE__ */ jsx(Th, { children: "Description" }),
+              /* @__PURE__ */ jsx(Th, { children: "Header URL" }),
+              /* @__PURE__ */ jsx(Th, { children: "Body URL" }),
               /* @__PURE__ */ jsx(Th, { children: "Status" }),
               /* @__PURE__ */ jsx(Th, { align: "right", children: "Actions" })
             ] }) }),
             /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-100", children: filteredGoogle.map((item) => /* @__PURE__ */ jsxs("tr", { className: "hover:bg-gray-50 transition-colors", children: [
-              /* @__PURE__ */ jsx(Td, { children: targetLabel(item) }),
-              /* @__PURE__ */ jsx(Td, { children: targetTypeLabel(item) }),
               /* @__PURE__ */ jsx(Td, { children: item.category || "-" }),
               /* @__PURE__ */ jsx(Td, { children: item.description || "-" }),
               /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
@@ -50755,7 +50786,7 @@ function SelectField({ id, label, value, onChange, options, placeholder }) {
     )
   ] });
 }
-function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
   return /* @__PURE__ */ jsxs("div", { children: [
     /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: label }),
     /* @__PURE__ */ jsx(
@@ -50765,7 +50796,8 @@ function Field({ label, value, onChange, type = "text", placeholder = "" }) {
         value,
         onChange: (event) => onChange(event.target.value),
         placeholder,
-        className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none",
+        disabled,
+        className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed",
         style: { borderColor: colors.border, color: colors.textPrimary }
       }
     )
@@ -50802,12 +50834,12 @@ function SearchBox({ value, onChange, placeholder }) {
     )
   ] });
 }
-function SubmitButton({ loading, label }) {
+function SubmitButton({ loading, label, disabled = false }) {
   return /* @__PURE__ */ jsxs(
     "button",
     {
       type: "submit",
-      disabled: loading,
+      disabled: loading || disabled,
       className: "w-full px-4 py-3 rounded-lg text-sm font-medium text-white flex items-center justify-center gap-2 disabled:opacity-70",
       style: { backgroundColor: colors.primary },
       children: [
@@ -52002,8 +52034,21 @@ const AppRoutes = () => {
     SuperAdminRoutes
   ] });
 };
+function GlobalSeoManager() {
+  const location = useLocation();
+  const { globalSeo } = useSsrData();
+  useEffect(() => {
+    const pathname = location.pathname;
+    const isPropertyDetailRoute = /^\/[^/]+\/[^/]+-\d+\/?$/.test(pathname);
+    if (!isPropertyDetailRoute) {
+      applySeoToDocument(globalSeo || { metaTag: null, googleTag: null });
+    }
+  }, [globalSeo, location.pathname]);
+  return null;
+}
 function App({ initialData = {} }) {
   return /* @__PURE__ */ jsx(SsrDataProvider, { initialData, children: /* @__PURE__ */ jsx(ThemeProvider, { defaultTheme: "dark", storageKey: "vite-ui-theme", children: /* @__PURE__ */ jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxs(TooltipProvider, { children: [
+    /* @__PURE__ */ jsx(GlobalSeoManager, {}),
     /* @__PURE__ */ jsx(Toaster, {}),
     /* @__PURE__ */ jsx(ScrollToTop, {}),
     /* @__PURE__ */ jsx(ToastContainer, {}),
@@ -52781,6 +52826,7 @@ const selectSeoRecord = (list, propertyId) => (Array.isArray(list) ? list : []).
   const isActive = Boolean(item?.active ?? item?.status);
   return isActive && String(item?.propertyId ?? "") === String(propertyId ?? "");
 }).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+const selectGlobalGoogleTag = (list) => (Array.isArray(list) ? list : []).filter((item) => Boolean(item?.active ?? item?.status)).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 const fetchSeoForProperty = async (propertyId) => {
   try {
     const [metaRes, googleRes] = await Promise.all([
@@ -52791,7 +52837,7 @@ const fetchSeoForProperty = async (propertyId) => {
     const googleList = googleRes?.data || googleRes || [];
     return {
       metaTag: selectSeoRecord(metaList, propertyId),
-      googleTag: selectSeoRecord(googleList, propertyId)
+      googleTag: selectGlobalGoogleTag(googleList)
     };
   } catch {
     return { metaTag: null, googleTag: null };
@@ -53114,7 +53160,9 @@ async function fetchPropertyCategoryPageData(pathname) {
 }
 async function loadInitialDataForUrl(url) {
   const pathname = new URL(url, "http://localhost").pathname;
-  const initialData = {};
+  const initialData = {
+    globalSeo: await fetchGlobalSeo()
+  };
   if (pathname === "/") {
     initialData.home = await fetchHomePageData();
   }
@@ -53182,7 +53230,10 @@ async function render(url, template) {
   if (!template) {
     return { appHtml, initialData };
   }
-  const processedTemplate = initialData?.propertyDetail?.seo ? injectSeoIntoHtml(template, initialData.propertyDetail.seo) : template;
+  const processedTemplate = initialData?.propertyDetail?.seo || initialData?.globalSeo ? injectSeoIntoHtml(
+    template,
+    initialData?.propertyDetail?.seo || initialData?.globalSeo
+  ) : template;
   const rawHtml = processedTemplate.replace(
     /<div id="root"><\/div>/,
     `<div id="root">${appHtml}</div>`
