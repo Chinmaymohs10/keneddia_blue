@@ -73,6 +73,19 @@ const selectGlobalGoogleTag = (list) =>
     .filter((item) => isActiveSeo(item))
     .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 
+const extractGoogleTagId = (url = "") => {
+  const trimmed = String(url).trim();
+  if (!trimmed) return "";
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.searchParams.get("id")?.trim() || "";
+  } catch {
+    const match = trimmed.match(/[?&]id=([^&]+)/i);
+    return match?.[1]?.trim() || "";
+  }
+};
+
 export async function fetchPropertySeo(propertyId) {
   if (!propertyId) {
     return { metaTag: null, googleTag: null };
@@ -127,6 +140,7 @@ export function buildSeoState(seo) {
     canonicalUrl,
     schema,
     googleTagHeadUrl: googleTag?.category?.trim() || "",
+    googleTagId: extractGoogleTagId(googleTag?.category),
     googleTagBodyUrl: googleTag?.description?.trim() || "",
     ogImage: DEFAULT_OG_IMAGE,
     twitterSite: DEFAULT_TWITTER_SITE,
@@ -175,16 +189,22 @@ const injectGoogleTagUrls = (headUrl, bodyUrl) => {
     document.head.appendChild(script);
   }
 
+  const googleTagId = extractGoogleTagId(headUrl);
+  if (googleTagId) {
+    const configScript = document.createElement("script");
+    configScript.textContent = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${googleTagId}');`;
+    configScript.setAttribute("data-dynamic-seo-script", "google-tag-config");
+    document.head.appendChild(configScript);
+  }
+
   if (bodyUrl && document.body) {
-    const iframe = document.createElement("iframe");
-    iframe.src = bodyUrl;
-    iframe.width = "0";
-    iframe.height = "0";
-    iframe.style.display = "none";
-    iframe.style.visibility = "hidden";
-    iframe.setAttribute("aria-hidden", "true");
-    iframe.setAttribute("data-dynamic-seo-body", "google-tag-body");
-    document.body.appendChild(iframe);
+    const noScript = document.createElement("noscript");
+    noScript.setAttribute("data-dynamic-seo-body", "google-tag-body");
+    noScript.innerHTML = `<iframe src="${escapeHtml(bodyUrl)}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
+    document.body.appendChild(noScript);
   }
 };
 
@@ -284,12 +304,24 @@ export function injectSeoIntoHtml(template, seo) {
     ? `\n    <script type="application/ld+json">${escapeScript(state.schema)}</script>`
     : "";
   const googleTagHeadBlock = state.googleTagHeadUrl
-    ? `\n    <script async src="${escapeHtml(state.googleTagHeadUrl)}"></script>`
+    ? `\n    <script async src="${escapeHtml(state.googleTagHeadUrl)}"></script>${
+        state.googleTagId
+          ? `\n    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '${escapeHtml(state.googleTagId)}');
+    </script>`
+          : ""
+      }`
     : "";
   const googleTagBodyBlock = state.googleTagBodyUrl
     ? `
     ${BODY_MARKER_START}
-    <iframe src="${escapeHtml(state.googleTagBodyUrl)}" height="0" width="0" style="display:none;visibility:hidden" aria-hidden="true"></iframe>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="${escapeHtml(state.googleTagBodyUrl)}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     ${BODY_MARKER_END}`
     : `
     ${BODY_MARKER_START}
