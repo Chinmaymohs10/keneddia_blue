@@ -40,6 +40,19 @@ const toList = (response) => {
   return [];
 };
 
+const normalizeSeoPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
+
 const normalizePropertyItem = (item) => {
   if (!item) return null;
 
@@ -59,8 +72,8 @@ const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType |
 
 const buildTargetPayload = (form) =>
   form.targetType === "propertyType"
-    ? { propertyTypeId: Number(form.propertyTypeId), propertyId: null }
-    : { propertyId: Number(form.propertyId), propertyTypeId: null };
+    ? { propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null, propertyId: null }
+    : { propertyId: form.propertyId ? Number(form.propertyId) : null, propertyTypeId: null };
 
 function SeoManagement() {
   const [activeSection, setActiveSection] = useState("meta");
@@ -173,11 +186,22 @@ function SeoManagement() {
 
   const hasGoogleEntry = googleList.length > 0;
   const canCreateGoogle = !hasGoogleEntry || Boolean(editingGoogleId);
+  const normalizedMetaUrl = normalizeSeoPath(metaForm.url);
+  const duplicateMetaEntry = useMemo(
+    () =>
+      metaList.find(
+        (item) =>
+          normalizeSeoPath(item?.url) === normalizedMetaUrl &&
+          item?.id !== editingMetaId,
+      ) || null,
+    [editingMetaId, metaList, normalizedMetaUrl],
+  );
+  const hasDuplicateMetaUrl = Boolean(normalizedMetaUrl && duplicateMetaEntry);
 
   const saveMeta = async (event) => {
     event.preventDefault();
-    if (metaForm.targetType === "property" && !metaForm.propertyId) return showError("Select a property");
-    if (metaForm.targetType === "propertyType" && !metaForm.propertyTypeId) return showError("Select a property type");
+    if (!metaForm.url.trim()) return showError("URL is required");
+    if (hasDuplicateMetaUrl) return showError("Meta tag already exists for this URL");
     if (!metaForm.metaTitle.trim()) return showError("Meta title is required");
     if (!metaForm.metaDescription.trim()) return showError("Meta description is required");
 
@@ -323,7 +347,7 @@ function SeoManagement() {
                 <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6">
                   <SeoFormCard
                     title={editingMetaId ? "Edit Meta Tag" : "Create Meta Tag"}
-                    subtitle="Configure metadata for a property page or homepage type."
+                    subtitle="Configure metadata by full page URL. Property and property type are optional fallbacks."
                     clearable={Boolean(editingMetaId)}
                     onClear={resetMetaForm}
                   >
@@ -340,7 +364,16 @@ function SeoManagement() {
                       <Field label="Schema" value={metaForm.skima} onChange={(value) => setMetaForm((prev) => ({ ...prev, skima: value }))} />
                       <Field label="Meta Keywords" value={metaForm.metaKeywords} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value }))} />
                       <Field label="URL" type="url" placeholder="https://example.com/page" value={metaForm.url} onChange={(value) => setMetaForm((prev) => ({ ...prev, url: value }))} />
-                      <SubmitButton loading={savingMeta} label={editingMetaId ? "Update Meta Tag" : "Add Meta Tag"} />
+                      {hasDuplicateMetaUrl ? (
+                        <p className="text-sm" style={{ color: "#ef4444" }}>
+                          Meta tag already added for this URL. Use edit or delete for the existing entry.
+                        </p>
+                      ) : null}
+                      <SubmitButton
+                        loading={savingMeta}
+                        label={editingMetaId ? "Update Meta Tag" : "Add Meta Tag"}
+                        disabled={hasDuplicateMetaUrl}
+                      />
                     </form>
                   </SeoFormCard>
 

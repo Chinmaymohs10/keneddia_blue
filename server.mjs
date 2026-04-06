@@ -11,16 +11,35 @@ const hasProdClient = existsSync(resolveFromRoot("public_html", "index.html"));
 const hasProdServer = existsSync(
   resolveFromRoot("public_html-ssr", "entry-server.js"),
 );
-const hasSourceClient = existsSync(resolveFromRoot("client", "index.html"));
-const isProd =
-  process.env.NODE_ENV === "production" ||
-  process.argv.includes("--prod") ||
-  (hasProdClient && hasProdServer && !hasSourceClient);
-const sendHtml = (res, html) => {
-  res.statusCode = 200;
+const argv = new Set(process.argv.slice(2));
+const explicitDev = argv.has("--dev") || process.env.NODE_ENV === "development";
+const explicitProd = argv.has("--prod") || process.env.NODE_ENV === "production";
+const hasProdBundle = hasProdClient && hasProdServer;
+const isProd = explicitProd || (!explicitDev && hasProdBundle);
+const setCommonHeaders = (res) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+};
+const sendHtml = (res, html, statusCode = 200) => {
+  res.statusCode = statusCode;
+  setCommonHeaders(res);
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Content-Disposition", "inline");
+  res.setHeader("Cache-Control", "no-store");
   res.end(html);
 };
+const sendText = (res, text, statusCode = 200) => {
+  res.statusCode = statusCode;
+  setCommonHeaders(res);
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.end(text);
+};
+const hasFileExtension = (pathname) => path.extname(pathname).length > 0;
+const isDevModuleRequest = (pathname) =>
+  pathname.startsWith("/@vite/") ||
+  pathname.startsWith("/@react-refresh") ||
+  pathname.startsWith("/src/") ||
+  pathname.startsWith("/node_modules/") ||
+  pathname.startsWith("/@fs/");
 const isSsrRoute = (pathname) =>
   pathname === "/" ||
   pathname === "/hotels" ||
@@ -61,11 +80,16 @@ const start = async () => {
           return;
         }
 
-        vite.middlewares(req, res, async () => {
+        if (!hasFileExtension(pathname) && !isDevModuleRequest(pathname)) {
           const templatePath = resolveFromRoot("client", "index.html");
           const rawTemplate = await fs.readFile(templatePath, "utf-8");
           const template = await vite.transformIndexHtml(url, rawTemplate);
           sendHtml(res, template);
+          return;
+        }
+
+        vite.middlewares(req, res, () => {
+          sendText(res, "Not Found", 404);
         });
         return;
       }
@@ -82,9 +106,19 @@ const start = async () => {
         return;
       }
 
+      if (!hasFileExtension(pathname)) {
+        const template = await fs.readFile(path.join(clientDir, "index.html"), "utf-8");
+        sendHtml(res, template);
+        return;
+      }
+
       const filePath = path.join(clientDir, pathname === "/" ? "index.html" : pathname);
-      const fallbackPath = path.join(clientDir, "index.html");
-      const data = await fs.readFile(filePath).catch(() => fs.readFile(fallbackPath));
+      const data = await fs.readFile(filePath).catch(() => null);
+      if (!data) {
+        sendText(res, "Not Found", 404);
+        return;
+      }
+
       const ext = path.extname(filePath).toLowerCase();
       const contentType =
         ext === ".js"
@@ -95,8 +129,13 @@ const start = async () => {
               ? "text/html; charset=utf-8"
               : undefined;
 
+      setCommonHeaders(res);
       if (contentType) {
         res.setHeader("Content-Type", contentType);
+      }
+      if (ext === ".html") {
+        res.setHeader("Content-Disposition", "inline");
+        res.setHeader("Cache-Control", "no-store");
       }
       res.statusCode = 200;
       res.end(data);
@@ -105,8 +144,7 @@ const start = async () => {
         vite.ssrFixStacktrace(error);
       }
       res.statusCode = 500;
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.end(error?.stack || String(error));
+      sendText(res, error?.stack || String(error), 500);
     }
   });
 

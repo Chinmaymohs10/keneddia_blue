@@ -156,12 +156,40 @@ const selectSeoRecord = (list, propertyId) =>
     })
     .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 
+const normalizePathname = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
+
+const selectMetaRecord = (list, pathname, propertyId) => {
+  const records = (Array.isArray(list) ? list : []).filter((item) =>
+    Boolean(item?.active ?? item?.status),
+  );
+  const normalizedPath = normalizePathname(pathname);
+
+  const pathMatch =
+    records
+      .filter((item) => normalizePathname(item?.url) === normalizedPath)
+      .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+
+  if (pathMatch) return pathMatch;
+  return selectSeoRecord(records, propertyId);
+};
+
 const selectGlobalGoogleTag = (list) =>
   (Array.isArray(list) ? list : [])
     .filter((item) => Boolean(item?.active ?? item?.status))
     .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 
-const fetchSeoForProperty = async (propertyId) => {
+const fetchSeoForProperty = async (pathname, propertyId) => {
   try {
     const [metaRes, googleRes] = await Promise.all([
       getAllMetaData().catch(() => null),
@@ -172,7 +200,7 @@ const fetchSeoForProperty = async (propertyId) => {
     const googleList = googleRes?.data || googleRes || [];
 
     return {
-      metaTag: selectSeoRecord(metaList, propertyId),
+      metaTag: selectMetaRecord(metaList, pathname, propertyId),
       googleTag: selectGlobalGoogleTag(googleList),
     };
   } catch {
@@ -452,7 +480,7 @@ export async function fetchPropertyDetailPageData(pathname) {
   const propertyType = isRestaurantType(parent, listing)
     ? "restaurant"
     : "hotel";
-  const seo = await fetchSeoForProperty(parent.id);
+  const seo = await fetchSeoForProperty(pathname, parent.id);
 
   const pageData =
     propertyType === "restaurant"
