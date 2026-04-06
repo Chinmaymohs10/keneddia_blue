@@ -347,7 +347,7 @@ export default function HotelDetail() {
         return;
       }
 
-      const seo = await fetchPropertySeo(propertyIdFromUrl);
+      const seo = await fetchPropertySeo(propertyIdFromUrl, window.location.pathname);
       if (isMounted) {
         applySeoToDocument(seo);
       }

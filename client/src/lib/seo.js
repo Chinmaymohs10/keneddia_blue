@@ -20,6 +20,19 @@ const escapeScript = (value = "") => String(value).replace(/<\/script/gi, "<\\/s
 
 const isActiveSeo = (item) => Boolean(item?.active ?? item?.status);
 
+const normalizePathname = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
+
 const buildFallbackSchema = (schemaType, metaTag) => {
   if (!schemaType) return "";
 
@@ -59,14 +72,25 @@ const normalizeSchema = (rawSchema, metaTag) => {
   return buildFallbackSchema(schemaValue, metaTag);
 };
 
-const selectSeoRecord = (list, propertyId) =>
-  (Array.isArray(list) ? list : [])
-    .filter(
-      (item) =>
-        isActiveSeo(item) &&
-        String(item?.propertyId ?? "") === String(propertyId ?? ""),
-    )
-    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+const selectSeoRecord = (list, { pathname = "", propertyId = null } = {}) => {
+  const records = (Array.isArray(list) ? list : []).filter((item) => isActiveSeo(item));
+  const normalizedPath = normalizePathname(pathname);
+
+  const pathMatch =
+    records
+      .filter((item) => normalizePathname(item?.url) === normalizedPath)
+      .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+
+  if (pathMatch) return pathMatch;
+
+  if (!propertyId) return null;
+
+  return (
+    records
+      .filter((item) => String(item?.propertyId ?? "") === String(propertyId ?? ""))
+      .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null
+  );
+};
 
 const selectGlobalGoogleTag = (list) =>
   (Array.isArray(list) ? list : [])
@@ -86,11 +110,7 @@ const extractGoogleTagId = (url = "") => {
   }
 };
 
-export async function fetchPropertySeo(propertyId) {
-  if (!propertyId) {
-    return { metaTag: null, googleTag: null };
-  }
-
+export async function fetchPropertySeo(propertyId, pathname = "") {
   try {
     const [metaRes, googleRes] = await Promise.all([
       getAllMetaData().catch(() => null),
@@ -101,7 +121,7 @@ export async function fetchPropertySeo(propertyId) {
     const googleList = googleRes?.data || googleRes || [];
 
     return {
-      metaTag: selectSeoRecord(metaList, propertyId),
+      metaTag: selectSeoRecord(metaList, { propertyId, pathname }),
       googleTag: selectGlobalGoogleTag(googleList),
     };
   } catch {
@@ -109,13 +129,17 @@ export async function fetchPropertySeo(propertyId) {
   }
 }
 
-export async function fetchGlobalSeo() {
+export async function fetchGlobalSeo(pathname = "") {
   try {
-    const googleRes = await getAllGoogleTags().catch(() => null);
+    const [metaRes, googleRes] = await Promise.all([
+      getAllMetaData().catch(() => null),
+      getAllGoogleTags().catch(() => null),
+    ]);
+    const metaList = metaRes?.data || metaRes || [];
     const googleList = googleRes?.data || googleRes || [];
 
     return {
-      metaTag: null,
+      metaTag: selectSeoRecord(metaList, { pathname }),
       googleTag: selectGlobalGoogleTag(googleList),
     };
   } catch {

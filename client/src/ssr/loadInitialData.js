@@ -16,7 +16,7 @@ import { fetchGlobalSeo } from "@/lib/seo";
 export async function loadInitialDataForUrl(url) {
   const pathname = new URL(url, "http://localhost").pathname;
   const initialData = {
-    globalSeo: await fetchGlobalSeo(),
+    globalSeo: await fetchGlobalSeo(pathname),
   };
 
   if (pathname === "/") {

@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ScrollToTop from "@/components/ScrollToTop";
 import AppRoutes from "./routes/index";
 import { SsrDataProvider, useSsrData } from "./ssr/SsrDataContext";
-import { applySeoToDocument } from "@/lib/seo";
+import { applySeoToDocument, fetchGlobalSeo } from "@/lib/seo";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -19,10 +19,24 @@ function GlobalSeoManager() {
   useEffect(() => {
     const pathname = location.pathname;
     const isPropertyDetailRoute = /^\/[^/]+\/[^/]+-\d+\/?$/.test(pathname);
+    let isMounted = true;
 
     if (!isPropertyDetailRoute) {
-      applySeoToDocument(globalSeo || { metaTag: null, googleTag: null });
+      fetchGlobalSeo(pathname)
+        .then((seo) => {
+          if (!isMounted) return;
+          applySeoToDocument(seo || { metaTag: null, googleTag: null });
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          const fallbackSeo = globalSeo || { metaTag: null, googleTag: null };
+          applySeoToDocument(fallbackSeo);
+        });
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [globalSeo, location.pathname]);
 
   return null;

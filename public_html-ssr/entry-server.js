@@ -16445,6 +16445,17 @@ const BODY_MARKER_END = "<!-- dynamic-seo-body:end -->";
 const escapeHtml = (value = "") => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const escapeScript = (value = "") => String(value).replace(/<\/script/gi, "<\\/script");
 const isActiveSeo = (item) => Boolean(item?.active ?? item?.status);
+const normalizePathname$1 = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
 const buildFallbackSchema = (schemaType, metaTag) => {
   if (!schemaType) return "";
   const fallbackSchema = {
@@ -16474,9 +16485,14 @@ const normalizeSchema = (rawSchema, metaTag) => {
   }
   return buildFallbackSchema(schemaValue, metaTag);
 };
-const selectSeoRecord$1 = (list, propertyId) => (Array.isArray(list) ? list : []).filter(
-  (item) => isActiveSeo(item) && String(item?.propertyId ?? "") === String(propertyId ?? "")
-).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+const selectSeoRecord$1 = (list, { pathname = "", propertyId = null } = {}) => {
+  const records = (Array.isArray(list) ? list : []).filter((item) => isActiveSeo(item));
+  const normalizedPath = normalizePathname$1(pathname);
+  const pathMatch = records.filter((item) => normalizePathname$1(item?.url) === normalizedPath).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+  if (pathMatch) return pathMatch;
+  if (!propertyId) return null;
+  return records.filter((item) => String(item?.propertyId ?? "") === String(propertyId ?? "")).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+};
 const selectGlobalGoogleTag$1 = (list) => (Array.isArray(list) ? list : []).filter((item) => isActiveSeo(item)).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
 const extractGoogleTagId = (url = "") => {
   const trimmed = String(url).trim();
@@ -16489,10 +16505,7 @@ const extractGoogleTagId = (url = "") => {
     return match?.[1]?.trim() || "";
   }
 };
-async function fetchPropertySeo(propertyId) {
-  if (!propertyId) {
-    return { metaTag: null, googleTag: null };
-  }
+async function fetchPropertySeo(propertyId, pathname = "") {
   try {
     const [metaRes, googleRes] = await Promise.all([
       getAllMetaData().catch(() => null),
@@ -16501,19 +16514,23 @@ async function fetchPropertySeo(propertyId) {
     const metaList = metaRes?.data || metaRes || [];
     const googleList = googleRes?.data || googleRes || [];
     return {
-      metaTag: selectSeoRecord$1(metaList, propertyId),
+      metaTag: selectSeoRecord$1(metaList, { propertyId, pathname }),
       googleTag: selectGlobalGoogleTag$1(googleList)
     };
   } catch {
     return { metaTag: null, googleTag: null };
   }
 }
-async function fetchGlobalSeo() {
+async function fetchGlobalSeo(pathname = "") {
   try {
-    const googleRes = await getAllGoogleTags().catch(() => null);
+    const [metaRes, googleRes] = await Promise.all([
+      getAllMetaData().catch(() => null),
+      getAllGoogleTags().catch(() => null)
+    ]);
+    const metaList = metaRes?.data || metaRes || [];
     const googleList = googleRes?.data || googleRes || [];
     return {
-      metaTag: null,
+      metaTag: selectSeoRecord$1(metaList, { pathname }),
       googleTag: selectGlobalGoogleTag$1(googleList)
     };
   } catch {
@@ -16874,7 +16891,7 @@ function HotelDetail() {
         applySeoToDocument(ssrSeo);
         return;
       }
-      const seo = await fetchPropertySeo(propertyIdFromUrl);
+      const seo = await fetchPropertySeo(propertyIdFromUrl, window.location.pathname);
       if (isMounted) {
         applySeoToDocument(seo);
       }
@@ -21811,7 +21828,7 @@ function RestaurantHomepage$1() {
         applySeoToDocument(ssrSeo);
         return;
       }
-      const seo = await fetchPropertySeo(numericPropertyId);
+      const seo = await fetchPropertySeo(numericPropertyId, window.location.pathname);
       if (isMounted) {
         applySeoToDocument(seo);
       }
@@ -50292,6 +50309,17 @@ const toList = (response) => {
   if (Array.isArray(data?.data)) return data.data;
   return [];
 };
+const normalizeSeoPath = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
 const normalizePropertyItem = (item) => {
   if (!item) return null;
   if (item.propertyResponseDTO) {
@@ -50305,7 +50333,7 @@ const normalizePropertyItem = (item) => {
 const getItemId = (item) => String(item?.id ?? "");
 const propertyLabel = (item) => item?.propertyName || item?.name || `Property #${item?.id}`;
 const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType || `Type #${item?.id}`;
-const buildTargetPayload = (form) => form.targetType === "propertyType" ? { propertyTypeId: Number(form.propertyTypeId), propertyId: null } : { propertyId: Number(form.propertyId), propertyTypeId: null };
+const buildTargetPayload = (form) => form.targetType === "propertyType" ? { propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null, propertyId: null } : { propertyId: form.propertyId ? Number(form.propertyId) : null, propertyTypeId: null };
 function SeoManagement() {
   const [activeSection, setActiveSection] = useState("meta");
   const [loading, setLoading] = useState(true);
@@ -50402,10 +50430,18 @@ function SeoManagement() {
   }, [googleList, googleSearch]);
   const hasGoogleEntry = googleList.length > 0;
   const canCreateGoogle = !hasGoogleEntry || Boolean(editingGoogleId);
+  const normalizedMetaUrl = normalizeSeoPath(metaForm.url);
+  const duplicateMetaEntry = useMemo(
+    () => metaList.find(
+      (item) => normalizeSeoPath(item?.url) === normalizedMetaUrl && item?.id !== editingMetaId
+    ) || null,
+    [editingMetaId, metaList, normalizedMetaUrl]
+  );
+  const hasDuplicateMetaUrl = Boolean(normalizedMetaUrl && duplicateMetaEntry);
   const saveMeta = async (event) => {
     event.preventDefault();
-    if (metaForm.targetType === "property" && !metaForm.propertyId) return showError("Select a property");
-    if (metaForm.targetType === "propertyType" && !metaForm.propertyTypeId) return showError("Select a property type");
+    if (!metaForm.url.trim()) return showError("URL is required");
+    if (hasDuplicateMetaUrl) return showError("Meta tag already exists for this URL");
     if (!metaForm.metaTitle.trim()) return showError("Meta title is required");
     if (!metaForm.metaDescription.trim()) return showError("Meta description is required");
     const payload = {
@@ -50528,7 +50564,7 @@ function SeoManagement() {
         SeoFormCard,
         {
           title: editingMetaId ? "Edit Meta Tag" : "Create Meta Tag",
-          subtitle: "Configure metadata for a property page or homepage type.",
+          subtitle: "Configure metadata by full page URL. Property and property type are optional fallbacks.",
           clearable: Boolean(editingMetaId),
           onClear: resetMetaForm,
           children: /* @__PURE__ */ jsxs("form", { onSubmit: saveMeta, className: "space-y-4", children: [
@@ -50547,7 +50583,15 @@ function SeoManagement() {
             /* @__PURE__ */ jsx(Field, { label: "Schema", value: metaForm.skima, onChange: (value) => setMetaForm((prev) => ({ ...prev, skima: value })) }),
             /* @__PURE__ */ jsx(Field, { label: "Meta Keywords", value: metaForm.metaKeywords, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value })) }),
             /* @__PURE__ */ jsx(Field, { label: "URL", type: "url", placeholder: "https://example.com/page", value: metaForm.url, onChange: (value) => setMetaForm((prev) => ({ ...prev, url: value })) }),
-            /* @__PURE__ */ jsx(SubmitButton, { loading: savingMeta, label: editingMetaId ? "Update Meta Tag" : "Add Meta Tag" })
+            hasDuplicateMetaUrl ? /* @__PURE__ */ jsx("p", { className: "text-sm", style: { color: "#ef4444" }, children: "Meta tag already added for this URL. Use edit or delete for the existing entry." }) : null,
+            /* @__PURE__ */ jsx(
+              SubmitButton,
+              {
+                loading: savingMeta,
+                label: editingMetaId ? "Update Meta Tag" : "Add Meta Tag",
+                disabled: hasDuplicateMetaUrl
+              }
+            )
           ] })
         }
       ),
@@ -52066,9 +52110,20 @@ function GlobalSeoManager() {
   useEffect(() => {
     const pathname = location.pathname;
     const isPropertyDetailRoute = /^\/[^/]+\/[^/]+-\d+\/?$/.test(pathname);
+    let isMounted = true;
     if (!isPropertyDetailRoute) {
-      applySeoToDocument(globalSeo || { metaTag: null, googleTag: null });
+      fetchGlobalSeo(pathname).then((seo) => {
+        if (!isMounted) return;
+        applySeoToDocument(seo || { metaTag: null, googleTag: null });
+      }).catch(() => {
+        if (!isMounted) return;
+        const fallbackSeo = globalSeo || { metaTag: null, googleTag: null };
+        applySeoToDocument(fallbackSeo);
+      });
     }
+    return () => {
+      isMounted = false;
+    };
   }, [globalSeo, location.pathname]);
   return null;
 }
@@ -52852,8 +52907,28 @@ const selectSeoRecord = (list, propertyId) => (Array.isArray(list) ? list : []).
   const isActive = Boolean(item?.active ?? item?.status);
   return isActive && String(item?.propertyId ?? "") === String(propertyId ?? "");
 }).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+const normalizePathname = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw, "http://localhost");
+    const pathname = parsed.pathname || "/";
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
+  }
+};
+const selectMetaRecord = (list, pathname, propertyId) => {
+  const records = (Array.isArray(list) ? list : []).filter(
+    (item) => Boolean(item?.active ?? item?.status)
+  );
+  const normalizedPath = normalizePathname(pathname);
+  const pathMatch = records.filter((item) => normalizePathname(item?.url) === normalizedPath).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+  if (pathMatch) return pathMatch;
+  return selectSeoRecord(records, propertyId);
+};
 const selectGlobalGoogleTag = (list) => (Array.isArray(list) ? list : []).filter((item) => Boolean(item?.active ?? item?.status)).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
-const fetchSeoForProperty = async (propertyId) => {
+const fetchSeoForProperty = async (pathname, propertyId) => {
   try {
     const [metaRes, googleRes] = await Promise.all([
       getAllMetaData().catch(() => null),
@@ -52862,7 +52937,7 @@ const fetchSeoForProperty = async (propertyId) => {
     const metaList = metaRes?.data || metaRes || [];
     const googleList = googleRes?.data || googleRes || [];
     return {
-      metaTag: selectSeoRecord(metaList, propertyId),
+      metaTag: selectMetaRecord(metaList, pathname, propertyId),
       googleTag: selectGlobalGoogleTag(googleList)
     };
   } catch {
@@ -53064,7 +53139,7 @@ async function fetchPropertyDetailPageData(pathname) {
   }
   const { parent, listing } = matched;
   const propertyType = isRestaurantType(parent, listing) ? "restaurant" : "hotel";
-  const seo = await fetchSeoForProperty(parent.id);
+  const seo = await fetchSeoForProperty(pathname, parent.id);
   const pageData = propertyType === "restaurant" ? await mapRestaurantPageData(parent, listing) : await mapHotelPageData(parent, listing, rawData);
   return {
     propertyId: parent.id,
@@ -53187,7 +53262,7 @@ async function fetchPropertyCategoryPageData(pathname) {
 async function loadInitialDataForUrl(url) {
   const pathname = new URL(url, "http://localhost").pathname;
   const initialData = {
-    globalSeo: await fetchGlobalSeo()
+    globalSeo: await fetchGlobalSeo(pathname)
   };
   if (pathname === "/") {
     initialData.home = await fetchHomePageData();

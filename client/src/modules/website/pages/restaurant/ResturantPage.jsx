@@ -62,7 +62,7 @@ export default function RestaurantHomepage() {
         return;
       }
 
-      const seo = await fetchPropertySeo(numericPropertyId);
+      const seo = await fetchPropertySeo(numericPropertyId, window.location.pathname);
       if (isMounted) {
         applySeoToDocument(seo);
       }

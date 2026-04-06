@@ -1,0 +1,30 @@
+Options -MultiViews
+
+<IfModule mod_mime.c>
+  AddType text/html .html
+  AddType text/css .css
+  AddType text/javascript .js
+  AddType application/javascript .mjs
+  AddType application/json .json
+  AddType image/svg+xml .svg .svgz
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  <FilesMatch "\.html$">
+    Header always set Content-Disposition "inline"
+    Header always set Cache-Control "no-store"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>
