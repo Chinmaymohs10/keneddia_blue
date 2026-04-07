@@ -1,4 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Layout from "@/modules/layout/Layout";
 import { colors } from "@/lib/colors/colors";
 import {
@@ -10,6 +17,7 @@ import {
   getAllMetaData,
   GetAllPropertyDetails,
   getPropertyTypes,
+  toggleMetaDataById,
   updateGoogleTag,
   updateMetaData,
 } from "@/Api/Api";
@@ -69,6 +77,8 @@ const normalizePropertyItem = (item) => {
 const getItemId = (item) => String(item?.id ?? "");
 const propertyLabel = (item) => item?.propertyName || item?.name || `Property #${item?.id}`;
 const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType || `Type #${item?.id}`;
+const isActiveValue = (value) =>
+  value === true || value === 1 || String(value).toLowerCase() === "active";
 
 const buildTargetPayload = (form) =>
   form.targetType === "propertyType"
@@ -81,6 +91,7 @@ function SeoManagement() {
   const [savingMeta, setSavingMeta] = useState(false);
   const [savingGoogle, setSavingGoogle] = useState(false);
   const [deletingId, setDeletingId] = useState("");
+  const [togglingMetaId, setTogglingMetaId] = useState("");
   const [metaList, setMetaList] = useState([]);
   const [googleList, setGoogleList] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -89,6 +100,7 @@ function SeoManagement() {
   const [googleForm, setGoogleForm] = useState(GOOGLE_INITIAL);
   const [editingMetaId, setEditingMetaId] = useState(null);
   const [editingGoogleId, setEditingGoogleId] = useState(null);
+  const [formModalOpen, setFormModalOpen] = useState(false);
   const [metaSearch, setMetaSearch] = useState("");
   const [googleSearch, setGoogleSearch] = useState("");
 
@@ -198,12 +210,28 @@ function SeoManagement() {
   );
   const hasDuplicateMetaUrl = Boolean(normalizedMetaUrl && duplicateMetaEntry);
 
+  const openCreateMeta = () => {
+    setActiveSection("meta");
+    resetMetaForm();
+    setFormModalOpen(true);
+  };
+
+  const openCreateGoogle = () => {
+    setActiveSection("google");
+    resetGoogleForm();
+    setFormModalOpen(true);
+  };
+
+  const closeFormModal = () => {
+    setFormModalOpen(false);
+    resetMetaForm();
+    resetGoogleForm();
+  };
+
   const saveMeta = async (event) => {
     event.preventDefault();
     if (!metaForm.url.trim()) return showError("URL is required");
     if (hasDuplicateMetaUrl) return showError("Meta tag already exists for this URL");
-    if (!metaForm.metaTitle.trim()) return showError("Meta title is required");
-    if (!metaForm.metaDescription.trim()) return showError("Meta description is required");
 
     const payload = {
       ...buildTargetPayload(metaForm),
@@ -224,6 +252,7 @@ function SeoManagement() {
         showSuccess("Meta tag created successfully");
       }
       resetMetaForm();
+      setFormModalOpen(false);
       loadData();
     } catch (error) {
       console.error("Meta save error:", error);
@@ -255,6 +284,7 @@ function SeoManagement() {
         showSuccess("Google tag created successfully");
       }
       resetGoogleForm();
+      setFormModalOpen(false);
       loadData();
     } catch (error) {
       console.error("Google save error:", error);
@@ -268,15 +298,16 @@ function SeoManagement() {
     setActiveSection("meta");
     setEditingMetaId(item.id);
     setMetaForm({
-      targetType: item.propertyTypeId ? "propertyType" : "property",
+      targetType: "property",
       propertyId: item.propertyId ? String(item.propertyId) : "",
-      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
+      propertyTypeId: "",
       metaTitle: item.metaTitle || "",
       metaDescription: item.metaDescription || "",
       skima: item.skima || "",
       metaKeywords: item.metaKeywords || "",
       url: item.url || "",
     });
+    setFormModalOpen(true);
   };
 
   const editGoogle = (item) => {
@@ -286,6 +317,7 @@ function SeoManagement() {
       headerUrl: item.category || "",
       bodyUrl: item.description || "",
     });
+    setFormModalOpen(true);
   };
 
   const removeMeta = async (id) => {
@@ -300,6 +332,39 @@ function SeoManagement() {
       showError(error?.response?.data?.message || "Failed to delete meta tag");
     } finally {
       setDeletingId("");
+    }
+  };
+
+  const toggleMetaStatus = async (item) => {
+    try {
+      setTogglingMetaId(`meta-${item.id}`);
+      const response = await toggleMetaDataById(item.id);
+      const updated = response?.data ?? response;
+      const nextActive = updated?.id
+        ? isActiveValue(updated.active)
+        : !isActiveValue(item.active ?? item.status);
+
+      setMetaList((prev) =>
+        prev.map((meta) =>
+          meta.id === item.id
+            ? {
+                ...meta,
+                ...(updated?.id ? updated : {}),
+                active: nextActive,
+              }
+            : meta,
+        ),
+      );
+      showSuccess(
+        nextActive
+          ? "Meta tag activated successfully"
+          : "Meta tag deactivated successfully",
+      );
+    } catch (error) {
+      console.error("Meta toggle error:", error);
+      showError(error?.response?.data?.message || "Failed to update meta tag status");
+    } finally {
+      setTogglingMetaId("");
     }
   };
 
@@ -344,39 +409,7 @@ function SeoManagement() {
           ) : (
             <div className="p-4 md:p-6">
               {activeSection === "meta" ? (
-                <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6">
-                  <SeoFormCard
-                    title={editingMetaId ? "Edit Meta Tag" : "Create Meta Tag"}
-                    subtitle="Configure metadata by full page URL. Property and property type are optional fallbacks."
-                    clearable={Boolean(editingMetaId)}
-                    onClear={resetMetaForm}
-                  >
-                    <form onSubmit={saveMeta} className="space-y-4">
-                      <TargetSelector
-                        form={metaForm}
-                        onFormChange={setMetaForm}
-                        propertyOptions={propertyOptions}
-                        propertyTypeOptions={propertyTypeOptions}
-                        prefix="meta"
-                      />
-                      <Field label="Meta Title" value={metaForm.metaTitle} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaTitle: value }))} />
-                      <TextAreaField label="Meta Description" rows={4} value={metaForm.metaDescription} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaDescription: value }))} />
-                      <Field label="Schema" value={metaForm.skima} onChange={(value) => setMetaForm((prev) => ({ ...prev, skima: value }))} />
-                      <Field label="Meta Keywords" value={metaForm.metaKeywords} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value }))} />
-                      <Field label="URL" type="url" placeholder="https://example.com/page" value={metaForm.url} onChange={(value) => setMetaForm((prev) => ({ ...prev, url: value }))} />
-                      {hasDuplicateMetaUrl ? (
-                        <p className="text-sm" style={{ color: "#ef4444" }}>
-                          Meta tag already added for this URL. Use edit or delete for the existing entry.
-                        </p>
-                      ) : null}
-                      <SubmitButton
-                        loading={savingMeta}
-                        label={editingMetaId ? "Update Meta Tag" : "Add Meta Tag"}
-                        disabled={hasDuplicateMetaUrl}
-                      />
-                    </form>
-                  </SeoFormCard>
-
+                <>
                   <SeoTableCard
                     title="Meta Tags"
                     count={filteredMeta.length}
@@ -384,6 +417,8 @@ function SeoManagement() {
                     onSearchChange={setMetaSearch}
                     searchPlaceholder="Search meta tags..."
                     emptyMessage="No meta tags found."
+                    actionLabel="Add Meta Tag"
+                    onAction={openCreateMeta}
                   >
                     <table className="w-full min-w-[920px]">
                       <thead>
@@ -400,7 +435,13 @@ function SeoManagement() {
                             <Td>{item.metaDescription || "-"}</Td>
                             <Td>{item.metaKeywords || "-"}</Td>
                             <Td>{item.url || "-"}</Td>
-                            <Td><StatusBadge active={item.active ?? item.status} /></Td>
+                            <Td>
+                              <StatusToggle
+                                active={item.active ?? item.status}
+                                disabled={togglingMetaId === `meta-${item.id}`}
+                                onToggle={() => toggleMetaStatus(item)}
+                              />
+                            </Td>
                             <Td align="right">
                               <ActionButtons
                                 onEdit={() => editMeta(item)}
@@ -413,44 +454,9 @@ function SeoManagement() {
                       </tbody>
                     </table>
                   </SeoTableCard>
-                </div>
+                </>
               ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6">
-                  <SeoFormCard
-                    title={editingGoogleId ? "Edit Google Tag" : "Create Google Tag"}
-                    subtitle={
-                      canCreateGoogle
-                        ? "Store one global Google tag entry with separate header and body URLs."
-                        : "A Google tag entry already exists. Use edit or delete from the table."
-                    }
-                    clearable={Boolean(editingGoogleId)}
-                    onClear={resetGoogleForm}
-                  >
-                    <form onSubmit={saveGoogle} className="space-y-4">
-                      <Field
-                        label="Header URL"
-                        type="url"
-                        placeholder="https://example.com/header-tag.js"
-                        value={googleForm.headerUrl}
-                        onChange={(value) => setGoogleForm((prev) => ({ ...prev, headerUrl: value }))}
-                        disabled={!canCreateGoogle}
-                      />
-                      <Field
-                        label="Body URL"
-                        type="url"
-                        placeholder="https://example.com/body-tag"
-                        value={googleForm.bodyUrl}
-                        onChange={(value) => setGoogleForm((prev) => ({ ...prev, bodyUrl: value }))}
-                        disabled={!canCreateGoogle}
-                      />
-                      <SubmitButton
-                        loading={savingGoogle}
-                        label={editingGoogleId ? "Update Google Tag" : "Add Google Tag"}
-                        disabled={!canCreateGoogle}
-                      />
-                    </form>
-                  </SeoFormCard>
-
+                <>
                   <SeoTableCard
                     title="Google Tags"
                     count={filteredGoogle.length}
@@ -458,6 +464,9 @@ function SeoManagement() {
                     onSearchChange={setGoogleSearch}
                     searchPlaceholder="Search Google tags..."
                     emptyMessage="No Google tags found."
+                    actionLabel="Add Google Tag"
+                    onAction={openCreateGoogle}
+                    actionDisabled={!canCreateGoogle}
                   >
                     <table className="w-full min-w-[760px]">
                       <thead>
@@ -483,12 +492,90 @@ function SeoManagement() {
                       </tbody>
                     </table>
                   </SeoTableCard>
-                </div>
+                </>
               )}
             </div>
           )}
         </div>
       </div>
+      <Dialog
+        open={formModalOpen}
+        onOpenChange={(open) => {
+          if (!open) closeFormModal();
+          else setFormModalOpen(true);
+        }}
+      >
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {activeSection === "meta"
+                ? editingMetaId
+                  ? "Edit Meta Tag"
+                  : "Create Meta Tag"
+                : editingGoogleId
+                  ? "Edit Google Tag"
+                  : "Create Google Tag"}
+            </DialogTitle>
+            <DialogDescription>
+              {activeSection === "meta"
+                ? "Configure metadata by full page URL. Property linking is optional."
+                : canCreateGoogle
+                  ? "Store one global Google tag entry with separate header and body URLs."
+                  : "A Google tag entry already exists. Use edit or delete from the table."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {activeSection === "meta" ? (
+            <form onSubmit={saveMeta} className="space-y-4">
+              <TargetSelector
+                form={metaForm}
+                onFormChange={setMetaForm}
+                propertyOptions={propertyOptions}
+                prefix="meta"
+              />
+              <Field label="Meta Title" value={metaForm.metaTitle} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaTitle: value }))} />
+              <TextAreaField label="Meta Description" rows={5} value={metaForm.metaDescription} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaDescription: value }))} />
+              <TextAreaField label="Schema" rows={10} value={metaForm.skima} onChange={(value) => setMetaForm((prev) => ({ ...prev, skima: value }))} />
+              <TextAreaField label="Meta Keywords" rows={4} value={metaForm.metaKeywords} onChange={(value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value }))} />
+              <Field label="URL" type="url" placeholder="https://example.com/page" value={metaForm.url} onChange={(value) => setMetaForm((prev) => ({ ...prev, url: value }))} required />
+              {hasDuplicateMetaUrl ? (
+                <p className="text-sm" style={{ color: "#ef4444" }}>
+                  Meta tag already added for this URL. Use edit or delete for the existing entry.
+                </p>
+              ) : null}
+              <SubmitButton
+                loading={savingMeta}
+                label={editingMetaId ? "Update Meta Tag" : "Add Meta Tag"}
+                disabled={hasDuplicateMetaUrl}
+              />
+            </form>
+          ) : (
+            <form onSubmit={saveGoogle} className="space-y-4">
+              <Field
+                label="Header URL"
+                type="url"
+                placeholder="https://example.com/header-tag.js"
+                value={googleForm.headerUrl}
+                onChange={(value) => setGoogleForm((prev) => ({ ...prev, headerUrl: value }))}
+                disabled={!canCreateGoogle}
+              />
+              <Field
+                label="Body URL"
+                type="url"
+                placeholder="https://example.com/body-tag"
+                value={googleForm.bodyUrl}
+                onChange={(value) => setGoogleForm((prev) => ({ ...prev, bodyUrl: value }))}
+                disabled={!canCreateGoogle}
+              />
+              <SubmitButton
+                loading={savingGoogle}
+                label={editingGoogleId ? "Update Google Tag" : "Add Google Tag"}
+                disabled={!canCreateGoogle}
+              />
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
@@ -537,6 +624,9 @@ function SeoTableCard({
   onSearchChange,
   searchPlaceholder,
   emptyMessage,
+  actionLabel,
+  onAction,
+  actionDisabled = false,
   children,
 }) {
   const rowCount = React.Children.count(children?.props?.children?.[1]?.props?.children);
@@ -549,7 +639,21 @@ function SeoTableCard({
             <h3 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>{title}</h3>
             <p className="text-xs mt-1" style={{ color: colors.textSecondary }}>{count} entries available</p>
           </div>
-          <SearchBox value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <SearchBox value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
+            {onAction ? (
+              <button
+                type="button"
+                onClick={onAction}
+                disabled={actionDisabled}
+                className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Plus size={16} />
+                {actionLabel}
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
       {rowCount > 0 ? (
@@ -567,71 +671,24 @@ function TargetSelector({
   form,
   onFormChange,
   propertyOptions,
-  propertyTypeOptions,
   prefix,
 }) {
-  const changeTargetType = (targetType) =>
-    onFormChange((prev) => ({
-      ...prev,
-      targetType,
-      propertyId: "",
-      propertyTypeId: "",
-    }));
-
   return (
-    <>
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
-          Target Type
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => changeTargetType("property")}
-            className="px-4 py-2.5 rounded-lg border text-sm font-medium"
-            style={{
-              borderColor: form.targetType === "property" ? colors.primary : colors.border,
-              color: form.targetType === "property" ? colors.primary : colors.textPrimary,
-              backgroundColor: form.targetType === "property" ? `${colors.primary}10` : "#fff",
-            }}
-          >
-            Property
-          </button>
-          <button
-            type="button"
-            onClick={() => changeTargetType("propertyType")}
-            className="px-4 py-2.5 rounded-lg border text-sm font-medium"
-            style={{
-              borderColor: form.targetType === "propertyType" ? colors.primary : colors.border,
-              color: form.targetType === "propertyType" ? colors.primary : colors.textPrimary,
-              backgroundColor: form.targetType === "propertyType" ? `${colors.primary}10` : "#fff",
-            }}
-          >
-            Property Type (Homepage)
-          </button>
-        </div>
-      </div>
-
-      {form.targetType === "property" ? (
-        <SelectField
-          id={`${prefix}-property`}
-          label="Property"
-          value={form.propertyId}
-          onChange={(value) => onFormChange((prev) => ({ ...prev, propertyId: value }))}
-          options={propertyOptions}
-          placeholder="Select property"
-        />
-      ) : (
-        <SelectField
-          id={`${prefix}-property-type`}
-          label="Property Type"
-          value={form.propertyTypeId}
-          onChange={(value) => onFormChange((prev) => ({ ...prev, propertyTypeId: value }))}
-          options={propertyTypeOptions}
-          placeholder="Select property type"
-        />
-      )}
-    </>
+    <SelectField
+      id={`${prefix}-property`}
+      label="Property"
+      value={form.propertyId}
+      onChange={(value) =>
+        onFormChange((prev) => ({
+          ...prev,
+          targetType: "property",
+          propertyId: value,
+          propertyTypeId: "",
+        }))
+      }
+      options={propertyOptions}
+      placeholder="Select property"
+    />
   );
 }
 
@@ -659,11 +716,20 @@ function SelectField({ id, label, value, onChange, options, placeholder }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+  disabled = false,
+  required = false,
+}) {
   return (
     <div>
       <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
         {label}
+        {required ? <span className="ml-1 text-red-500">*</span> : null}
       </label>
       <input
         type={type}
@@ -671,6 +737,7 @@ function Field({ label, value, onChange, type = "text", placeholder = "", disabl
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        required={required}
         className="w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
         style={{ borderColor: colors.border, color: colors.textPrimary }}
       />
@@ -748,7 +815,7 @@ function Td({ children, align = "left" }) {
 }
 
 function StatusBadge({ active }) {
-  const isActive = Boolean(active);
+  const isActive = isActiveValue(active);
   return (
     <span
       className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
@@ -759,6 +826,37 @@ function StatusBadge({ active }) {
     >
       {isActive ? "Active" : "Inactive"}
     </span>
+  );
+}
+
+function StatusToggle({ active, disabled, onToggle }) {
+  const isActive = isActiveValue(active);
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onToggle}
+      className="inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+      style={{
+        backgroundColor: isActive ? "#10b98115" : "#ef444415",
+        color: isActive ? "#10b981" : "#ef4444",
+      }}
+      aria-pressed={isActive}
+      aria-label={isActive ? "Deactivate meta tag" : "Activate meta tag"}
+    >
+      <span
+        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
+        style={{ backgroundColor: isActive ? "#10b981" : "#ef4444" }}
+      >
+        <span
+          className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+            isActive ? "translate-x-4" : "translate-x-1"
+          }`}
+        />
+      </span>
+      {disabled ? "Updating..." : isActive ? "Active" : "Inactive"}
+    </button>
   );
 }
 
