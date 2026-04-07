@@ -515,6 +515,7 @@ export const getAllMetaData = () =>API.get("api/v1/meta-data/getAllMetaData");
 export const getAllActiveMetaData = () =>API.get("api/v1/meta-data/getAllActiveMetaData");
 export const getMetaDataById = (id) =>API.get(`api/v1/meta-data/getMetaDataById/${id}`);
 export const updateMetaData = (id, data) =>API.patch(`api/v1/meta-data/updateMetaData/${id}`, data);
+export const toggleMetaDataById = (id) =>API.patch(`api/v1/meta-data/toggleMetaDataById/${id}`);
 export const deleteMetaData = (id) =>API.delete(`api/v1/meta-data/deleteMetaData/${id}`);
 
 export default API;

@@ -1208,6 +1208,7 @@ const deleteGoogleTag = (id) => API.delete(`api/v1/google-tag/deleteGoogleTag/${
 const addMetaData = (data) => API.post("api/v1/meta-data/addMetaData", data);
 const getAllMetaData = () => API.get("api/v1/meta-data/getAllMetaData");
 const updateMetaData = (id, data) => API.patch(`api/v1/meta-data/updateMetaData/${id}`, data);
+const toggleMetaDataById = (id) => API.patch(`api/v1/meta-data/toggleMetaDataById/${id}`);
 const deleteMetaData = (id) => API.delete(`api/v1/meta-data/deleteMetaData/${id}`);
 const createHotelSlug = (name, id) => {
   const safeId = String(id).trim();
@@ -50399,6 +50400,7 @@ const normalizePropertyItem = (item) => {
 const getItemId = (item) => String(item?.id ?? "");
 const propertyLabel = (item) => item?.propertyName || item?.name || `Property #${item?.id}`;
 const typeLabel = (item) => item?.typeName || item?.name || item?.propertyType || `Type #${item?.id}`;
+const isActiveValue = (value) => value === true || value === 1 || String(value).toLowerCase() === "active";
 const buildTargetPayload = (form) => form.targetType === "propertyType" ? { propertyTypeId: form.propertyTypeId ? Number(form.propertyTypeId) : null, propertyId: null } : { propertyId: form.propertyId ? Number(form.propertyId) : null, propertyTypeId: null };
 function SeoManagement() {
   const [activeSection, setActiveSection] = useState("meta");
@@ -50406,6 +50408,7 @@ function SeoManagement() {
   const [savingMeta, setSavingMeta] = useState(false);
   const [savingGoogle, setSavingGoogle] = useState(false);
   const [deletingId, setDeletingId] = useState("");
+  const [togglingMetaId, setTogglingMetaId] = useState("");
   const [metaList, setMetaList] = useState([]);
   const [googleList, setGoogleList] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -50414,6 +50417,7 @@ function SeoManagement() {
   const [googleForm, setGoogleForm] = useState(GOOGLE_INITIAL);
   const [editingMetaId, setEditingMetaId] = useState(null);
   const [editingGoogleId, setEditingGoogleId] = useState(null);
+  const [formModalOpen, setFormModalOpen] = useState(false);
   const [metaSearch, setMetaSearch] = useState("");
   const [googleSearch, setGoogleSearch] = useState("");
   const propertyOptions = useMemo(
@@ -50504,12 +50508,25 @@ function SeoManagement() {
     [editingMetaId, metaList, normalizedMetaUrl]
   );
   const hasDuplicateMetaUrl = Boolean(normalizedMetaUrl && duplicateMetaEntry);
+  const openCreateMeta = () => {
+    setActiveSection("meta");
+    resetMetaForm();
+    setFormModalOpen(true);
+  };
+  const openCreateGoogle = () => {
+    setActiveSection("google");
+    resetGoogleForm();
+    setFormModalOpen(true);
+  };
+  const closeFormModal = () => {
+    setFormModalOpen(false);
+    resetMetaForm();
+    resetGoogleForm();
+  };
   const saveMeta = async (event) => {
     event.preventDefault();
     if (!metaForm.url.trim()) return showError("URL is required");
     if (hasDuplicateMetaUrl) return showError("Meta tag already exists for this URL");
-    if (!metaForm.metaTitle.trim()) return showError("Meta title is required");
-    if (!metaForm.metaDescription.trim()) return showError("Meta description is required");
     const payload = {
       ...buildTargetPayload(metaForm),
       metaTitle: metaForm.metaTitle.trim(),
@@ -50528,6 +50545,7 @@ function SeoManagement() {
         showSuccess("Meta tag created successfully");
       }
       resetMetaForm();
+      setFormModalOpen(false);
       loadData();
     } catch (error) {
       console.error("Meta save error:", error);
@@ -50556,6 +50574,7 @@ function SeoManagement() {
         showSuccess("Google tag created successfully");
       }
       resetGoogleForm();
+      setFormModalOpen(false);
       loadData();
     } catch (error) {
       console.error("Google save error:", error);
@@ -50568,15 +50587,16 @@ function SeoManagement() {
     setActiveSection("meta");
     setEditingMetaId(item.id);
     setMetaForm({
-      targetType: item.propertyTypeId ? "propertyType" : "property",
+      targetType: "property",
       propertyId: item.propertyId ? String(item.propertyId) : "",
-      propertyTypeId: item.propertyTypeId ? String(item.propertyTypeId) : "",
+      propertyTypeId: "",
       metaTitle: item.metaTitle || "",
       metaDescription: item.metaDescription || "",
       skima: item.skima || "",
       metaKeywords: item.metaKeywords || "",
       url: item.url || ""
     });
+    setFormModalOpen(true);
   };
   const editGoogle = (item) => {
     setActiveSection("google");
@@ -50585,6 +50605,7 @@ function SeoManagement() {
       headerUrl: item.category || "",
       bodyUrl: item.description || ""
     });
+    setFormModalOpen(true);
   };
   const removeMeta = async (id) => {
     try {
@@ -50598,6 +50619,31 @@ function SeoManagement() {
       showError(error?.response?.data?.message || "Failed to delete meta tag");
     } finally {
       setDeletingId("");
+    }
+  };
+  const toggleMetaStatus = async (item) => {
+    try {
+      setTogglingMetaId(`meta-${item.id}`);
+      const response = await toggleMetaDataById(item.id);
+      const updated = response?.data ?? response;
+      const nextActive = updated?.id ? isActiveValue(updated.active) : !isActiveValue(item.active ?? item.status);
+      setMetaList(
+        (prev) => prev.map(
+          (meta) => meta.id === item.id ? {
+            ...meta,
+            ...updated?.id ? updated : {},
+            active: nextActive
+          } : meta
+        )
+      );
+      showSuccess(
+        nextActive ? "Meta tag activated successfully" : "Meta tag deactivated successfully"
+      );
+    } catch (error) {
+      console.error("Meta toggle error:", error);
+      showError(error?.response?.data?.message || "Failed to update meta tag status");
+    } finally {
+      setTogglingMetaId("");
     }
   };
   const removeGoogle = async (id) => {
@@ -50614,54 +50660,19 @@ function SeoManagement() {
       setDeletingId("");
     }
   };
-  return /* @__PURE__ */ jsx(Layout, { role: "superadmin", showActions: false, children: /* @__PURE__ */ jsx("div", { className: "h-full overflow-y-auto p-4 md:p-6", children: /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-xl shadow-sm border", style: { borderColor: colors.border }, children: [
-    /* @__PURE__ */ jsx("div", { className: "p-6 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx("h2", { className: "text-2xl font-semibold", style: { color: colors.textPrimary }, children: "SEO Management" }),
-        /* @__PURE__ */ jsx("p", { className: "text-sm mt-1", style: { color: colors.textSecondary }, children: "Manage meta tags and a single global Google tag configuration." })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
-        /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "meta", onClick: () => setActiveSection("meta"), icon: Tag, label: "Meta Tag" }),
-        /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "google", onClick: () => setActiveSection("google"), icon: Globe, label: "Google Tag" })
-      ] })
-    ] }) }),
-    loading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { size: 32, className: "animate-spin", style: { color: colors.primary } }) }) : /* @__PURE__ */ jsx("div", { className: "p-4 md:p-6", children: activeSection === "meta" ? /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6", children: [
-      /* @__PURE__ */ jsx(
-        SeoFormCard,
-        {
-          title: editingMetaId ? "Edit Meta Tag" : "Create Meta Tag",
-          subtitle: "Configure metadata by full page URL. Property and property type are optional fallbacks.",
-          clearable: Boolean(editingMetaId),
-          onClear: resetMetaForm,
-          children: /* @__PURE__ */ jsxs("form", { onSubmit: saveMeta, className: "space-y-4", children: [
-            /* @__PURE__ */ jsx(
-              TargetSelector,
-              {
-                form: metaForm,
-                onFormChange: setMetaForm,
-                propertyOptions,
-                propertyTypeOptions,
-                prefix: "meta"
-              }
-            ),
-            /* @__PURE__ */ jsx(Field, { label: "Meta Title", value: metaForm.metaTitle, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaTitle: value })) }),
-            /* @__PURE__ */ jsx(TextAreaField, { label: "Meta Description", rows: 4, value: metaForm.metaDescription, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaDescription: value })) }),
-            /* @__PURE__ */ jsx(Field, { label: "Schema", value: metaForm.skima, onChange: (value) => setMetaForm((prev) => ({ ...prev, skima: value })) }),
-            /* @__PURE__ */ jsx(Field, { label: "Meta Keywords", value: metaForm.metaKeywords, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value })) }),
-            /* @__PURE__ */ jsx(Field, { label: "URL", type: "url", placeholder: "https://example.com/page", value: metaForm.url, onChange: (value) => setMetaForm((prev) => ({ ...prev, url: value })) }),
-            hasDuplicateMetaUrl ? /* @__PURE__ */ jsx("p", { className: "text-sm", style: { color: "#ef4444" }, children: "Meta tag already added for this URL. Use edit or delete for the existing entry." }) : null,
-            /* @__PURE__ */ jsx(
-              SubmitButton,
-              {
-                loading: savingMeta,
-                label: editingMetaId ? "Update Meta Tag" : "Add Meta Tag",
-                disabled: hasDuplicateMetaUrl
-              }
-            )
-          ] })
-        }
-      ),
-      /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs(Layout, { role: "superadmin", showActions: false, children: [
+    /* @__PURE__ */ jsx("div", { className: "h-full overflow-y-auto p-4 md:p-6", children: /* @__PURE__ */ jsxs("div", { className: "bg-white rounded-xl shadow-sm border", style: { borderColor: colors.border }, children: [
+      /* @__PURE__ */ jsx("div", { className: "p-6 border-b", style: { borderColor: colors.border }, children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", children: [
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h2", { className: "text-2xl font-semibold", style: { color: colors.textPrimary }, children: "SEO Management" }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm mt-1", style: { color: colors.textSecondary }, children: "Manage meta tags and a single global Google tag configuration." })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3", children: [
+          /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "meta", onClick: () => setActiveSection("meta"), icon: Tag, label: "Meta Tag" }),
+          /* @__PURE__ */ jsx(SectionTab, { active: activeSection === "google", onClick: () => setActiveSection("google"), icon: Globe, label: "Google Tag" })
+        ] })
+      ] }) }),
+      loading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { size: 32, className: "animate-spin", style: { color: colors.primary } }) }) : /* @__PURE__ */ jsx("div", { className: "p-4 md:p-6", children: activeSection === "meta" ? /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
         SeoTableCard,
         {
           title: "Meta Tags",
@@ -50670,6 +50681,8 @@ function SeoManagement() {
           onSearchChange: setMetaSearch,
           searchPlaceholder: "Search meta tags...",
           emptyMessage: "No meta tags found.",
+          actionLabel: "Add Meta Tag",
+          onAction: openCreateMeta,
           children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[920px]", children: [
             /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
               /* @__PURE__ */ jsx(Th, { children: "Target" }),
@@ -50688,7 +50701,14 @@ function SeoManagement() {
               /* @__PURE__ */ jsx(Td, { children: item.metaDescription || "-" }),
               /* @__PURE__ */ jsx(Td, { children: item.metaKeywords || "-" }),
               /* @__PURE__ */ jsx(Td, { children: item.url || "-" }),
-              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
+              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(
+                StatusToggle,
+                {
+                  active: item.active ?? item.status,
+                  disabled: togglingMetaId === `meta-${item.id}`,
+                  onToggle: () => toggleMetaStatus(item)
+                }
+              ) }),
               /* @__PURE__ */ jsx(Td, { align: "right", children: /* @__PURE__ */ jsx(
                 ActionButtons,
                 {
@@ -50700,16 +50720,80 @@ function SeoManagement() {
             ] }, item.id)) })
           ] })
         }
-      )
-    ] }) : /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6", children: [
-      /* @__PURE__ */ jsx(
-        SeoFormCard,
+      ) }) : /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx(
+        SeoTableCard,
         {
-          title: editingGoogleId ? "Edit Google Tag" : "Create Google Tag",
-          subtitle: canCreateGoogle ? "Store one global Google tag entry with separate header and body URLs." : "A Google tag entry already exists. Use edit or delete from the table.",
-          clearable: Boolean(editingGoogleId),
-          onClear: resetGoogleForm,
-          children: /* @__PURE__ */ jsxs("form", { onSubmit: saveGoogle, className: "space-y-4", children: [
+          title: "Google Tags",
+          count: filteredGoogle.length,
+          searchValue: googleSearch,
+          onSearchChange: setGoogleSearch,
+          searchPlaceholder: "Search Google tags...",
+          emptyMessage: "No Google tags found.",
+          actionLabel: "Add Google Tag",
+          onAction: openCreateGoogle,
+          actionDisabled: !canCreateGoogle,
+          children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[760px]", children: [
+            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
+              /* @__PURE__ */ jsx(Th, { children: "Header URL" }),
+              /* @__PURE__ */ jsx(Th, { children: "Body URL" }),
+              /* @__PURE__ */ jsx(Th, { children: "Status" }),
+              /* @__PURE__ */ jsx(Th, { align: "right", children: "Actions" })
+            ] }) }),
+            /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-100", children: filteredGoogle.map((item) => /* @__PURE__ */ jsxs("tr", { className: "hover:bg-gray-50 transition-colors", children: [
+              /* @__PURE__ */ jsx(Td, { children: item.category || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: item.description || "-" }),
+              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
+              /* @__PURE__ */ jsx(Td, { align: "right", children: /* @__PURE__ */ jsx(
+                ActionButtons,
+                {
+                  onEdit: () => editGoogle(item),
+                  onDelete: () => removeGoogle(item.id),
+                  deleting: deletingId === `google-${item.id}`
+                }
+              ) })
+            ] }, item.id)) })
+          ] })
+        }
+      ) }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(
+      Dialog,
+      {
+        open: formModalOpen,
+        onOpenChange: (open) => {
+          if (!open) closeFormModal();
+          else setFormModalOpen(true);
+        },
+        children: /* @__PURE__ */ jsxs(DialogContent, { className: "max-h-[90vh] max-w-3xl overflow-y-auto", children: [
+          /* @__PURE__ */ jsxs(DialogHeader, { children: [
+            /* @__PURE__ */ jsx(DialogTitle, { children: activeSection === "meta" ? editingMetaId ? "Edit Meta Tag" : "Create Meta Tag" : editingGoogleId ? "Edit Google Tag" : "Create Google Tag" }),
+            /* @__PURE__ */ jsx(DialogDescription, { children: activeSection === "meta" ? "Configure metadata by full page URL. Property linking is optional." : canCreateGoogle ? "Store one global Google tag entry with separate header and body URLs." : "A Google tag entry already exists. Use edit or delete from the table." })
+          ] }),
+          activeSection === "meta" ? /* @__PURE__ */ jsxs("form", { onSubmit: saveMeta, className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              TargetSelector,
+              {
+                form: metaForm,
+                onFormChange: setMetaForm,
+                propertyOptions,
+                prefix: "meta"
+              }
+            ),
+            /* @__PURE__ */ jsx(Field, { label: "Meta Title", value: metaForm.metaTitle, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaTitle: value })) }),
+            /* @__PURE__ */ jsx(TextAreaField, { label: "Meta Description", rows: 5, value: metaForm.metaDescription, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaDescription: value })) }),
+            /* @__PURE__ */ jsx(TextAreaField, { label: "Schema", rows: 10, value: metaForm.skima, onChange: (value) => setMetaForm((prev) => ({ ...prev, skima: value })) }),
+            /* @__PURE__ */ jsx(TextAreaField, { label: "Meta Keywords", rows: 4, value: metaForm.metaKeywords, onChange: (value) => setMetaForm((prev) => ({ ...prev, metaKeywords: value })) }),
+            /* @__PURE__ */ jsx(Field, { label: "URL", type: "url", placeholder: "https://example.com/page", value: metaForm.url, onChange: (value) => setMetaForm((prev) => ({ ...prev, url: value })), required: true }),
+            hasDuplicateMetaUrl ? /* @__PURE__ */ jsx("p", { className: "text-sm", style: { color: "#ef4444" }, children: "Meta tag already added for this URL. Use edit or delete for the existing entry." }) : null,
+            /* @__PURE__ */ jsx(
+              SubmitButton,
+              {
+                loading: savingMeta,
+                label: editingMetaId ? "Update Meta Tag" : "Add Meta Tag",
+                disabled: hasDuplicateMetaUrl
+              }
+            )
+          ] }) : /* @__PURE__ */ jsxs("form", { onSubmit: saveGoogle, className: "space-y-4", children: [
             /* @__PURE__ */ jsx(
               Field,
               {
@@ -50741,42 +50825,10 @@ function SeoManagement() {
               }
             )
           ] })
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        SeoTableCard,
-        {
-          title: "Google Tags",
-          count: filteredGoogle.length,
-          searchValue: googleSearch,
-          onSearchChange: setGoogleSearch,
-          searchPlaceholder: "Search Google tags...",
-          emptyMessage: "No Google tags found.",
-          children: /* @__PURE__ */ jsxs("table", { className: "w-full min-w-[760px]", children: [
-            /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.mainBg }, children: [
-              /* @__PURE__ */ jsx(Th, { children: "Header URL" }),
-              /* @__PURE__ */ jsx(Th, { children: "Body URL" }),
-              /* @__PURE__ */ jsx(Th, { children: "Status" }),
-              /* @__PURE__ */ jsx(Th, { align: "right", children: "Actions" })
-            ] }) }),
-            /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-100", children: filteredGoogle.map((item) => /* @__PURE__ */ jsxs("tr", { className: "hover:bg-gray-50 transition-colors", children: [
-              /* @__PURE__ */ jsx(Td, { children: item.category || "-" }),
-              /* @__PURE__ */ jsx(Td, { children: item.description || "-" }),
-              /* @__PURE__ */ jsx(Td, { children: /* @__PURE__ */ jsx(StatusBadge, { active: item.active ?? item.status }) }),
-              /* @__PURE__ */ jsx(Td, { align: "right", children: /* @__PURE__ */ jsx(
-                ActionButtons,
-                {
-                  onEdit: () => editGoogle(item),
-                  onDelete: () => removeGoogle(item.id),
-                  deleting: deletingId === `google-${item.id}`
-                }
-              ) })
-            ] }, item.id)) })
-          ] })
-        }
-      )
-    ] }) })
-  ] }) }) });
+        ] })
+      }
+    )
+  ] });
 }
 function SectionTab({ active, onClick, icon: Icon, label }) {
   return /* @__PURE__ */ jsxs(
@@ -50797,18 +50849,6 @@ function SectionTab({ active, onClick, icon: Icon, label }) {
     }
   );
 }
-function SeoFormCard({ title, subtitle, clearable, onClear, children }) {
-  return /* @__PURE__ */ jsxs("div", { className: "bg-[#fcfcfc] rounded-xl border p-5 h-fit", style: { borderColor: colors.border }, children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-4", children: [
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx("h3", { className: "text-lg font-semibold", style: { color: colors.textPrimary }, children: title }),
-        /* @__PURE__ */ jsx("p", { className: "text-xs mt-1", style: { color: colors.textSecondary }, children: subtitle })
-      ] }),
-      clearable ? /* @__PURE__ */ jsx("button", { type: "button", onClick: onClear, className: "text-xs font-medium", style: { color: colors.primary }, children: "Clear" }) : null
-    ] }),
-    children
-  ] });
-}
 function SeoTableCard({
   title,
   count: count2,
@@ -50816,6 +50856,9 @@ function SeoTableCard({
   onSearchChange,
   searchPlaceholder,
   emptyMessage,
+  actionLabel,
+  onAction,
+  actionDisabled = false,
   children
 }) {
   const rowCount = React__default.Children.count(children?.props?.children?.[1]?.props?.children);
@@ -50828,7 +50871,23 @@ function SeoTableCard({
           " entries available"
         ] })
       ] }),
-      /* @__PURE__ */ jsx(SearchBox, { value: searchValue, onChange: onSearchChange, placeholder: searchPlaceholder })
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col sm:flex-row gap-3", children: [
+        /* @__PURE__ */ jsx(SearchBox, { value: searchValue, onChange: onSearchChange, placeholder: searchPlaceholder }),
+        onAction ? /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: onAction,
+            disabled: actionDisabled,
+            className: "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60",
+            style: { backgroundColor: colors.primary },
+            children: [
+              /* @__PURE__ */ jsx(Plus, { size: 16 }),
+              actionLabel
+            ]
+          }
+        ) : null
+      ] })
     ] }) }),
     rowCount > 0 ? /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children }) : /* @__PURE__ */ jsx("div", { className: "py-16 text-center text-sm", style: { color: colors.textSecondary }, children: emptyMessage })
   ] });
@@ -50837,71 +50896,24 @@ function TargetSelector({
   form,
   onFormChange,
   propertyOptions,
-  propertyTypeOptions,
   prefix
 }) {
-  const changeTargetType = (targetType) => onFormChange((prev) => ({
-    ...prev,
-    targetType,
-    propertyId: "",
-    propertyTypeId: ""
-  }));
-  return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: "Target Type" }),
-      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3", children: [
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => changeTargetType("property"),
-            className: "px-4 py-2.5 rounded-lg border text-sm font-medium",
-            style: {
-              borderColor: form.targetType === "property" ? colors.primary : colors.border,
-              color: form.targetType === "property" ? colors.primary : colors.textPrimary,
-              backgroundColor: form.targetType === "property" ? `${colors.primary}10` : "#fff"
-            },
-            children: "Property"
-          }
-        ),
-        /* @__PURE__ */ jsx(
-          "button",
-          {
-            type: "button",
-            onClick: () => changeTargetType("propertyType"),
-            className: "px-4 py-2.5 rounded-lg border text-sm font-medium",
-            style: {
-              borderColor: form.targetType === "propertyType" ? colors.primary : colors.border,
-              color: form.targetType === "propertyType" ? colors.primary : colors.textPrimary,
-              backgroundColor: form.targetType === "propertyType" ? `${colors.primary}10` : "#fff"
-            },
-            children: "Property Type (Homepage)"
-          }
-        )
-      ] })
-    ] }),
-    form.targetType === "property" ? /* @__PURE__ */ jsx(
-      SelectField,
-      {
-        id: `${prefix}-property`,
-        label: "Property",
-        value: form.propertyId,
-        onChange: (value) => onFormChange((prev) => ({ ...prev, propertyId: value })),
-        options: propertyOptions,
-        placeholder: "Select property"
-      }
-    ) : /* @__PURE__ */ jsx(
-      SelectField,
-      {
-        id: `${prefix}-property-type`,
-        label: "Property Type",
-        value: form.propertyTypeId,
-        onChange: (value) => onFormChange((prev) => ({ ...prev, propertyTypeId: value })),
-        options: propertyTypeOptions,
-        placeholder: "Select property type"
-      }
-    )
-  ] });
+  return /* @__PURE__ */ jsx(
+    SelectField,
+    {
+      id: `${prefix}-property`,
+      label: "Property",
+      value: form.propertyId,
+      onChange: (value) => onFormChange((prev) => ({
+        ...prev,
+        targetType: "property",
+        propertyId: value,
+        propertyTypeId: ""
+      })),
+      options: propertyOptions,
+      placeholder: "Select property"
+    }
+  );
 }
 function SelectField({ id, label, value, onChange, options, placeholder }) {
   return /* @__PURE__ */ jsxs("div", { children: [
@@ -50922,9 +50934,20 @@ function SelectField({ id, label, value, onChange, options, placeholder }) {
     )
   ] });
 }
-function Field({ label, value, onChange, type = "text", placeholder = "", disabled = false }) {
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder = "",
+  disabled = false,
+  required = false
+}) {
   return /* @__PURE__ */ jsxs("div", { children: [
-    /* @__PURE__ */ jsx("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: label }),
+    /* @__PURE__ */ jsxs("label", { className: "block text-sm font-medium mb-2", style: { color: colors.textPrimary }, children: [
+      label,
+      required ? /* @__PURE__ */ jsx("span", { className: "ml-1 text-red-500", children: "*" }) : null
+    ] }),
     /* @__PURE__ */ jsx(
       "input",
       {
@@ -50933,6 +50956,7 @@ function Field({ label, value, onChange, type = "text", placeholder = "", disabl
         onChange: (event) => onChange(event.target.value),
         placeholder,
         disabled,
+        required,
         className: "w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed",
         style: { borderColor: colors.border, color: colors.textPrimary }
       }
@@ -51006,7 +51030,7 @@ function Td({ children, align = "left" }) {
   );
 }
 function StatusBadge({ active }) {
-  const isActive = Boolean(active);
+  const isActive = isActiveValue(active);
   return /* @__PURE__ */ jsx(
     "span",
     {
@@ -51016,6 +51040,40 @@ function StatusBadge({ active }) {
         color: isActive ? "#10b981" : "#ef4444"
       },
       children: isActive ? "Active" : "Inactive"
+    }
+  );
+}
+function StatusToggle({ active, disabled, onToggle }) {
+  const isActive = isActiveValue(active);
+  return /* @__PURE__ */ jsxs(
+    "button",
+    {
+      type: "button",
+      disabled,
+      onClick: onToggle,
+      className: "inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+      style: {
+        backgroundColor: isActive ? "#10b98115" : "#ef444415",
+        color: isActive ? "#10b981" : "#ef4444"
+      },
+      "aria-pressed": isActive,
+      "aria-label": isActive ? "Deactivate meta tag" : "Activate meta tag",
+      children: [
+        /* @__PURE__ */ jsx(
+          "span",
+          {
+            className: "relative inline-flex h-5 w-9 items-center rounded-full transition-colors",
+            style: { backgroundColor: isActive ? "#10b981" : "#ef4444" },
+            children: /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: `inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${isActive ? "translate-x-4" : "translate-x-1"}`
+              }
+            )
+          }
+        ),
+        disabled ? "Updating..." : isActive ? "Active" : "Inactive"
+      ]
     }
   );
 }
