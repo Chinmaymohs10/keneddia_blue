@@ -365,7 +365,6 @@ const cafeHighTea = "/assets/luxury_high_tea_lounge-CfgnSL30.png";
 const cafeGarden = "/assets/garden_terrace_cafe-yDyFoTv7.png";
 const cafeLibrary = "/assets/cozy_library_cafe-DJIBpvVp.png";
 const mapImage = "/assets/world_map_with_golden_pins-D_iOIMuJ.png";
-const cafeUpscale = "/assets/upscale_cafe_interior-C1gLd0yG.png";
 const footer_img = "/assets/footer-img-DVGrEUkR.png";
 const siteContent = {
   brand: {
@@ -552,109 +551,6 @@ const siteContent = {
       ]
     }
   }
-};
-const restaurantEventShowcase = {
-  title: "Upcoming Events",
-  items: [
-    {
-      title: "Jazz Night Under the Stars",
-      date: "Dec 25, 2025",
-      media: {
-        src: barSpeakeasy,
-        alt: "Jazz Night",
-        type: "IMAGE",
-        width: 1200,
-        height: 800
-      },
-      description: "An evening of smooth jazz and signature cocktails at our rooftop lounge.",
-      slug: "jazz-night-under-stars",
-      location: "Mumbai"
-    },
-    {
-      title: "New Year's Eve Gala",
-      date: "Dec 31, 2025",
-      media: {
-        src: heroLobby,
-        alt: "NYE Gala",
-        type: "IMAGE",
-        width: 1200,
-        height: 800
-      },
-      description: "Ring in the new year with a grand celebration featuring live music and gourmet dining.",
-      slug: "new-years-eve-gala",
-      location: "Goa"
-    },
-    {
-      title: "Culinary Masterclass",
-      date: "Jan 15, 2026",
-      media: {
-        src: cafeParisian,
-        alt: "Culinary Class",
-        type: "IMAGE",
-        width: 1200,
-        height: 800
-      },
-      description: "Learn the secrets of fine dining from our executive chefs.",
-      slug: "culinary-masterclass",
-      location: "Paris"
-    },
-    {
-      title: "Chef's Table Reel Experience",
-      date: "Jan 28, 2026",
-      media: {
-        src: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4",
-        alt: "Chef's Table Reel Experience",
-        type: "VIDEO",
-        width: 720,
-        height: 1280
-      },
-      description: "A short-form immersive chef's table preview designed in a reel-style portrait format.",
-      slug: "chefs-table-reel-experience",
-      location: "Delhi"
-    },
-    {
-      title: "Sunset Rooftop Sessions",
-      date: "Feb 08, 2026",
-      media: {
-        src: barRooftop,
-        alt: "Sunset Rooftop Sessions",
-        type: "IMAGE",
-        width: 1200,
-        height: 800
-      },
-      description: "Golden hour cocktails, skyline dining, and live acoustic sessions at the rooftop lounge.",
-      slug: "sunset-rooftop-sessions",
-      location: "Bengaluru"
-    },
-    {
-      title: "Weekend Brunch Stories",
-      date: "Feb 14, 2026",
-      media: {
-        src: "https://samplelib.com/lib/preview/mp4/sample-10s.mp4",
-        alt: "Weekend Brunch Stories",
-        type: "VIDEO",
-        width: 1080,
-        height: 1350
-      },
-      description: "A visual brunch diary with signature plating, live counters, and celebratory dining moments.",
-      slug: "weekend-brunch-stories",
-      location: "Ghaziabad"
-    },
-    {
-      title: "Private Tasting Evening",
-      date: "Feb 22, 2026",
-      media: {
-        src: cafeUpscale,
-        alt: "Private Tasting Evening",
-        type: "IMAGE",
-        width: 1200,
-        height: 800
-      },
-      description: "Reserve a premium seat for a guided tasting menu crafted around seasonal ingredients.",
-      slug: "private-tasting-evening",
-      location: "Noida"
-    }
-  ]
 };
 const Sheet = SheetPrimitive.Root;
 const SheetPortal = SheetPrimitive.Portal;
@@ -13506,7 +13402,7 @@ const HotelCarouselSection = lazy(
   () => import("./assets/HotelCarouselSection-DimFSu7d.js")
 );
 const QuickBooking = lazy(
-  () => import("./assets/QuickBooking-B3gGNS9P.js")
+  () => import("./assets/QuickBooking-CPW27o4s.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -23851,7 +23747,7 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-B8HnYKBY.js")
+  () => import("./assets/RestaurantHomepage-XSl4I2RA.js")
 );
 const CafeHomepage = lazy(
   () => import("./assets/CafeHomepage-Beqai0UW.js")
@@ -53537,9 +53433,11 @@ async function render(url, template) {
   return { html, appHtml, initialData };
 }
 export {
+  getLocationsByType as A,
   Button as B,
   Calendar as C,
   Dialog as D,
+  searchRooms as E,
   Footer as F,
   GetAllPropertyDetails as G,
   Input as I,
@@ -53547,6 +53445,7 @@ export {
   Navbar$1 as N,
   OptimizedImage as O,
   Popover as P,
+  Textarea as T,
   createHotelSlug as a,
   getHotelHomepageHeroSection as b,
   createCitySlug as c,
@@ -53555,13 +53454,23 @@ export {
   getAboutUsByPropertyType as f,
   getPropertyTypes as g,
   getPublicRecognitionsByAboutUsId as h,
-  PopoverTrigger as i,
-  cn as j,
-  PopoverContent as k,
-  DialogContent as l,
-  getLocationsByType as m,
-  searchRooms as n,
-  restaurantEventShowcase as r,
+  DialogContent as i,
+  DialogHeader as j,
+  DialogTitle as k,
+  DialogDescription as l,
+  getEventsUpdated as m,
+  getGroupBookings as n,
+  buildEventDetailPath as o,
+  createGroupBookingEnquiry as p,
+  getAllNews as q,
+  buildNewsDetailPath as r,
   render,
-  siteContent as s
+  siteContent as s,
+  getGuestExperienceSection as t,
+  getGuestExperienceSectionHeader as u,
+  getGuestExperineceRatingHeader as v,
+  createGuestExperienceByGuest as w,
+  PopoverTrigger as x,
+  cn as y,
+  PopoverContent as z
 };

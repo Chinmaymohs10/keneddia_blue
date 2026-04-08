@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -6,70 +6,48 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 
+import { getAllNews, getPropertyTypes } from "@/Api/Api";
+import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import "swiper/css";
 
-const restaurantNewsItems = [
+const FALLBACK_NEWS_ITEMS = [
   {
-    id: 1,
-    category: "Restaurant",
+    id: "fallback-news-1",
+    category: "PRESS",
     title: "Kennedia Introduces A Curated Seasonal Tasting Menu",
     description:
-      "The restaurant unveils a new chef-led tasting experience built around regional produce, plated courses, and elevated evening service.",
+      "The restaurant unveils a new chef-led tasting experience built around regional produce and elevated evening service.",
     dateBadge: "2026-02-18",
-    badgeType: "Press Release",
+    badgeType: "Restaurant",
     ctaText: "Read Story",
-    ctaLink: "/news/kennedia-seasonal-tasting-menu",
+    ctaLink: "/news",
     imageUrl:
       "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-    type: "Restaurant",
   },
   {
-    id: 2,
-    category: "Restaurant",
+    id: "fallback-news-2",
+    category: "NEWS",
     title: "Weekend Brunch Program Expands With Live Kitchen Counters",
     description:
-      "A refreshed brunch format brings interactive stations, dessert theatre, and family-style sharing platters to the weekend offering.",
+      "A refreshed brunch format brings interactive stations and family-style sharing platters.",
     dateBadge: "2026-01-26",
-    badgeType: "Feature",
+    badgeType: "Restaurant",
     ctaText: "Read Story",
-    ctaLink: "/news/kennedia-weekend-brunch-program",
+    ctaLink: "/news",
     imageUrl:
       "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-    type: "Restaurant",
-  },
-  {
-    id: 3,
-    category: "Restaurant",
-    title: "Private Dining Experiences Gain New Celebration Packages",
-    description:
-      "Kennedia adds compact celebration formats for anniversaries, birthdays, and executive dining with pre-set menus and decor options.",
-    dateBadge: "2025-12-14",
-    badgeType: "Update",
-    ctaText: "Read Story",
-    ctaLink: "/news/kennedia-private-dining-packages",
-    imageUrl:
-      "https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?auto=format&fit=crop&w=1200&q=80",
-    type: "Restaurant",
-  },
-  {
-    id: 4,
-    category: "Restaurant",
-    title: "Signature Beverage Pairings Roll Out Across Evening Service",
-    description:
-      "A new pairing program highlights house beverages and chef recommendations designed to complement small plates and signature mains.",
-    dateBadge: "2025-11-03",
-    badgeType: "Editorial",
-    ctaText: "Read Story",
-    ctaLink: "/news/kennedia-signature-beverage-pairings",
-    imageUrl:
-      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1200&q=80",
-    type: "Restaurant",
   },
 ];
+
+const normalize = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isRestaurantType = (value = "") =>
+  ["restaurant", "resturant"].includes(normalize(value));
 
 const STYLE_CONFIG = {
   navigation: {
@@ -94,9 +72,6 @@ function SectionHeader({ title, onPrev, onNext }) {
   return (
     <div className="mb-8 flex items-center justify-between">
       <div>
-        {/* <span className="mb-2 block text-xs font-bold uppercase tracking-[0.25em] text-primary">
-          Updates & Recognition
-        </span> */}
         <h2 className="text-2xl font-serif text-foreground md:text-3xl">
           {title}
         </h2>
@@ -204,9 +179,91 @@ function NewsCard({ item }) {
 
 export default function RestaurantNewsSection() {
   const swiperRef = useRef(null);
-  const newsItems = restaurantNewsItems.filter(
-    (item) => item.type === "Restaurant",
-  );
+  const [newsItems, setNewsItems] = useState(FALLBACK_NEWS_ITEMS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRestaurantNews = async () => {
+      try {
+        setLoading(true);
+
+        const [typesResponse, newsResponse] = await Promise.all([
+          getPropertyTypes(),
+          getAllNews({ category: "", page: 0, size: 50 }),
+        ]);
+
+        const propertyTypes = typesResponse?.data || typesResponse || [];
+        const restaurantType = Array.isArray(propertyTypes)
+          ? propertyTypes.find(
+              (type) => type?.isActive && isRestaurantType(type?.typeName),
+            )
+          : null;
+        const restaurantTypeId = restaurantType?.id
+          ? Number(restaurantType.id)
+          : null;
+
+        const rawNews =
+          newsResponse?.data?.content ||
+          newsResponse?.content ||
+          newsResponse?.data ||
+          newsResponse ||
+          [];
+
+        const mappedNews = (Array.isArray(rawNews) ? rawNews : [])
+          .filter((item) => {
+            const badgeName =
+              item?.badgeTypeName ||
+              item?.badgeType ||
+              item?.badge?.typeName ||
+              item?.badge?.name ||
+              "";
+            const byName = isRestaurantType(badgeName);
+            const byId =
+              restaurantTypeId !== null &&
+              Number(item?.badgeTypeId) === restaurantTypeId;
+
+            return item?.active === true && (byName || byId);
+          })
+          .sort((a, b) => {
+            const dateA = new Date(a?.newsDate || a?.dateBadge || a?.createdAt || 0);
+            const dateB = new Date(b?.newsDate || b?.dateBadge || b?.createdAt || 0);
+            return dateB.getTime() - dateA.getTime();
+          })
+          .slice(0, 6)
+          .map((item) => ({
+            id: item?.id,
+            category: item?.category || "NEWS",
+            title: item?.title || "News",
+            description: item?.description || "",
+            dateBadge:
+              item?.newsDate ||
+              item?.dateBadge ||
+              new Date().toISOString().split("T")[0],
+            badgeType:
+              item?.badgeTypeName ||
+              item?.badgeType ||
+              item?.badge?.typeName ||
+              "Restaurant",
+            ctaText: item?.ctaText || "Read Story",
+            ctaLink: buildNewsDetailPath(item),
+            imageUrl:
+              item?.imageUrl ||
+              item?.image ||
+              item?.media?.[0]?.url ||
+              FALLBACK_NEWS_ITEMS[0].imageUrl,
+          }));
+
+        setNewsItems(mappedNews.length > 0 ? mappedNews : FALLBACK_NEWS_ITEMS);
+      } catch (error) {
+        console.error("Failed to load restaurant news", error);
+        setNewsItems(FALLBACK_NEWS_ITEMS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurantNews();
+  }, []);
 
   return (
     <section
@@ -220,27 +277,33 @@ export default function RestaurantNewsSection() {
           onNext={() => swiperRef.current?.slideNext()}
         />
 
-        <Swiper
-          modules={[Autoplay, Navigation]}
-          spaceBetween={24}
-          slidesPerView={1}
-          loop={newsItems.length > 3}
-          autoplay={{ delay: 5000, disableOnInteraction: false }}
-          breakpoints={{
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-          onSwiper={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          className="w-full pb-4"
-        >
-          {newsItems.map((item) => (
-            <SwiperSlide key={item.id} className="!h-auto">
-              <NewsCard item={item} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Swiper
+            modules={[Autoplay, Navigation]}
+            spaceBetween={24}
+            slidesPerView={1}
+            loop={newsItems.length > 3}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+            onSwiper={(swiper) => {
+              swiperRef.current = swiper;
+            }}
+            className="w-full pb-4"
+          >
+            {newsItems.map((item) => (
+              <SwiperSlide key={item.id} className="!h-auto">
+                <NewsCard item={item} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
       </div>
     </section>
   );
