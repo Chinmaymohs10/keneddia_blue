@@ -59,13 +59,12 @@ export default function RestaurantHomepage() {
         <RestaurantQuickBooking />
         <RestaurantOffers />
         <RestaurantProperties />
-         <RestaurantBestSellers />
+        <RestaurantBestSellers />
         <AboutRestaurant />
         {/* Events Schedule */}
         <EventsSchedule />
         <RestaurantNewsSection />
         <RestaurantGuestReviews />
-        
       </main>
 
       {/* Footer */}

@@ -768,6 +768,22 @@ const CommandItem = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   }
 ));
 CommandItem.displayName = Command$1.Item.displayName;
+const isBrowser$1 = typeof window !== "undefined";
+const getStorage = (type) => {
+  if (!isBrowser$1) return null;
+  return type === "local" ? window.localStorage : window.sessionStorage;
+};
+const getStoredItem = (key) => {
+  const sessionValue = getStorage("session")?.getItem(key);
+  if (sessionValue) return sessionValue;
+  return getStorage("local")?.getItem(key) || null;
+};
+const clearAuthStorage = () => {
+  getStorage("local")?.removeItem("accessToken");
+  getStorage("local")?.removeItem("user");
+  getStorage("session")?.removeItem("accessToken");
+  getStorage("session")?.removeItem("user");
+};
 const AuthService = {
   /**
    * @param {Object} credentials - { username, password }
@@ -778,8 +794,11 @@ const AuthService = {
       const response = await loginAPI(credentials);
       const { token, user } = response.data;
       if (token) {
-        const storage = rememberMe ? localStorage : sessionStorage;
-        const otherStorage = rememberMe ? sessionStorage : localStorage;
+        if (!isBrowser$1) {
+          return { success: false, message: "Authentication is only available in the browser" };
+        }
+        const storage = rememberMe ? getStorage("local") : getStorage("session");
+        const otherStorage = rememberMe ? getStorage("session") : getStorage("local");
         otherStorage.removeItem("accessToken");
         otherStorage.removeItem("user");
         storage.setItem("accessToken", token);
@@ -795,18 +814,22 @@ const AuthService = {
     }
   },
   logout: () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("user");
-    window.location.href = "/login";
+    clearAuthStorage();
+    if (isBrowser$1) {
+      window.location.href = "/login";
+    }
   },
   getCurrentUser: () => {
-    const user = sessionStorage.getItem("user") || localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    const user = getStoredItem("user");
+    if (!user) return null;
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
   },
   isAuthenticated: () => {
-    return !!(sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken"));
+    return !!getStoredItem("accessToken");
   }
 };
 const apiUrl = "http://192.168.0.135:6090/";
@@ -23861,14 +23884,29 @@ const WebsiteRoutes = [
   /* @__PURE__ */ jsx(Route, { path: "*", element: /* @__PURE__ */ jsx(NotFound, {}) }, "not-found")
 ];
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const isAuthenticated = AuthService.isAuthenticated();
-  const currentUser = AuthService.getCurrentUser();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const authenticated = AuthService.isAuthenticated();
+    const user = AuthService.getCurrentUser();
+    setIsAuthenticated(authenticated);
+    setCurrentUser(user);
+    setIsLoading(false);
+  }, []);
+  useEffect(() => {
+    if (!isLoading && currentUser && currentUser.isActive === false) {
+      AuthService.logout();
+    }
+  }, [currentUser, isLoading]);
+  if (isLoading) {
+    return /* @__PURE__ */ jsx("div", { children: "Loading..." });
+  }
   if (!isAuthenticated) {
     return /* @__PURE__ */ jsx(Navigate, { to: "/login", replace: true });
   }
   if (currentUser && currentUser.isActive === false) {
-    AuthService.logout();
-    return /* @__PURE__ */ jsx(Navigate, { to: "/login", replace: true });
+    return /* @__PURE__ */ jsx("div", { children: "Loading..." });
   }
   if (allowedRoles.length > 0 && !allowedRoles.includes(currentUser?.roleName)) {
     return /* @__PURE__ */ jsx(Navigate, { to: "/Homepage-Dashboard", replace: true });

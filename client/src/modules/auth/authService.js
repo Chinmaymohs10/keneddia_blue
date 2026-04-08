@@ -1,5 +1,26 @@
 import { loginAPI } from "@/Api/Api";
 
+const isBrowser = typeof window !== "undefined";
+
+const getStorage = (type) => {
+  if (!isBrowser) return null;
+  return type === "local" ? window.localStorage : window.sessionStorage;
+};
+
+const getStoredItem = (key) => {
+  const sessionValue = getStorage("session")?.getItem(key);
+  if (sessionValue) return sessionValue;
+
+  return getStorage("local")?.getItem(key) || null;
+};
+
+const clearAuthStorage = () => {
+  getStorage("local")?.removeItem("accessToken");
+  getStorage("local")?.removeItem("user");
+  getStorage("session")?.removeItem("accessToken");
+  getStorage("session")?.removeItem("user");
+};
+
 const AuthService = {
   /**
    * @param {Object} credentials - { username, password }
@@ -11,11 +32,15 @@ const AuthService = {
       const { token, user } = response.data;
 
       if (token) {
+        if (!isBrowser) {
+          return { success: false, message: "Authentication is only available in the browser" };
+        }
+
         // Decide storage type
-        const storage = rememberMe ? localStorage : sessionStorage;
-        
+        const storage = rememberMe ? getStorage("local") : getStorage("session");
+
         // Clear the other storage to avoid token conflicts
-        const otherStorage = rememberMe ? sessionStorage : localStorage;
+        const otherStorage = rememberMe ? getStorage("session") : getStorage("local");
         otherStorage.removeItem("accessToken");
         otherStorage.removeItem("user");
 
@@ -36,21 +61,28 @@ const AuthService = {
 
   logout: () => {
     // Clear both to be safe
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("user");
-    window.location.href = "/login";
+    clearAuthStorage();
+
+    if (isBrowser) {
+      window.location.href = "/login";
+    }
   },
 
   getCurrentUser: () => {
-    const user = sessionStorage.getItem("user") || localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    const user = getStoredItem("user");
+
+    if (!user) return null;
+
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
   },
 
   isAuthenticated: () => {
-    return !!(sessionStorage.getItem("accessToken") || localStorage.getItem("accessToken"));
-  }
+    return !!getStoredItem("accessToken");
+  },
 };
 
 export default AuthService;
