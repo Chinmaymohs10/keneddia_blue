@@ -23747,7 +23747,7 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-XSl4I2RA.js")
+  () => import("./assets/RestaurantHomepage-2wKo63De.js")
 );
 const CafeHomepage = lazy(
   () => import("./assets/CafeHomepage-Beqai0UW.js")
@@ -53466,10 +53466,10 @@ export {
   buildNewsDetailPath as r,
   render,
   siteContent as s,
-  getGuestExperienceSection as t,
-  getGuestExperienceSectionHeader as u,
-  getGuestExperineceRatingHeader as v,
-  createGuestExperienceByGuest as w,
+  getGuestExperienceSectionHeader as t,
+  getGuestExperineceRatingHeader as u,
+  createGuestExperienceByGuest as v,
+  getGuestExperienceSection as w,
   PopoverTrigger as x,
   cn as y,
   PopoverContent as z
