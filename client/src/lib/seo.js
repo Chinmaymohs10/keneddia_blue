@@ -1,8 +1,6 @@
 import { getAllGoogleTags, getAllMetaData } from "@/Api/Api";
 
 const DEFAULT_TITLE = "Kennedia Hotels | Redefining Luxury Across India";
-const DEFAULT_OG_IMAGE = "/og-image.png";
-const DEFAULT_TWITTER_SITE = "@kennediahotels";
 const SEO_MARKER_START = "<!-- dynamic-seo:start -->";
 const SEO_MARKER_END = "<!-- dynamic-seo:end -->";
 const BODY_MARKER_START = "<!-- dynamic-seo-body:start -->";
@@ -33,43 +31,27 @@ const normalizePathname = (value = "") => {
   }
 };
 
-const buildFallbackSchema = (schemaType, metaTag) => {
-  if (!schemaType) return "";
-
-  const fallbackSchema = {
-    "@context": "https://schema.org",
-    "@type": schemaType,
-  };
-
-  if (metaTag?.metaTitle?.trim()) {
-    fallbackSchema.name = metaTag.metaTitle.trim();
-  }
-
-  if (metaTag?.metaDescription?.trim()) {
-    fallbackSchema.description = metaTag.metaDescription.trim();
-  }
-
-  if (metaTag?.url?.trim()) {
-    fallbackSchema.url = metaTag.url.trim();
-  }
-
-  return JSON.stringify(fallbackSchema);
-};
-
-const normalizeSchema = (rawSchema, metaTag) => {
+const normalizeSchema = (rawSchema) => {
   const schemaValue = rawSchema?.trim();
-  if (!schemaValue) return "";
+  if (!schemaValue) {
+    return { jsonLd: "", headMarkup: "" };
+  }
+
+  // Admin SEO input may contain raw head markup such as <meta>, <script>, or <link>.
+  if (/<\s*(meta|script|link)\b/i.test(schemaValue)) {
+    return { jsonLd: "", headMarkup: schemaValue };
+  }
 
   try {
     const parsed = JSON.parse(schemaValue);
     if (parsed && typeof parsed === "object") {
-      return JSON.stringify(parsed);
+      return { jsonLd: JSON.stringify(parsed), headMarkup: "" };
     }
   } catch {
-    // Plain strings such as "Hotel" are converted into a minimal valid schema.
+    // Ignore invalid plain-text values instead of fabricating fallback SEO tags.
   }
 
-  return buildFallbackSchema(schemaValue, metaTag);
+  return { jsonLd: "", headMarkup: "" };
 };
 
 const selectSeoRecord = (list, { pathname = "", propertyId = null } = {}) => {
@@ -154,20 +136,21 @@ export function buildSeoState(seo) {
   const description = metaTag?.metaDescription?.trim() || "";
   const keywords = metaTag?.metaKeywords?.trim() || "";
   const canonicalUrl = metaTag?.url?.trim() || "";
-  const schema = normalizeSchema(metaTag?.skima, metaTag);
+  const schema = normalizeSchema(metaTag?.skima);
 
   return {
-    hasDynamicMeta: Boolean(title || description || keywords || canonicalUrl || schema),
+    hasDynamicMeta: Boolean(
+      title || description || keywords || canonicalUrl || schema.jsonLd || schema.headMarkup,
+    ),
     title,
     description,
     keywords,
     canonicalUrl,
-    schema,
+    schemaJsonLd: schema.jsonLd,
+    headMarkup: schema.headMarkup,
     googleTagHeadUrl: googleTag?.category?.trim() || "",
     googleTagId: extractGoogleTagId(googleTag?.category),
     googleTagBodyUrl: googleTag?.description?.trim() || "",
-    ogImage: DEFAULT_OG_IMAGE,
-    twitterSite: DEFAULT_TWITTER_SITE,
   };
 }
 
@@ -201,7 +184,21 @@ const ensureCanonical = (href) => {
 
 const removeInjectedNodes = () => {
   document.head.querySelectorAll("[data-dynamic-seo-script]").forEach((node) => node.remove());
+  document.head.querySelectorAll("[data-dynamic-seo-head]").forEach((node) => node.remove());
   document.body?.querySelectorAll("[data-dynamic-seo-body]").forEach((node) => node.remove());
+};
+
+const injectHeadMarkup = (markup) => {
+  if (!markup || typeof document === "undefined") return;
+
+  const template = document.createElement("template");
+  template.innerHTML = markup;
+
+  Array.from(template.content.childNodes).forEach((node) => {
+    if (!(node instanceof Element)) return;
+    node.setAttribute("data-dynamic-seo-head", "custom");
+    document.head.appendChild(node.cloneNode(true));
+  });
 };
 
 const injectGoogleTagUrls = (headUrl, bodyUrl) => {
@@ -238,43 +235,6 @@ export function applySeoToDocument(seo) {
 
   setOrRemoveMeta('meta[name="description"]', { name: "description" }, state.description);
   setOrRemoveMeta('meta[name="keywords"]', { name: "keywords" }, state.keywords);
-  setOrRemoveMeta('meta[property="og:title"]', { property: "og:title" }, state.title);
-  setOrRemoveMeta(
-    'meta[property="og:description"]',
-    { property: "og:description" },
-    state.description,
-  );
-  setOrRemoveMeta(
-    'meta[property="og:type"]',
-    { property: "og:type" },
-    state.hasDynamicMeta ? "website" : "",
-  );
-  setOrRemoveMeta(
-    'meta[property="og:image"]',
-    { property: "og:image" },
-    state.hasDynamicMeta ? state.ogImage : "",
-  );
-  setOrRemoveMeta(
-    'meta[name="twitter:card"]',
-    { name: "twitter:card" },
-    state.hasDynamicMeta ? "summary_large_image" : "",
-  );
-  setOrRemoveMeta(
-    'meta[name="twitter:site"]',
-    { name: "twitter:site" },
-    state.hasDynamicMeta ? state.twitterSite : "",
-  );
-  setOrRemoveMeta('meta[name="twitter:title"]', { name: "twitter:title" }, state.title);
-  setOrRemoveMeta(
-    'meta[name="twitter:description"]',
-    { name: "twitter:description" },
-    state.description,
-  );
-  setOrRemoveMeta(
-    'meta[name="twitter:image"]',
-    { name: "twitter:image" },
-    state.hasDynamicMeta ? state.ogImage : "",
-  );
 
   if (state.canonicalUrl) {
     ensureCanonical(state.canonicalUrl);
@@ -286,14 +246,15 @@ export function applySeoToDocument(seo) {
 
   removeInjectedNodes();
 
-  if (state.schema) {
+  if (state.schemaJsonLd) {
     const schemaScript = document.createElement("script");
     schemaScript.type = "application/ld+json";
-    schemaScript.textContent = state.schema;
+    schemaScript.textContent = state.schemaJsonLd;
     schemaScript.setAttribute("data-dynamic-seo-script", "schema");
     document.head.appendChild(schemaScript);
   }
 
+  injectHeadMarkup(state.headMarkup);
   injectGoogleTagUrls(state.googleTagHeadUrl, state.googleTagBodyUrl);
 }
 
@@ -324,9 +285,10 @@ export function injectSeoIntoHtml(template, seo) {
   const canonicalTag = state.canonicalUrl
     ? `\n    <link rel="canonical" href="${escapeHtml(state.canonicalUrl)}" />`
     : "";
-  const schemaTag = state.schema
-    ? `\n    <script type="application/ld+json">${escapeScript(state.schema)}</script>`
+  const schemaTag = state.schemaJsonLd
+    ? `\n    <script type="application/ld+json">${escapeScript(state.schemaJsonLd)}</script>`
     : "";
+  const headMarkupTag = state.headMarkup ? `\n    ${state.headMarkup}` : "";
   const googleTagHeadBlock = state.googleTagHeadUrl
     ? `\n    <script async src="${escapeHtml(state.googleTagHeadUrl)}"></script>${
         state.googleTagId
@@ -355,15 +317,7 @@ export function injectSeoIntoHtml(template, seo) {
     ${titleTag}
     ${state.description ? `<meta name="description" content="${escapeHtml(state.description)}" />` : ""}
     ${state.keywords ? `<meta name="keywords" content="${escapeHtml(state.keywords)}" />` : ""}
-    ${state.title ? `<meta property="og:title" content="${escapeHtml(state.title)}" />` : ""}
-    ${state.description ? `<meta property="og:description" content="${escapeHtml(state.description)}" />` : ""}
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="${escapeHtml(state.ogImage)}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="${escapeHtml(state.twitterSite)}" />
-    ${state.title ? `<meta name="twitter:title" content="${escapeHtml(state.title)}" />` : ""}
-    ${state.description ? `<meta name="twitter:description" content="${escapeHtml(state.description)}" />` : ""}
-    <meta name="twitter:image" content="${escapeHtml(state.ogImage)}" />${canonicalTag}${schemaTag}${googleTagHeadBlock}
+    ${canonicalTag}${schemaTag}${headMarkupTag}${googleTagHeadBlock}
     ${SEO_MARKER_END}`;
 
   const existingBlock = new RegExp(
