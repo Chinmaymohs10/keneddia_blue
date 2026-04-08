@@ -1,5 +1,4 @@
-// components/HeroSection.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { colors } from "@/lib/colors/colors";
 import {
   Loader2,
@@ -21,17 +20,17 @@ import {
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 import AddHeroSectionModal from "../../modals/AddHeroSectionModal";
 
+const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
+
 function HeroSection() {
   const [activeTab, setActiveTab] = useState("homepage");
   const [heroSections, setHeroSections] = useState([]);
-  const [hotelHeroSections, setHotelHeroSections] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [propertyHeroSections, setPropertyHeroSections] = useState({});
   const [fetching, setFetching] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [togglingStatus, setTogglingStatus] = useState({});
-  const [hotelTypeId, setHotelTypeId] = useState(null);
-
+  const [heroPropertyTypes, setHeroPropertyTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -42,10 +41,15 @@ function HeroSection() {
       const response = await getPropertyTypes();
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        const hotelType = data.find(
-          (type) => type.isActive && type.typeName?.toLowerCase() === "hotel",
+        setHeroPropertyTypes(
+          data.filter(
+            (type) =>
+              type.isActive &&
+              ENABLED_PROPERTY_TYPE_TABS.includes(
+                type.typeName?.toLowerCase(),
+              ),
+          ),
         );
-        if (hotelType) setHotelTypeId(hotelType.id);
       }
     } catch (error) {
       console.error("Error fetching metadata:", error);
@@ -79,52 +83,64 @@ function HeroSection() {
     [pageSize],
   );
 
-  const fetchHotelHero = useCallback(async () => {
-    if (!hotelTypeId) return;
+  const fetchPropertyTypeHero = useCallback(async (propertyTypeId) => {
+    if (!propertyTypeId) return;
+
     try {
       setFetching(true);
-      const response = await getHotelHomepageHeroSection(hotelTypeId);
+      const response = await getHotelHomepageHeroSection(propertyTypeId);
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        const sortedHotelData = [...data].sort((a, b) => b.id - a.id);
-        setHotelHeroSections(sortedHotelData);
+        const sortedData = [...data].sort((a, b) => b.id - a.id);
+        setPropertyHeroSections((prev) => ({
+          ...prev,
+          [propertyTypeId]: sortedData,
+        }));
       }
     } catch (error) {
-      showError("Failed to load hotel hero sections");
+      showError("Failed to load property-type hero sections");
     } finally {
       setFetching(false);
     }
-  }, [hotelTypeId]);
+  }, []);
 
   useEffect(() => {
     fetchMetadata();
   }, [fetchMetadata]);
 
   useEffect(() => {
-    if (activeTab === "homepage") fetchHomepageHero(currentPage);
-    else fetchHotelHero();
-  }, [activeTab, currentPage, fetchHomepageHero, fetchHotelHero]);
-
-  /** * Restored handleEdit function
-   * Sets the editData state with section details and opens the modal
-   */
-  const handleEdit = (section) => {
-    // Switch to correct tab based on propertyTypeId
-    if (section.propertyTypeId) {
-      setActiveTab("hotel");
-    } else {
-      setActiveTab("homepage");
+    if (activeTab === "homepage") {
+      fetchHomepageHero(currentPage);
+      return;
     }
 
+    const selectedType = heroPropertyTypes.find(
+      (type) => String(type.id) === String(activeTab),
+    );
+    if (selectedType) {
+      fetchPropertyTypeHero(selectedType.id);
+    }
+  }, [
+    activeTab,
+    currentPage,
+    fetchHomepageHero,
+    fetchPropertyTypeHero,
+    heroPropertyTypes,
+  ]);
+
+  const handleEdit = (section) => {
+    setActiveTab(
+      section.propertyTypeId ? String(section.propertyTypeId) : "homepage",
+    );
     setEditData({
       id: section.id,
       mainTitle: section.mainTitle,
       subTitle: section.subTitle,
       ctaText: section.ctaText,
-      ctaLink: section.ctaLink, // ← was missing
+      ctaLink: section.ctaLink,
       active: section.active,
       showOnHomepage: section.showOnHomepage,
-      propertyTypeId: section.propertyTypeId || null, // ← was missing
+      propertyTypeId: section.propertyTypeId || null,
       backgroundMediaAll: section.backgroundAll || [],
       backgroundMediaLight: section.backgroundLight || [],
       backgroundMediaDark: section.backgroundDark || [],
@@ -135,10 +151,18 @@ function HeroSection() {
     setIsModalOpen(true);
   };
 
+  const refetchActiveTab = useCallback(() => {
+    if (activeTab === "homepage") {
+      fetchHomepageHero(currentPage);
+      return;
+    }
+
+    fetchPropertyTypeHero(Number(activeTab));
+  }, [activeTab, currentPage, fetchHomepageHero, fetchPropertyTypeHero]);
+
   const handleToggleActive = async (id, currentStatus, showOnHomepage) => {
     const nextStatus = !currentStatus;
 
-    // 🚨 If trying to disable while homepage is enabled
     if (nextStatus === false && showOnHomepage === true) {
       showError(
         "Please disable Homepage visibility before turning off Action Status.",
@@ -147,30 +171,25 @@ function HeroSection() {
     }
 
     const actionName = currentStatus ? "Disable" : "Enable";
-
     if (
       !window.confirm(
         `Are you sure you want to ${actionName} this hero section?`,
       )
-    )
+    ) {
       return;
+    }
 
     const key = `active-${id}`;
 
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-
       await toggleHeroSectionActive(id, nextStatus);
-
       showSuccess(
         `Hero section successfully ${currentStatus ? "disabled" : "enabled"}`,
       );
-
-      activeTab === "homepage"
-        ? fetchHomepageHero(currentPage)
-        : fetchHotelHero();
+      refetchActiveTab();
     } catch (error) {
-      console.log("❌ ACTIVE TOGGLE FAILED:", error?.response?.data);
+      console.log("Active toggle failed:", error?.response?.data);
       showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
@@ -182,40 +201,24 @@ function HeroSection() {
     currentHomepageStatus,
     sectionActive,
   ) => {
-    console.log("🔵 handleToggleHomepage CALLED");
-    console.log("ID:", id);
-    console.log("currentHomepageStatus:", currentHomepageStatus);
-    console.log("sectionActive:", sectionActive);
-    console.log("Type of sectionActive:", typeof sectionActive);
-
     const nextHomepageState = !currentHomepageStatus;
 
-    console.log("nextHomepageState:", nextHomepageState);
-
     if (sectionActive !== true && nextHomepageState === true) {
-      console.log("⛔ BLOCKED in frontend");
       showError(
         "To enable the Homepage, please set the Action Status to Active/On.",
       );
       return;
     }
 
-    console.log("🚀 API WILL BE CALLED");
-
     const key = `homepage-${id}`;
 
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-
       await toggleHeroSectionHomepage(id, nextHomepageState);
-
       showSuccess("Homepage visibility updated");
-
-      activeTab === "homepage"
-        ? fetchHomepageHero(currentPage)
-        : fetchHotelHero();
+      refetchActiveTab();
     } catch (error) {
-      console.log("❌ API FAILED:", error?.response?.data);
+      console.log("Homepage toggle failed:", error?.response?.data);
       showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
@@ -224,8 +227,13 @@ function HeroSection() {
 
   const truncateText = (text, limit = 50) => {
     if (!text) return "";
-    return text.length > limit ? text.substring(0, limit) + "..." : text;
+    return text.length > limit ? `${text.substring(0, limit)}...` : text;
   };
+
+  const activeTableData = useMemo(() => {
+    if (activeTab === "homepage") return heroSections;
+    return propertyHeroSections[Number(activeTab)] || [];
+  }, [activeTab, heroSections, propertyHeroSections]);
 
   const renderTable = (data) => (
     <div className="overflow-x-auto">
@@ -244,7 +252,6 @@ function HeroSection() {
                 Homepage
               </th>
             )}
-
             <th className="text-center px-4 py-3 text-xs font-semibold">
               Status Action
             </th>
@@ -256,7 +263,9 @@ function HeroSection() {
         <tbody>
           {data.map((section) => {
             const previewMedia =
-              section.backgroundAll?.[0] || section.backgroundLight?.[0];
+              section.backgroundAll?.[0] ||
+              section.backgroundLight?.[0] ||
+              section.backgroundDark?.[0];
             const isTogglingActive = togglingStatus[`active-${section.id}`];
             const isTogglingHome = togglingStatus[`homepage-${section.id}`];
 
@@ -299,22 +308,16 @@ function HeroSection() {
                     {truncateText(section.subTitle || "No Subtitle", 50)}
                   </div>
                 </td>
-
                 {activeTab === "homepage" && (
                   <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => {
-                        console.log("🟢 Homepage toggle clicked");
-                        console.log("Section ID:", section.id);
-                        console.log("showOnHomepage:", section.showOnHomepage);
-                        console.log("section.active:", section.active);
-
+                      onClick={() =>
                         handleToggleHomepage(
                           section.id,
                           section.showOnHomepage,
                           section.active,
-                        );
-                      }}
+                        )
+                      }
                       disabled={isTogglingHome}
                       className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
                       style={{
@@ -333,7 +336,6 @@ function HeroSection() {
                     </button>
                   </td>
                 )}
-
                 <td className="px-4 py-3 text-center">
                   <div className="flex flex-col items-center gap-1">
                     <button
@@ -359,29 +361,42 @@ function HeroSection() {
                       ) : (
                         <>
                           <span
-                            className={`absolute text-[8px] font-bold text-white transition-opacity ${section.active ? "left-1.5 opacity-100" : "opacity-0"}`}
+                            className={`absolute text-[8px] font-bold text-white transition-opacity ${
+                              section.active
+                                ? "left-1.5 opacity-100"
+                                : "opacity-0"
+                            }`}
                           >
                             ON
                           </span>
                           <span
-                            className={`absolute text-[8px] font-bold text-white transition-opacity ${!section.active ? "right-1.5 opacity-100" : "opacity-0"}`}
+                            className={`absolute text-[8px] font-bold text-white transition-opacity ${
+                              !section.active
+                                ? "right-1.5 opacity-100"
+                                : "opacity-0"
+                            }`}
                           >
                             OFF
                           </span>
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${section.active ? "translate-x-6" : "translate-x-0.5"}`}
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+                              section.active
+                                ? "translate-x-6"
+                                : "translate-x-0.5"
+                            }`}
                           />
                         </>
                       )}
                     </button>
                     <span
-                      className={`text-[9px] font-bold uppercase ${section.active ? "text-green-600" : "text-gray-400"}`}
+                      className={`text-[9px] font-bold uppercase ${
+                        section.active ? "text-green-600" : "text-gray-400"
+                      }`}
                     >
                       {section.active ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </td>
-
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => handleEdit(section)}
@@ -411,7 +426,7 @@ function HeroSection() {
           >
             Hero Management
           </h2>
-          <div className="flex gap-4 mt-4">
+          <div className="flex gap-4 mt-4 flex-wrap">
             <button
               onClick={() => setActiveTab("homepage")}
               className="pb-2 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2"
@@ -425,19 +440,25 @@ function HeroSection() {
             >
               <Home size={16} /> Homepage Hero
             </button>
-            <button
-              onClick={() => setActiveTab("hotel")}
-              className="pb-2 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2"
-              style={{
-                borderBottom:
-                  activeTab === "hotel"
-                    ? "2px solid #E53935"
-                    : "2px solid transparent",
-                color: activeTab === "hotel" ? "#E53935" : "#9CA3AF",
-              }}
-            >
-              <Building2 size={16} /> Hotel Page Hero
-            </button>
+            {heroPropertyTypes.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => setActiveTab(String(type.id))}
+                className="pb-2 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2"
+                style={{
+                  borderBottom:
+                    String(activeTab) === String(type.id)
+                      ? "2px solid #E53935"
+                      : "2px solid transparent",
+                  color:
+                    String(activeTab) === String(type.id)
+                      ? "#E53935"
+                      : "#9CA3AF",
+                }}
+              >
+                <Building2 size={16} /> {type.typeName} Page Hero
+              </button>
+            ))}
           </div>
         </div>
         <button
@@ -461,15 +482,7 @@ function HeroSection() {
         </div>
       ) : (
         <>
-          {(activeTab === "homepage" ? heroSections : hotelHeroSections)
-            .length > 0 ? (
-            renderTable(
-              activeTab === "homepage" ? heroSections : hotelHeroSections,
-            )
-          ) : (
-            <EmptyState />
-          )}
-
+          {activeTableData.length > 0 ? renderTable(activeTableData) : <EmptyState />}
           {activeTab === "homepage" && totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
               <p className="text-xs text-gray-400">
@@ -499,12 +512,11 @@ function HeroSection() {
       <AddHeroSectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={() =>
-          activeTab === "homepage"
-            ? fetchHomepageHero(currentPage)
-            : fetchHotelHero()
-        }
+        onSuccess={refetchActiveTab}
         editData={editData}
+        defaultPropertyTypeId={
+          activeTab === "homepage" ? null : Number(activeTab)
+        }
       />
     </div>
   );

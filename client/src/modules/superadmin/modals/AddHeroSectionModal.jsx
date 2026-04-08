@@ -14,7 +14,13 @@ import {
   getPropertyTypes,
 } from "@/Api/Api";
 
-function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
+function AddHeroSectionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  editData = null,
+  defaultPropertyTypeId = null,
+}) {
   // 1. Defaults & State
   const [formData, setFormData] = useState({
     mainTitle: "",
@@ -129,6 +135,20 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       setCurrentBackgroundIndex(0);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !editData) {
+      setFormData({
+        mainTitle: "",
+        subTitle: "",
+        ctaText: "",
+        ctaLink: "",
+        active: false,
+        showOnHomepage: false,
+        propertyTypeId: defaultPropertyTypeId,
+      });
+    }
+  }, [defaultPropertyTypeId, editData, isOpen]);
 
   // 4. Edit Data Population
   useEffect(() => {
@@ -493,7 +513,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
             </h2>
             {selectedPropertyType && (
               <p className="text-xs mt-1 text-primary font-medium">
-                For {selectedPropertyType.typeName} Pages
+                For {selectedPropertyType.typeName} hero pages
               </p>
             )}
           </div>
@@ -602,7 +622,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                 </div>
                 <p className="text-[10px] text-gray-500 mt-2 italic">
                   {isPropertyTypeSelected
-                    ? "Property mode: All fields available for this property type"
+                    ? "Property-type mode: this hero will be shown for the selected vertical"
                     : "Homepage mode: All options available"}
                 </p>
               </div>
