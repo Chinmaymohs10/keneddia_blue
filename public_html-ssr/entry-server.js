@@ -13506,7 +13506,7 @@ const HotelCarouselSection = lazy(
   () => import("./assets/HotelCarouselSection-DimFSu7d.js")
 );
 const QuickBooking = lazy(
-  () => import("./assets/QuickBooking-D7PnfwXz.js")
+  () => import("./assets/QuickBooking-Cytb49GK.js")
 );
 const HOTEL_NAV_ITEMS = [
   { type: "link", label: "OVERVIEW", key: "overview", href: "#overview" },
@@ -23851,7 +23851,7 @@ function TakeawayTreats() {
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
 const RestaurantHomepage = lazy(
-  () => import("./assets/RestaurantHomepage-DaNu3uBG.js")
+  () => import("./assets/RestaurantHomepage-FnT0ULwo.js")
 );
 const CafeHomepage = lazy(
   () => import("./assets/CafeHomepage-Beqai0UW.js")
@@ -24432,7 +24432,13 @@ function Layout({ children, title, subtitle, showActions = true, role = "admin" 
     }
   );
 }
-function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
+function AddHeroSectionModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  editData = null,
+  defaultPropertyTypeId = null
+}) {
   const [formData, setFormData] = useState({
     mainTitle: "",
     subTitle: "",
@@ -24535,6 +24541,19 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
       setCurrentBackgroundIndex(0);
     }
   }, [isOpen]);
+  useEffect(() => {
+    if (isOpen && !editData) {
+      setFormData({
+        mainTitle: "",
+        subTitle: "",
+        ctaText: "",
+        ctaLink: "",
+        active: false,
+        showOnHomepage: false,
+        propertyTypeId: defaultPropertyTypeId
+      });
+    }
+  }, [defaultPropertyTypeId, editData, isOpen]);
   useEffect(() => {
     if (editData && isOpen) {
       setFormData({
@@ -24792,7 +24811,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                     selectedPropertyType && /* @__PURE__ */ jsxs("p", { className: "text-xs mt-1 text-primary font-medium", children: [
                       "For ",
                       selectedPropertyType.typeName,
-                      " Pages"
+                      " hero pages"
                     ] })
                   ] }),
                   /* @__PURE__ */ jsx(
@@ -24884,7 +24903,7 @@ function AddHeroSectionModal({ isOpen, onClose, onSuccess, editData = null }) {
                               )
                             ] })
                           ] }),
-                          /* @__PURE__ */ jsx("p", { className: "text-[10px] text-gray-500 mt-2 italic", children: isPropertyTypeSelected ? "Property mode: All fields available for this property type" : "Homepage mode: All options available" })
+                          /* @__PURE__ */ jsx("p", { className: "text-[10px] text-gray-500 mt-2 italic", children: isPropertyTypeSelected ? "Property-type mode: this hero will be shown for the selected vertical" : "Homepage mode: All options available" })
                         ] }),
                         /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-4", children: [
                           /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-1.5", children: [
@@ -25208,16 +25227,16 @@ function MediaUploader({ label, previews, types, onUpload, onRemove }) {
     ] })
   ] });
 }
+const ENABLED_PROPERTY_TYPE_TABS = ["hotel", "restaurant", "cafe"];
 function HeroSection() {
   const [activeTab, setActiveTab] = useState("homepage");
   const [heroSections, setHeroSections] = useState([]);
-  const [hotelHeroSections, setHotelHeroSections] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [propertyHeroSections, setPropertyHeroSections] = useState({});
   const [fetching, setFetching] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [togglingStatus, setTogglingStatus] = useState({});
-  const [hotelTypeId, setHotelTypeId] = useState(null);
+  const [heroPropertyTypes, setHeroPropertyTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -25227,10 +25246,13 @@ function HeroSection() {
       const response = await getPropertyTypes();
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        const hotelType = data.find(
-          (type) => type.isActive && type.typeName?.toLowerCase() === "hotel"
+        setHeroPropertyTypes(
+          data.filter(
+            (type) => type.isActive && ENABLED_PROPERTY_TYPE_TABS.includes(
+              type.typeName?.toLowerCase()
+            )
+          )
         );
-        if (hotelType) setHotelTypeId(hotelType.id);
       }
     } catch (error) {
       console.error("Error fetching metadata:", error);
@@ -25262,46 +25284,59 @@ function HeroSection() {
     },
     [pageSize]
   );
-  const fetchHotelHero = useCallback(async () => {
-    if (!hotelTypeId) return;
+  const fetchPropertyTypeHero = useCallback(async (propertyTypeId) => {
+    if (!propertyTypeId) return;
     try {
       setFetching(true);
-      const response = await getHotelHomepageHeroSection(hotelTypeId);
+      const response = await getHotelHomepageHeroSection(propertyTypeId);
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        const sortedHotelData = [...data].sort((a, b) => b.id - a.id);
-        setHotelHeroSections(sortedHotelData);
+        const sortedData = [...data].sort((a, b) => b.id - a.id);
+        setPropertyHeroSections((prev) => ({
+          ...prev,
+          [propertyTypeId]: sortedData
+        }));
       }
     } catch (error) {
-      showError("Failed to load hotel hero sections");
+      showError("Failed to load property-type hero sections");
     } finally {
       setFetching(false);
     }
-  }, [hotelTypeId]);
+  }, []);
   useEffect(() => {
     fetchMetadata();
   }, [fetchMetadata]);
   useEffect(() => {
-    if (activeTab === "homepage") fetchHomepageHero(currentPage);
-    else fetchHotelHero();
-  }, [activeTab, currentPage, fetchHomepageHero, fetchHotelHero]);
-  const handleEdit = (section) => {
-    if (section.propertyTypeId) {
-      setActiveTab("hotel");
-    } else {
-      setActiveTab("homepage");
+    if (activeTab === "homepage") {
+      fetchHomepageHero(currentPage);
+      return;
     }
+    const selectedType = heroPropertyTypes.find(
+      (type) => String(type.id) === String(activeTab)
+    );
+    if (selectedType) {
+      fetchPropertyTypeHero(selectedType.id);
+    }
+  }, [
+    activeTab,
+    currentPage,
+    fetchHomepageHero,
+    fetchPropertyTypeHero,
+    heroPropertyTypes
+  ]);
+  const handleEdit = (section) => {
+    setActiveTab(
+      section.propertyTypeId ? String(section.propertyTypeId) : "homepage"
+    );
     setEditData({
       id: section.id,
       mainTitle: section.mainTitle,
       subTitle: section.subTitle,
       ctaText: section.ctaText,
       ctaLink: section.ctaLink,
-      // ← was missing
       active: section.active,
       showOnHomepage: section.showOnHomepage,
       propertyTypeId: section.propertyTypeId || null,
-      // ← was missing
       backgroundMediaAll: section.backgroundAll || [],
       backgroundMediaLight: section.backgroundLight || [],
       backgroundMediaDark: section.backgroundDark || [],
@@ -25311,6 +25346,13 @@ function HeroSection() {
     });
     setIsModalOpen(true);
   };
+  const refetchActiveTab = useCallback(() => {
+    if (activeTab === "homepage") {
+      fetchHomepageHero(currentPage);
+      return;
+    }
+    fetchPropertyTypeHero(Number(activeTab));
+  }, [activeTab, currentPage, fetchHomepageHero, fetchPropertyTypeHero]);
   const handleToggleActive = async (id, currentStatus, showOnHomepage) => {
     const nextStatus = !currentStatus;
     if (nextStatus === false && showOnHomepage === true) {
@@ -25322,8 +25364,9 @@ function HeroSection() {
     const actionName = currentStatus ? "Disable" : "Enable";
     if (!window.confirm(
       `Are you sure you want to ${actionName} this hero section?`
-    ))
+    )) {
       return;
+    }
     const key = `active-${id}`;
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
@@ -25331,38 +25374,30 @@ function HeroSection() {
       showSuccess(
         `Hero section successfully ${currentStatus ? "disabled" : "enabled"}`
       );
-      activeTab === "homepage" ? fetchHomepageHero(currentPage) : fetchHotelHero();
+      refetchActiveTab();
     } catch (error) {
-      console.log("❌ ACTIVE TOGGLE FAILED:", error?.response?.data);
+      console.log("Active toggle failed:", error?.response?.data);
       showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
     }
   };
   const handleToggleHomepage = async (id, currentHomepageStatus, sectionActive) => {
-    console.log("🔵 handleToggleHomepage CALLED");
-    console.log("ID:", id);
-    console.log("currentHomepageStatus:", currentHomepageStatus);
-    console.log("sectionActive:", sectionActive);
-    console.log("Type of sectionActive:", typeof sectionActive);
     const nextHomepageState = !currentHomepageStatus;
-    console.log("nextHomepageState:", nextHomepageState);
     if (sectionActive !== true && nextHomepageState === true) {
-      console.log("⛔ BLOCKED in frontend");
       showError(
         "To enable the Homepage, please set the Action Status to Active/On."
       );
       return;
     }
-    console.log("🚀 API WILL BE CALLED");
     const key = `homepage-${id}`;
     try {
       setTogglingStatus((prev) => ({ ...prev, [key]: true }));
       await toggleHeroSectionHomepage(id, nextHomepageState);
       showSuccess("Homepage visibility updated");
-      activeTab === "homepage" ? fetchHomepageHero(currentPage) : fetchHotelHero();
+      refetchActiveTab();
     } catch (error) {
-      console.log("❌ API FAILED:", error?.response?.data);
+      console.log("Homepage toggle failed:", error?.response?.data);
       showError(error?.response?.data?.message || "Update failed");
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [key]: false }));
@@ -25370,8 +25405,12 @@ function HeroSection() {
   };
   const truncateText = (text, limit = 50) => {
     if (!text) return "";
-    return text.length > limit ? text.substring(0, limit) + "..." : text;
+    return text.length > limit ? `${text.substring(0, limit)}...` : text;
   };
+  const activeTableData = useMemo(() => {
+    if (activeTab === "homepage") return heroSections;
+    return propertyHeroSections[Number(activeTab)] || [];
+  }, [activeTab, heroSections, propertyHeroSections]);
   const renderTable = (data) => /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full border-collapse", children: [
     /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { style: { backgroundColor: colors.border }, children: [
       /* @__PURE__ */ jsx("th", { className: "text-left px-4 py-3 text-xs font-semibold", children: "ID" }),
@@ -25382,7 +25421,7 @@ function HeroSection() {
       /* @__PURE__ */ jsx("th", { className: "text-center px-4 py-3 text-xs font-semibold", children: "Actions" })
     ] }) }),
     /* @__PURE__ */ jsx("tbody", { children: data.map((section) => {
-      const previewMedia = section.backgroundAll?.[0] || section.backgroundLight?.[0];
+      const previewMedia = section.backgroundAll?.[0] || section.backgroundLight?.[0] || section.backgroundDark?.[0];
       const isTogglingActive = togglingStatus[`active-${section.id}`];
       const isTogglingHome = togglingStatus[`homepage-${section.id}`];
       return /* @__PURE__ */ jsxs(
@@ -25422,17 +25461,11 @@ function HeroSection() {
             activeTab === "homepage" && /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-center", children: /* @__PURE__ */ jsx(
               "button",
               {
-                onClick: () => {
-                  console.log("🟢 Homepage toggle clicked");
-                  console.log("Section ID:", section.id);
-                  console.log("showOnHomepage:", section.showOnHomepage);
-                  console.log("section.active:", section.active);
-                  handleToggleHomepage(
-                    section.id,
-                    section.showOnHomepage,
-                    section.active
-                  );
-                },
+                onClick: () => handleToggleHomepage(
+                  section.id,
+                  section.showOnHomepage,
+                  section.active
+                ),
                 disabled: isTogglingHome,
                 className: "relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none",
                 style: {
@@ -25529,7 +25562,7 @@ function HeroSection() {
                 children: "Hero Management"
               }
             ),
-            /* @__PURE__ */ jsxs("div", { className: "flex gap-4 mt-4", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-4 mt-4 flex-wrap", children: [
               /* @__PURE__ */ jsxs(
                 "button",
                 {
@@ -25545,21 +25578,24 @@ function HeroSection() {
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs(
+              heroPropertyTypes.map((type) => /* @__PURE__ */ jsxs(
                 "button",
                 {
-                  onClick: () => setActiveTab("hotel"),
+                  onClick: () => setActiveTab(String(type.id)),
                   className: "pb-2 text-sm font-bold transition-colors cursor-pointer flex items-center gap-2",
                   style: {
-                    borderBottom: activeTab === "hotel" ? "2px solid #E53935" : "2px solid transparent",
-                    color: activeTab === "hotel" ? "#E53935" : "#9CA3AF"
+                    borderBottom: String(activeTab) === String(type.id) ? "2px solid #E53935" : "2px solid transparent",
+                    color: String(activeTab) === String(type.id) ? "#E53935" : "#9CA3AF"
                   },
                   children: [
                     /* @__PURE__ */ jsx(Building2, { size: 16 }),
-                    " Hotel Page Hero"
+                    " ",
+                    type.typeName,
+                    " Page Hero"
                   ]
-                }
-              )
+                },
+                type.id
+              ))
             ] })
           ] }),
           /* @__PURE__ */ jsxs(
@@ -25582,9 +25618,7 @@ function HeroSection() {
           /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-blue-600", size: 32 }),
           /* @__PURE__ */ jsx("p", { className: "text-xs text-gray-400", children: "Fetching latest hero sections..." })
         ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-          (activeTab === "homepage" ? heroSections : hotelHeroSections).length > 0 ? renderTable(
-            activeTab === "homepage" ? heroSections : hotelHeroSections
-          ) : /* @__PURE__ */ jsx(EmptyState$1, {}),
+          activeTableData.length > 0 ? renderTable(activeTableData) : /* @__PURE__ */ jsx(EmptyState$1, {}),
           activeTab === "homepage" && totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mt-6", children: [
             /* @__PURE__ */ jsxs("p", { className: "text-xs text-gray-400", children: [
               "Page ",
@@ -25621,8 +25655,9 @@ function HeroSection() {
           {
             isOpen: isModalOpen,
             onClose: () => setIsModalOpen(false),
-            onSuccess: () => activeTab === "homepage" ? fetchHomepageHero(currentPage) : fetchHotelHero(),
-            editData
+            onSuccess: refetchActiveTab,
+            editData,
+            defaultPropertyTypeId: activeTab === "homepage" ? null : Number(activeTab)
           }
         )
       ]
@@ -53478,13 +53513,15 @@ export {
   OptimizedImage as O,
   Popover as P,
   createHotelSlug as a,
-  PopoverTrigger as b,
+  getHotelHomepageHeroSection as b,
   createCitySlug as c,
-  cn as d,
-  PopoverContent as e,
-  DialogContent as f,
-  getLocationsByType as g,
-  searchRooms as h,
+  PopoverTrigger as d,
+  cn as e,
+  PopoverContent as f,
+  getPropertyTypes as g,
+  DialogContent as h,
+  getLocationsByType as i,
+  searchRooms as j,
   restaurantEventShowcase as r,
   render,
   siteContent as s

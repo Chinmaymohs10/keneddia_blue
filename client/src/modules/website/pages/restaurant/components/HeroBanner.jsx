@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Menu, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
 
-const SLIDES = [
+const FALLBACK_SLIDES = [
   {
     id: 1,
     tag: "The Experience",
     title: "Culinary Artistry Across Asia",
     desc: "A curated journey through Chinese, Italian, and Indian Tandoor traditions.",
     img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1600",
-    isBYOB: false,
+    isVideo: false,
     bgTitle: "AUTHENTIC",
+    ctaText: "Reserve",
   },
   {
     id: 2,
@@ -19,8 +21,9 @@ const SLIDES = [
     title: "Your Choice, Our Expertise",
     desc: "Pair your favorite vintage with our signature Asian Fusion menu.",
     img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isBYOB: true,
+    isVideo: false,
     bgTitle: "PREMIUM",
+    ctaText: "Reserve",
   },
   {
     id: 3,
@@ -28,27 +31,117 @@ const SLIDES = [
     title: "Modern Spirit, Timeless Flavor",
     desc: "An elegant setting designed for intimate dinners and grand celebrations.",
     img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isBYOB: false,
+    isVideo: false,
     bgTitle: "ELEGANCE",
+    ctaText: "Reserve",
   },
 ];
 
+const transformApiDataToSlides = (content) =>
+  (Array.isArray(content) ? content : [])
+    .filter((item) => item.active === true)
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 3)
+    .map((item) => {
+      const backgroundMedia =
+        item.backgroundAll?.[0] ||
+        item.backgroundLight?.[0] ||
+        item.backgroundDark?.[0] ||
+        null;
+
+      if (!backgroundMedia?.url) return null;
+
+      const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "DINING";
+
+      return {
+        id: item.id,
+        tag: item.ctaText || "Dining Experience",
+        title: item.mainTitle || "",
+        desc: item.subTitle || "",
+        img: backgroundMedia.url,
+        isVideo: backgroundMedia.type === "VIDEO",
+        bgTitle: primaryWord.toUpperCase(),
+        ctaText: item.ctaText || "Reserve",
+      };
+    })
+    .filter(Boolean);
+
+const HeroMedia = ({ slide }) => {
+  if (slide.isVideo) {
+    return (
+      <video
+        src={slide.img}
+        className="h-full w-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+      />
+    );
+  }
+
+  return <img src={slide.img} alt={slide.title} className="h-full w-full object-cover" />;
+};
+
 export default function HeroBanner() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [slides, setSlides] = useState(FALLBACK_SLIDES);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchRestaurantHero = async () => {
+      try {
+        const typeResponse = await getPropertyTypes();
+        const types = typeResponse?.data || typeResponse;
+        const restaurantType = Array.isArray(types)
+          ? types.find(
+              (type) =>
+                type.isActive &&
+                type.typeName?.toLowerCase() === "restaurant",
+            )
+          : null;
+
+        if (!restaurantType?.id) return;
+
+        const response = await getHotelHomepageHeroSection(restaurantType.id);
+        const data = response?.data || response;
+        const apiSlides = transformApiDataToSlides(data);
+
+        if (isMounted && apiSlides.length > 0) {
+          setSlides(apiSlides);
+          setActiveIndex(0);
+        }
+      } catch (error) {
+        console.error("Error fetching restaurant hero sections:", error);
+      }
+    };
+
+    fetchRestaurantHero();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (slides.length <= 1) return undefined;
+
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % SLIDES.length);
+      setActiveIndex((current) => (current + 1) % slides.length);
     }, 6000);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const goToSlide = (index) => {
-    setActiveIndex((index + SLIDES.length) % SLIDES.length);
+    setActiveIndex((index + slides.length) % slides.length);
   };
 
-  const activeSlide = SLIDES[activeIndex];
+  const activeSlide = useMemo(
+    () => slides[activeIndex] || FALLBACK_SLIDES[0],
+    [activeIndex, slides],
+  );
 
   return (
     <section className="relative h-[90vh] w-full overflow-hidden bg-background">
@@ -61,16 +154,7 @@ export default function HeroBanner() {
           transition={{ duration: 0.9, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          <img
-            src={activeSlide.img}
-            alt={activeSlide.title}
-            className="hidden h-full w-full object-cover md:block"
-          />
-          <img
-            src={activeSlide.img}
-            alt={activeSlide.title}
-            className="block h-full w-full object-cover md:hidden"
-          />
+          <HeroMedia slide={activeSlide} />
         </motion.div>
       </AnimatePresence>
 
@@ -84,16 +168,6 @@ export default function HeroBanner() {
       <div className="relative z-10 hidden h-full items-center md:flex">
         <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
           <div className="w-full md:w-[70%] xl:w-[60%]">
-            {/* <motion.span
-              key={`tag-${activeSlide.id}`}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              className="mb-3 inline-flex rounded-full bg-white/12 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
-            >
-              {activeSlide.tag}
-            </motion.span> */}
-
             <motion.h1
               key={`title-${activeSlide.id}`}
               initial={{ opacity: 0, y: 30 }}
@@ -124,16 +198,9 @@ export default function HeroBanner() {
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
                 <span className="relative z-10 flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Reserve
+                  {activeSlide.ctaText || "Reserve"}
                 </span>
               </Button>
-              {/* <Button
-                variant="outline"
-                className="h-auto rounded-full border-white/30 bg-white/5 px-6 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black"
-              >
-                <Menu className="mr-2 h-4 w-4" />
-                Explore Menu
-              </Button> */}
             </motion.div>
           </div>
         </div>
@@ -142,24 +209,34 @@ export default function HeroBanner() {
       <div className="relative z-10 block md:hidden">
         <div
           className="relative w-full overflow-hidden bg-black"
-          style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+          style={{
+            height: "calc(75vw + 64px)",
+            minHeight: "320px",
+            maxHeight: "500px",
+          }}
         >
-          <div className="absolute inset-x-0 bottom-0 overflow-hidden" style={{ top: "64px" }}>
+          <div
+            className="absolute inset-x-0 bottom-0 overflow-hidden"
+            style={{ top: "64px" }}
+          >
             <AnimatePresence mode="wait">
-              <motion.img
+              <motion.div
                 key={`mobile-${activeSlide.id}`}
-                src={activeSlide.img}
-                alt={activeSlide.title}
                 initial={{ opacity: 0, scale: 1.03 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.7 }}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+                className="absolute inset-0"
+              >
+                <HeroMedia slide={activeSlide} />
+              </motion.div>
             </AnimatePresence>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ top: "64px" }}>
+          <div
+            className="absolute inset-x-0 bottom-0 pointer-events-none"
+            style={{ top: "64px" }}
+          >
             <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
           </div>
 
@@ -207,7 +284,7 @@ export default function HeroBanner() {
             >
               <Button className="h-auto rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-5 py-2 text-xs font-semibold text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)]">
                 <Calendar className="mr-2 h-3.5 w-3.5" />
-                Reserve
+                {activeSlide.ctaText || "Reserve"}
               </Button>
               <Button
                 variant="outline"
@@ -228,7 +305,7 @@ export default function HeroBanner() {
             </button>
 
             <div className="flex items-center gap-1.5">
-              {SLIDES.map((_, index) => (
+              {slides.map((_, index) => (
                 <div
                   key={`mob-dot-${index}`}
                   onClick={() => goToSlide(index)}
@@ -254,7 +331,7 @@ export default function HeroBanner() {
       <div className="absolute bottom-48 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
         <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
-            {SLIDES.map((_, index) => (
+            {slides.map((_, index) => (
               <div
                 key={`indicator-${index}`}
                 onClick={() => goToSlide(index)}
@@ -284,7 +361,7 @@ export default function HeroBanner() {
         </div>
 
         <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
-          {SLIDES.map((slide, index) => (
+          {slides.map((slide, index) => (
             <motion.div
               key={`thumbnail-${slide.id}`}
               initial={{ opacity: 0, y: 50 }}
@@ -297,11 +374,20 @@ export default function HeroBanner() {
                   : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
               }`}
             >
-              <img
-                src={slide.img}
-                alt={slide.title}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
+              {slide.isVideo ? (
+                <video
+                  src={slide.img}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={slide.img}
+                  alt={slide.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+              )}
               <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
                 <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
                   {slide.tag}
@@ -313,7 +399,11 @@ export default function HeroBanner() {
       </div>
 
       <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
-        <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
+        <svg
+          viewBox="0 0 1440 320"
+          className="h-full w-full"
+          preserveAspectRatio="none"
+        >
           <path
             className="fill-background"
             d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
