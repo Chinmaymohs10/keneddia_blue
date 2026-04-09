@@ -12,7 +12,7 @@ import { cva } from "class-variance-authority";
 import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, ShoppingCart, LogOut, Home as Home$1, Save, Menu, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
-import { AnimatePresence, motion, useScroll, useTransform, useSpring, useMotionValueEvent } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { Command as Command$1 } from "cmdk";
 import axios from "axios";
@@ -22794,7 +22794,7 @@ const STORY_CARDS = [
     id: 3,
     eyebrow: "The Roastery",
     title: "Roasted In-House Every Morning",
-    description: "Our in-house roasting setup allows us to control every variable — from roast curve to rest time. The result is a consistently fresh cup with no compromise on flavour.",
+    description: "Our in-house roasting setup allows us to control every variable from roast curve to rest time. The result is a consistently fresh cup with no compromise on flavour.",
     benefit: "Always fresh, never stale",
     accent: "The Process",
     image: siteContent.images.cafes.parisian.src,
@@ -22805,7 +22805,7 @@ const STORY_CARDS = [
     id: 4,
     eyebrow: "The Kitchen",
     title: "Baked Fresh Before You Arrive",
-    description: "Our bakery team starts at 5 AM every day. By the time the cafe opens, every croissant, sourdough loaf, and pastry is fresh out of the oven — because we think that matters.",
+    description: "Our bakery team starts at 5 AM every day. By the time the cafe opens, every croissant, sourdough loaf, and pastry is fresh out of the oven because we think that matters.",
     benefit: "No day-old bakes, ever",
     accent: "The Bakery",
     image: siteContent.images.cafes.bakery.src,
@@ -22816,7 +22816,7 @@ const STORY_CARDS = [
     id: 5,
     eyebrow: "The Spaces",
     title: "Rooms Designed For Staying",
-    description: "From our quiet library corner to the open garden terrace and the high-tea lounge — every space is designed with a specific kind of visitor in mind. You are not rushed here.",
+    description: "From our quiet library corner to the open garden terrace and the high-tea lounge, every space is designed with a specific kind of visitor in mind. You are not rushed here.",
     benefit: "Built for long stays",
     accent: "The Atmosphere",
     image: siteContent.images.cafes.garden.src,
@@ -22827,7 +22827,7 @@ const STORY_CARDS = [
     id: 6,
     eyebrow: "The Community",
     title: "A Cafe That Grows With Its Guests",
-    description: "We run workshops, cupping sessions, and monthly brunch pop-ups because we believe the best cafes are not just places to drink coffee — they are places where regulars become regulars for a reason.",
+    description: "We run workshops, cupping sessions, and monthly brunch pop-ups because the best cafes are not just places to drink coffee. They are places where regulars become regulars for a reason.",
     benefit: "Events every month",
     accent: "The People",
     image: siteContent.images.cafes.highTea.src,
@@ -22835,89 +22835,80 @@ const STORY_CARDS = [
     stats: ["Monthly Events", "Open to All"]
   }
 ];
-function DesktopStoryCard({ card, index, progress, total }) {
+function DesktopStoryCard({ card, onHoverChange }) {
   const [isHovered, setIsHovered] = useState(false);
-  const unit = 1 / total;
-  const start = index * unit;
-  const end = (index + 1) * unit;
-  const range = [start - unit * 0.6, start, end, end + unit * 0.6];
-  const y = useSpring(useTransform(progress, range, [80, 0, 0, -80]), { stiffness: 40, damping: 20 });
-  const scale = useSpring(useTransform(progress, range, [0.96, 1, 1, 0.96]), { stiffness: 40, damping: 20 });
-  const opacity = useTransform(progress, range, [0, 1, 1, 0]);
   const Icon = card.icon;
+  const handleHover = (value) => {
+    setIsHovered(value);
+    onHoverChange?.(value);
+  };
   return /* @__PURE__ */ jsxs(
     motion.article,
     {
-      onMouseEnter: () => setIsHovered(true),
-      onMouseLeave: () => setIsHovered(false),
-      style: { y, scale, opacity, zIndex: total - index },
-      className: "absolute inset-0 flex h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900",
+      onMouseEnter: () => handleHover(true),
+      onMouseLeave: () => handleHover(false),
+      initial: { opacity: 0, y: 24, scale: 0.98 },
+      animate: { opacity: 1, y: 0, scale: 1 },
+      exit: { opacity: 0, y: -24, scale: 0.98 },
+      transition: { duration: 0.45, ease: "easeOut" },
+      className: "relative h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900",
       children: [
-        /* @__PURE__ */ jsxs("div", { className: "relative flex-grow h-full overflow-hidden", children: [
-          /* @__PURE__ */ jsx(
-            motion.img,
-            {
-              src: card.image,
-              alt: card.title,
-              animate: { scale: isHovered ? 1.05 : 1.1 },
-              transition: { duration: 1 },
-              className: "h-full w-full object-cover object-center"
-            }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent" }),
-          /* @__PURE__ */ jsxs("div", { className: "absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md", children: [
-            /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
-            " ",
-            card.eyebrow
-          ] })
+        /* @__PURE__ */ jsx(
+          motion.img,
+          {
+            src: card.image,
+            alt: card.title,
+            animate: { scale: isHovered ? 1.05 : 1.1 },
+            transition: { duration: 1 },
+            className: "absolute inset-0 h-full w-full object-cover object-center"
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-tr from-black/45 via-black/10 to-transparent" }),
+        /* @__PURE__ */ jsxs("div", { className: "absolute left-6 top-6 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md", children: [
+          /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
+          " ",
+          card.eyebrow
         ] }),
-        /* @__PURE__ */ jsxs(
+        /* @__PURE__ */ jsx(
           motion.div,
           {
-            animate: { width: isHovered ? "420px" : "80px" },
+            animate: { width: isHovered ? "456px" : "320px" },
             transition: { type: "spring", stiffness: 70, damping: 20 },
-            className: "relative h-full flex flex-col border-l border-zinc-100 bg-[#fffaf4] dark:bg-zinc-950 dark:border-white/5",
-            children: [
-              /* @__PURE__ */ jsxs("div", { className: "h-full w-full overflow-hidden flex flex-col justify-between p-8 xl:p-10", children: [
-                /* @__PURE__ */ jsxs("div", { className: "space-y-4 min-w-[300px]", children: [
-                  /* @__PURE__ */ jsx("p", { className: "text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60", children: card.accent }),
-                  /* @__PURE__ */ jsx("h3", { className: "text-3xl font-serif leading-tight text-zinc-950 dark:text-white", children: card.title }),
-                  /* @__PURE__ */ jsx(
-                    motion.p,
-                    {
-                      animate: { opacity: isHovered ? 1 : 0 },
-                      className: "text-sm leading-relaxed text-zinc-600 dark:text-white/50",
-                      children: card.description
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxs(
-                  motion.div,
+            className: "absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#fffaf4]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92",
+            children: /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full flex-col justify-between overflow-hidden p-8 xl:p-10", children: [
+              /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60", children: card.accent }),
+                /* @__PURE__ */ jsx("h3", { className: "text-3xl font-serif leading-tight text-zinc-950 dark:text-white", children: card.title }),
+                /* @__PURE__ */ jsx(
+                  "p",
                   {
-                    animate: { opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 },
-                    className: "space-y-4 min-w-[300px]",
-                    children: [
-                      /* @__PURE__ */ jsxs("div", { className: "rounded-3xl bg-[#2b1d14] p-5 text-white shadow-lg", children: [
-                        /* @__PURE__ */ jsx("p", { className: "mb-1 text-[9px] font-bold uppercase tracking-widest text-white/40", children: "Highlight" }),
-                        /* @__PURE__ */ jsx("p", { className: "font-serif text-base italic", children: card.benefit })
-                      ] }),
-                      /* @__PURE__ */ jsx("div", { className: "flex gap-2", children: card.stats.map((s) => /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold border border-zinc-200 px-3 py-1 rounded-full text-zinc-400", children: s }, s)) })
-                    ]
+                    className: `text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${isHovered ? "" : "line-clamp-3"}`,
+                    children: card.description
                   }
                 )
               ] }),
-              /* @__PURE__ */ jsx(
+              /* @__PURE__ */ jsxs(
                 motion.div,
                 {
-                  animate: { opacity: isHovered ? 0 : 1 },
-                  className: "absolute inset-0 flex items-center justify-center pointer-events-none",
-                  children: /* @__PURE__ */ jsxs("p", { className: "rotate-90 text-[10px] font-bold uppercase tracking-[0.6em] text-zinc-300 whitespace-nowrap", children: [
-                    card.eyebrow,
-                    " — STORY"
-                  ] })
+                  animate: { opacity: isHovered ? 1 : 0.82, y: isHovered ? 0 : 8 },
+                  className: "space-y-4",
+                  children: [
+                    /* @__PURE__ */ jsxs("div", { className: "rounded-3xl bg-[#2b1d14] p-5 text-white shadow-lg", children: [
+                      /* @__PURE__ */ jsx("p", { className: "mb-1 text-[9px] font-bold uppercase tracking-widest text-white/40", children: "Highlight" }),
+                      /* @__PURE__ */ jsx("p", { className: "font-serif text-base italic", children: card.benefit })
+                    ] }),
+                    /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: card.stats.map((stat) => /* @__PURE__ */ jsx(
+                      "span",
+                      {
+                        className: "rounded-full border border-zinc-200 px-3 py-1 text-[9px] font-bold text-zinc-400",
+                        children: stat
+                      },
+                      stat
+                    )) })
+                  ]
                 }
               )
-            ]
+            ] })
           }
         )
       ]
@@ -22926,67 +22917,65 @@ function DesktopStoryCard({ card, index, progress, total }) {
 }
 function MobileStoryCard({ card }) {
   const Icon = card.icon;
-  return /* @__PURE__ */ jsxs("article", { className: "w-full bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border border-zinc-100 dark:border-white/5 mb-8", children: [
-    /* @__PURE__ */ jsx("div", { className: "aspect-video w-full overflow-hidden", children: /* @__PURE__ */ jsx("img", { src: card.image, className: "h-full w-full object-cover", alt: card.title }) }),
-    /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-3", children: [
-      /* @__PURE__ */ jsxs("div", { className: "inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
-        /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
-        " ",
-        card.eyebrow
-      ] }),
-      /* @__PURE__ */ jsx("h3", { className: "text-2xl font-serif text-zinc-950 dark:text-white", children: card.title }),
-      /* @__PURE__ */ jsx("p", { className: "text-sm text-zinc-600 dark:text-white/50 leading-relaxed", children: card.description }),
-      /* @__PURE__ */ jsx("div", { className: "bg-[#2b1d14] p-4 rounded-2xl text-white", children: /* @__PURE__ */ jsx("p", { className: "text-sm italic font-serif", children: card.benefit }) }),
-      /* @__PURE__ */ jsx("div", { className: "flex gap-2 pt-1", children: card.stats.map((s) => /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-full text-zinc-400", children: s }, s)) })
-    ] })
-  ] });
+  return /* @__PURE__ */ jsxs(
+    motion.article,
+    {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -20 },
+      transition: { duration: 0.35 },
+      className: "w-full overflow-hidden rounded-[2rem] border border-zinc-100 bg-white shadow-xl dark:border-white/5 dark:bg-zinc-900",
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "aspect-video w-full overflow-hidden", children: /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: card.image,
+            className: "h-full w-full object-cover",
+            alt: card.title
+          }
+        ) }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-4 p-8", children: [
+          /* @__PURE__ */ jsxs("div", { className: "inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
+            /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
+            " ",
+            card.eyebrow
+          ] }),
+          /* @__PURE__ */ jsx("h3", { className: "text-3xl font-serif text-zinc-950 dark:text-white", children: card.title }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm leading-relaxed text-zinc-600 dark:text-white/50", children: card.description }),
+          /* @__PURE__ */ jsx("div", { className: "rounded-2xl bg-[#2b1d14] p-5 text-white", children: /* @__PURE__ */ jsx("p", { className: "text-sm italic font-serif", children: card.benefit }) }),
+          /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: card.stats.map((stat) => /* @__PURE__ */ jsx(
+            "span",
+            {
+              className: "rounded-full border border-zinc-200 px-3 py-1 text-[9px] font-bold text-zinc-400 dark:border-white/10",
+              children: stat
+            },
+            stat
+          )) })
+        ] })
+      ]
+    }
+  );
 }
-const AUTO_SKIP_DELAY = 2e3;
-const THRESHOLD = 1 / STORY_CARDS.length;
 function CafeSubCategories() {
-  const sectionRef = useRef(null);
-  const timerRef = useRef(null);
-  const showRef = useRef(false);
-  const continuedRef = useRef(false);
-  const [showContinue, setShowContinue] = useState(false);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"]
-  });
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 25, damping: 15, mass: 1 });
-  const triggerAutoSkip = () => {
-    timerRef.current = setTimeout(() => {
-      if (sectionRef.current) {
-        const bottom = sectionRef.current.offsetTop + sectionRef.current.offsetHeight;
-        window.scrollTo({ top: bottom, behavior: "smooth" });
-      }
-    }, AUTO_SKIP_DELAY);
-  };
-  useMotionValueEvent(smoothProgress, "change", (v) => {
-    if (v > THRESHOLD && !showRef.current && !continuedRef.current) {
-      showRef.current = true;
-      setShowContinue(true);
-      triggerAutoSkip();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  useEffect(() => {
+    if (isPaused) {
+      return void 0;
     }
-    if (v < THRESHOLD * 0.3 && (showRef.current || continuedRef.current)) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      showRef.current = false;
-      continuedRef.current = false;
-      setShowContinue(false);
-    }
-  });
-  const handleContinue = () => {
-    continuedRef.current = true;
-    showRef.current = false;
-    setShowContinue(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
-  useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  }, []);
-  return /* @__PURE__ */ jsxs("section", { ref: sectionRef, className: "relative bg-[#fdfaf6] dark:bg-[#080808] h-[600vh] lg:h-[700vh]", children: [
-    /* @__PURE__ */ jsx("div", { className: "sticky top-0 hidden h-screen w-full items-center lg:flex overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "grid h-full w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center h-full max-h-[65vh]", children: [
+    const interval = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+    }, 5e3);
+    return () => window.clearInterval(interval);
+  }, [isPaused]);
+  const activeCard = STORY_CARDS[activeIndex];
+  const handlePrev = () => setActiveIndex(
+    (prev) => prev === 0 ? STORY_CARDS.length - 1 : prev - 1
+  );
+  const handleNext = () => setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+  return /* @__PURE__ */ jsxs("section", { className: "relative overflow-hidden bg-[#fdfaf6] py-24 dark:bg-[#080808]", children: [
+    /* @__PURE__ */ jsx("div", { className: "hidden w-full lg:block", children: /* @__PURE__ */ jsxs("div", { className: "grid w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center", children: [
         /* @__PURE__ */ jsxs("div", { className: "mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
           /* @__PURE__ */ jsx(Coffee, { className: "h-3.5 w-3.5" }),
           " Our Story"
@@ -22996,123 +22985,111 @@ function CafeSubCategories() {
           /* @__PURE__ */ jsx("br", {}),
           /* @__PURE__ */ jsx("span", { className: "italic text-amber-800", children: "One Cafe" })
         ] }),
-        /* @__PURE__ */ jsx("p", { className: "text-base leading-relaxed text-zinc-600 dark:text-white/60 mb-10 max-w-sm", children: "Scroll to move through our story — from where we started to what makes us stay." }),
-        /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-5", children: STORY_CARDS.map((card, i) => {
-          const active = useTransform(
-            smoothProgress,
-            [i / 6, (i + 0.5) / 6, (i + 1) / 6],
-            [0.2, 1, 0.2]
-          );
-          return /* @__PURE__ */ jsxs(
-            motion.div,
-            {
-              style: { opacity: active },
-              className: "flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white",
-              children: [
-                /* @__PURE__ */ jsx("span", { className: "h-px w-8 bg-amber-800" }),
-                " ",
-                card.eyebrow
-              ]
-            },
-            card.id
-          );
-        }) })
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "relative flex items-center justify-center h-full", children: /* @__PURE__ */ jsxs("div", { className: "relative h-[65vh] w-full", children: [
-        STORY_CARDS.map((card, index) => /* @__PURE__ */ jsx(
-          DesktopStoryCard,
+        /* @__PURE__ */ jsx("p", { className: "mb-10 max-w-sm text-base leading-relaxed text-zinc-600 dark:text-white/60", children: "Discover the story behind every cup and every corner through a simple vertical slider instead of the old scroll-driven flow." }),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-4", children: STORY_CARDS.map((card, index) => /* @__PURE__ */ jsxs(
+          "button",
           {
-            card,
-            index,
-            progress: smoothProgress,
-            total: STORY_CARDS.length
-          },
-          card.id
-        )),
-        /* @__PURE__ */ jsx(AnimatePresence, { children: showContinue && /* @__PURE__ */ jsxs(
-          motion.div,
-          {
-            onClick: handleContinue,
-            initial: { opacity: 0 },
-            animate: { opacity: 1 },
-            exit: { opacity: 0 },
-            transition: { duration: 0.3 },
-            className: "absolute inset-0 z-[60] flex flex-col items-center justify-center cursor-pointer rounded-[2.5rem] overflow-hidden",
+            type: "button",
+            onClick: () => setActiveIndex(index),
+            className: "group flex items-center gap-4 text-left",
             children: [
-              /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/15 rounded-[2.5rem]" }),
-              /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex flex-col items-center gap-3 select-none", children: [
-                /* @__PURE__ */ jsx("p", { className: "font-serif text-3xl xl:text-4xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]", children: "Continue Story" }),
-                /* @__PURE__ */ jsx(
-                  motion.div,
-                  {
-                    animate: { y: [0, 8, 0] },
-                    transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
-                    children: /* @__PURE__ */ jsx(ChevronDown, { className: "h-7 w-7 text-white/80 drop-shadow-lg" })
-                  }
-                ),
-                /* @__PURE__ */ jsx("div", { className: "w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1", children: /* @__PURE__ */ jsx(
-                  motion.div,
-                  {
-                    initial: { scaleX: 1 },
-                    animate: { scaleX: 0 },
-                    transition: { duration: AUTO_SKIP_DELAY / 1e3, ease: "linear" },
-                    className: "h-full bg-white/70 origin-left"
-                  },
-                  showContinue ? "bar-on" : "bar-off"
-                ) })
-              ] })
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: `h-px w-8 transition-all ${activeIndex === index ? "bg-amber-800" : "bg-zinc-300"}`
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: `text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeIndex === index ? "text-zinc-900 dark:text-white" : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"}`,
+                  children: card.eyebrow
+                }
+              )
             ]
           },
-          "continue-overlay"
-        ) })
-      ] }) })
+          card.id
+        )) }),
+        /* @__PURE__ */ jsxs("div", { className: "mt-10 flex items-center gap-3", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: handlePrev,
+              className: "flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white",
+              children: /* @__PURE__ */ jsx(ChevronLeft, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: handleNext,
+              className: "flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white",
+              children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxs("span", { className: "ml-2 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400", children: [
+            String(activeIndex + 1).padStart(2, "0"),
+            " /",
+            " ",
+            String(STORY_CARDS.length).padStart(2, "0")
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "relative flex items-center justify-center", children: /* @__PURE__ */ jsx("div", { className: "relative h-[65vh] w-full", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
+        DesktopStoryCard,
+        {
+          card: activeCard,
+          onHoverChange: setIsPaused
+        },
+        activeCard.id
+      ) }) }) })
     ] }) }),
-    /* @__PURE__ */ jsxs("div", { className: "lg:hidden w-full px-6 py-20", children: [
-      /* @__PURE__ */ jsxs("div", { className: "mb-12", children: [
+    /* @__PURE__ */ jsxs("div", { className: "w-full px-6 lg:hidden", children: [
+      /* @__PURE__ */ jsxs("div", { className: "mb-14", children: [
         /* @__PURE__ */ jsxs("div", { className: "mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
           /* @__PURE__ */ jsx(Coffee, { className: "h-3 w-3" }),
           " Our Story"
         ] }),
-        /* @__PURE__ */ jsxs("h2", { className: "text-4xl font-serif text-zinc-950 dark:text-white mb-4", children: [
+        /* @__PURE__ */ jsxs("h2", { className: "mb-6 text-4xl font-serif text-zinc-950 dark:text-white", children: [
           "Six Chapters, ",
           /* @__PURE__ */ jsx("span", { className: "italic text-amber-800", children: "One Cafe" })
         ] }),
-        /* @__PURE__ */ jsx("p", { className: "text-zinc-500 text-sm", children: "The story behind every cup and every corner." })
+        /* @__PURE__ */ jsx("p", { className: "text-sm text-zinc-500", children: "The story behind every cup and every corner." })
       ] }),
-      /* @__PURE__ */ jsx("div", { className: "space-y-0", children: STORY_CARDS.map((card) => /* @__PURE__ */ jsx(MobileStoryCard, { card }, card.id)) })
-    ] }),
-    /* @__PURE__ */ jsx(AnimatePresence, { children: showContinue && /* @__PURE__ */ jsx(
-      motion.div,
-      {
-        onClick: handleContinue,
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-        className: "lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-black/25",
-        children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center gap-3 select-none", children: [
-          /* @__PURE__ */ jsx("p", { className: "font-serif text-3xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]", children: "Continue Story" }),
-          /* @__PURE__ */ jsx(
-            motion.div,
-            {
-              animate: { y: [0, 8, 0] },
-              transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
-              children: /* @__PURE__ */ jsx(ChevronDown, { className: "h-7 w-7 text-white/80" })
-            }
-          ),
-          /* @__PURE__ */ jsx("div", { className: "w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1", children: /* @__PURE__ */ jsx(
-            motion.div,
-            {
-              initial: { scaleX: 1 },
-              animate: { scaleX: 0 },
-              transition: { duration: AUTO_SKIP_DELAY / 1e3, ease: "linear" },
-              className: "h-full bg-white/70 origin-left"
-            },
-            showContinue ? "mob-bar-on" : "mob-bar-off"
-          ) })
-        ] })
-      },
-      "mobile-overlay"
-    ) })
+      /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(MobileStoryCard, { card: activeCard }, activeCard.id) }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-8 flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: handlePrev,
+            className: "flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white",
+            children: /* @__PURE__ */ jsx(ChevronLeft, { className: "h-4 w-4" })
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "flex gap-2", children: STORY_CARDS.map((card, index) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => setActiveIndex(index),
+            className: `h-2 rounded-full transition-all ${activeIndex === index ? "w-8 bg-amber-800" : "w-2 bg-zinc-300 dark:bg-white/20"}`,
+            "aria-label": `Go to ${card.title}`
+          },
+          card.id
+        )) }),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: handleNext,
+            className: "flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white",
+            children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "h-4 w-4" })
+          }
+        )
+      ] })
+    ] })
   ] });
 }
 const ABOUT_SECTIONS = [
@@ -25207,7 +25184,7 @@ const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-2wKo63De.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-N7KZ-S10.js")
+  () => import("./assets/CafeHomepage-CfOtBd2O.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(

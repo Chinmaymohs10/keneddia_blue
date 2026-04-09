@@ -1,5 +1,6 @@
 import {
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Coffee,
   Leaf,
   MoonStar,
@@ -7,8 +8,8 @@ import {
   SunMedium,
   Waves,
 } from "lucide-react";
-import { motion, AnimatePresence, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { siteContent } from "@/data/siteContent";
 
 const STORY_CARDS = [
@@ -86,70 +87,62 @@ const STORY_CARDS = [
   },
 ];
 
-// --- DESKTOP COMPONENTS ---
-function DesktopStoryCard({ card, index, progress, total }) {
+function DesktopStoryCard({ card, onHoverChange }) {
   const [isHovered, setIsHovered] = useState(false);
-  const unit = 1 / total;
-  const start = index * unit;
-  const end = (index + 1) * unit;
-  const combinedRange = [start - unit * 0.6, start, end, end + unit * 0.6];
-
-  const y = useSpring(useTransform(progress, combinedRange, [80, 0, 0, -80]), {
-    stiffness: 40,
-    damping: 20,
-  });
-  const scale = useSpring(
-    useTransform(progress, combinedRange, [0.96, 1, 1, 0.96]),
-    { stiffness: 40, damping: 20 },
-  );
-  const opacity = useTransform(progress, combinedRange, [0, 1, 1, 0]);
-
   const Icon = card.icon;
+
+  const handleHover = (value) => {
+    setIsHovered(value);
+    onHoverChange?.(value);
+  };
 
   return (
     <motion.article
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{ y, scale, opacity, zIndex: total - index }}
-      className="absolute inset-0 flex h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900"
+      onMouseEnter={() => handleHover(true)}
+      onMouseLeave={() => handleHover(false)}
+      initial={{ opacity: 0, y: 24, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -24, scale: 0.98 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className="relative h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900"
     >
-      <div className="relative flex-grow h-full overflow-hidden">
-        <motion.img
-          src={card.image}
-          alt={card.title}
-          animate={{ scale: isHovered ? 1.05 : 1.1 }}
-          transition={{ duration: 1 }}
-          className="h-full w-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent" />
-        <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md">
-          <Icon className="h-3 w-3" /> {card.eyebrow}
-        </div>
+      <motion.img
+        src={card.image}
+        alt={card.title}
+        animate={{ scale: isHovered ? 1.05 : 1.1 }}
+        transition={{ duration: 1 }}
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      />
+      <div className="absolute inset-0 bg-gradient-to-tr from-black/45 via-black/10 to-transparent" />
+      <div className="absolute left-6 top-6 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md">
+        <Icon className="h-3 w-3" /> {card.eyebrow}
       </div>
 
       <motion.div
-        animate={{ width: isHovered ? "450px" : "80px" }}
+        animate={{ width: isHovered ? "456px" : "320px" }}
         transition={{ type: "spring", stiffness: 70, damping: 20 }}
-        className="relative h-full flex flex-col border-l border-zinc-100 bg-[#fffaf4] dark:bg-zinc-950 dark:border-white/5"
+        className="absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#fffaf4]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92"
       >
-        <div className="h-full w-full overflow-hidden flex flex-col justify-between p-8 xl:p-10">
-          <div className="space-y-4 min-w-[320px]">
+        <div className="flex h-full w-full flex-col justify-between overflow-hidden p-8 xl:p-10">
+          <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60">
               {card.accent}
             </p>
             <h3 className="text-3xl font-serif leading-tight text-zinc-950 dark:text-white">
               {card.title}
             </h3>
-            <motion.p
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              className="text-sm leading-relaxed text-zinc-600 dark:text-white/50"
+            <p
+              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${
+                isHovered ? "" : "line-clamp-3"
+              }`}
             >
               {card.description}
-            </motion.p>
+            </p>
           </div>
+
           <motion.div
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
-            className="space-y-4 min-w-[320px]"
+            animate={{ opacity: isHovered ? 1 : 0.82, y: isHovered ? 0 : 8 }}
+            className="space-y-4"
           >
             <div className="rounded-3xl bg-[#2b1d14] p-5 text-white shadow-lg">
               <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-white/40">
@@ -157,55 +150,31 @@ function DesktopStoryCard({ card, index, progress, total }) {
               </p>
               <p className="font-serif text-base italic">{card.benefit}</p>
             </div>
-            <div className="flex gap-2">
-              {card.stats.map((s) => (
+            <div className="flex flex-wrap gap-2">
+              {card.stats.map((stat) => (
                 <span
-                  key={s}
-                  className="text-[9px] font-bold border border-zinc-200 px-3 py-1 rounded-full text-zinc-400"
+                  key={stat}
+                  className="rounded-full border border-zinc-200 px-3 py-1 text-[9px] font-bold text-zinc-400"
                 >
-                  {s}
+                  {stat}
                 </span>
               ))}
             </div>
           </motion.div>
         </div>
-        <motion.div
-          animate={{ opacity: isHovered ? 0 : 1 }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-          <p className="rotate-90 text-[10px] font-bold uppercase tracking-[0.6em] text-zinc-300 whitespace-nowrap">
-            {card.title.split(" ")[0]} — STORY
-          </p>
-        </motion.div>
       </motion.div>
     </motion.article>
   );
 }
 
-// --- MOBILE COMPONENTS ---
-function MobileStoryCard({ card, index, progress, total }) {
-  const unit = 1 / total;
-  const start = index * unit;
-  const end = (index + 1) * unit;
-
-  const y = useSpring(useTransform(progress, [start, end], [0, -15]), {
-    stiffness: 40,
-    damping: 20,
-  });
-  const scale = useSpring(useTransform(progress, [start, end], [1, 0.92]), {
-    stiffness: 40,
-    damping: 20,
-  });
-  const opacity = useTransform(
-    progress,
-    [start - 0.1, start, end, end + 0.1],
-    [0, 1, 1, 0],
-  );
-
+function MobileStoryCard({ card }) {
   return (
     <motion.article
-      style={{ y, scale, opacity, zIndex: index }}
-      className="sticky top-[15vh] w-full bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border border-zinc-100 dark:border-white/5 mb-[40vh]"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.35 }}
+      className="w-full overflow-hidden rounded-[2rem] border border-zinc-100 bg-white shadow-xl dark:border-white/5 dark:bg-zinc-900"
     >
       <div className="aspect-square w-full overflow-hidden">
         <img
@@ -214,84 +183,65 @@ function MobileStoryCard({ card, index, progress, total }) {
           alt={card.title}
         />
       </div>
-      <div className="p-8 space-y-4">
+      <div className="space-y-4 p-8">
         <p className="text-[10px] font-bold uppercase tracking-widest text-amber-800">
           {card.accent}
         </p>
         <h3 className="text-3xl font-serif text-zinc-950 dark:text-white">
           {card.title}
         </h3>
-        <p className="text-sm text-zinc-600 dark:text-white/50 leading-relaxed">
+        <p className="text-sm leading-relaxed text-zinc-600 dark:text-white/50">
           {card.description}
         </p>
-        <div className="bg-[#2b1d14] p-5 rounded-2xl text-white">
+        <div className="rounded-2xl bg-[#2b1d14] p-5 text-white">
           <p className="text-sm italic font-serif">{card.benefit}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {card.stats.map((stat) => (
+            <span
+              key={stat}
+              className="rounded-full border border-zinc-200 px-3 py-1 text-[9px] font-bold text-zinc-400"
+            >
+              {stat}
+            </span>
+          ))}
         </div>
       </div>
     </motion.article>
   );
 }
 
-const AUTO_SKIP_DELAY = 2000;
-const THRESHOLD = 1 / STORY_CARDS.length;
-
-// --- MAIN SECTION ---
 export default function CafeCoffeeStory() {
-  const sectionRef = useRef(null);
-  const timerRef = useRef(null);
-  const showRef = useRef(false);
-  const continuedRef = useRef(false);
-  const [showContinue, setShowContinue] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 25, damping: 15, mass: 1 });
-
-  const triggerAutoSkip = () => {
-    timerRef.current = setTimeout(() => {
-      if (sectionRef.current) {
-        const bottom = sectionRef.current.offsetTop + sectionRef.current.offsetHeight;
-        window.scrollTo({ top: bottom, behavior: "smooth" });
-      }
-    }, AUTO_SKIP_DELAY);
-  };
-
-  useMotionValueEvent(smoothProgress, "change", (v) => {
-    // Forward: past first card — show overlay + start timer
-    if (v > THRESHOLD && !showRef.current && !continuedRef.current) {
-      showRef.current = true;
-      setShowContinue(true);
-      triggerAutoSkip();
+  useEffect(() => {
+    if (isPaused) {
+      return undefined;
     }
-    // Backward: scrolled back before threshold — reset so it triggers again
-    if (v < THRESHOLD * 0.3 && (showRef.current || continuedRef.current)) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      showRef.current = false;
-      continuedRef.current = false;
-      setShowContinue(false);
-    }
-  });
 
-  const handleContinue = () => {
-    continuedRef.current = true;
-    showRef.current = false;
-    setShowContinue(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
+    const interval = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+    }, 5000);
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+    return () => window.clearInterval(interval);
+  }, [isPaused]);
+
+  const activeCard = STORY_CARDS[activeIndex];
+
+  const handlePrev = () =>
+    setActiveIndex((prev) =>
+      prev === 0 ? STORY_CARDS.length - 1 : prev - 1,
+    );
+
+  const handleNext = () =>
+    setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative bg-[#fdfaf6] dark:bg-[#080808] h-[600vh] lg:h-[700vh]"
-    >
-      {/* DESKTOP LAYOUT */}
-      <div className="sticky top-0 hidden h-screen w-full items-center lg:flex overflow-hidden">
-        <div className="grid h-full w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
-          <div className="flex flex-col justify-center h-full max-h-[65vh]">
+    <section className="relative overflow-hidden bg-[#fdfaf6] py-24 dark:bg-[#080808]">
+      <div className="hidden w-full lg:block">
+        <div className="grid w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
+          <div className="flex flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
               <Coffee className="h-3.5 w-3.5" /> Discovery
             </div>
@@ -299,141 +249,124 @@ export default function CafeCoffeeStory() {
               The Art of <br />
               <span className="italic text-amber-800">Slow Brewing</span>
             </h2>
-            <p className="text-base leading-relaxed text-zinc-600 dark:text-white/60 mb-10 max-w-sm">
-              Each chapter unfolds a new texture. Scroll to transition, hover to
-              explore the finer details.
+            <p className="mb-10 max-w-sm text-base leading-relaxed text-zinc-600 dark:text-white/60">
+              Each chapter unfolds a new texture. Browse the vertical story list
+              and explore the finer details without scroll-based transitions.
             </p>
-            <div className="flex flex-col gap-6">
-              {STORY_CARDS.map((card, i) => {
-                const active = useTransform(
-                  smoothProgress,
-                  [i / 6, (i + 0.5) / 6, (i + 1) / 6],
-                  [0.2, 1, 0.2],
-                );
-                return (
-                  <motion.div
-                    key={card.id}
-                    style={{ opacity: active }}
-                    className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white"
+
+            <div className="flex flex-col gap-4">
+              {STORY_CARDS.map((card, index) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  className="group flex items-center gap-4 text-left"
+                >
+                  <span
+                    className={`h-px w-8 transition-all ${
+                      activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
+                    }`}
+                  />
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${
+                      activeIndex === index
+                        ? "text-zinc-900 dark:text-white"
+                        : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
+                    }`}
                   >
-                    <span className="h-px w-8 bg-amber-800" /> {card.title}
-                  </motion.div>
-                );
-              })}
+                    {card.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-10 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              <span className="ml-2 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                {String(activeIndex + 1).padStart(2, "0")} /{" "}
+                {String(STORY_CARDS.length).padStart(2, "0")}
+              </span>
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center h-full">
+          <div className="relative flex items-center justify-center">
             <div className="relative h-[65vh] w-full">
-              {STORY_CARDS.map((card, index) => (
+              <AnimatePresence mode="wait">
                 <DesktopStoryCard
-                  key={card.id}
-                  card={card}
-                  index={index}
-                  progress={smoothProgress}
-                  total={6}
+                  key={activeCard.id}
+                  card={activeCard}
+                  onHoverChange={setIsPaused}
                 />
-              ))}
-
-              {/* Transparent overlay on card area */}
-              <AnimatePresence>
-                {showContinue && (
-                  <motion.div
-                    key="continue-overlay"
-                    onClick={handleContinue}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 z-[60] flex flex-col items-center justify-center cursor-pointer rounded-[2.5rem] overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-black/15 rounded-[2.5rem]" />
-                    <div className="relative z-10 flex flex-col items-center gap-3 select-none">
-                      <p className="font-serif text-3xl xl:text-4xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">
-                        Continue Story
-                      </p>
-                      <motion.div
-                        animate={{ y: [0, 8, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-                      >
-                        <ChevronDown className="h-7 w-7 text-white/80 drop-shadow-lg" />
-                      </motion.div>
-                      <div className="w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1">
-                        <motion.div
-                          key={showContinue ? "bar-on" : "bar-off"}
-                          initial={{ scaleX: 1 }}
-                          animate={{ scaleX: 0 }}
-                          transition={{ duration: AUTO_SKIP_DELAY / 1000, ease: "linear" }}
-                          className="h-full bg-white/70 origin-left"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
               </AnimatePresence>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MOBILE LAYOUT */}
-      <div className="lg:hidden w-full px-6 py-24">
-        <div className="mb-20">
+      <div className="w-full px-6 lg:hidden">
+        <div className="mb-14">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
             <Coffee className="h-3 w-3" /> The Journey
           </div>
-          <h2 className="text-5xl font-serif text-zinc-950 dark:text-white mb-6">
+          <h2 className="mb-6 text-5xl font-serif text-zinc-950 dark:text-white">
             Every <span className="italic text-amber-800">Roast</span>
           </h2>
-          <p className="text-zinc-500 text-sm">Scroll down to explore our coffee rituals.</p>
+          <p className="text-sm text-zinc-500">
+            Explore our coffee rituals in a simple vertical slider.
+          </p>
         </div>
-        <div className="relative">
-          {STORY_CARDS.map((card, index) => (
-            <MobileStoryCard
-              key={`mobile-${card.id}`}
-              card={card}
-              index={index}
-              progress={smoothProgress}
-              total={STORY_CARDS.length}
-            />
-          ))}
+
+        <AnimatePresence mode="wait">
+          <MobileStoryCard key={activeCard.id} card={activeCard} />
+        </AnimatePresence>
+
+        <div className="mt-8 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex gap-2">
+            {STORY_CARDS.map((card, index) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={`h-2 rounded-full transition-all ${
+                  activeIndex === index
+                    ? "w-8 bg-amber-800"
+                    : "w-2 bg-zinc-300 dark:bg-white/20"
+                }`}
+                aria-label={`Go to ${card.title}`}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleNext}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
-
-      {/* Mobile — fixed center overlay */}
-      <AnimatePresence>
-        {showContinue && (
-          <motion.div
-            key="mobile-overlay"
-            onClick={handleContinue}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-black/25"
-          >
-            <div className="flex flex-col items-center gap-3 select-none">
-              <p className="font-serif text-3xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">
-                Continue Story
-              </p>
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-              >
-                <ChevronDown className="h-7 w-7 text-white/80" />
-              </motion.div>
-              <div className="w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1">
-                <motion.div
-                  key={showContinue ? "mob-bar-on" : "mob-bar-off"}
-                  initial={{ scaleX: 1 }}
-                  animate={{ scaleX: 0 }}
-                  transition={{ duration: AUTO_SKIP_DELAY / 1000, ease: "linear" }}
-                  className="h-full bg-white/70 origin-left"
-                />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
