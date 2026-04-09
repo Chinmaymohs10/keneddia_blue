@@ -23793,11 +23793,11 @@ function CafeSignatureDrinks() {
   ] });
 }
 const sectionHeader = {
-  sectionTag: "Guest Impressions",
-  title: "Cafe Moments Worth Returning For"
+  sectionTag: "The Daily Grind & Glory",
+  title: "A Sip of Guest Stories"
 };
 const ratingHeader = {
-  description: "Average guest cafe rating",
+  description: "Average Bean Rating",
   rating: 5
 };
 const guestReviews = [
@@ -23805,29 +23805,203 @@ const guestReviews = [
     id: 1,
     author: "Priya Mehta",
     description: "Kennedia Cafe is my go-to morning spot. The cold brew is exceptional and the sourdough toast is something I look forward to every weekend.",
-    imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80"
+    date: "2 days ago",
+    media: [
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "short",
+        url: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80"
+      }
+    ]
   },
   {
     id: 2,
     author: "Arjun Kapoor",
     description: "The Bean-to-Cup Journey event completely changed how I think about coffee. The baristas are knowledgeable and passionate.",
-    imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80"
+    date: "1 week ago",
+    media: [
+      {
+        type: "video",
+        url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80"
+      }
+    ]
   },
   {
     id: 3,
     author: "Simran Gill",
-    description: "The Belgian waffles and High Tea Sunday experience were absolutely stunning. The garden terrace is a hidden gem — lush, quiet, and perfect.",
-    imageUrl: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80"
+    description: "The Belgian waffles and High Tea Sunday experience were absolutely stunning. The garden terrace is a hidden gem.",
+    date: "Just now",
+    media: [
+      {
+        type: "reel",
+        url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80"
+      },
+      {
+        type: "video",
+        url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80"
+      }
+    ]
   },
   {
     id: 4,
     author: "Rahul Verma",
-    description: "Fast WiFi, great power sockets, and the best matcha latte I've had. The library corner is quiet enough to actually get work done.",
-    imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
+    description: "Fast WiFi, great power sockets, and the best matcha latte I've had. The library corner is quiet enough to work.",
+    date: "3 days ago",
+    media: [
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
+      }
+    ]
   }
 ];
+const motionPatterns = [
+  {
+    initial: { y: 0 },
+    animate: { y: ["0%", "-50%"] },
+    duration: 30,
+    parallax: [-50, 45]
+  },
+  {
+    initial: { y: ["-50%", "0%"] },
+    animate: { y: ["-50%", "0%"] },
+    duration: 34,
+    parallax: [40, -35]
+  },
+  {
+    initial: { y: 0 },
+    animate: { y: ["0%", "-50%"] },
+    duration: 38,
+    parallax: [-25, 30]
+  }
+];
+const duplicateToLength = (items, minLength) => {
+  if (items.length === 0) return [];
+  const out = [];
+  while (out.length < minLength) {
+    out.push(...items);
+  }
+  return out.slice(0, minLength);
+};
+const getMediaBadge = (type) => {
+  if (type === "video") return "Video";
+  if (type === "reel") return "Reel";
+  if (type === "short") return "Short";
+  return "Photo";
+};
+function MediaTile({ item, index, total }) {
+  if (!item) return null;
+  const roundedClass = total === 1 ? "rounded-[1.4rem]" : "rounded-[1rem]";
+  return /* @__PURE__ */ jsxs("div", { className: `group relative overflow-hidden ${roundedClass} bg-[#E7D8CA]/70 dark:bg-[#241716]`, children: [
+    /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: item.url,
+        alt: item.alt || getMediaBadge(item.type),
+        className: "h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-[#140c0a]/80 via-[#140c0a]/20 to-transparent" }),
+    /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white backdrop-blur-md", children: getMediaBadge(item.type) }),
+    item.type !== "image" && /* @__PURE__ */ jsx("div", { className: "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#3E2723] shadow-lg transition-transform duration-500 group-hover:scale-110", children: /* @__PURE__ */ jsx(Play, { size: 14, className: "ml-0.5" }) }),
+    index === 3 && total > 4 && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 flex items-center justify-center bg-[#140c0a]/70 text-xl font-bold text-white", children: [
+      "+",
+      total - 4
+    ] })
+  ] });
+}
+function MediaGrid({ items }) {
+  const mediaItems = items?.length ? items : [];
+  if (mediaItems.length === 0) {
+    return /* @__PURE__ */ jsx("div", { className: "flex h-40 items-center justify-center rounded-[1.6rem] bg-gradient-to-br from-[#5F4338] via-[#7B5A4D] to-[#A27B62] px-6 text-center text-sm italic leading-relaxed text-white dark:from-[#2C1B18] dark:via-[#3B2520] dark:to-[#4C2D26]", children: "No media, just a very strong cafe memory." });
+  }
+  if (mediaItems.length === 1) {
+    return /* @__PURE__ */ jsx("div", { className: "grid h-40 grid-cols-1", children: /* @__PURE__ */ jsx(MediaTile, { item: mediaItems[0], index: 0, total: 1 }) });
+  }
+  if (mediaItems.length === 2) {
+    return /* @__PURE__ */ jsx("div", { className: "grid h-44 grid-cols-2 gap-2.5", children: mediaItems.map((item, index) => /* @__PURE__ */ jsx(MediaTile, { item, index, total: mediaItems.length }, `${item.url}-${index}`)) });
+  }
+  if (mediaItems.length === 3) {
+    return /* @__PURE__ */ jsxs("div", { className: "grid h-48 grid-cols-[1.2fr_0.8fr] gap-2.5", children: [
+      /* @__PURE__ */ jsx(MediaTile, { item: mediaItems[0], index: 0, total: mediaItems.length }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-rows-2 gap-2.5", children: [
+        /* @__PURE__ */ jsx(MediaTile, { item: mediaItems[1], index: 1, total: mediaItems.length }),
+        /* @__PURE__ */ jsx(MediaTile, { item: mediaItems[2], index: 2, total: mediaItems.length })
+      ] })
+    ] });
+  }
+  return /* @__PURE__ */ jsx("div", { className: "grid h-52 grid-cols-2 grid-rows-2 gap-2.5", children: mediaItems.slice(0, 4).map((item, index) => /* @__PURE__ */ jsx(MediaTile, { item, index, total: mediaItems.length }, `${item.url}-${index}`)) });
+}
+function TestimonialCard({ item }) {
+  return /* @__PURE__ */ jsxs(
+    motion.article,
+    {
+      whileHover: { y: -8, rotateX: -2, rotateY: 2 },
+      transition: { duration: 0.35, ease: "easeOut" },
+      className: "relative overflow-hidden rounded-[2rem] border border-[#EADFD4] bg-white/90 p-5 shadow-[0_18px_45px_rgba(72,41,26,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1A1210]/88 dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]",
+      style: { transformStyle: "preserve-3d" },
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-x-6 top-0 h-24 rounded-b-full bg-gradient-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" }),
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex items-center justify-between gap-4", children: [
+          /* @__PURE__ */ jsx("div", { className: "flex gap-1", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(Heart, { size: 12, className: "fill-[#D08A6A] text-[#D08A6A] dark:fill-[#E5A07B] dark:text-[#E5A07B]" }, i)) }),
+          /* @__PURE__ */ jsx("div", { className: "rounded-full border border-[#E8D6C9] bg-[#F6F0EA] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#8B6756] dark:border-white/10 dark:bg-white/5 dark:text-[#D7B7A2]", children: item.date })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "relative z-10 mt-4", children: /* @__PURE__ */ jsx(MediaGrid, { items: item.media }) }),
+        /* @__PURE__ */ jsx("div", { className: "relative z-10 mt-5", children: /* @__PURE__ */ jsxs("p", { className: "line-clamp-4 text-sm leading-7 text-[#5B433A] dark:text-[#D8C7BB]", children: [
+          '"',
+          item.description,
+          '"'
+        ] }) }),
+        /* @__PURE__ */ jsxs("div", { className: "relative z-10 mt-5 flex items-center gap-3 border-t border-[#F0E6DE] pt-4 dark:border-white/10", children: [
+          /* @__PURE__ */ jsx("div", { className: "flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D4A373] text-sm font-bold text-white dark:bg-[#8D5C42]", children: item.author[0] }),
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("p", { className: "text-sm font-bold uppercase tracking-[0.18em] text-[#3E2723] dark:text-[#F7EEE8]", children: item.author }),
+            /* @__PURE__ */ jsx("p", { className: "mt-1 text-[11px] uppercase tracking-[0.22em] text-[#927668] dark:text-[#BEA18F]", children: "Guest Highlight" })
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function InfiniteColumn({ items, pattern, scrollYProgress }) {
+  const parallaxY = useTransform(scrollYProgress, [0, 1], pattern.parallax);
+  const loopItems = [...items, ...items];
+  return /* @__PURE__ */ jsxs(motion.div, { style: { y: parallaxY }, className: "relative h-[34rem] overflow-hidden", children: [
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" }),
+    /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" }),
+    /* @__PURE__ */ jsx(
+      motion.div,
+      {
+        initial: pattern.initial,
+        animate: pattern.animate,
+        transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
+        className: "flex flex-col gap-5",
+        children: loopItems.map((item, index) => /* @__PURE__ */ jsx(TestimonialCard, { item }, `${item.id}-${index}`))
+      }
+    )
+  ] });
+}
 function CafeTestimonials() {
-  const swiperRef = useRef(null);
+  const sectionRef = useRef(null);
   const fileInputRef = useRef(null);
   const [mediaPreviews, setMediaPreviews] = useState([]);
   const [feedbackText, setFeedbackText] = useState("");
@@ -23839,7 +24013,20 @@ function CafeTestimonials() {
   const [showPopup, setShowPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaUploading] = useState(false);
-  const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+  const headerY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const glowY = useTransform(scrollYProgress, [0, 1], [-40, 55]);
+  const glowX = useTransform(scrollYProgress, [0, 1], [-20, 20]);
+  const testimonialColumns = useMemo(() => {
+    const repeated = duplicateToLength(guestReviews, 9);
+    return [0, 1, 2].map(
+      (columnIndex) => repeated.filter((_, itemIndex) => itemIndex % 3 === columnIndex)
+    );
+  }, []);
+  const mobileFeed = useMemo(() => duplicateToLength(guestReviews, 8), []);
   const handleFileUpload = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -23857,7 +24044,7 @@ function CafeTestimonials() {
       return;
     }
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
     setFeedbackText("");
     setMediaPreviews([]);
@@ -23867,222 +24054,210 @@ function CafeTestimonials() {
     setEmail("");
     setPhone("");
   };
-  return /* @__PURE__ */ jsxs("section", { id: "reviews", className: "bg-background py-12", children: [
-    /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-col items-stretch gap-6 lg:flex-row", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex w-full min-w-0 flex-col rounded-2xl border bg-card p-6 shadow-sm lg:w-3/4", children: [
-        /* @__PURE__ */ jsxs("div", { className: "mb-6 flex items-start justify-between", children: [
-          /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("p", { className: "mb-1 text-xs font-bold uppercase tracking-widest text-primary", children: sectionHeader.sectionTag }),
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader.title })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
-            /* @__PURE__ */ jsx("div", { className: "mb-1 flex items-center justify-end gap-1 text-primary", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(
-              Star,
-              {
-                size: 14,
-                className: i < ratingHeader.rating ? "fill-primary text-primary" : "text-primary/20"
-              },
-              i
-            )) }),
-            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader.description })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "w-full flex-grow overflow-hidden", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
-          Swiper,
-          {
-            modules: [Autoplay, Navigation],
-            spaceBetween: 15,
-            slidesPerView: 1.2,
-            breakpoints: { 768: { slidesPerView: 3 } },
-            autoplay: { delay: 6e3, disableOnInteraction: false },
-            onSwiper: (s) => {
-              swiperRef.current = s;
-            },
-            onMouseEnter: () => {
-              swiperRef.current?.autoplay?.stop();
-            },
-            onMouseLeave: () => {
-              swiperRef.current?.autoplay?.start();
-            },
-            className: "h-full w-full",
-            children: guestReviews.map((item) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "group flex h-full flex-col overflow-hidden rounded-xl border bg-background", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] overflow-hidden bg-muted", children: [
-              /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: item.imageUrl,
-                  alt: item.author,
-                  className: "h-full w-full object-cover"
-                }
-              ),
-              /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/25 to-transparent p-4", children: [
-                /* @__PURE__ */ jsxs("p", { className: "line-clamp-4 text-base italic text-white", children: [
-                  '"',
-                  item.description,
-                  '"'
-                ] }),
-                /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-white", children: item.author })
-              ] })
-            ] }) }) }, item.id))
-          }
-        ) }) })
-      ] }),
-      /* @__PURE__ */ jsx("div", { className: "flex w-full flex-col lg:w-1/4", children: /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full flex-col rounded-2xl border bg-card p-6 shadow-sm", children: [
-        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex items-center justify-between", children: [
-          /* @__PURE__ */ jsx("h4", { className: "text-sm font-bold", children: "Share Experience" }),
-          hasContent && /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: () => setShowPopup(true),
-              className: "rounded-full p-1 text-primary hover:bg-primary/10",
-              children: /* @__PURE__ */ jsx(Edit2$1, { size: 16 })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-3", children: [
-          /* @__PURE__ */ jsx("div", { className: "rounded-full bg-white p-2 text-red-400 shadow-sm", children: /* @__PURE__ */ jsx(User, { size: 18 }) }),
-          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
-            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase leading-none text-red-400", children: "Posting as" }),
-            /* @__PURE__ */ jsx("p", { className: "truncate text-sm font-bold text-gray-800", children: authorName || "Guest User" })
-          ] })
-        ] }),
+  return /* @__PURE__ */ jsxs(
+    "section",
+    {
+      id: "reviews",
+      ref: sectionRef,
+      className: "relative overflow-hidden bg-[#F7F0E9] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]",
+      children: [
         /* @__PURE__ */ jsx(
-          "textarea",
+          motion.div,
           {
-            value: feedbackText,
-            onChange: (e) => setFeedbackText(e.target.value),
-            placeholder: "Tell us about your cafe experience...",
-            className: "mb-3 w-full flex-grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
+            style: { x: glowX, y: glowY },
+            className: "pointer-events-none absolute left-[-8%] top-20 h-72 w-72 rounded-full bg-[#D9AA82]/20 blur-3xl dark:bg-[#8D5C42]/18"
           }
         ),
-        /* @__PURE__ */ jsx("div", { className: "mb-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 rounded-xl border border-transparent bg-secondary/20 px-3 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white", children: [
-          /* @__PURE__ */ jsx(
-            Youtube,
-            {
-              size: 15,
-              className: ytLink ? "text-red-500" : "text-muted-foreground"
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "url",
-              value: ytLink,
-              onChange: (e) => setYtLink(e.target.value),
-              placeholder: "Paste YouTube or Instagram Reel link",
-              className: "flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
-            }
-          ),
-          ytLink && /* @__PURE__ */ jsx("button", { onClick: () => setYtLink(""), children: /* @__PURE__ */ jsx(X, { size: 12 }) })
-        ] }) }),
-        mediaPreviews.length > 0 && /* @__PURE__ */ jsx("div", { className: "mb-3 grid grid-cols-4 gap-2", children: mediaPreviews.map((m, i) => /* @__PURE__ */ jsxs(
-          "div",
-          {
-            className: "relative aspect-square overflow-hidden rounded-lg border",
-            children: [
-              m.type === "image" ? /* @__PURE__ */ jsx("img", { src: m.url, alt: "", className: "h-full w-full object-cover" }) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-black", children: /* @__PURE__ */ jsx(Video, { size: 12, className: "text-white" }) }),
-              /* @__PURE__ */ jsx(
-                "button",
-                {
-                  onClick: () => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i)),
-                  className: "absolute right-0 top-0 bg-black/50 text-white",
-                  children: /* @__PURE__ */ jsx(X, { size: 10 })
-                }
-              )
-            ]
-          },
-          i
-        )) }),
-        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex gap-2", children: [
-          /* @__PURE__ */ jsx(
-            "button",
-            {
-              onClick: () => fileInputRef.current?.click(),
-              className: "flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60",
-              children: /* @__PURE__ */ jsxs("span", { className: "flex items-center justify-center gap-2", children: [
-                mediaUploading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(ImageIcon, { size: 16 }),
-                "Media"
-              ] })
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            "input",
-            {
-              type: "file",
-              ref: fileInputRef,
-              className: "hidden",
-              multiple: true,
-              onChange: handleFileUpload
-            }
-          )
-        ] }),
         /* @__PURE__ */ jsx(
-          "button",
+          motion.div,
           {
-            disabled: isSubmitting || !feedbackText && mediaPreviews.length === 0 && !ytLink.trim(),
-            onClick: handleSubmit,
-            className: "w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50",
-            children: isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "mx-auto animate-spin", size: 20 }) : "Submit Story"
+            style: { x: useTransform(scrollYProgress, [0, 1], [25, -25]), y: useTransform(scrollYProgress, [0, 1], [35, -20]) },
+            className: "pointer-events-none absolute right-[-6%] top-1/3 h-80 w-80 rounded-full bg-[#B66A46]/12 blur-3xl dark:bg-[#5A3426]/25"
           }
-        )
-      ] }) })
-    ] }) }),
-    /* @__PURE__ */ jsx(AnimatePresence, { children: showPopup && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxs(
-      motion.div,
-      {
-        initial: { scale: 0.9 },
-        animate: { scale: 1 },
-        className: "w-full max-w-sm rounded-2xl border bg-card p-8 shadow-2xl",
-        children: [
-          /* @__PURE__ */ jsxs("div", { className: "mb-6 flex items-center justify-between", children: [
-            /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
-            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-            /* @__PURE__ */ jsx(
-              "input",
-              {
-                value: authorName,
-                onChange: (e) => setAuthorName(e.target.value),
-                placeholder: "Full Name",
-                className: "w-full rounded-lg bg-muted p-3 outline-none"
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              "input",
-              {
-                value: email,
-                onChange: (e) => setEmail(e.target.value),
-                placeholder: "Email",
-                className: "w-full rounded-lg bg-muted p-3 outline-none"
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              "input",
-              {
-                value: phone,
-                onChange: (e) => setPhone(e.target.value),
-                placeholder: "Phone",
-                maxLength: 10,
-                className: "w-full rounded-lg bg-muted p-3 outline-none"
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              "button",
-              {
-                onClick: () => {
-                  setIsVerified(true);
-                  setShowPopup(false);
-                  handleSubmit();
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "container mx-auto max-w-7xl px-4", children: [
+          /* @__PURE__ */ jsxs(
+            motion.div,
+            {
+              style: { y: headerY },
+              className: "mb-16 flex flex-col justify-between gap-6 border-b border-[#E8DDD4] pb-8 md:flex-row md:items-end dark:border-white/10",
+              children: [
+                /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsxs("div", { className: "mb-3 flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsx("span", { className: "h-[1px] w-8 bg-[#8D6E63] dark:bg-[#BEA18F]" }),
+                    /* @__PURE__ */ jsx("p", { className: "text-xs font-bold uppercase tracking-[0.2em] text-[#8D6E63] dark:text-[#BEA18F]", children: sectionHeader.sectionTag })
+                  ] }),
+                  /* @__PURE__ */ jsxs("h2", { className: "text-4xl font-serif font-medium leading-tight md:text-5xl", children: [
+                    sectionHeader.title.split(" ").slice(0, -1).join(" "),
+                    " ",
+                    /* @__PURE__ */ jsx("span", { className: "italic text-[#A1887F] dark:text-[#DDB8A5]", children: sectionHeader.title.split(" ").pop() })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-6 rounded-[1.8rem] border border-[#E7D8CA] bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "text-center", children: [
+                    /* @__PURE__ */ jsxs("p", { className: "text-3xl font-serif font-bold leading-none text-[#3E2723] dark:text-[#F7EEE8]", children: [
+                      ratingHeader.rating,
+                      ".0"
+                    ] }),
+                    /* @__PURE__ */ jsx("div", { className: "mt-2 flex gap-0.5", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(Star, { size: 14, className: "fill-[#D4A373] text-[#D4A373] dark:fill-[#E5A07B] dark:text-[#E5A07B]" }, i)) })
+                  ] }),
+                  /* @__PURE__ */ jsx("div", { className: "h-10 w-[1px] bg-[#E0D7D0] dark:bg-white/10" }),
+                  /* @__PURE__ */ jsx("p", { className: "max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-[#8D6E63] dark:text-[#BEA18F]", children: ratingHeader.description })
+                ] })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 items-start gap-12 lg:grid-cols-12", children: [
+            /* @__PURE__ */ jsxs("div", { className: "lg:col-span-8", children: [
+              /* @__PURE__ */ jsx("div", { className: "hidden gap-5 lg:grid lg:grid-cols-3", children: testimonialColumns.map((columnItems, index) => /* @__PURE__ */ jsx(
+                InfiniteColumn,
+                {
+                  items: columnItems,
+                  pattern: motionPatterns[index],
+                  scrollYProgress
                 },
-                className: "w-full rounded-lg bg-primary py-3 font-bold text-white",
-                children: "Save & Continue"
-              }
-            )
+                `column-${index}`
+              )) }),
+              /* @__PURE__ */ jsx("div", { className: "grid gap-5 sm:grid-cols-2 lg:hidden", children: mobileFeed.map((item, index) => /* @__PURE__ */ jsx(
+                motion.div,
+                {
+                  initial: { opacity: 0, y: 30 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: true, amount: 0.2 },
+                  transition: { duration: 0.45, delay: index * 0.05 },
+                  children: /* @__PURE__ */ jsx(TestimonialCard, { item })
+                },
+                `${item.id}-mobile-${index}`
+              )) })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "lg:col-span-4", children: /* @__PURE__ */ jsxs("div", { className: "group relative overflow-hidden rounded-[2rem] bg-[#3E2723] p-8 text-[#FDFCFB] shadow-2xl dark:bg-[#1A1210]", children: [
+              /* @__PURE__ */ jsx(Coffee, { className: "absolute -bottom-4 -right-4 opacity-5 transition-transform duration-700 group-hover:rotate-12", size: 160 }),
+              /* @__PURE__ */ jsxs("div", { className: "relative z-10", children: [
+                /* @__PURE__ */ jsxs("div", { className: "mb-8 flex items-center justify-between", children: [
+                  /* @__PURE__ */ jsx("h4", { className: "text-xl font-serif", children: "Sign our Guestbook" }),
+                  /* @__PURE__ */ jsx(Edit2$1, { size: 18, className: "text-[#D4A373]" })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "space-y-5", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3", children: [
+                    /* @__PURE__ */ jsx("div", { className: "flex h-10 w-10 items-center justify-center rounded-xl bg-[#D4A373]/20 text-[#D4A373]", children: /* @__PURE__ */ jsx(User, { size: 20 }) }),
+                    /* @__PURE__ */ jsxs("div", { children: [
+                      /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase tracking-tighter text-white/40", children: "Brewing stories as" }),
+                      /* @__PURE__ */ jsx("p", { className: "text-sm font-medium", children: authorName || "Anonymous Adventurer" })
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsx("div", { className: "relative", children: /* @__PURE__ */ jsx(
+                    "textarea",
+                    {
+                      value: feedbackText,
+                      onChange: (e) => setFeedbackText(e.target.value),
+                      placeholder: "Share your cafe moment...",
+                      className: "h-32 w-full resize-none border-b border-white/20 bg-transparent py-2 text-sm leading-relaxed outline-none transition-all placeholder:text-white/20 focus:border-[#D4A373]"
+                    }
+                  ) }),
+                  /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-3", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "group/input flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3", children: [
+                      /* @__PURE__ */ jsx(Youtube, { size: 16, className: ytLink ? "text-[#E57373]" : "text-white/20" }),
+                      /* @__PURE__ */ jsx(
+                        "input",
+                        {
+                          type: "url",
+                          value: ytLink,
+                          onChange: (e) => setYtLink(e.target.value),
+                          placeholder: "Link a reel, short, or video",
+                          className: "flex-1 bg-transparent text-xs outline-none placeholder:text-white/20"
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+                      /* @__PURE__ */ jsxs(
+                        "button",
+                        {
+                          onClick: () => fileInputRef.current?.click(),
+                          className: "flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10",
+                          children: [
+                            mediaUploading ? /* @__PURE__ */ jsx(Loader2, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ jsx(ImageIcon, { size: 14 }),
+                            "Add Media"
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("input", { type: "file", ref: fileInputRef, className: "hidden", multiple: true, onChange: handleFileUpload })
+                    ] })
+                  ] }),
+                  mediaPreviews.length > 0 && /* @__PURE__ */ jsx("div", { className: "grid grid-cols-5 gap-2", children: mediaPreviews.map((m, i) => /* @__PURE__ */ jsxs("div", { className: "relative h-14 overflow-hidden rounded-lg border border-white/20", children: [
+                    m.type === "image" ? /* @__PURE__ */ jsx("img", { src: m.url, alt: "", className: "h-full w-full object-cover" }) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-black", children: /* @__PURE__ */ jsx(Video, { size: 12 }) }),
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        onClick: () => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i)),
+                        className: "absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white",
+                        children: /* @__PURE__ */ jsx(X, { size: 8 })
+                      }
+                    )
+                  ] }, i)) }),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      disabled: isSubmitting || !feedbackText && mediaPreviews.length === 0 && !ytLink.trim(),
+                      onClick: handleSubmit,
+                      className: "group/btn relative w-full overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50",
+                      children: /* @__PURE__ */ jsx("span", { className: "flex items-center justify-center gap-2", children: isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "animate-spin", size: 18 }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                        "Leave a Review",
+                        /* @__PURE__ */ jsx(Send, { size: 16, className: "transition-transform group-hover/btn:-translate-y-1 group-hover/btn:translate-x-1" })
+                      ] }) })
+                    }
+                  )
+                ] })
+              ] })
+            ] }) })
           ] })
-        ]
-      }
-    ) }) })
-  ] });
+        ] }),
+        /* @__PURE__ */ jsx(AnimatePresence, { children: showPopup && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[100] flex items-center justify-center bg-[#3E2723]/60 p-4 backdrop-blur-md", children: /* @__PURE__ */ jsxs(
+          motion.div,
+          {
+            initial: { opacity: 0, y: 20 },
+            animate: { opacity: 1, y: 0 },
+            exit: { opacity: 0, scale: 0.95 },
+            className: "w-full max-w-md rounded-[2.5rem] bg-white p-10 text-[#3E2723] shadow-2xl dark:bg-[#1A1210] dark:text-[#F7EEE8]",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "mb-8 flex items-center justify-between", children: [
+                /* @__PURE__ */ jsx("h3", { className: "text-2xl font-serif", children: "Guest Details" }),
+                /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), className: "transition-transform hover:rotate-90", children: /* @__PURE__ */ jsx(X, { size: 24 }) })
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+                [
+                  ["Full Name", authorName, setAuthorName],
+                  ["Email Address", email, setEmail],
+                  ["Phone Number", phone, setPhone]
+                ].map(([label, val, set], i) => /* @__PURE__ */ jsxs("div", { children: [
+                  /* @__PURE__ */ jsx("label", { className: "mb-1 ml-1 block text-[10px] font-bold uppercase tracking-widest text-[#8D6E63] dark:text-[#BEA18F]", children: label }),
+                  /* @__PURE__ */ jsx(
+                    "input",
+                    {
+                      value: val,
+                      onChange: (e) => set(e.target.value),
+                      className: "w-full rounded-xl border border-[#E0D7D0] bg-[#FAF9F6] p-4 outline-none transition-colors focus:border-[#D4A373] dark:border-white/10 dark:bg-white/5"
+                    }
+                  )
+                ] }, i)),
+                /* @__PURE__ */ jsx(
+                  "button",
+                  {
+                    onClick: () => {
+                      setIsVerified(true);
+                      setShowPopup(false);
+                      handleSubmit();
+                    },
+                    className: "mt-4 w-full rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54]",
+                    children: "Verify & Post Review"
+                  }
+                )
+              ] })
+            ]
+          }
+        ) }) })
+      ]
+    }
+  );
 }
 const CATEGORIES = ["All", "Interior", "Brews", "Bakery", "Events", "Outdoor"];
 function CafeGalleryPage() {
