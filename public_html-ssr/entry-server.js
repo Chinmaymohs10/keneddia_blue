@@ -2,24 +2,24 @@ import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router";
 import * as React from "react";
-import React__default, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
+import React__default, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, RotateCcw, SlidersHorizontal, Grid3x3, List, MapPin, ArrowRight as ArrowRight$1, Image as Image$1, Film, Gamepad2, Music, Star, Ticket, Clock, Shield, Award, Target, User, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Tag, Percent, Share2, Info, ShieldCheck, ChevronUp, IndianRupee, CheckCircle2, Phone, Mail, Maximize2, ChevronLeft, Camera, Play, Users, MessageCircle, Send, Reply, Globe, ThumbsUp, ArrowUpRight, Edit2 as Edit2$1, Video, ImageIcon, Sparkles, Grid3X3, CheckCircle, CreditCard, Expand, Check, Navigation as Navigation$1, MessageSquare, Heart, UtensilsCrossed, Beer, Contact2, Link as Link$1, PartyPopper, Briefcase, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, ShoppingCart, LogOut, Home, Building2, Save, Menu, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags, Gift } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, ShoppingCart, LogOut, Home as Home$1, Save, Menu, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags, Gift } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
+import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { Command as Command$1 } from "cmdk";
 import axios from "axios";
 import { Slot } from "@radix-ui/react-slot";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination as Pagination$2, Navigation, EffectFade } from "swiper/modules";
+import { EffectFade, Autoplay, Navigation, Pagination as Pagination$2 } from "swiper/modules";
 import { toast as toast$2 } from "react-hot-toast";
-import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import ReactCalendar from "react-calendar";
 import * as LabelPrimitive from "@radix-ui/react-label";
@@ -361,6 +361,7 @@ const cafeBakery = "/assets/artisan_bakery_cafe-BS8-_Gut.png";
 const cafeHighTea = "/assets/luxury_high_tea_lounge-CfgnSL30.png";
 const cafeGarden = "/assets/garden_terrace_cafe-yDyFoTv7.png";
 const cafeLibrary = "/assets/cozy_library_cafe-DJIBpvVp.png";
+const mapImage = "/assets/world_map_with_golden_pins-D_iOIMuJ.png";
 const footer_img = "/assets/footer-img-DVGrEUkR.png";
 const siteContent = {
   brand: {
@@ -456,6 +457,9 @@ const siteContent = {
     events: {
       jazz: { src: barSpeakeasy, alt: "Jazz Music Event", priority: false },
       wedding: { src: heroLobby, alt: "Luxury Wedding", priority: false }
+    },
+    globalPresence: {
+      map: { src: mapImage, alt: "India Presence Map", priority: false }
     }
   },
   text: {
@@ -818,7 +822,7 @@ const AuthService = {
     return !!getStoredItem("accessToken");
   }
 };
-const apiUrl = "https://backend.kennediablu.com/";
+const apiUrl = "http://192.168.0.135:6090/";
 const API = axios.create({ baseURL: apiUrl });
 const isBrowser = typeof window !== "undefined";
 const getStoredToken = () => {
@@ -1436,14 +1440,14 @@ function ThemeToggle() {
   ] });
 }
 const BUSINESS_ITEMS = [
-  { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
-  // { label: "Hotels & Resorts", href: "/hotels", external: true },
-  // {
-  //   label: "Restaurants",
-  //   href: "/ghaziabad/kennedia-blu-restaurant-27",
-  //   external: true,
-  // },
-  { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31", external: true }
+  // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
+  { label: "Hotels & Resorts", href: "/hotels", external: true },
+  {
+    label: "Restaurants",
+    href: "/ghaziabad/kennedia-blu-restaurant-27",
+    external: true
+  }
+  // { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31",external: true }
   // { label: "Cafes & Dining", href: "/cafes" },
   // { label: "Bars & Lounges", href: "/bars" },
   // { label: "Events & Conf.", href: "/events" },
@@ -1981,6 +1985,962 @@ function MobileDropdown({
     ) })
   ] });
 }
+const CACHE_KEY = "hero_sections_cache";
+const CACHE_DURATION = 5 * 60 * 1e3;
+const getCurrentTheme$1 = () => {
+  if (typeof window === "undefined") return "light";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+};
+const generateDataHash = (items) => {
+  return items.map(
+    (item) => `${item.id}-${item.mainTitle}-${item.ctaText}-${item.ctaLink}-${item.backgroundAll.length}-${item.subAll.length}`
+  ).join("|");
+};
+const getCachedData = () => {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+    const parsedCache = JSON.parse(cached);
+    if (Date.now() - parsedCache.timestamp < CACHE_DURATION) return parsedCache;
+    sessionStorage.removeItem(CACHE_KEY);
+    return null;
+  } catch {
+    return null;
+  }
+};
+const setCachedData = (slides, hash) => {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: slides, timestamp: Date.now(), hash }));
+  } catch {
+  }
+};
+const selectMediaByTheme$1 = (theme, all, light, dark) => {
+  if (theme === "dark" && dark?.length > 0) return dark[0];
+  if (theme === "light" && light?.length > 0) return light[0];
+  if (all?.length > 0) return all[0];
+  if (light?.length > 0) return light[0];
+  if (dark?.length > 0) return dark[0];
+  return null;
+};
+const transformApiDataToSlides$1 = (content, theme) => {
+  const filteredContent = content.filter(
+    (item) => item.active === true && item.showOnHomepage === true
+  );
+  const homepageItems = filteredContent.sort((a, b) => b.id - a.id);
+  return homepageItems.map((item) => {
+    const backgroundMedia = selectMediaByTheme$1(
+      theme,
+      item.backgroundAll,
+      item.backgroundLight,
+      item.backgroundDark
+    );
+    const subMedia = selectMediaByTheme$1(
+      theme,
+      item.subAll,
+      item.subLight,
+      item.subDark
+    );
+    const isBackgroundVideo = backgroundMedia?.type === "VIDEO";
+    let thumbnailUrl = "";
+    if (subMedia?.type === "IMAGE") {
+      thumbnailUrl = subMedia.url;
+    } else if (subMedia?.type === "VIDEO") {
+      thumbnailUrl = isBackgroundVideo ? "" : backgroundMedia?.url ?? "";
+    } else {
+      thumbnailUrl = backgroundMedia?.url ?? "";
+    }
+    const resolvedThumbnailUrl = subMedia?.url || thumbnailUrl;
+    const thumbnailType = subMedia?.type === "VIDEO" ? "video" : "image";
+    const mobileMediaUrl = backgroundMedia?.url || "";
+    const mobileMediaType = isBackgroundVideo ? "video" : "image";
+    return {
+      type: isBackgroundVideo ? "video" : "image",
+      mobileMediaType,
+      // NEW field
+      media: backgroundMedia?.url || "",
+      mobileMedia: mobileMediaUrl,
+      thumbnail: resolvedThumbnailUrl,
+      thumbnailType,
+      title: item.mainTitle || "",
+      subtitle: item.subTitle || "",
+      cta: item.ctaText ?? void 0,
+      ctaLink: item.ctaLink ?? null
+    };
+  });
+};
+function Hero({ initialSlides = [] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState(null);
+  const [currentTheme, setCurrentTheme] = useState(getCurrentTheme$1());
+  const [slides, setSlides] = useState(initialSlides);
+  const [isFetching, setIsFetching] = useState(initialSlides.length === 0);
+  const [imageErrors, setImageErrors] = useState(/* @__PURE__ */ new Set());
+  const [loadedSlides, setLoadedSlides] = useState(/* @__PURE__ */ new Set());
+  const isFetchingRef = useRef(false);
+  const currentHashRef = useRef("");
+  const apiDataRef = useRef([]);
+  const fetchHeroSection = useCallback(
+    async (forceRefresh = false) => {
+      if (isFetchingRef.current) return;
+      if (!forceRefresh) {
+        const cachedData = getCachedData();
+        if (cachedData) {
+          setSlides(cachedData.data);
+          currentHashRef.current = cachedData.hash;
+          setIsFetching(false);
+          return;
+        }
+      }
+      isFetchingRef.current = true;
+      setIsFetching(true);
+      try {
+        const response = await getHeroSectionsPaginated({ page: 0, size: 100 });
+        const pageData = response.data?.data || response.data || response;
+        if (pageData?.content && Array.isArray(pageData.content)) {
+          const apiContent = pageData.content;
+          apiDataRef.current = apiContent;
+          const newHash = generateDataHash(apiContent);
+          if (newHash === currentHashRef.current && slides.length > 0 && !forceRefresh) {
+            setIsFetching(false);
+            isFetchingRef.current = false;
+            return;
+          }
+          const apiSlides = transformApiDataToSlides$1(apiContent, currentTheme);
+          if (apiSlides.length > 0) {
+            setSlides(apiSlides);
+            setLoadedSlides(/* @__PURE__ */ new Set());
+            currentHashRef.current = newHash;
+            setCachedData(apiSlides, newHash);
+          } else {
+            setSlides([]);
+            setLoadedSlides(/* @__PURE__ */ new Set());
+          }
+        }
+      } catch (error) {
+        console.error("Hero fetch failed:", error);
+        setSlides([]);
+        setLoadedSlides(/* @__PURE__ */ new Set());
+      } finally {
+        setIsFetching(false);
+        isFetchingRef.current = false;
+      }
+    },
+    [currentTheme, slides.length]
+  );
+  const updateSlidesForTheme = useCallback((newTheme) => {
+    if (apiDataRef.current.length > 0) {
+      const newSlides = transformApiDataToSlides$1(apiDataRef.current, newTheme);
+      setSlides(newSlides.length > 0 ? newSlides : []);
+      setLoadedSlides(/* @__PURE__ */ new Set());
+      if (newSlides.length > 0) setCachedData(newSlides, currentHashRef.current);
+    }
+  }, []);
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const newTheme = getCurrentTheme$1();
+      if (newTheme !== currentTheme) {
+        setCurrentTheme(newTheme);
+        updateSlidesForTheme(newTheme);
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [currentTheme, updateSlidesForTheme]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(CACHE_KEY);
+    }
+    fetchHeroSection(initialSlides.length > 0);
+  }, [fetchHeroSection]);
+  const handleImageError = useCallback((url) => {
+    setImageErrors((prev) => new Set(prev).add(url));
+  }, []);
+  const logMediaError = useCallback(
+    (mediaRole, url, title) => {
+      console.error(`[Hero] Failed to load ${mediaRole}`, {
+        title,
+        url
+      });
+      handleImageError(url);
+    },
+    [handleImageError]
+  );
+  const handleThumbnailClick = useCallback(
+    (index) => {
+      if (swiperInstance) swiperInstance.slideToLoop(index);
+    },
+    [swiperInstance]
+  );
+  const markSlideLoaded = useCallback((index) => {
+    setLoadedSlides((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, []);
+  useEffect(() => {
+    if (!swiperInstance || slides.length === 0) return;
+    if (loadedSlides.has(activeIndex)) {
+      swiperInstance.autoplay?.start();
+      return;
+    }
+    swiperInstance.autoplay?.stop();
+  }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (slides.length <= 1) return [];
+    return Array.from({ length: slides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % slides.length;
+      const slide = slides[index];
+      if (!slide) return null;
+      return {
+        slide,
+        index
+      };
+    }).filter(Boolean);
+  }, [activeIndex, slides]);
+  const renderDesktopMedia = useCallback(
+    (slide, index) => {
+      const mediaUrl = slide.media;
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+      if (slide.type === "video") {
+        return /* @__PURE__ */ jsx(
+          "video",
+          {
+            autoPlay: true,
+            loop: true,
+            muted: true,
+            playsInline: true,
+            preload: "metadata",
+            className: "w-full h-full object-cover",
+            onLoadedData: () => markSlideLoaded(index),
+            onError: () => {
+              logMediaError("desktop video", mediaUrl, slide.title);
+              markSlideLoaded(index);
+            },
+            children: /* @__PURE__ */ jsx("source", { src: mediaUrl, type: "video/mp4" })
+          },
+          mediaUrl
+        );
+      }
+      return /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: mediaUrl,
+          alt: slide.title,
+          className: "w-full h-full object-cover",
+          onLoad: () => markSlideLoaded(index),
+          onError: () => {
+            logMediaError("desktop image", mediaUrl, slide.title);
+            markSlideLoaded(index);
+          }
+        }
+      );
+    },
+    [imageErrors, logMediaError, markSlideLoaded]
+  );
+  const renderMobileMedia = useCallback(
+    (slide, index) => {
+      const mediaUrl = slide.mobileMedia;
+      if (!mediaUrl || imageErrors.has(mediaUrl)) return null;
+      if (slide.mobileMediaType === "video") {
+        return /* @__PURE__ */ jsx(
+          "video",
+          {
+            autoPlay: true,
+            loop: true,
+            muted: true,
+            playsInline: true,
+            preload: "metadata",
+            className: "w-full h-full object-contain",
+            onLoadedData: () => markSlideLoaded(index),
+            onError: () => {
+              logMediaError("mobile video", mediaUrl, slide.title);
+              markSlideLoaded(index);
+            },
+            children: /* @__PURE__ */ jsx("source", { src: mediaUrl, type: "video/mp4" })
+          },
+          mediaUrl
+        );
+      }
+      return /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: mediaUrl,
+          alt: slide.title,
+          className: "w-full h-full object-contain",
+          onLoad: () => markSlideLoaded(index),
+          onError: () => {
+            logMediaError("mobile image", mediaUrl, slide.title);
+            markSlideLoaded(index);
+          }
+        }
+      );
+    },
+    [imageErrors, logMediaError, markSlideLoaded]
+  );
+  const renderThumbnail = useCallback(
+    (slide) => {
+      if (!slide) return null;
+      const thumbnailUrl = slide.thumbnail;
+      if (!thumbnailUrl || imageErrors.has(thumbnailUrl)) return null;
+      if (slide.thumbnailType === "video") {
+        return /* @__PURE__ */ jsx(
+          "video",
+          {
+            src: thumbnailUrl,
+            muted: true,
+            playsInline: true,
+            autoPlay: true,
+            loop: true,
+            preload: "metadata",
+            className: "w-full h-full object-cover transition-transform duration-700 group-hover:scale-110",
+            onError: () => logMediaError("thumbnail video", thumbnailUrl, slide.title)
+          }
+        );
+      }
+      return /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: thumbnailUrl,
+          alt: slide.subtitle || slide.title,
+          className: "w-full h-full object-cover transition-transform duration-700 group-hover:scale-110",
+          onError: () => logMediaError("thumbnail image", thumbnailUrl, slide.title)
+        }
+      );
+    },
+    [imageErrors, logMediaError]
+  );
+  return /* @__PURE__ */ jsxs("section", { className: "relative w-full h-auto md:h-screen overflow-hidden bg-background", children: [
+    isFetching && /* @__PURE__ */ jsxs("div", { className: "absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full", children: [
+      /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin text-white/80" }),
+      /* @__PURE__ */ jsx("span", { className: "text-xs text-white/80", children: "Updating..." })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Swiper,
+      {
+        modules: [EffectFade, Autoplay, Navigation],
+        effect: "fade",
+        speed: 1200,
+        autoplay: { delay: 6e3, disableOnInteraction: false },
+        loop: true,
+        onSwiper: setSwiperInstance,
+        onSlideChange: (swiper) => setActiveIndex(swiper.realIndex),
+        className: "w-full h-full",
+        children: slides.map((slide, index) => /* @__PURE__ */ jsxs(
+          SwiperSlide,
+          {
+            className: "relative w-full h-full",
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "hidden md:block absolute inset-0 w-full h-full overflow-hidden", children: renderDesktopMedia(slide, index) }),
+              /* @__PURE__ */ jsx("div", { className: "hidden md:block absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" }),
+              /* @__PURE__ */ jsx("div", { className: "hidden md:block absolute inset-0 z-10 pointer-events-none", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center", children: /* @__PURE__ */ jsxs("div", { className: "w-full md:w-[70%] xl:w-[75%] pointer-events-auto", children: [
+                /* @__PURE__ */ jsx(
+                  motion.h1,
+                  {
+                    initial: { opacity: 0, y: 30 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { delay: 0.3, duration: 0.8 },
+                    className: "text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg",
+                    children: slide.title
+                  },
+                  `title-${index}-${slide.title}`
+                ),
+                /* @__PURE__ */ jsx(
+                  motion.p,
+                  {
+                    initial: { opacity: 0, y: 20 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { delay: 0.5, duration: 0.8 },
+                    className: "text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase drop-shadow-md",
+                    children: slide.subtitle
+                  },
+                  `subtitle-${index}-${slide.subtitle}`
+                ),
+                slide.cta && /* @__PURE__ */ jsxs(
+                  motion.button,
+                  {
+                    initial: { opacity: 0, scale: 0.9 },
+                    animate: { opacity: 1, scale: 1 },
+                    transition: { delay: 0.7, duration: 0.8 },
+                    disabled: !slide.ctaLink,
+                    onClick: () => {
+                      if (slide.ctaLink) window.location.href = slide.ctaLink;
+                    },
+                    className: `group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border
+                        ${!slide.ctaLink ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70" : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] hover:scale-105 hover:-translate-y-0.5 cursor-pointer border-amber-300/40"}`,
+                    children: [
+                      slide.ctaLink && /* @__PURE__ */ jsx("span", { className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" }),
+                      /* @__PURE__ */ jsx("span", { className: "relative z-10", children: slide.cta })
+                    ]
+                  },
+                  `cta-${index}-${slide.cta}`
+                )
+              ] }) }) }),
+              /* @__PURE__ */ jsx("div", { className: "hidden md:block absolute bottom-0 left-0 w-full h-32 md:h-48 z-10 pointer-events-none", children: /* @__PURE__ */ jsx("svg", { viewBox: "0 0 1440 320", className: "w-full h-full drop-shadow-lg", preserveAspectRatio: "none", children: /* @__PURE__ */ jsx(
+                "path",
+                {
+                  className: "fill-background",
+                  d: "M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                }
+              ) }) }),
+              /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "block md:hidden relative w-full bg-black overflow-hidden",
+                  style: { height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" },
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 overflow-hidden", style: { top: "64px" }, children: renderMobileMedia(slide, index) }),
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 pointer-events-none", style: { top: "64px" }, children: /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" }) }),
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" }),
+                    /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center", style: { top: "64px", bottom: "2.5rem" }, children: [
+                      /* @__PURE__ */ jsx(
+                        motion.h1,
+                        {
+                          initial: { opacity: 0, y: 14 },
+                          animate: { opacity: 1, y: 0 },
+                          transition: { delay: 0.3, duration: 0.6 },
+                          className: "text-xl font-serif font-semibold text-white leading-snug mb-1 drop-shadow-md",
+                          children: slide.title
+                        },
+                        `m-title-${index}-${slide.title}`
+                      ),
+                      slide.subtitle && /* @__PURE__ */ jsx(
+                        motion.p,
+                        {
+                          initial: { opacity: 0, y: 8 },
+                          animate: { opacity: 1, y: 0 },
+                          transition: { delay: 0.45, duration: 0.6 },
+                          className: "text-[11px] text-white/75 font-light tracking-widest uppercase mb-3",
+                          children: slide.subtitle
+                        },
+                        `m-sub-${index}-${slide.subtitle}`
+                      ),
+                      slide.cta && /* @__PURE__ */ jsxs(
+                        motion.button,
+                        {
+                          initial: { opacity: 0, scale: 0.92 },
+                          animate: { opacity: 1, scale: 1 },
+                          transition: { delay: 0.6, duration: 0.6 },
+                          disabled: !slide.ctaLink,
+                          onClick: () => {
+                            if (slide.ctaLink) window.location.href = slide.ctaLink;
+                          },
+                          className: `group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border
+                      ${!slide.ctaLink ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70" : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"}`,
+                          children: [
+                            slide.ctaLink && /* @__PURE__ */ jsx("span", { className: "absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" }),
+                            /* @__PURE__ */ jsx("span", { className: "relative z-10", children: slide.cta })
+                          ]
+                        },
+                        `m-cta-${index}-${slide.cta}`
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3", children: [
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            swiperInstance?.slidePrev();
+                          },
+                          className: "w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors",
+                          children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-3.5 h-3.5" })
+                        }
+                      ),
+                      /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1.5", children: slides.map((_, i) => /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            handleThumbnailClick(i);
+                          },
+                          className: `h-[3px] rounded-full transition-all duration-500 cursor-pointer
+                        ${activeIndex === i ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" : "w-4 bg-white/40 hover:bg-white/70"}`
+                        },
+                        `mob-dot-${i}`
+                      )) }),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            swiperInstance?.slideNext();
+                          },
+                          className: "w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors",
+                          children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-3.5 h-3.5" })
+                        }
+                      )
+                    ] })
+                  ]
+                }
+              )
+            ]
+          },
+          `slide-${index}-${currentTheme}`
+        ))
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 md:gap-4 lg:gap-6 pr-2", children: [
+        /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1.5 md:gap-2", children: slides.map((_, index) => /* @__PURE__ */ jsx(
+          "div",
+          {
+            onClick: () => handleThumbnailClick(index),
+            className: `cursor-pointer h-[3px] transition-all duration-500 rounded-full ${activeIndex === index ? "w-8 md:w-10 lg:w-12 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]" : "w-4 md:w-5 lg:w-6 bg-white/30 hover:bg-white/60"}`
+          },
+          `indicator-${index}`
+        )) }),
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 md:gap-3", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => swiperInstance?.slidePrev(),
+              className: "w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 cursor-pointer",
+              children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-3 h-3 md:w-4 md:h-4" })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => swiperInstance?.slideNext(),
+              className: "w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 cursor-pointer",
+              children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-3 h-3 md:w-4 md:h-4" })
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden", children: upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => /* @__PURE__ */ jsxs(
+        motion.div,
+        {
+          initial: { opacity: 0, y: 50 },
+          animate: { opacity: 1, y: 0 },
+          transition: { delay: thumbOrder * 0.15 + 0.5 },
+          onClick: () => handleThumbnailClick(index),
+          className: "relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group opacity-60 hover:opacity-100 grayscale hover:grayscale-0",
+          children: [
+            renderThumbnail(slide),
+            /* @__PURE__ */ jsx("div", { className: "absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent", children: /* @__PURE__ */ jsx("p", { className: "text-[10px] md:text-xs text-white/90 font-medium truncate", children: slide.subtitle || slide.title }) })
+          ]
+        },
+        `thumbnail-${index}-${currentTheme}`
+      )) })
+    ] })
+  ] });
+}
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return "";
+  const match = url.match(
+    /(?:youtube\.com\/(?:.*v=|v\/|embed\/)|youtu\.be\/)([^"&?\/\s]{11})/
+  );
+  const videoId = match?.[1];
+  if (!videoId) return url;
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&enablejsapi=1`.replace(
+    /\s+/g,
+    ""
+  );
+};
+function AboutUsSection({
+  initialData
+}) {
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [aboutUsData, setAboutUsData] = useState(
+    initialData?.aboutUsData || null
+  );
+  const [ventures, setVentures] = useState(initialData?.ventures || []);
+  const [recognitions, setRecognitions] = useState(
+    initialData?.recognitions || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialData?.aboutUsData);
+  const [isPaused, setIsPaused] = useState(false);
+  const fetchAboutUs = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getAboutUsAdmin();
+      const data = response?.data || response;
+      if (Array.isArray(data)) {
+        const homepageOnly = data.filter(
+          (item) => item.propertyTypeId == null && item.isActive
+        );
+        if (homepageOnly.length > 0) {
+          const latestData = [...homepageOnly].sort((a, b) => b.id - a.id)[0];
+          setAboutUsData(latestData);
+        } else {
+          setAboutUsData(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching About Us:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const fetchRelatedData = async (id) => {
+    try {
+      const [venturesRes, recognitionsRes] = await Promise.all([
+        getVenturesByAboutUsId(id),
+        getPublicRecognitionsByAboutUsId(id)
+      ]);
+      if (venturesRes?.data) setVentures(venturesRes.data);
+      if (recognitionsRes?.data) setRecognitions(recognitionsRes.data);
+    } catch (error) {
+      console.error("Error fetching related data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAboutUs();
+  }, []);
+  useEffect(() => {
+    if (aboutUsData?.id) {
+      if (aboutUsData.ventures && aboutUsData.ventures.length > 0) {
+        setVentures(aboutUsData.ventures);
+      } else {
+        fetchRelatedData(aboutUsData.id);
+      }
+      if (aboutUsData.recognitions && aboutUsData.recognitions.length > 0) {
+        setRecognitions(aboutUsData.recognitions);
+      }
+    }
+  }, [aboutUsData]);
+  const mediaItems = [];
+  if (aboutUsData?.videoUrl) {
+    mediaItems.push({
+      type: "video",
+      src: getYouTubeEmbedUrl(aboutUsData.videoUrl)
+    });
+  }
+  if (aboutUsData?.media && aboutUsData.media.length > 0) {
+    aboutUsData.media.forEach((m) => {
+      mediaItems.push({
+        type: m.type === "VIDEO" ? "video" : "image",
+        src: m.type === "VIDEO" ? getYouTubeEmbedUrl(m.url) : m.url
+      });
+    });
+  }
+  if (mediaItems.length === 0) {
+    mediaItems.push({ type: "image", src: siteContent.images.about.main.src });
+  }
+  useEffect(() => {
+    if (mediaItems.length <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length);
+    }, 8e3);
+    return () => clearInterval(interval);
+  }, [mediaItems.length, isPaused]);
+  if (isLoading)
+    return /* @__PURE__ */ jsx("div", { className: "py-20 flex justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary" }) });
+  return /* @__PURE__ */ jsxs("section", { className: "py-10 md:py-20 bg-background relative overflow-hidden", children: [
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-0 bg-muted" }),
+    /* @__PURE__ */ jsx("div", { className: "container mx-auto px-6 relative z-10", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-stretch", children: [
+      /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: "relative group flex flex-col",
+          onMouseEnter: () => setIsPaused(true),
+          onMouseLeave: () => setIsPaused(false),
+          children: [
+            /* @__PURE__ */ jsxs("div", { className: "relative flex-1 aspect-video md:aspect-auto md:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border/10", children: [
+              /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
+                motion.div,
+                {
+                  initial: { opacity: 0, x: 20 },
+                  animate: { opacity: 1, x: 0 },
+                  exit: { opacity: 0, x: -20 },
+                  transition: { duration: 0.8 },
+                  className: "w-full h-full absolute inset-0 cursor-pointer",
+                  children: mediaItems[currentMediaIndex].type === "video" ? /* @__PURE__ */ jsx(
+                    "iframe",
+                    {
+                      src: mediaItems[currentMediaIndex].src,
+                      title: aboutUsData?.videoTitle || "Brand Video",
+                      className: "w-full h-full object-cover",
+                      allow: "autoplay; encrypted-media; fullscreen; picture-in-picture",
+                      allowFullScreen: true,
+                      loading: "eager",
+                      referrerPolicy: "strict-origin-when-cross-origin",
+                      style: { border: 0 }
+                    },
+                    `video-player-${currentMediaIndex}`
+                  ) : /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: mediaItems[currentMediaIndex].src,
+                      alt: "Showcase",
+                      className: "w-full h-full object-contain bg-black"
+                    }
+                  )
+                },
+                currentMediaIndex
+              ) }),
+              /* @__PURE__ */ jsx("div", { className: "absolute top-4 left-4 z-20", children: /* @__PURE__ */ jsx("div", { className: "bg-black/40 backdrop-blur-md p-2 rounded-full border border-white/10 text-white", children: mediaItems[currentMediaIndex].type === "video" ? /* @__PURE__ */ jsx(Video, { size: 16 }) : /* @__PURE__ */ jsx(Image$1, { size: 16 }) }) })
+            ] }),
+            mediaItems.length > 1 && /* @__PURE__ */ jsx("div", { className: "flex justify-center gap-2 mt-6", children: mediaItems.map((_, index) => /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => setCurrentMediaIndex(index),
+                className: `h-2 rounded-full transition-all duration-300 ${currentMediaIndex === index ? "bg-primary w-8" : "bg-muted-foreground/30 w-2"}`
+              },
+              index
+            )) })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center space-y-8", children: [
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h2", { className: "text-sm font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground", children: aboutUsData?.sectionTitle || "ABOUT US" }),
+          /* @__PURE__ */ jsx("h3", { className: "text-4xl md:text-5xl font-serif leading-tight mb-4 text-foreground", children: aboutUsData?.subTitle || "Our Story" }),
+          /* @__PURE__ */ jsx("p", { className: "text-lg font-light leading-relaxed text-muted-foreground whitespace-pre-line", children: aboutUsData?.description })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h4", { className: "text-xs font-bold uppercase tracking-widest mb-6 opacity-70 text-muted-foreground", children: "Our Ventures" }),
+          /* @__PURE__ */ jsx("div", { className: "hidden md:flex flex-wrap gap-16", children: ventures.map((venture) => /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "flex flex-col items-center space-y-3 group cursor-pointer",
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "w-16 h-16 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 transition-transform group-hover:-translate-y-1 overflow-hidden p-2", children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: venture.logoUrl,
+                    alt: venture.ventureName,
+                    className: "w-full h-full object-scale-down"
+                  }
+                ) }),
+                /* @__PURE__ */ jsx("span", { className: "text-[10px] uppercase tracking-widest font-medium opacity-60 group-hover:opacity-100 transition-opacity", children: venture.ventureName })
+              ]
+            },
+            venture.id
+          )) }),
+          /* @__PURE__ */ jsx("div", { className: "flex md:hidden flex-col gap-3", children: ventures.map((venture) => /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "flex items-center gap-4 group cursor-pointer",
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center bg-slate-900/90 border border-white/10 overflow-hidden p-1.5", children: /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: venture.logoUrl,
+                    alt: venture.ventureName,
+                    className: "w-full h-full object-scale-down"
+                  }
+                ) }),
+                /* @__PURE__ */ jsx("span", { className: "text-xs uppercase tracking-widest font-medium text-foreground opacity-70 group-hover:opacity-100 transition-opacity", children: venture.ventureName })
+              ]
+            },
+            venture.id
+          )) })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h4", { className: "text-xs font-bold uppercase tracking-widest mb-4 opacity-70 text-muted-foreground", children: "Globally Recognized" }),
+          /* @__PURE__ */ jsx("div", { className: "grid grid-cols-3 gap-3", children: recognitions.map((item) => /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "bg-secondary/20 border border-border/50 rounded-lg p-2 text-center group hover:border-primary/30 transition-all shadow-sm",
+              children: [
+                /* @__PURE__ */ jsx("div", { className: "text-xl font-serif font-bold text-primary mb-1", children: item.value }),
+                /* @__PURE__ */ jsx("div", { className: "text-[10px] uppercase tracking-tighter font-bold text-foreground mb-1 leading-tight", children: item.title }),
+                /* @__PURE__ */ jsx("div", { className: "text-[8px] uppercase tracking-widest text-muted-foreground font-medium opacity-60", children: item.subTitle })
+              ]
+            },
+            item.id
+          )) })
+        ] })
+      ] })
+    ] }) })
+  ] });
+}
+const IconMap = {
+  HOTEL: Building2,
+  CAFE: Coffee,
+  BAR: Wine,
+  EVENT: Briefcase,
+  MUSIC: Music,
+  RESTAURANT: UtensilsCrossed,
+  Hotel: Building2,
+  Restaurant: UtensilsCrossed,
+  Cafe: Coffee,
+  Bar: Wine,
+  Event: Briefcase,
+  Music
+};
+const truncateDescription = (text, maxWords = 6) => {
+  if (!text) return "";
+  const words = text.trim().split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(" ") + "...";
+};
+const isValidDivision = (div) => {
+  return !!(div.title?.trim() && (div.icon?.trim() || div.icons?.url));
+};
+function BusinessVerticals({
+  initialData = null
+}) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [groupData, setGroupData] = useState(initialData);
+  const [loading, setLoading] = useState(!initialData);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await getKennediaGroup();
+        const validData = res?.divisions ? res : res?.data;
+        if (validData && Array.isArray(validData.divisions)) {
+          const cleaned = {
+            ...validData,
+            divisions: validData.divisions.filter(isValidDivision).slice(0, 5)
+          };
+          setGroupData(cleaned);
+        } else {
+          setGroupData(null);
+        }
+      } catch (error) {
+        console.error("Kennedia Group fetch failed:", error);
+        setGroupData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  if (loading) return null;
+  if (!groupData) return null;
+  return /* @__PURE__ */ jsx("section", { className: "py-2 bg-gradient-to-b from-background to-secondary/10 overflow-hidden relative", children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6 relative z-10", children: [
+    /* @__PURE__ */ jsxs("div", { className: "text-center mb-2", children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-3xl md:text-4xl font-serif font-bold text-foreground mb-2", children: groupData.mainTitle }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground max-w-lg mx-auto", children: groupData.subTitle })
+    ] }),
+    isMobile ? /* @__PURE__ */ jsx(
+      MobileTimeline,
+      {
+        verticals: groupData.divisions,
+        logoIcon: groupData.icon,
+        logoText: groupData.logoText,
+        logoSubText: groupData.logoSubText
+      }
+    ) : /* @__PURE__ */ jsx(
+      DesktopTree,
+      {
+        divisions: groupData.divisions,
+        logoText: groupData.logoText,
+        logoSubText: groupData.logoSubText,
+        logoIcon: groupData.icon
+      }
+    )
+  ] }) });
+}
+function DesktopTree({ divisions, logoText, logoSubText, logoIcon }) {
+  const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
+  const sortedDivisions = safeDivisions.sort((a, b) => a.displayOrder - b.displayOrder).slice(0, 5);
+  return /* @__PURE__ */ jsxs("div", { className: "relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative z-20 mb-16", children: [
+      /* @__PURE__ */ jsx("div", { className: "w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden", children: logoIcon?.url ? /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: logoIcon.url,
+          alt: logoIcon.alt || logoText || "Group Logo",
+          className: "w-full h-full object-cover"
+        }
+      ) : /* @__PURE__ */ jsxs("div", { className: "text-center px-2", children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold text-foreground leading-none", children: logoText }),
+        /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase tracking-widest text-primary mt-1 font-bold", children: logoSubText })
+      ] }) }),
+      /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "relative w-4/5 h-[1px] bg-primary/20 mb-8" }),
+    /* @__PURE__ */ jsx("div", { className: "flex justify-between items-start w-full px-4 relative -mt-8", children: sortedDivisions.map((v, i) => /* @__PURE__ */ jsx(BranchNode, { item: v, index: i }, v.id)) })
+  ] });
+}
+function BranchNode({ item, index }) {
+  const hasLink = !!item.ctaLink?.trim();
+  const iconImageUrl = item.icons?.url;
+  const cardContent = iconImageUrl ? /* @__PURE__ */ jsx("div", { className: "mb-3 flex items-center justify-center", children: /* @__PURE__ */ jsx(
+    "img",
+    {
+      src: iconImageUrl,
+      alt: item.title,
+      className: "h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition"
+    }
+  ) }) : null;
+  return /* @__PURE__ */ jsxs(
+    motion.div,
+    {
+      initial: { opacity: 0, y: 30 },
+      whileInView: { opacity: 1, y: 0 },
+      transition: { delay: index * 0.1 },
+      className: "flex flex-col items-center text-center group relative flex-1",
+      children: [
+        /* @__PURE__ */ jsx("div", { className: "h-8 w-[1px] bg-primary/20 mb-4" }),
+        hasLink ? /* @__PURE__ */ jsx(Link, { to: item.ctaLink, children: cardContent }) : /* @__PURE__ */ jsx("div", { className: "cursor-default", children: cardContent }),
+        /* @__PURE__ */ jsx(
+          "h3",
+          {
+            className: `text-sm font-bold ${hasLink ? "group-hover:text-primary transition-colors" : ""}`,
+            children: item.title
+          }
+        ),
+        /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground/70 max-w-[120px] line-clamp-2", children: truncateDescription(item.description, 6) }),
+        hasLink && /* @__PURE__ */ jsxs("span", { className: "text-[10px] text-primary/60 mt-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+          "Visit ",
+          /* @__PURE__ */ jsx(ArrowRight$1, { className: "w-2.5 h-2.5" })
+        ] })
+      ]
+    }
+  );
+}
+function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }) {
+  const safeVerticals = Array.isArray(verticals) ? verticals.slice(0, 5) : [];
+  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center gap-6 py-4", children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-card shadow-xl border border-primary/20 px-4 py-3 rounded-xl flex items-center justify-center", children: logoIcon?.url ? /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: logoIcon.url,
+        alt: logoIcon.alt || logoText || "Group Logo",
+        className: "max-h-12 w-auto object-contain"
+      }
+    ) : /* @__PURE__ */ jsxs("div", { className: "text-center px-2", children: [
+      /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold text-foreground leading-none", children: logoText }),
+      /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase tracking-widest text-primary mt-1 font-bold", children: logoSubText })
+    ] }) }),
+    /* @__PURE__ */ jsx("div", { className: "w-[1px] h-6 border-l border-dashed border-primary/30" }),
+    /* @__PURE__ */ jsx("div", { className: "relative pl-6 border-l border-dashed border-primary/20 space-y-8 w-full", children: safeVerticals.map((v) => {
+      IconMap[v.icon] || Building2;
+      const hasLink = !!v.ctaLink?.trim();
+      const iconImageUrl = v.icons?.url;
+      const cardContent = /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsx("div", { className: "w-9 h-9 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0", children: iconImageUrl && /* @__PURE__ */ jsx(
+          "img",
+          {
+            src: iconImageUrl,
+            alt: v.title,
+            className: "h-6 w-auto object-contain opacity-90"
+          }
+        ) }),
+        /* @__PURE__ */ jsx("h3", { className: "text-base font-bold", children: v.title }),
+        hasLink && /* @__PURE__ */ jsx(ArrowRight$1, { className: "w-4 h-4 ml-auto text-muted-foreground" })
+      ] });
+      return hasLink ? /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: v.ctaLink,
+          className: "block bg-card p-4 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all",
+          children: cardContent
+        },
+        v.id
+      ) : /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "block bg-card p-4 rounded-xl border border-border",
+          children: cardContent
+        },
+        v.id
+      );
+    }) })
+  ] });
+}
 const OptimizedImage = ({
   src,
   alt = "",
@@ -2018,6 +2978,162 @@ const OptimizedImage = ({
     )
   ] });
 };
+const getIconComponent = (iconName) => {
+  const iconMap = {
+    sparkle: Sparkles,
+    sparkles: Sparkles,
+    award: Award,
+    users: Users,
+    star: Star,
+    mappin: MapPin,
+    trendingup: TrendingUp
+  };
+  return iconMap[iconName.toLowerCase()] || Sparkles;
+};
+function GlobalPresence({
+  initialData
+}) {
+  const [locations, setLocations] = useState(
+    initialData?.locations || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialData?.sectionData);
+  const [sectionData, setSectionData] = useState(
+    initialData?.sectionData || null
+  );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const locationsRes = await getAllLocations();
+        if (locationsRes?.data && Array.isArray(locationsRes.data)) {
+          const activeLocations = locationsRes.data.filter((location) => location.isActive).map((location) => ({
+            state: location.state,
+            city: location.locationName
+          }));
+          setLocations(activeLocations);
+        }
+        const presenceRes = await getOurPresenceSection();
+        if (presenceRes?.data) {
+          setSectionData(presenceRes.data);
+        } else {
+          setSectionData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching Global Presence:", error);
+        setSectionData(null);
+        setLocations([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  const sortedItems = sectionData?.items ? [...sectionData.items].sort((a, b) => a.displayOrder - b.displayOrder) : [];
+  if (isLoading) return null;
+  if (!sectionData) return null;
+  return /* @__PURE__ */ jsxs("section", { className: "py-16 md:py-20 bg-secondary/20 relative overflow-hidden", children: [
+    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 opacity-[0.03] pointer-events-none", children: /* @__PURE__ */ jsx(
+      OptimizedImage,
+      {
+        ...siteContent.images.globalPresence.map,
+        className: "w-full h-full object-cover grayscale"
+      }
+    ) }),
+    /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6 relative z-10", children: [
+      /* @__PURE__ */ jsxs("div", { className: "text-center max-w-3xl mx-auto mb-12", children: [
+        /* @__PURE__ */ jsx(
+          motion.span,
+          {
+            initial: { opacity: 0, y: 20 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true },
+            className: "text-primary text-xs font-bold uppercase tracking-[0.25em] mb-3 block",
+            children: sectionData.sectionTitle
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          motion.h2,
+          {
+            initial: { opacity: 0, y: 20 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true },
+            transition: { delay: 0.1 },
+            className: "text-3xl md:text-4xl font-serif text-foreground mb-4 leading-tight",
+            children: sectionData.sectionSubtitle
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          motion.p,
+          {
+            initial: { opacity: 0, y: 20 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true },
+            transition: { delay: 0.2 },
+            className: "text-muted-foreground font-light leading-relaxed text-sm md:text-base",
+            children: "Handpicked destinations that blend heritage charm with modern excellence, creating unforgettable stays in India's most iconic cities."
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12", children: [
+        /* @__PURE__ */ jsxs(
+          motion.div,
+          {
+            initial: { opacity: 0, x: -20 },
+            whileInView: { opacity: 1, x: 0 },
+            viewport: { once: true },
+            transition: { delay: 0.3 },
+            className: "lg:col-span-5 bg-card/40 backdrop-blur-sm border border-primary/10 rounded-lg p-6",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-6", children: [
+                /* @__PURE__ */ jsx(MapPin, { className: "w-5 h-5 text-primary" }),
+                /* @__PURE__ */ jsx("h3", { className: "text-lg font-serif font-semibold text-foreground", children: "Our Destinations" })
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-4", children: locations.map((location, index) => /* @__PURE__ */ jsx(
+                motion.div,
+                {
+                  initial: { opacity: 0, y: 10 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: true },
+                  transition: { delay: 0.4 + index * 0.05 },
+                  className: "group cursor-pointer",
+                  children: /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-2 p-2 rounded hover:bg-primary/5 transition-colors", children: [
+                    /* @__PURE__ */ jsx("div", { className: "w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0 group-hover:scale-125 transition-transform" }),
+                    /* @__PURE__ */ jsxs("div", { className: "flex flex-col", children: [
+                      /* @__PURE__ */ jsx("span", { className: "text-sm font-medium text-foreground group-hover:text-primary transition-colors", children: location.city }),
+                      /* @__PURE__ */ jsx("span", { className: "text-xs text-muted-foreground", children: location.state })
+                    ] })
+                  ] })
+                },
+                `${location.city}-${index}`
+              )) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5", children: sortedItems.map((item, index) => {
+          const IconComponent = getIconComponent(item.icon);
+          return /* @__PURE__ */ jsx(
+            motion.div,
+            {
+              initial: { opacity: 0, y: 20 },
+              whileInView: { opacity: 1, y: 0 },
+              viewport: { once: true },
+              transition: { delay: 0.5 + index * 0.1 },
+              className: "bg-card/30 backdrop-blur-sm border border-primary/10 rounded-lg p-5 hover:border-primary/30 hover:shadow-lg transition-all duration-300 group",
+              children: /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-4", children: [
+                /* @__PURE__ */ jsx("div", { className: "w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors", children: /* @__PURE__ */ jsx(IconComponent, { className: "w-5 h-5 text-primary" }) }),
+                /* @__PURE__ */ jsxs("div", { className: "flex flex-col", children: [
+                  /* @__PURE__ */ jsx("h4", { className: "text-sm font-semibold text-foreground mb-1 group-hover:text-primary transition-colors", children: item.title }),
+                  /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground leading-relaxed", children: item.subtitle })
+                ] })
+              ] })
+            },
+            item.id
+          );
+        }) })
+      ] })
+    ] })
+  ] });
+}
 const footerSections = [
   {
     title: "About Us",
@@ -2187,6 +3303,745 @@ function OfferVideo({ src }) {
     )
   ] });
 }
+const detectBanner$3 = (image) => {
+  if (!image) return false;
+  if (image.width && image.height) {
+    const ratio = image.width / image.height;
+    if (ratio <= 0.85) return true;
+  }
+  const name = (image.fileName || "").toLowerCase();
+  const url = (image.src || "").toLowerCase();
+  const sourceString = `${name} ${url}`;
+  if (sourceString.includes("1080") || sourceString.includes("1350") || sourceString.includes("instagram_post")) {
+    return true;
+  }
+  if (image.type === "VIDEO") return true;
+  return false;
+};
+function CountdownTimer$4({ expiresAt }) {
+  const [label, setLabel] = useState("");
+  const [isExpired, setIsExpired] = useState(false);
+  useEffect(() => {
+    if (!expiresAt) return;
+    const i = setInterval(() => {
+      const expiry = new Date(expiresAt);
+      expiry.setHours(23, 59, 59, 999);
+      const diff = expiry.getTime() - Date.now();
+      if (diff <= 0) {
+        setLabel("Expired");
+        setIsExpired(true);
+        clearInterval(i);
+      } else {
+        const h = Math.floor(diff / 36e5);
+        const m = Math.floor(diff % 36e5 / 6e4);
+        setLabel(`${h}h ${m}m Remaining`);
+        setIsExpired(false);
+      }
+    }, 1e3);
+    return () => clearInterval(i);
+  }, [expiresAt]);
+  if (!label) return null;
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: `flex items-center gap-1 px-2.5 py-1 text-white text-[10px] font-bold rounded-full shadow-md ${isExpired ? "bg-red-600" : "bg-black/70"}`,
+      children: [
+        /* @__PURE__ */ jsx(Clock, { className: "w-3 h-3" }),
+        label
+      ]
+    }
+  );
+}
+function DailyOffers$1({ initialOffers = [] }) {
+  const { dailyOffers } = siteContent.text;
+  const [swiper, setSwiper] = useState(null);
+  const [offers, setOffers] = useState(initialOffers);
+  const [loading, setLoading] = useState(initialOffers.length === 0);
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        const res = await getDailyOffers({
+          targetType: "GLOBAL",
+          page: 0,
+          size: 100
+        });
+        const rawData = res.data?.data || res.data || [];
+        const list = Array.isArray(rawData) ? rawData : rawData.content || [];
+        const now = Date.now();
+        const DAYS2 = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY"
+        ];
+        const todayName2 = DAYS2[(/* @__PURE__ */ new Date()).getDay()];
+        const active = list.filter((o) => {
+          let notExpired = true;
+          if (o.expiresAt) {
+            const expiry = new Date(o.expiresAt);
+            expiry.setHours(23, 59, 59, 999);
+            notExpired = expiry.getTime() > now;
+          }
+          const isDayActive = !o.activeDays?.length || o.activeDays.includes(todayName2);
+          return o.isActive && notExpired && o.showOnHomepage === true && isDayActive;
+        });
+        setOffers(
+          active.map((o) => ({
+            id: o.id,
+            title: o.title,
+            description: o.description,
+            couponCode: o.couponCode,
+            ctaText: o.ctaText || "",
+            ctaLink: o.ctaUrl || o.ctaLink || null,
+            expiresAt: o.expiresAt,
+            propertyType: o.propertyTypeName || "",
+            image: o.image?.url ? {
+              src: o.image.url,
+              type: o.image.type,
+              width: o.image.width,
+              height: o.image.height,
+              fileName: o.image.fileName,
+              alt: o.title
+            } : null
+          }))
+        );
+      } catch (err) {
+        console.error("Offer fetch failed", err);
+        setOffers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOffers();
+  }, []);
+  if (loading)
+    return /* @__PURE__ */ jsx("div", { className: "flex justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }) });
+  if (!offers.length) return null;
+  return /* @__PURE__ */ jsx("section", { className: "bg-muted py-10", children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif", children: dailyOffers?.title }),
+        /* @__PURE__ */ jsx("div", { className: "h-1 w-10 bg-primary mt-1 rounded-full" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxs(
+          Link,
+          {
+            to: "/offers",
+            className: "hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all",
+            children: [
+              "View All ",
+              /* @__PURE__ */ jsx(ArrowUpRight, { className: "w-4 h-4" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slidePrev(),
+            className: "p-2 rounded-full hover:bg-white/50 transition-colors",
+            children: /* @__PURE__ */ jsx(ChevronLeft, { size: 20 })
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slideNext(),
+            className: "p-2 rounded-full hover:bg-white/50 transition-colors",
+            children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 20 })
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Swiper,
+      {
+        modules: [Navigation, Autoplay],
+        slidesPerView: 1,
+        spaceBetween: 16,
+        breakpoints: {
+          640: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          1200: { slidesPerView: 4 }
+        },
+        autoplay: {
+          delay: 5e3,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        },
+        onSwiper: setSwiper,
+        children: offers.map((offer, i) => {
+          const isBanner = detectBanner$3(offer.image);
+          const isClickable = !!offer.ctaLink;
+          const hasContent = !!(offer.title || offer.description || offer.couponCode);
+          const hasCtaText = !!(offer.ctaText && offer.ctaText.trim());
+          const showFullImage = isBanner || !hasContent;
+          return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsxs("div", { className: "group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer", children: [
+            /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: `relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`,
+                children: [
+                  offer.image ? offer.image.type === "VIDEO" ? /* @__PURE__ */ jsx(OfferVideo, { src: offer.image.src }) : /* @__PURE__ */ jsx(
+                    "img",
+                    {
+                      src: offer.image.src,
+                      alt: offer.image.alt,
+                      className: `w-full h-full ${showFullImage ? "object-contain bg-black" : "object-cover"} object-center transition-transform duration-500 group-hover:scale-105`
+                    }
+                  ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full flex items-center justify-center bg-muted", children: /* @__PURE__ */ jsx(Tag, { className: "w-10 h-10 text-muted-foreground/30" }) }),
+                  /* @__PURE__ */ jsx("div", { className: "absolute top-3 left-3 bg-black/70 text-white text-[10px] px-2 py-1 rounded z-10 font-bold uppercase tracking-wider", children: offer.propertyType }),
+                  offer.expiresAt && /* @__PURE__ */ jsx("div", { className: "absolute top-3 right-3 z-10", children: /* @__PURE__ */ jsx(CountdownTimer$4, { expiresAt: offer.expiresAt }) }),
+                  showFullImage && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 z-20", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "mb-3", children: [
+                      offer.title && /* @__PURE__ */ jsx("h3", { className: "text-white font-bold text-sm line-clamp-1", children: offer.title }),
+                      offer.description && /* @__PURE__ */ jsx("p", { className: "text-white/80 text-[10px] line-clamp-1", children: offer.description })
+                    ] }),
+                    hasCtaText && (isClickable ? /* @__PURE__ */ jsxs(
+                      "a",
+                      {
+                        href: offer.ctaLink,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg hover:bg-red-700",
+                        children: [
+                          offer.ctaText,
+                          " ",
+                          /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                        ]
+                      }
+                    ) : /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        disabled: true,
+                        className: "w-full bg-white/20 text-white py-2.5 rounded-lg text-xs font-bold cursor-not-allowed flex items-center justify-center gap-2",
+                        children: [
+                          offer.ctaText,
+                          " ",
+                          /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                        ]
+                      }
+                    ))
+                  ] })
+                ]
+              }
+            ),
+            !showFullImage && /* @__PURE__ */ jsxs("div", { className: "p-4 flex flex-col flex-1", children: [
+              /* @__PURE__ */ jsx("h3", { className: "text-sm font-serif font-bold line-clamp-2 leading-tight text-foreground group-hover:text-red-600 transition-colors", children: offer.title }),
+              /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground italic line-clamp-2 mt-2", children: offer.description }),
+              /* @__PURE__ */ jsxs("div", { className: "mt-auto pt-3 border-t border-muted", children: [
+                offer.couponCode && /* @__PURE__ */ jsxs("div", { className: "text-[11px] mb-3 flex items-center justify-center gap-2 bg-muted/50 px-3 py-2 rounded-md border border-dashed border-primary/20", children: [
+                  /* @__PURE__ */ jsx("span", { className: "text-muted-foreground font-medium uppercase", children: "Code" }),
+                  /* @__PURE__ */ jsx("span", { className: "font-mono font-black text-primary text-xs tracking-widest bg-card px-2 py-0.5 rounded shadow-sm border", children: offer.couponCode })
+                ] }),
+                hasCtaText && (isClickable ? /* @__PURE__ */ jsxs(
+                  "a",
+                  {
+                    href: offer.ctaLink,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    className: "w-full bg-red-600 text-white py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-colors shadow-md",
+                    children: [
+                      offer.ctaText,
+                      " ",
+                      /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                    ]
+                  }
+                ) : /* @__PURE__ */ jsxs(
+                  "button",
+                  {
+                    disabled: true,
+                    className: "w-full bg-muted/80 py-2.5 rounded-lg text-xs font-bold opacity-70 cursor-not-allowed flex items-center justify-center gap-2",
+                    children: [
+                      offer.ctaText,
+                      " ",
+                      /* @__PURE__ */ jsx(ExternalLink, { size: 12 })
+                    ]
+                  }
+                ))
+              ] })
+            ] })
+          ] }) }, offer.id || i);
+        })
+      }
+    )
+  ] }) });
+}
+const getAmenityName$7 = (amenity) => {
+  if (typeof amenity === "string") return amenity;
+  if (amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string") {
+    return amenity.name;
+  }
+  return null;
+};
+const SUBTITLE_LIMIT = 120;
+const CarouselItem = ({
+  property,
+  isActive,
+  total,
+  activeIndex,
+  onDotClick,
+  nextProperty
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
+  const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
+  const nextImageUrl = nextProperty?.media?.[0]?.url || nextProperty?.media?.[0] || "";
+  const propertyPath = `${createCitySlug(
+    property.city || property.propertyName
+  )}/${createHotelSlug(
+    property.propertyName || property.city || "",
+    property.propertyId
+  )}`;
+  const propertyName = property.propertyName || "";
+  const subTitle = property.subTitle || "";
+  const isLong = subTitle.length > SUBTITLE_LIMIT;
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: `absolute inset-0 transition-all duration-1000 ${isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"}`,
+      children: [
+        imageUrl ? /* @__PURE__ */ jsx(
+          OptimizedImage,
+          {
+            src: imageUrl,
+            alt: property.propertyName || "Property",
+            className: "w-full h-full object-cover"
+          }
+        ) : /* @__PURE__ */ jsx("div", { className: "w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center", children: /* @__PURE__ */ jsx(Building2, { className: "w-24 h-24 text-gray-600" }) }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" }),
+        /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 flex flex-col justify-between px-8 lg:px-10 py-8", children: [
+          /* @__PURE__ */ jsx("div", { className: "min-h-[28px]", children: property.tagline ? /* @__PURE__ */ jsx("p", { className: "text-white/75 text-xs font-light italic tracking-wide max-w-xs leading-relaxed", children: property.tagline }) : null }),
+          /* @__PURE__ */ jsxs("div", { className: "text-white max-w-lg", children: [
+            total > 1 && /* @__PURE__ */ jsx("div", { className: "flex items-center gap-5 mb-5", children: Array.from({ length: total }).map((_, i) => /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  onDotClick(i);
+                },
+                className: `text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${i === activeIndex ? "text-white border-b-2 border-white" : "text-white/35 border-b-2 border-transparent hover:text-white/60"}`,
+                children: String(i + 1).padStart(2, "0")
+              },
+              i
+            )) }),
+            /* @__PURE__ */ jsx("h1", { className: "text-2xl lg:text-3xl font-serif leading-tight mb-1", children: /* @__PURE__ */ jsx("span", { className: "block font-bold not-italic", children: propertyName }) }),
+            subTitle && /* @__PURE__ */ jsxs("div", { className: "mb-1", children: [
+              /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: `transition-all duration-300 ${expanded ? "h-[90px] overflow-y-auto" : "h-[42px] overflow-hidden"} pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`,
+                  children: /* @__PURE__ */ jsx("p", { className: "italic font-light text-sm opacity-80 leading-snug", children: subTitle })
+                }
+              ),
+              isLong && /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setExpanded((prev) => !prev);
+                  },
+                  className: "mt-1 text-xs font-semibold not-italic tracking-wide text-white/70 hover:text-white underline underline-offset-2 cursor-pointer",
+                  children: expanded ? "Show less" : "Show more"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 mt-4 mb-5", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center text-sm font-medium text-white/80", children: [
+                /* @__PURE__ */ jsx(MapPin, { className: "w-3.5 h-3.5 mr-1.5 text-primary" }),
+                property.city || "N/A"
+              ] }),
+              property.rating && property.rating > 0 ? /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full backdrop-blur-sm", children: [
+                /* @__PURE__ */ jsx(Star, { className: "w-3.5 h-3.5 text-yellow-400 fill-current" }),
+                /* @__PURE__ */ jsx("span", { className: "font-bold text-sm", children: property.rating.toFixed(1) })
+              ] }) : null
+            ] }),
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  property.propertyType?.toLowerCase() === "restaurant";
+                  navigate(`/${propertyPath}`);
+                },
+                className: "inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer",
+                children: [
+                  "Explore Now",
+                  /* @__PURE__ */ jsx("div", { className: "w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all", children: /* @__PURE__ */ jsx(ArrowRight$1, { size: 14 }) })
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex items-end justify-between", children: [
+            total > 1 ? /* @__PURE__ */ jsx("div", { className: "flex items-center gap-2", children: Array.from({ length: total }).map((_, i) => /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  onDotClick(i);
+                },
+                className: `rounded-full transition-all duration-300 cursor-pointer ${i === activeIndex ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/35 hover:bg-white/60"}`
+              },
+              i
+            )) }) : /* @__PURE__ */ jsx("div", {}),
+            nextProperty && nextImageUrl && /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  onDotClick((activeIndex + 1) % total);
+                },
+                className: "relative w-20 h-20 mb-6 rounded-full overflow-hidden border-2 border-white/50 shadow-xl hover:border-white/90 hover:scale-105 transition-all cursor-pointer flex-shrink-0",
+                title: `Next: ${nextProperty.propertyName}`,
+                children: [
+                  /* @__PURE__ */ jsx(
+                    OptimizedImage,
+                    {
+                      src: nextImageUrl,
+                      alt: nextProperty.propertyName,
+                      className: "w-full h-full object-cover"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/15 rounded-full" })
+                ]
+              }
+            )
+          ] })
+        ] })
+      ]
+    }
+  );
+};
+function PropertiesSection({
+  initialProperties = []
+}) {
+  const navigate = useNavigate();
+  const [apiProperties, setApiProperties] = useState(initialProperties);
+  const [loading, setLoading] = useState(initialProperties.length === 0);
+  const [selectedCity, setSelectedCity] = useState("All Cities");
+  const [selectedType, setSelectedType] = useState("All Types");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  useEffect(() => {
+    const fetchFullPropertyData = async () => {
+      try {
+        setLoading(true);
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data?.data || response?.data || [];
+        if (Array.isArray(rawData)) {
+          const formatted = rawData.flatMap((item) => {
+            const parent = item.propertyResponseDTO;
+            const listings = item.propertyListingResponseDTOS || [];
+            if (!parent || parent.isActive !== true) return [];
+            return listings.filter((l) => l.isActive === true).map((l) => ({
+              id: l.id,
+              propertyId: parent?.id,
+              listingId: l.id,
+              propertyName: parent?.propertyName || "Unnamed Property",
+              propertyType: l.propertyType || parent?.propertyTypes?.[0] || "Property",
+              city: parent?.locationName,
+              mainHeading: l.mainHeading || "",
+              subTitle: l.subTitle || "",
+              fullAddress: l.fullAddress || parent?.address,
+              tagline: l.tagline || "",
+              rating: l.rating ?? 0,
+              capacity: l.capacity ?? 0,
+              price: l.price ?? 0,
+              gstPercentage: l.gstPercentage ?? 0,
+              discountAmount: l.discountAmount ?? 0,
+              amenities: (l.amenities || []).map((amenity) => getAmenityName$7(amenity)).filter(Boolean),
+              isActive: true,
+              media: l.media || [],
+              bookingEngineUrl: parent?.bookingEngineUrl || null,
+              mobileNumber: parent?.mobileNumber || null,
+              email: parent?.email || null
+            }));
+          });
+          setApiProperties([...formatted].reverse());
+        }
+      } catch (error) {
+        console.error("❌ API Error:", error);
+        toast$2.error("Could not fetch latest properties");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFullPropertyData();
+  }, []);
+  const filtered = apiProperties.filter((p) => {
+    const matchCity = selectedCity === "All Cities" || p.city === selectedCity;
+    const matchType = selectedType === "All Types" || p.propertyType === selectedType;
+    return matchCity && matchType;
+  });
+  const nextSlide = () => setActiveIndex((prev) => prev === filtered.length - 1 ? 0 : prev + 1);
+  const prevSlide = () => setActiveIndex((prev) => prev === 0 ? filtered.length - 1 : prev - 1);
+  useEffect(() => {
+    if (filtered.length <= 1 || isPaused) return;
+    const timer = setInterval(nextSlide, 8e3);
+    return () => clearInterval(timer);
+  }, [filtered.length, activeIndex, isPaused]);
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [selectedCity, selectedType]);
+  const active = filtered[activeIndex];
+  const nextProperty = filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
+  const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
+  const basePrice = active?.price ?? 0;
+  const discount = active?.discountAmount ?? 0;
+  active?.gstPercentage ?? 0;
+  const discountedPrice = basePrice - discount;
+  const displayAmenities = active?.amenities?.slice(0, 6) ?? [];
+  active?.amenities?.slice(0, 4) ?? [];
+  const hasAmenities = displayAmenities.length > 0;
+  return /* @__PURE__ */ jsx("section", { className: "py-8 md:py-16 bg-gradient-to-br from-background via-secondary/5 to-background relative", children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 md:px-12", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12", children: [
+      /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-3xl md:text-5xl font-serif text-foreground", children: "Explore Our Properties" }),
+        /* @__PURE__ */ jsx("div", { className: "w-24 h-1 bg-primary rounded-full" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-4", children: [
+        /* @__PURE__ */ jsxs(
+          "select",
+          {
+            value: selectedType,
+            onChange: (e) => setSelectedType(e.target.value),
+            className: "bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer",
+            children: [
+              /* @__PURE__ */ jsx("option", { value: "All Types", children: "All Types" }),
+              Array.from(
+                new Set(apiProperties.map((p) => p.propertyType))
+              ).map((t) => /* @__PURE__ */ jsx("option", { value: t, children: t }, t))
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          "select",
+          {
+            value: selectedCity,
+            onChange: (e) => setSelectedCity(e.target.value),
+            className: "bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer",
+            children: [
+              /* @__PURE__ */ jsx("option", { value: "All Cities", children: "All Cities" }),
+              Array.from(new Set(apiProperties.map((p) => p.city))).map(
+                (c) => /* @__PURE__ */ jsx("option", { value: c, children: c }, c)
+              )
+            ]
+          }
+        ),
+        loading && /* @__PURE__ */ jsx(Loader2, { className: "w-6 h-6 animate-spin text-primary" })
+      ] })
+    ] }),
+    filtered.length > 0 ? /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-[63%_35%] gap-6", children: [
+      /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: "relative h-[440px] md:h-[560px] rounded-2xl overflow-hidden shadow-2xl group",
+          onMouseEnter: () => setIsPaused(true),
+          onMouseLeave: () => setIsPaused(false),
+          children: [
+            filtered.map((p, i) => /* @__PURE__ */ jsx(
+              CarouselItem,
+              {
+                property: p,
+                isActive: i === activeIndex,
+                total: filtered.length,
+                activeIndex,
+                onDotClick: setActiveIndex,
+                nextProperty
+              },
+              `${p.listingId}-${i}`
+            )),
+            filtered.length > 1 && /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    prevSlide();
+                  },
+                  className: "absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer",
+                  children: /* @__PURE__ */ jsx(ChevronLeft, { size: 22 })
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    nextSlide();
+                  },
+                  className: "absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/40 text-white backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer",
+                  children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 22 })
+                }
+              )
+            ] })
+          ]
+        }
+      ),
+      active && /* @__PURE__ */ jsxs("div", { className: "bg-card border border-border rounded-2xl shadow-xl flex flex-col overflow-hidden lg:h-[560px]", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-border", children: [
+          /* @__PURE__ */ jsx("h3", { className: "text-sm md:text-base font-bold text-foreground tracking-wide", children: "Property Details" }),
+          /* @__PURE__ */ jsx("div", { className: "p-1.5 md:p-2 rounded-lg bg-secondary/30 text-muted-foreground", children: /* @__PURE__ */ jsx(Building2, { size: 16 }) })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "px-4 md:px-6 py-3 md:py-5 flex flex-col flex-1 gap-3 md:gap-5 lg:overflow-y-auto", children: [
+          /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3 md:gap-4", children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Capacity" }),
+              active.capacity && active.capacity > 0 ? /* @__PURE__ */ jsxs("p", { className: "text-base md:text-lg font-bold text-foreground", children: [
+                active.capacity,
+                " ",
+                /* @__PURE__ */ jsx("span", { className: "text-xs md:text-sm font-medium text-muted-foreground", children: isRestaurant ? "Covers" : "Guests" })
+              ] }) : /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: "—" })
+            ] }),
+            isRestaurant ? /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Location" }),
+              /* @__PURE__ */ jsx("p", { className: "text-base md:text-lg font-bold text-foreground leading-tight", children: active.city || "—" })
+            ] }) : /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Starting From" }),
+              basePrice > 0 ? /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsxs("p", { className: "text-xl md:text-2xl font-black text-primary leading-none", children: [
+                  "₹",
+                  Math.round(
+                    discountedPrice > 0 ? discountedPrice : basePrice
+                  ).toLocaleString()
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] text-muted-foreground mt-0.5", children: "/night" }),
+                discount > 0 && /* @__PURE__ */ jsxs("p", { className: "text-[10px] md:text-[11px] text-muted-foreground line-through mt-0.5", children: [
+                  "₹",
+                  basePrice.toLocaleString()
+                ] })
+              ] }) : /* @__PURE__ */ jsx("p", { className: "text-sm text-muted-foreground", children: "On Request" })
+            ] })
+          ] }),
+          isRestaurant && /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-3 md:gap-4", children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Type" }),
+              /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold text-foreground", children: active.propertyType })
+            ] }),
+            active.rating && active.rating > 0 ? /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Rating" }),
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+                /* @__PURE__ */ jsx(Star, { className: "w-3.5 h-3.5 md:w-4 md:h-4 text-yellow-400 fill-yellow-400" }),
+                /* @__PURE__ */ jsx("span", { className: "text-base md:text-lg font-bold text-foreground", children: active.rating.toFixed(1) }),
+                /* @__PURE__ */ jsx("span", { className: "text-xs text-muted-foreground", children: "/ 5" })
+              ] })
+            ] }) : /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1", children: "Address" }),
+              /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground leading-snug line-clamp-2", children: active.fullAddress || "—" })
+            ] })
+          ] }),
+          hasAmenities ? /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("p", { className: "text-xs md:text-sm font-bold text-foreground mb-2 md:mb-3", children: "Top Amenities" }),
+            /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 gap-y-1.5 md:gap-y-2.5 gap-x-3", children: displayAmenities.map((amenity, i) => /* @__PURE__ */ jsxs(
+              "div",
+              {
+                className: `flex items-center gap-2 ${i >= 4 ? "hidden md:flex" : ""}`,
+                children: [
+                  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" }),
+                  /* @__PURE__ */ jsx("span", { className: "text-xs md:text-sm text-muted-foreground leading-tight", children: amenity })
+                ]
+              },
+              i
+            )) })
+          ] }) : /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-xs md:text-sm font-bold text-foreground mb-1", children: "Location Info" }),
+            active.city && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50", children: [
+              /* @__PURE__ */ jsx(MapPin, { className: "w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" }),
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5", children: "City" }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs md:text-sm font-semibold text-foreground", children: active.city })
+              ] })
+            ] }),
+            active.fullAddress && /* @__PURE__ */ jsxs("div", { className: "flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-xl bg-secondary/20 border border-border/50", children: [
+              /* @__PURE__ */ jsx(Navigation$1, { className: "w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" }),
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("p", { className: "text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5", children: "Address" }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground leading-snug line-clamp-2", children: active.fullAddress })
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "border-t border-border" }),
+          /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: "space-y-2 md:space-y-3", children: [
+            active.bookingEngineUrl ? /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: () => window.open(active.bookingEngineUrl, "_blank"),
+                className: "w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer",
+                children: [
+                  isRestaurant ? "Reserve Table" : "Book Your Stay",
+                  /* @__PURE__ */ jsx(ArrowRight$1, { size: 15 })
+                ]
+              }
+            ) : /* @__PURE__ */ jsxs(
+              "button",
+              {
+                onClick: () => {
+                  const propertyPath = `${createCitySlug(
+                    active.city || active.propertyName
+                  )}/${createHotelSlug(
+                    active.propertyName || active.city || "property",
+                    active.propertyId
+                  )}`;
+                  active.propertyType?.toLowerCase() === "restaurant";
+                  navigate(`/${propertyPath}`);
+                },
+                className: "w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer",
+                children: [
+                  "View Details ",
+                  /* @__PURE__ */ jsx(ArrowRight$1, { size: 15 })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-2 md:gap-3", children: [
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  onClick: () => {
+                    if (active.mobileNumber) {
+                      window.location.href = `tel:${active.mobileNumber}`;
+                    } else {
+                      toast$2("Phone number not available");
+                    }
+                  },
+                  className: "py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground",
+                  children: [
+                    /* @__PURE__ */ jsx(Phone, { size: 14 }),
+                    " Call"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                "button",
+                {
+                  onClick: () => {
+                    if (active.email) {
+                      window.location.href = `mailto:${active.email}`;
+                    } else {
+                      toast$2("Email not available");
+                    }
+                  },
+                  className: "py-2 md:py-3 border border-border rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm font-semibold hover:bg-secondary/20 transition-colors cursor-pointer text-foreground",
+                  children: [
+                    /* @__PURE__ */ jsx(Mail, { size: 14 }),
+                    " Email"
+                  ]
+                }
+              )
+            ] })
+          ] }) })
+        ] })
+      ] })
+    ] }) : /* @__PURE__ */ jsxs("div", { className: "text-center py-24 bg-card border-2 border-dashed border-border rounded-3xl", children: [
+      /* @__PURE__ */ jsx(Building2, { className: "w-16 h-16 text-muted-foreground/30 mx-auto mb-4" }),
+      /* @__PURE__ */ jsx("p", { className: "text-xl text-muted-foreground font-serif", children: "No active properties found." })
+    ] })
+  ] }) });
+}
 function slugifyEventName(value) {
   return String(value || "").toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 }
@@ -2200,6 +4055,299 @@ function getEventIdFromSlug(value) {
   if (!raw) return "";
   const parts = raw.split("-");
   return parts[parts.length - 1] || raw;
+}
+function EventsSection({
+  initialEvents = []
+}) {
+  const [swiper, setSwiper] = useState(null);
+  const [apiEvents, setApiEvents] = useState(initialEvents);
+  const [loading, setLoading] = useState(initialEvents.length === 0);
+  useEffect(() => {
+    fetchEventData();
+  }, []);
+  const fetchEventData = async () => {
+    try {
+      setLoading(true);
+      const response = await getEventsUpdated();
+      const rawEvents = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      const activeEvents = rawEvents.filter((event) => {
+        const eventDate = new Date(event.eventDate);
+        eventDate.setHours(0, 0, 0, 0);
+        return event.active === true && eventDate >= today;
+      });
+      setApiEvents(
+        activeEvents.sort(
+          (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+        )
+      );
+    } catch (error) {
+      console.error("Failed to fetch events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (loading)
+    return /* @__PURE__ */ jsx("div", { className: "h-[520px] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin text-primary" }) });
+  return /* @__PURE__ */ jsx("section", { id: "events", className: "py-16 bg-muted/30 overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6 lg:px-12", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-8", children: [
+      /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx("h2", { className: "text-3xl md:text-4xl font-serif font-bold text-foreground", children: "Upcoming Events" }),
+        /* @__PURE__ */ jsx("div", { className: "h-1 w-12 bg-primary mt-2 rounded-full" })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsxs(
+          Link,
+          {
+            to: "/events",
+            className: "hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all",
+            children: [
+              "View All ",
+              /* @__PURE__ */ jsx(ArrowUpRight, { className: "w-4 h-4" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slidePrev(),
+            className: "p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm",
+            children: /* @__PURE__ */ jsx(ChevronLeft, { size: 20 })
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slideNext(),
+            className: "p-2 rounded-full border border-border bg-background hover:bg-muted transition-colors shadow-sm",
+            children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 20 })
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Swiper,
+      {
+        modules: [Autoplay, Pagination$2, Navigation],
+        spaceBetween: 16,
+        slidesPerView: 1,
+        autoplay: { delay: 5e3, disableOnInteraction: false, pauseOnMouseEnter: true },
+        onSwiper: setSwiper,
+        breakpoints: {
+          640: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          1200: { slidesPerView: 4 }
+        },
+        className: "!pb-12",
+        children: apiEvents.map((event, index) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx(EventCard$3, { event, index }) }, event.id))
+      }
+    )
+  ] }) });
+}
+function EventCard$3({ event, index }) {
+  const navigate = useNavigate();
+  const [isMuted, setIsMuted] = useState(true);
+  const [naturalRatio, setNaturalRatio] = useState(null);
+  const videoRef = useRef(null);
+  const TARGET_RATIO = 1080 / 1350;
+  const isVideo = event.image?.type === "VIDEO" || event.image?.url?.includes(".mp4");
+  const imageUrl = event.image?.url || "";
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalHeight > 0) setNaturalRatio(naturalWidth / naturalHeight);
+  };
+  const handleVideoMeta = (e) => {
+    const { videoWidth, videoHeight } = e.currentTarget;
+    if (videoHeight > 0) setNaturalRatio(videoWidth / videoHeight);
+  };
+  const toggleMute = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    }
+  };
+  const formatDate2 = (dateString) => {
+    if (!dateString) return { day: "—", month: "—" };
+    const date = new Date(dateString);
+    return {
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
+    };
+  };
+  const { day, month } = formatDate2(event.eventDate);
+  const isFullFrame = naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+  return /* @__PURE__ */ jsx(
+    motion.div,
+    {
+      initial: { opacity: 0, y: 20 },
+      whileInView: { opacity: 1, y: 0 },
+      viewport: { once: true },
+      transition: { delay: index * 0.1 },
+      onClick: () => navigate(buildEventDetailPath(event)),
+      className: "group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer",
+      children: isFullFrame ? (
+        /* ── FULL-FRAME MODE ─────────────────────────────────────────────── */
+        /* @__PURE__ */ jsxs("div", { className: "relative w-full h-full", children: [
+          imageUrl && /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: imageUrl,
+              "aria-hidden": "true",
+              className: "absolute inset-0 w-full h-full object-cover scale-110",
+              style: { filter: "blur(18px)", opacity: 0.55 }
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/40" }),
+          imageUrl ? isVideo ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(
+              "video",
+              {
+                ref: videoRef,
+                src: imageUrl,
+                className: "absolute inset-0 w-full h-full object-contain z-10",
+                autoPlay: true,
+                loop: true,
+                muted: true,
+                playsInline: true,
+                onLoadedMetadata: handleVideoMeta
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: toggleMute,
+                className: "absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors",
+                children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "w-4 h-4" })
+              }
+            )
+          ] }) : /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: imageUrl,
+              alt: event.title,
+              className: "absolute inset-0 w-full h-full object-contain z-10",
+              onLoad: handleImageLoad
+            }
+          ) : /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex items-center justify-center", children: /* @__PURE__ */ jsx(Image$1, { className: "w-10 h-10 text-white/20" }) }),
+          /* @__PURE__ */ jsxs("div", { className: "absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10", children: [
+            /* @__PURE__ */ jsx("span", { className: "text-lg font-black leading-none", children: day }),
+            /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold tracking-tighter", children: month })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1", children: [
+            /* @__PURE__ */ jsx(MapPin, { size: 10 }),
+            " ",
+            event.locationName
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-20 bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end p-5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0", children: [
+            /* @__PURE__ */ jsx("h3", { className: "text-white font-serif font-bold text-xl mb-1 drop-shadow-md line-clamp-1", children: event.title }),
+            event.description && /* @__PURE__ */ jsx("p", { className: "text-white/80 text-xs mb-4 line-clamp-2 italic", children: event.description }),
+            event.ctaText?.trim() && /* @__PURE__ */ jsxs(
+              Link,
+              {
+                to: buildEventDetailPath(event),
+                className: "w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform",
+                children: [
+                  event.ctaText,
+                  " ",
+                  /* @__PURE__ */ jsx(ArrowRight$1, { size: 14 })
+                ]
+              }
+            )
+          ] })
+        ] })
+      ) : (
+        /* ── SPLIT MODE: wider images — image top + info panel fills blank space ── */
+        /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: "relative w-full overflow-hidden flex-shrink-0 bg-black",
+              style: { height: `${Math.min(Math.round(1 / naturalRatio * 100), 65)}%` },
+              children: [
+                imageUrl && /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: imageUrl,
+                    "aria-hidden": "true",
+                    className: "absolute inset-0 w-full h-full object-cover scale-110",
+                    style: { filter: "blur(14px)", opacity: 0.5 }
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/20" }),
+                isVideo ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                  /* @__PURE__ */ jsx(
+                    "video",
+                    {
+                      ref: videoRef,
+                      src: imageUrl,
+                      className: "relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105",
+                      autoPlay: true,
+                      loop: true,
+                      muted: true,
+                      playsInline: true,
+                      onLoadedMetadata: handleVideoMeta
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      onClick: toggleMute,
+                      className: "absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors",
+                      children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "w-4 h-4" })
+                    }
+                  )
+                ] }) : /* @__PURE__ */ jsx(
+                  "img",
+                  {
+                    src: imageUrl,
+                    alt: event.title,
+                    className: "relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105",
+                    onLoad: handleImageLoad
+                  }
+                ),
+                /* @__PURE__ */ jsxs("div", { className: "absolute top-4 left-4 z-20 flex flex-col items-center bg-black/70 backdrop-blur-md text-white px-3 py-1 rounded-lg border border-white/10", children: [
+                  /* @__PURE__ */ jsx("span", { className: "text-lg font-black leading-none", children: day }),
+                  /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold tracking-tighter", children: month })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "absolute top-4 right-4 z-20 bg-primary text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest flex items-center gap-1", children: [
+                  /* @__PURE__ */ jsx(MapPin, { size: 10 }),
+                  " ",
+                  event.locationName
+                ] })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-col flex-1 p-5 bg-card min-h-0", children: [
+            /* @__PURE__ */ jsx("h3", { className: "text-base font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors", children: event.title }),
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 text-muted-foreground mt-2 mb-2", children: [
+              /* @__PURE__ */ jsx(Clock, { size: 12, className: "text-primary flex-shrink-0" }),
+              /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium italic uppercase truncate", children: event.eventDate ? new Date(event.eventDate).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+              }) : "Date TBA" })
+            ] }),
+            event.description && /* @__PURE__ */ jsx("p", { className: "text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-3", children: event.description }),
+            /* @__PURE__ */ jsx("div", { className: "mt-auto pt-3 border-t border-dashed border-border", children: event.ctaText?.trim() && /* @__PURE__ */ jsxs(
+              Link,
+              {
+                to: buildEventDetailPath(event),
+                className: "w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform",
+                children: [
+                  event.ctaText,
+                  " ",
+                  /* @__PURE__ */ jsx(ArrowRight$1, { size: 14 })
+                ]
+              }
+            ) })
+          ] })
+        ] })
+      )
+    }
+  );
 }
 function slugifyNewsTitle(value) {
   return String(value || "").toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
@@ -2215,12 +4363,911 @@ function getNewsIdFromSlug(value) {
   const parts = raw.split("-");
   return parts[parts.length - 1] || raw;
 }
+const ROUTES = {
+  newsDetail: buildNewsDetailPath
+};
+const STYLE_CONFIG$1 = {
+  navigation: {
+    buttonSize: "w-8 h-8",
+    iconSize: "w-4 h-4"
+  }
+};
+const TEXT_CONTENT$1 = {
+  header: {
+    badge: "Updates & Recognition"
+  },
+  aria: {
+    previous: "Previous",
+    next: "Next"
+  }
+};
+function NewsPress$1({
+  initialItems = []
+}) {
+  const [newsItems, setNewsItems] = useState(initialItems);
+  const [loading, setLoading] = useState(initialItems.length === 0);
+  const swiperRef = useRef(null);
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        const res = await getAllNews({ category: "", page: 0, size: 10 });
+        const data = res?.data?.content || res?.content || [];
+        const processedData = Array.isArray(data) ? data.filter((item) => item.active).sort(
+          (a, b) => new Date(b.dateBadge).getTime() - new Date(a.dateBadge).getTime()
+        ).slice(0, 6) : [];
+        setNewsItems(processedData);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
+  }, []);
+  if (loading) {
+    return /* @__PURE__ */ jsx("div", { className: "h-64 flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "w-8 h-8 animate-spin text-primary" }) });
+  }
+  if (newsItems.length === 0) return null;
+  const handlePrev = () => swiperRef.current?.slidePrev();
+  const handleNext = () => swiperRef.current?.slideNext();
+  return /* @__PURE__ */ jsx(
+    "section",
+    {
+      id: "news",
+      className: "py-12 md:py-16 bg-background relative overflow-hidden",
+      children: /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6 lg:px-12", children: [
+        /* @__PURE__ */ jsx(
+          SectionHeader$1,
+          {
+            title: "News & Press",
+            onPrev: handlePrev,
+            onNext: handleNext
+          }
+        ),
+        /* @__PURE__ */ jsx(NewsCarousel$1, { items: newsItems, swiperRef })
+      ] })
+    }
+  );
+}
+function SectionHeader$1({
+  title,
+  onPrev,
+  onNext
+}) {
+  return /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-8", children: [
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("span", { className: "text-xs font-bold text-primary tracking-[0.25em] uppercase block mb-2", children: TEXT_CONTENT$1.header.badge }),
+      /* @__PURE__ */ jsx("h2", { className: "text-2xl md:text-3xl font-serif text-foreground", children: title })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
+      /* @__PURE__ */ jsxs(
+        Link,
+        {
+          to: "/news",
+          className: "hidden md:flex items-center gap-1.5 text-sm font-semibold text-primary hover:gap-2.5 transition-all",
+          children: [
+            "View All ",
+            /* @__PURE__ */ jsx(ArrowUpRight, { className: "w-4 h-4" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsx(
+          NavBtn$1,
+          {
+            onClick: onPrev,
+            icon: /* @__PURE__ */ jsx(ChevronLeft, { className: STYLE_CONFIG$1.navigation.iconSize }),
+            label: TEXT_CONTENT$1.aria.previous
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          NavBtn$1,
+          {
+            onClick: onNext,
+            icon: /* @__PURE__ */ jsx(ChevronRight$1, { className: STYLE_CONFIG$1.navigation.iconSize }),
+            label: TEXT_CONTENT$1.aria.next
+          }
+        )
+      ] })
+    ] })
+  ] });
+}
+function NavBtn$1({
+  onClick,
+  icon,
+  label
+}) {
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick,
+      className: `${STYLE_CONFIG$1.navigation.buttonSize} rounded-full border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer`,
+      "aria-label": label,
+      children: icon
+    }
+  );
+}
+function NewsCarousel$1({
+  items,
+  swiperRef
+}) {
+  return /* @__PURE__ */ jsx(
+    Swiper,
+    {
+      modules: [Autoplay, Navigation],
+      spaceBetween: 24,
+      slidesPerView: 1,
+      loop: items.length > 3,
+      autoplay: { delay: 5e3, disableOnInteraction: false },
+      breakpoints: {
+        640: { slidesPerView: 2 },
+        1024: { slidesPerView: 3 }
+      },
+      onSwiper: (swiper) => swiperRef.current = swiper,
+      className: "w-full pb-4",
+      children: items.map((item) => /* @__PURE__ */ jsx(SwiperSlide, { className: "!h-auto", children: /* @__PURE__ */ jsx(NewsCard$1, { item }) }, item.id))
+    }
+  );
+}
+function NewsCard$1({ item }) {
+  const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
+  const date = new Date(item.dateBadge).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+  const handleCardClick = (e) => {
+    const target = e.target;
+    if (target.closest("[data-expand-toggle]")) return;
+    navigate(ROUTES.newsDetail(item));
+  };
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      onClick: handleCardClick,
+      className: "cursor-pointer group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "relative w-full bg-black overflow-hidden", children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: item.imageUrl,
+              alt: item.title,
+              className: "w-full h-auto object-contain block transition-transform duration-700 group-hover:scale-105",
+              style: { maxHeight: "280px", minHeight: "140px" },
+              onError: (e) => {
+                e.currentTarget.style.display = "none";
+              }
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute top-3 left-3", children: /* @__PURE__ */ jsx("span", { className: "px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded", children: date }) })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "p-5 flex flex-col flex-grow", children: [
+          /* @__PURE__ */ jsxs("div", { className: "mb-2 text-xs font-bold text-primary tracking-wider uppercase", children: [
+            item.category,
+            " • ",
+            item.badgeType
+          ] }),
+          /* @__PURE__ */ jsx("h3", { className: "text-lg font-serif font-bold text-foreground mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2", children: item.title }),
+          /* @__PURE__ */ jsxs("div", { className: "flex-grow", children: [
+            /* @__PURE__ */ jsx(
+              "p",
+              {
+                className: `text-sm text-muted-foreground leading-relaxed transition-all duration-300 ${expanded ? "" : "line-clamp-2"}`,
+                children: item.description
+              }
+            ),
+            item.description && item.description.length > 100 && /* @__PURE__ */ jsx(
+              "button",
+              {
+                "data-expand-toggle": true,
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setExpanded((prev) => !prev);
+                },
+                className: "mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer",
+                children: expanded ? /* @__PURE__ */ jsxs(Fragment, { children: [
+                  "Show less ",
+                  /* @__PURE__ */ jsx(ChevronUp, { className: "w-3 h-3" })
+                ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                  "Show more ",
+                  /* @__PURE__ */ jsx(ChevronDown, { className: "w-3 h-3" })
+                ] })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "mt-3 pt-2 border-t border-border/50", children: /* @__PURE__ */ jsxs(
+            Link,
+            {
+              to: ROUTES.newsDetail(item),
+              className: "inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-2",
+              onClick: (e) => e.stopPropagation(),
+              children: [
+                item.ctaText,
+                /* @__PURE__ */ jsx(ArrowUpRight, { className: "w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" })
+              ]
+            }
+          ) })
+        ] })
+      ]
+    }
+  );
+}
+const isYoutubeUrl$2 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isInstagramUrl$1 = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
+const getYoutubeId$2 = (url) => {
+  if (!url) return null;
+  const matches = [
+    /youtube\.com\/shorts\/([^"&?\/\s]{11})/,
+    /youtu\.be\/([^"&?\/\s]{11})/,
+    /[?&]v=([^"&?\/\s]{11})/,
+    /embed\/([^"&?\/\s]{11})/
+  ];
+  for (const regex of matches) {
+    const match = url.match(regex);
+    if (match) return match[1];
+  }
+  return null;
+};
+const getInstagramId$1 = (url) => {
+  if (!url) return null;
+  const clean = url.trim().split("?")[0].replace(/\/$/, "");
+  const match = clean.match(/instagram\.com\/(?:reel|p|tv)\/([A-Za-z0-9_\-]+)/);
+  return match ? match[1] : null;
+};
+const getYoutubeThumbnail$2 = (url) => {
+  const id = getYoutubeId$2(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
+};
+const buildMediaList$2 = (item) => {
+  const allMedia = [];
+  const seenUrls = /* @__PURE__ */ new Set();
+  const add = (type, url) => {
+    if (url && typeof url === "string" && url.trim() !== "" && !seenUrls.has(url.trim())) {
+      seenUrls.add(url.trim());
+      allMedia.push({ type, url: url.trim() });
+    }
+  };
+  if (item.mediaList && Array.isArray(item.mediaList)) {
+    item.mediaList.forEach((m) => {
+      const url = m.url || m.imageUrl || m.videoUrl;
+      if (!url) return;
+      const isVid = m.type === "VIDEO" || isYoutubeUrl$2(url) || isInstagramUrl$1(url) || url.match(/\.(mp4|webm|mov|ogg)$/i);
+      add(isVid ? "video" : "image", url);
+    });
+  }
+  if (item.videoUrl) add("video", item.videoUrl);
+  if (item.imageUrl) add("image", item.imageUrl);
+  return allMedia;
+};
+function OurStoryPreview({
+  initialData
+}) {
+  const [guestExperiences, setGuestExperiences] = useState(
+    initialData?.guestExperiences || []
+  );
+  const [isLoading, setIsLoading] = useState(!initialData);
+  const [mediaPreviews, setMediaPreviews] = useState([]);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [ytLink, setYtLink] = useState("");
+  const [ytError, setYtError] = useState("");
+  const [sectionHeader, setSectionHeader] = useState(
+    initialData?.sectionHeader || null
+  );
+  const [authorName, setAuthorName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
+  const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
+  const [ratingHeader, setRatingHeader] = useState(
+    initialData?.ratingHeader || null
+  );
+  const swiperRef = useRef(null);
+  const sectionRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
+  const fileInputRef = useRef(null);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  const fetchExperiences = async () => {
+    try {
+      const res = await getGuestExperienceSection({ size: 20 });
+      const rawData = res?.data?.data || res?.data || res;
+      setGuestExperiences(rawData || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    getGuestExperienceSectionHeader().then(
+      (res) => setSectionHeader(Array.isArray(res.data) ? res.data[0] : res.data)
+    );
+    getGuestExperineceRatingHeader().then(
+      (res) => setRatingHeader(Array.isArray(res.data) ? res.data[0] : res.data)
+    );
+    fetchExperiences();
+  }, []);
+  const handleFileUpload = (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newPreviews = Array.from(files).map((file) => ({
+        type: file.type.startsWith("video") ? "video" : "image",
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setMediaPreviews((prev) => [...prev, ...newPreviews]);
+    }
+  };
+  const handleSubmit = async () => {
+    if (!isVerified) {
+      setShowPopup(true);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", feedbackText.slice(0, 20) || "Experience");
+      formData.append("description", feedbackText);
+      formData.append("author", authorName);
+      formData.append("authorPhone", phone);
+      formData.append("authorEmail", email);
+      if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
+      mediaPreviews.forEach((m) => formData.append("files", m.file));
+      await createGuestExperienceByGuest(formData);
+      setFeedbackText("");
+      setMediaPreviews([]);
+      setYtLink("");
+      setIsVerified(false);
+      await fetchExperiences();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const renderMediaItem = (m, idx) => {
+    const videoKey = `video-${m.url}`;
+    const isMuted = !mutedVideos.has(videoKey);
+    if (m.type === "video") {
+      if (isInstagramUrl$1(m.url)) {
+        const id = getInstagramId$1(m.url);
+        if (!id) return null;
+        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
+        return /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "relative w-full h-full bg-black overflow-hidden flex items-center justify-center group",
+            onClick: () => console.log("Container Tapped for Reel:", id),
+            children: [
+              /* @__PURE__ */ jsx(
+                "iframe",
+                {
+                  src: embedUrl,
+                  title: "Instagram Reel",
+                  className: "absolute w-full h-[145%] pointer-events-auto",
+                  style: {
+                    // border: "2px solid red", // DEBUG: Red border = The actual Iframe
+                    top: "-22.5%"
+                  },
+                  allow: "autoplay; encrypted-media"
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-0 pointer-events-none" }),
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: m.url,
+                  target: "_blank",
+                  rel: "noreferrer",
+                  onClick: (e) => e.stopPropagation(),
+                  className: "absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2 py-1 rounded-full transition-opacity opacity-0 group-hover:opacity-100",
+                  children: "Open"
+                }
+              )
+            ]
+          },
+          idx
+        );
+      }
+      if (isYoutubeUrl$2(m.url)) {
+        const videoId = getYoutubeId$2(m.url);
+        return /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "w-full h-full relative group",
+            children: /* @__PURE__ */ jsx(
+              "iframe",
+              {
+                src: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1`,
+                className: "w-full h-full",
+                style: { border: "none" },
+                allow: "autoplay; encrypted-media"
+              }
+            )
+          },
+          idx
+        );
+      }
+      return /* @__PURE__ */ jsxs(
+        "div",
+        {
+          className: "relative group w-full h-full",
+          style: { border: "2px solid yellow" },
+          children: [
+            /* @__PURE__ */ jsx(
+              "video",
+              {
+                src: m.url,
+                className: "w-full h-full object-cover",
+                autoPlay: true,
+                muted: isMuted,
+                loop: true,
+                playsInline: true
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setMutedVideos((prev) => {
+                    const next = new Set(prev);
+                    next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
+                    return next;
+                  });
+                },
+                className: "absolute bottom-3 right-3 z-20 bg-black/70 p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity",
+                children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { size: 16, className: "text-white" }) : /* @__PURE__ */ jsx(Volume2, { size: 16, className: "text-white" })
+              }
+            )
+          ]
+        },
+        idx
+      );
+    }
+    return /* @__PURE__ */ jsx(
+      "img",
+      {
+        src: m.url,
+        alt: "",
+        className: "w-full h-full object-cover",
+        onError: () => setMediaErrors((prev) => new Set(prev).add(m.url))
+      },
+      idx
+    );
+  };
+  const renderMediaGrid = (allMedia, item) => {
+    const hasMediaErrors = allMedia.some((m) => mediaErrors.has(m.url));
+    const total = allMedia.length;
+    if (total === 0 || hasMediaErrors) {
+      return /* @__PURE__ */ jsx("div", { className: "w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-8", children: /* @__PURE__ */ jsxs("div", { className: "text-center space-y-3 max-w-[90%]", children: [
+        item.description?.trim() ? /* @__PURE__ */ jsxs("p", { className: "text-white text-base md:text-lg italic leading-relaxed line-clamp-4", children: [
+          '"',
+          item.description,
+          '"'
+        ] }) : /* @__PURE__ */ jsx("p", { className: "text-white/60 text-sm italic", children: "No description provided" }),
+        item.author?.trim() && /* @__PURE__ */ jsxs("p", { className: "text-white/90 font-bold text-lg md:text-xl", children: [
+          "— ",
+          item.author
+        ] })
+      ] }) });
+    }
+    if (total === 1)
+      return /* @__PURE__ */ jsx("div", { className: "w-full h-full", children: renderMediaItem(allMedia[0], 0) });
+    return /* @__PURE__ */ jsx("div", { className: "grid grid-cols-2 grid-rows-2 h-full gap-0.5", children: allMedia.slice(0, 4).map((m, i) => /* @__PURE__ */ jsxs("div", { className: "relative overflow-hidden", children: [
+      renderMediaItem(m, i),
+      i === 3 && total > 4 && /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/60 flex items-center justify-center", children: /* @__PURE__ */ jsxs("span", { className: "text-white font-black text-xl", children: [
+        "+",
+        total - 4
+      ] }) })
+    ] }, i)) });
+  };
+  const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
+  ytLink.trim() && isYoutubeUrl$2(ytLink) ? getYoutubeThumbnail$2(ytLink) : null;
+  return /* @__PURE__ */ jsxs("section", { ref: sectionRef, className: "py-12 bg-background", children: [
+    /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row gap-6 items-stretch min-w-0", children: [
+      /* @__PURE__ */ jsxs("div", { className: "lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-6", children: [
+          /* @__PURE__ */ jsxs("div", { children: [
+            sectionHeader?.sectionTag && /* @__PURE__ */ jsx("p", { className: "text-xs uppercase font-bold tracking-widest text-primary mb-1", children: sectionHeader.sectionTag }),
+            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader?.title || "Moments of Excellence" })
+          ] }),
+          ratingHeader && /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
+            /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1 justify-end text-primary mb-1", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(
+              Star,
+              {
+                size: 14,
+                className: i < (ratingHeader.rating || 0) ? "fill-primary text-primary" : "text-primary/20"
+              },
+              i
+            )) }),
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader.description })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "flex-grow w-full overflow-hidden", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "h-[300px] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }) }) : /* @__PURE__ */ jsx(
+          Swiper,
+          {
+            modules: [Autoplay, Navigation],
+            spaceBetween: 15,
+            slidesPerView: 1.2,
+            breakpoints: { 768: { slidesPerView: 3 } },
+            autoplay: { delay: 6e3, disableOnInteraction: false },
+            onSwiper: (s) => swiperRef.current = s,
+            onMouseEnter: () => {
+              swiperRef.current?.autoplay?.stop();
+            },
+            onMouseLeave: () => {
+              swiperRef.current?.autoplay?.start();
+            },
+            className: "h-full w-full",
+            children: guestExperiences.map((item) => {
+              const allMedia = buildMediaList$2(item);
+              return /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "bg-background border rounded-xl overflow-hidden h-full flex flex-col group", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] bg-muted overflow-hidden", children: [
+                renderMediaGrid(allMedia, item),
+                allMedia.length > 0 && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none", children: [
+                  item.description?.trim() && /* @__PURE__ */ jsxs("p", { className: "text-white italic text-base line-clamp-4", children: [
+                    '"',
+                    item.description,
+                    '"'
+                  ] }),
+                  /* @__PURE__ */ jsx("p", { className: "text-white font-bold text-sm", children: item.author })
+                ] })
+              ] }) }) }, item.id);
+            })
+          },
+          guestExperiences.length
+        ) }) })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "lg:w-1/4 w-full flex flex-col", children: /* @__PURE__ */ jsxs("div", { className: "bg-card border rounded-2xl p-6 shadow-sm h-full flex flex-col w-full", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+          /* @__PURE__ */ jsx("h4", { className: "font-bold text-sm", children: "Share Experience" }),
+          hasContent && /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => setShowPopup(true),
+              className: "text-primary hover:bg-primary/10 p-1 rounded-full",
+              children: /* @__PURE__ */ jsx(Edit2$1, { size: 16 })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mb-4 p-3 bg-red-50 rounded-xl border border-red-100 flex items-center gap-3", children: [
+          /* @__PURE__ */ jsx("div", { className: "bg-white p-2 rounded-full text-red-400 shadow-sm", children: /* @__PURE__ */ jsx(User, { size: 18 }) }),
+          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase font-bold text-red-400 leading-none", children: "Posting as" }),
+            /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-gray-800 truncate", children: authorName || "Guest User" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx(
+          "textarea",
+          {
+            value: feedbackText,
+            onChange: (e) => setFeedbackText(e.target.value),
+            placeholder: "Tell us about your stay...",
+            className: "w-full flex-grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none mb-3"
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "mb-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/20 border border-transparent focus-within:border-primary/40 focus-within:bg-white transition-all", children: [
+          /* @__PURE__ */ jsx(
+            Youtube,
+            {
+              size: 15,
+              className: ytLink && isYoutubeUrl$2(ytLink) ? "text-red-500" : "text-muted-foreground"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "url",
+              value: ytLink,
+              onChange: (e) => setYtLink(e.target.value),
+              placeholder: "Paste YouTube or Instagram Reel link",
+              className: "flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+            }
+          ),
+          ytLink && /* @__PURE__ */ jsx("button", { onClick: () => setYtLink(""), children: /* @__PURE__ */ jsx(X, { size: 12 }) })
+        ] }) }),
+        mediaPreviews.length > 0 && /* @__PURE__ */ jsx("div", { className: "grid grid-cols-4 gap-2 mb-3", children: mediaPreviews.map((m, i) => /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "relative aspect-square rounded-lg overflow-hidden border",
+            children: [
+              m.type === "image" ? /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: m.url,
+                  className: "h-full w-full object-cover"
+                }
+              ) : /* @__PURE__ */ jsx("div", { className: "h-full w-full bg-black flex items-center justify-center", children: /* @__PURE__ */ jsx(Video, { size: 12, className: "text-white" }) }),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: () => setMediaPreviews(
+                    (p) => p.filter((_, idx) => idx !== i)
+                  ),
+                  className: "absolute top-0 right-0 bg-black/50 text-white",
+                  children: /* @__PURE__ */ jsx(X, { size: 10 })
+                }
+              )
+            ]
+          },
+          i
+        )) }),
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 mb-4", children: [
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              onClick: () => fileInputRef.current?.click(),
+              className: "flex-grow bg-secondary/40 hover:bg-secondary/60 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors",
+              children: [
+                mediaUploading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(ImageIcon, { size: 16 }),
+                " ",
+                "Media"
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "file",
+              ref: fileInputRef,
+              className: "hidden",
+              multiple: true,
+              onChange: handleFileUpload
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            disabled: isSubmitting || !feedbackText && mediaPreviews.length === 0 && !ytLink.trim(),
+            onClick: handleSubmit,
+            className: "w-full bg-[#f88d8d] hover:bg-[#f67a7a] text-white py-4 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:opacity-50",
+            children: isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "animate-spin mx-auto", size: 20 }) : "Submit Story"
+          }
+        )
+      ] }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(AnimatePresence, { children: showPopup && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm", children: /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        initial: { scale: 0.9 },
+        animate: { scale: 1 },
+        className: "bg-card p-8 rounded-2xl border shadow-2xl w-full max-w-sm",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
+            /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
+            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: authorName,
+                onChange: (e) => setAuthorName(e.target.value),
+                placeholder: "Full Name",
+                className: "w-full p-3 bg-muted rounded-lg outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: email,
+                onChange: (e) => setEmail(e.target.value),
+                placeholder: "Email",
+                className: "w-full p-3 bg-muted rounded-lg outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: phone,
+                onChange: (e) => setPhone(e.target.value),
+                placeholder: "Phone",
+                maxLength: 10,
+                className: "w-full p-3 bg-muted rounded-lg outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => {
+                  setIsVerified(true);
+                  setShowPopup(false);
+                  handleSubmit();
+                },
+                className: "w-full bg-primary text-white py-3 rounded-lg font-bold",
+                children: "Save & Continue"
+              }
+            )
+          ] })
+        ]
+      }
+    ) }) })
+  ] });
+}
 const SsrDataContext = createContext({});
 function SsrDataProvider({ children, initialData = {} }) {
   return /* @__PURE__ */ jsx(SsrDataContext.Provider, { value: initialData || {}, children });
 }
 function useSsrData() {
   return useContext(SsrDataContext);
+}
+function Home() {
+  const { home } = useSsrData();
+  const debug = {
+    hero: home?.heroData?.length ?? 0,
+    dailyOffers: home?.dailyOffers?.length ?? 0,
+    properties: home?.properties?.length ?? 0,
+    about: home?.aboutData?.aboutUsData ? 1 : 0,
+    aboutVentures: home?.aboutData?.ventures?.length ?? 0,
+    aboutRecognitions: home?.aboutData?.recognitions?.length ?? 0,
+    business: home?.businessData?.divisions?.length ?? 0,
+    events: home?.eventsData?.length ?? 0,
+    news: home?.newsData?.length ?? 0,
+    story: home?.storyData?.guestExperiences?.length ?? 0,
+    storyHeader: home?.storyData?.sectionHeader ? 1 : 0,
+    storyRating: home?.storyData?.ratingHeader ? 1 : 0,
+    globalLocations: home?.globalData?.locations?.length ?? 0,
+    globalSection: home?.globalData?.sectionData ? 1 : 0
+  };
+  const handleScrollToBusiness = () => {
+    if (typeof document === "undefined") return;
+    const businessSection = document.getElementById("business");
+    if (businessSection) {
+      businessSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "website-shell", children: [
+    /* @__PURE__ */ jsx(
+      "div",
+      {
+        hidden: true,
+        "aria-hidden": "true",
+        "data-ssr-debug": "home",
+        "data-hero-count": debug.hero,
+        "data-daily-offers-count": debug.dailyOffers,
+        "data-properties-count": debug.properties,
+        "data-about-count": debug.about,
+        "data-about-ventures-count": debug.aboutVentures,
+        "data-about-recognitions-count": debug.aboutRecognitions,
+        "data-business-count": debug.business,
+        "data-events-count": debug.events,
+        "data-news-count": debug.news,
+        "data-story-count": debug.story,
+        "data-story-header-count": debug.storyHeader,
+        "data-story-rating-count": debug.storyRating,
+        "data-global-locations-count": debug.globalLocations,
+        "data-global-section-count": debug.globalSection
+      }
+    ),
+    /* @__PURE__ */ jsx(Navbar$1, {}),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "hero",
+          "data-ssr-section": "hero",
+          "data-ssr-count": debug.hero,
+          children: /* @__PURE__ */ jsx(Hero, { initialSlides: home?.heroData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "daily-offers",
+          className: "website-section-divider",
+          "data-ssr-section": "daily-offers",
+          "data-ssr-count": debug.dailyOffers,
+          children: /* @__PURE__ */ jsx(DailyOffers$1, { initialOffers: home?.dailyOffers })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "properties",
+          className: "website-section-divider",
+          "data-ssr-section": "properties",
+          "data-ssr-count": debug.properties,
+          children: /* @__PURE__ */ jsx(PropertiesSection, { initialProperties: home?.properties })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "about",
+          className: "website-section-divider",
+          "data-ssr-section": "about",
+          "data-ssr-count": debug.about,
+          "data-ssr-ventures-count": debug.aboutVentures,
+          "data-ssr-recognitions-count": debug.aboutRecognitions,
+          children: /* @__PURE__ */ jsx(AboutUsSection, { initialData: home?.aboutData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "business",
+          className: "website-section-divider",
+          "data-ssr-section": "business",
+          "data-ssr-count": debug.business,
+          children: /* @__PURE__ */ jsx(BusinessVerticals, { initialData: home?.businessData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "events",
+          className: "website-section-divider",
+          "data-ssr-section": "events",
+          "data-ssr-count": debug.events,
+          children: /* @__PURE__ */ jsx(EventsSection, { initialEvents: home?.eventsData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "news",
+          className: "website-section-divider",
+          "data-ssr-section": "news",
+          "data-ssr-count": debug.news,
+          children: /* @__PURE__ */ jsx(NewsPress$1, { initialItems: home?.newsData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "story",
+          className: "website-section-divider",
+          "data-ssr-section": "story",
+          "data-ssr-count": debug.story,
+          "data-ssr-header-count": debug.storyHeader,
+          "data-ssr-rating-count": debug.storyRating,
+          children: /* @__PURE__ */ jsx(OurStoryPreview, { initialData: home?.storyData })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "section",
+        {
+          id: "global",
+          "data-ssr-section": "global",
+          "data-ssr-locations-count": debug.globalLocations,
+          "data-ssr-section-count": debug.globalSection,
+          children: /* @__PURE__ */ jsx(GlobalPresence, { initialData: home?.globalData })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        initial: { opacity: 0, x: 50 },
+        animate: { opacity: 1, x: 0 },
+        transition: { delay: 1.5, duration: 0.8, type: "spring" },
+        className: "website-floating-cta group",
+        onClick: handleScrollToBusiness,
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "website-floating-cta-copy", children: [
+            /* @__PURE__ */ jsx("span", { className: "website-floating-cta-badge", children: "Discover More" }),
+            /* @__PURE__ */ jsx("span", { className: "website-floating-cta-title", children: "Explore Our Diversities" })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "website-floating-cta-icon", children: /* @__PURE__ */ jsx(ChevronDown, { className: "w-4 h-4 animate-pulse text-gray-900" }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx(Footer, {})
+  ] });
 }
 const dateFilters = [
   { label: "Today", value: "today" },
@@ -19803,9 +22850,9 @@ function PropertyDetailRoute() {
   return resolvedType === "restaurant" ? /* @__PURE__ */ jsx(RestaurantHomepage, {}) : /* @__PURE__ */ jsx(HotelDetail, {});
 }
 const WebsiteRoutes = [
-  // <Route key="home" path="/" element={<Home />} />,
+  /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(Home, {}) }, "home"),
   // <Route key="home" path="/" element={<Hotels />} />,
-  /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(Navigate, { to: "/ghaziabad/kennedia-blu-restaurant-ghaziabad-31", replace: true }) }),
+  // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
   /* @__PURE__ */ jsx(Route, { path: "/hotels", element: /* @__PURE__ */ jsx(Hotels, {}) }, "hotels"),
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   /* @__PURE__ */ jsx(Route, { path: "/:citySlug/:propertySlug", element: /* @__PURE__ */ jsx(PropertyDetailRoute, {}) }, "property-detail"),
@@ -19913,7 +22960,7 @@ function Sidebar({ isOpen, onToggle }) {
   const getMenuItemsByRole = (userRole2) => {
     const isSuperAdmin = userRole2 === "ROLE_SUPERADMIN";
     const coreItems2 = [
-      { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: Home$1, label: "Homepage", path: "/Homepage-Dashboard" },
       { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" }
     ];
@@ -20748,7 +23795,7 @@ function AddHeroSectionModal({
                                 children: [
                                   /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-1", children: [
                                     /* @__PURE__ */ jsx(
-                                      Home,
+                                      Home$1,
                                       {
                                         size: 16,
                                         style: {
@@ -21467,7 +24514,7 @@ function HeroSection() {
                     color: activeTab === "homepage" ? "#E53935" : "#9CA3AF"
                   },
                   children: [
-                    /* @__PURE__ */ jsx(Home, { size: 16 }),
+                    /* @__PURE__ */ jsx(Home$1, { size: 16 }),
                     " Homepage Hero"
                   ]
                 }
@@ -23403,7 +26450,7 @@ function AddUpdateAboutModal({
                       children: [
                         /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-1", children: [
                           /* @__PURE__ */ jsx(
-                            Home,
+                            Home$1,
                             {
                               size: 16,
                               className: formData.propertyTypeId === null ? "text-primary" : "text-gray-400"
@@ -23985,7 +27032,7 @@ function AboutUs() {
   };
   const propertyTypeTabs = useMemo(
     () => [
-      { id: "homepage", label: "Homepage", icon: Home },
+      { id: "homepage", label: "Homepage", icon: Home$1 },
       ...propertyTypes.map((type) => ({
         id: String(type.id),
         label: `${type.typeName} Page`,
@@ -24105,7 +27152,7 @@ function AboutUs() {
                     (pt) => pt.id === latestAbout.propertyTypeId
                   )?.typeName || "Unknown"
                 ] }) : /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600", children: [
-                  /* @__PURE__ */ jsx(Home, { size: 10 }),
+                  /* @__PURE__ */ jsx(Home$1, { size: 10 }),
                   "General"
                 ] }) }),
                 /* @__PURE__ */ jsx("td", { className: "p-4", children: /* @__PURE__ */ jsx(
@@ -25150,7 +28197,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   className: "flex items-center gap-2 text-xs font-semibold uppercase mb-2",
                   style: { color: colors.textSecondary },
                   children: [
-                    /* @__PURE__ */ jsx(Home, { size: 14 }),
+                    /* @__PURE__ */ jsx(Home$1, { size: 14 }),
                     " Link to Property"
                   ]
                 }
@@ -30500,7 +33547,7 @@ function GroupBookings() {
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState("hero");
   const tabs = [
-    { id: "hero", label: "Hero Section", icon: Home, component: HeroSection },
+    { id: "hero", label: "Hero Section", icon: Home$1, component: HeroSection },
     { id: "offers", label: "Daily Offers", icon: DollarSign, component: DailyOffers },
     { id: "about", label: "About Us", icon: Info, component: AboutUs },
     { id: "kennedia", label: "Kennedia Group", icon: Building2, component: KennediaGroup },
@@ -47295,7 +50342,7 @@ function GuestExperienceTab() {
 function HotelHomepage() {
   const [activeTab, setActiveTab] = useState("hero");
   const tabs = [
-    { id: "hero", label: "Hero Section", icon: Home, component: HeroSectionTab },
+    { id: "hero", label: "Hero Section", icon: Home$1, component: HeroSectionTab },
     { id: "quickoffer", label: "Quick Offer", icon: Tag, component: QuickOfferTab },
     { id: "collection", label: "Our Collection", icon: Building2, component: OurCollectionTab },
     { id: "about", label: "About Hotel", icon: Info, component: AboutHotelTab },
