@@ -156,6 +156,10 @@ export default function Navbar({
   const transparentBorderClass = useWhiteTextOnTransparent
     ? "border-white/30 text-white hover:border-white/50 hover:text-white hover:bg-white/10"
     : "border-black/20 text-black hover:border-black/40 hover:text-black hover:bg-black/5 dark:border-white/30 dark:text-white dark:hover:border-white/50 dark:hover:text-white dark:hover:bg-white/10";
+  const transparentActionOverlayClass =
+    transparentMode && isTransparentHeroRoute
+      ? "bg-black/20 backdrop-blur-md border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28"
+      : "";
 
   const openBooking = (category: "hotel" | "dining" | "delivery") => {
     setBookingCategory(category);
@@ -296,7 +300,9 @@ export default function Navbar({
           <div className="hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto">
             {showQuickBook && (
               <div className="relative group">
-                <button className="site-nav-quickbook-trigger">
+                <button
+                  className={`site-nav-quickbook-trigger ${transparentActionOverlayClass}`}
+                >
                   <span>Quick Book</span>
                   <ChevronDown className="w-3.5 h-3.5 2xl:w-4 2xl:h-4" />
                 </button>
@@ -318,9 +324,9 @@ export default function Navbar({
 
             <Link
               to="/login"
-              className={`site-nav-action-link ${
+              className={`site-nav-action-link rounded-full ${
                 transparentMode
-                  ? transparentTextClass
+                  ? `${transparentTextClass} ${transparentActionOverlayClass}`
                   : "text-foreground/80 hover:text-primary"
               }`}
             >
@@ -328,7 +334,13 @@ export default function Navbar({
               LOGIN
             </Link>
 
-            <ThemeToggle />
+            <ThemeToggle
+              className={
+                transparentMode && isTransparentHeroRoute
+                  ? "bg-black/20 border-white/15 text-white backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28 hover:text-white"
+                  : ""
+              }
+            />
           </div>
 
           {/* Mobile Actions */}
@@ -336,9 +348,9 @@ export default function Navbar({
             {showQuickBook && (
               <button
                 onClick={() => openBooking("hotel")}
-                className={`transition-colors cursor-pointer ${
+                className={`transition-colors cursor-pointer rounded-full p-2 ${
                   transparentMode
-                    ? transparentTextClass
+                    ? `${transparentTextClass} ${transparentActionOverlayClass}`
                     : "text-foreground hover:text-primary"
                 }`}
                 aria-label="Quick Book"
@@ -347,13 +359,19 @@ export default function Navbar({
               </button>
             )}
 
-            <ThemeToggle />
+            <ThemeToggle
+              className={
+                transparentMode && isTransparentHeroRoute
+                  ? "bg-black/20 border-white/15 text-white backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28 hover:text-white"
+                  : ""
+              }
+            />
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`transition-colors relative cursor-pointer ${
+              className={`transition-colors relative cursor-pointer rounded-full p-2 ${
                 transparentMode
-                  ? transparentTextClass
+                  ? `${transparentTextClass} ${transparentActionOverlayClass}`
                   : "text-foreground hover:text-primary"
               }`}
               aria-label="Toggle menu"

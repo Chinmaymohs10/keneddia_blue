@@ -1394,7 +1394,7 @@ function useToast() {
     dismiss: (toastId) => dispatch({ type: "DISMISS_TOAST", toastId })
   };
 }
-function ThemeToggle() {
+function ThemeToggle({ className = "" }) {
   const { theme, setTheme } = useTheme();
   const { toast: toast2 } = useToast();
   useEffect(() => {
@@ -1423,7 +1423,7 @@ function ThemeToggle() {
         variant: "ghost",
         size: "icon",
         onClick: toggleTheme,
-        className: "h-9 w-9 rounded-full border border-border/10 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer",
+        className: `h-9 w-9 rounded-full border border-border/10 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer ${className}`,
         "aria-label": `Switch to ${nextTheme} theme`,
         children: [
           /* @__PURE__ */ jsx(Sun, { className: "h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" }),
@@ -1529,6 +1529,7 @@ function Navbar$1({
   const currentLightModeLogo = shouldUseDarkLogoOnTransparentInLightMode ? darkLogo : lightLogo;
   const transparentTextClass = useWhiteTextOnTransparent ? "text-white hover:text-white/80" : "text-black hover:text-black/80 dark:text-white dark:hover:text-white/80";
   const transparentBorderClass = useWhiteTextOnTransparent ? "border-white/30 text-white hover:border-white/50 hover:text-white hover:bg-white/10" : "border-black/20 text-black hover:border-black/40 hover:text-black hover:bg-black/5 dark:border-white/30 dark:text-white dark:hover:border-white/50 dark:hover:text-white dark:hover:bg-white/10";
+  const transparentActionOverlayClass = transparentMode && isTransparentHeroRoute ? "bg-black/20 backdrop-blur-md border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28" : "";
   const openBooking = (category) => {
     setBookingCategory(category);
     setBookingOpen(true);
@@ -1638,10 +1639,16 @@ function Navbar$1({
         )) }),
         /* @__PURE__ */ jsxs("div", { className: "hidden xl:flex items-center justify-end gap-2 2xl:gap-3 w-auto", children: [
           showQuickBook && /* @__PURE__ */ jsxs("div", { className: "relative group", children: [
-            /* @__PURE__ */ jsxs("button", { className: "site-nav-quickbook-trigger", children: [
-              /* @__PURE__ */ jsx("span", { children: "Quick Book" }),
-              /* @__PURE__ */ jsx(ChevronDown, { className: "w-3.5 h-3.5 2xl:w-4 2xl:h-4" })
-            ] }),
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                className: `site-nav-quickbook-trigger ${transparentActionOverlayClass}`,
+                children: [
+                  /* @__PURE__ */ jsx("span", { children: "Quick Book" }),
+                  /* @__PURE__ */ jsx(ChevronDown, { className: "w-3.5 h-3.5 2xl:w-4 2xl:h-4" })
+                ]
+              }
+            ),
             /* @__PURE__ */ jsx("div", { className: "site-nav-quickbook-panel", children: /* @__PURE__ */ jsx("div", { className: "py-1", children: QUICK_BOOKING_OPTIONS.map((option, index) => /* @__PURE__ */ jsx(
               "button",
               {
@@ -1656,31 +1663,41 @@ function Navbar$1({
             Link,
             {
               to: "/login",
-              className: `site-nav-action-link ${transparentMode ? transparentTextClass : "text-foreground/80 hover:text-primary"}`,
+              className: `site-nav-action-link rounded-full ${transparentMode ? `${transparentTextClass} ${transparentActionOverlayClass}` : "text-foreground/80 hover:text-primary"}`,
               children: [
                 /* @__PURE__ */ jsx(LogIn, { className: "w-3.5 h-3.5 2xl:w-4 2xl:h-4" }),
                 "LOGIN"
               ]
             }
           ),
-          /* @__PURE__ */ jsx(ThemeToggle, {})
+          /* @__PURE__ */ jsx(
+            ThemeToggle,
+            {
+              className: transparentMode && isTransparentHeroRoute ? "bg-black/20 border-white/15 text-white backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28 hover:text-white" : ""
+            }
+          )
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "xl:hidden flex items-center gap-3", children: [
           showQuickBook && /* @__PURE__ */ jsx(
             "button",
             {
               onClick: () => openBooking("hotel"),
-              className: `transition-colors cursor-pointer ${transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
+              className: `transition-colors cursor-pointer rounded-full p-2 ${transparentMode ? `${transparentTextClass} ${transparentActionOverlayClass}` : "text-foreground hover:text-primary"}`,
               "aria-label": "Quick Book",
               children: /* @__PURE__ */ jsx(Calendar$1, { className: "w-5 h-5" })
             }
           ),
-          /* @__PURE__ */ jsx(ThemeToggle, {}),
+          /* @__PURE__ */ jsx(
+            ThemeToggle,
+            {
+              className: transparentMode && isTransparentHeroRoute ? "bg-black/20 border-white/15 text-white backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.18)] hover:bg-black/28 hover:text-white" : ""
+            }
+          ),
           /* @__PURE__ */ jsxs(
             "button",
             {
               onClick: () => setMobileMenuOpen(!mobileMenuOpen),
-              className: `transition-colors relative cursor-pointer ${transparentMode ? transparentTextClass : "text-foreground hover:text-primary"}`,
+              className: `transition-colors relative cursor-pointer rounded-full p-2 ${transparentMode ? `${transparentTextClass} ${transparentActionOverlayClass}` : "text-foreground hover:text-primary"}`,
               "aria-label": "Toggle menu",
               children: [
                 /* @__PURE__ */ jsx(
@@ -25190,7 +25207,7 @@ const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-2wKo63De.js")
 );
 const CafeHomepage = lazy(
-  () => import("./assets/CafeHomepage-BOrlo8E_.js")
+  () => import("./assets/CafeHomepage-C7m4vPZv.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(

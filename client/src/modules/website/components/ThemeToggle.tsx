@@ -4,7 +4,7 @@ import { useTheme } from "@/modules/website/components/ThemeProvider"
 import { useToast } from "@/components/ui/use-toast"
 import { useEffect } from "react"
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
 
@@ -40,7 +40,7 @@ export function ThemeToggle() {
         variant="ghost"
         size="icon"
         onClick={toggleTheme}
-        className="h-9 w-9 rounded-full border border-border/10 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+        className={`h-9 w-9 rounded-full border border-border/10 hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer ${className}`}
         aria-label={`Switch to ${nextTheme} theme`}
       >
         <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
