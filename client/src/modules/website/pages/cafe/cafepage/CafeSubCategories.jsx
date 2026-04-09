@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowUpRight, Coffee, Leaf, MoonStar, Sparkles, SunMedium, Waves } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { ChevronDown, Coffee, Leaf, MoonStar, Sparkles, SunMedium, Waves } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 
 const STORY_CARDS = [
@@ -186,13 +186,53 @@ function MobileStoryCard({ card }) {
   );
 }
 
+const AUTO_SKIP_DELAY = 2000;
+const THRESHOLD = 1 / STORY_CARDS.length;
+
 export default function CafeSubCategories() {
   const sectionRef = useRef(null);
+  const timerRef = useRef(null);
+  const showRef = useRef(false);
+  const continuedRef = useRef(false);
+  const [showContinue, setShowContinue] = useState(false);
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 25, damping: 15, mass: 1 });
+
+  const triggerAutoSkip = () => {
+    timerRef.current = setTimeout(() => {
+      if (sectionRef.current) {
+        const bottom = sectionRef.current.offsetTop + sectionRef.current.offsetHeight;
+        window.scrollTo({ top: bottom, behavior: "smooth" });
+      }
+    }, AUTO_SKIP_DELAY);
+  };
+
+  useMotionValueEvent(smoothProgress, "change", (v) => {
+    if (v > THRESHOLD && !showRef.current && !continuedRef.current) {
+      showRef.current = true;
+      setShowContinue(true);
+      triggerAutoSkip();
+    }
+    if (v < THRESHOLD * 0.3 && (showRef.current || continuedRef.current)) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      showRef.current = false;
+      continuedRef.current = false;
+      setShowContinue(false);
+    }
+  });
+
+  const handleContinue = () => {
+    continuedRef.current = true;
+    showRef.current = false;
+    setShowContinue(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   return (
     <section ref={sectionRef} className="relative bg-[#fdfaf6] dark:bg-[#080808] h-[600vh] lg:h-[700vh]">
@@ -241,6 +281,43 @@ export default function CafeSubCategories() {
                   total={STORY_CARDS.length}
                 />
               ))}
+
+              {/* Transparent overlay on card area */}
+              <AnimatePresence>
+                {showContinue && (
+                  <motion.div
+                    key="continue-overlay"
+                    onClick={handleContinue}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 z-[60] flex flex-col items-center justify-center cursor-pointer rounded-[2.5rem] overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-black/15 rounded-[2.5rem]" />
+                    <div className="relative z-10 flex flex-col items-center gap-3 select-none">
+                      <p className="font-serif text-3xl xl:text-4xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">
+                        Continue Story
+                      </p>
+                      <motion.div
+                        animate={{ y: [0, 8, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+                      >
+                        <ChevronDown className="h-7 w-7 text-white/80 drop-shadow-lg" />
+                      </motion.div>
+                      <div className="w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1">
+                        <motion.div
+                          key={showContinue ? "bar-on" : "bar-off"}
+                          initial={{ scaleX: 1 }}
+                          animate={{ scaleX: 0 }}
+                          transition={{ duration: AUTO_SKIP_DELAY / 1000, ease: "linear" }}
+                          className="h-full bg-white/70 origin-left"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -263,6 +340,41 @@ export default function CafeSubCategories() {
           ))}
         </div>
       </div>
+
+      {/* Mobile — fixed full-screen overlay */}
+      <AnimatePresence>
+        {showContinue && (
+          <motion.div
+            key="mobile-overlay"
+            onClick={handleContinue}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-black/25"
+          >
+            <div className="flex flex-col items-center gap-3 select-none">
+              <p className="font-serif text-3xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]">
+                Continue Story
+              </p>
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+              >
+                <ChevronDown className="h-7 w-7 text-white/80" />
+              </motion.div>
+              <div className="w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1">
+                <motion.div
+                  key={showContinue ? "mob-bar-on" : "mob-bar-off"}
+                  initial={{ scaleX: 1 }}
+                  animate={{ scaleX: 0 }}
+                  transition={{ duration: AUTO_SKIP_DELAY / 1000, ease: "linear" }}
+                  className="h-full bg-white/70 origin-left"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

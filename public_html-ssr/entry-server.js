@@ -9,10 +9,10 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, ShoppingCart, LogOut, Home as Home$1, Save, Menu, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags, Gift } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, ShoppingCart, LogOut, Home as Home$1, Save, Menu, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
-import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform, useSpring, useMotionValueEvent } from "framer-motion";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { Command as Command$1 } from "cmdk";
 import axios from "axios";
@@ -4653,7 +4653,7 @@ function OurStoryPreview({
   const [feedbackText, setFeedbackText] = useState("");
   const [ytLink, setYtLink] = useState("");
   const [ytError, setYtError] = useState("");
-  const [sectionHeader, setSectionHeader] = useState(
+  const [sectionHeader2, setSectionHeader] = useState(
     initialData?.sectionHeader || null
   );
   const [authorName, setAuthorName] = useState("");
@@ -4666,7 +4666,7 @@ function OurStoryPreview({
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
   const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
-  const [ratingHeader, setRatingHeader] = useState(
+  const [ratingHeader2, setRatingHeader] = useState(
     initialData?.ratingHeader || null
   );
   const swiperRef = useRef(null);
@@ -4882,19 +4882,19 @@ function OurStoryPreview({
       /* @__PURE__ */ jsxs("div", { className: "lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-6", children: [
           /* @__PURE__ */ jsxs("div", { children: [
-            sectionHeader?.sectionTag && /* @__PURE__ */ jsx("p", { className: "text-xs uppercase font-bold tracking-widest text-primary mb-1", children: sectionHeader.sectionTag }),
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader?.title || "Moments of Excellence" })
+            sectionHeader2?.sectionTag && /* @__PURE__ */ jsx("p", { className: "text-xs uppercase font-bold tracking-widest text-primary mb-1", children: sectionHeader2.sectionTag }),
+            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader2?.title || "Moments of Excellence" })
           ] }),
-          ratingHeader && /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
+          ratingHeader2 && /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
             /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1 justify-end text-primary mb-1", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(
               Star,
               {
                 size: 14,
-                className: i < (ratingHeader.rating || 0) ? "fill-primary text-primary" : "text-primary/20"
+                className: i < (ratingHeader2.rating || 0) ? "fill-primary text-primary" : "text-primary/20"
               },
               i
             )) }),
-            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader.description })
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader2.description })
           ] })
         ] }),
         /* @__PURE__ */ jsx("div", { className: "flex-grow w-full overflow-hidden", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "h-[300px] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }) }) : /* @__PURE__ */ jsx(
@@ -10812,7 +10812,7 @@ function HotelReviewsSection({
   const [feedbackText, setFeedbackText] = useState("");
   const [ytLink, setYtLink] = useState("");
   const [ytError, setYtError] = useState("");
-  const [sectionHeader, setSectionHeader] = useState(
+  const [sectionHeader2, setSectionHeader] = useState(
     initialData?.sectionHeader || null
   );
   const [authorName, setAuthorName] = useState("");
@@ -10825,7 +10825,7 @@ function HotelReviewsSection({
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
   const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
-  const [ratingHeader, setRatingHeader] = useState(
+  const [ratingHeader2, setRatingHeader] = useState(
     initialData?.ratingHeader || null
   );
   const swiperRef = useRef(null);
@@ -11041,19 +11041,19 @@ function HotelReviewsSection({
       /* @__PURE__ */ jsxs("div", { className: "lg:w-3/4 w-full min-w-0 flex flex-col bg-card border rounded-2xl p-6 shadow-sm", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-start mb-6", children: [
           /* @__PURE__ */ jsxs("div", { children: [
-            sectionHeader?.sectionTag && /* @__PURE__ */ jsx("p", { className: "text-xs uppercase font-bold tracking-widest text-primary mb-1", children: sectionHeader.sectionTag }),
-            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader?.title || "Moments of Excellence" })
+            sectionHeader2?.sectionTag && /* @__PURE__ */ jsx("p", { className: "text-xs uppercase font-bold tracking-widest text-primary mb-1", children: sectionHeader2.sectionTag }),
+            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader2?.title || "Moments of Excellence" })
           ] }),
-          ratingHeader && /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
+          ratingHeader2 && /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
             /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1 justify-end text-primary mb-1", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(
               Star,
               {
                 size: 14,
-                className: i < (ratingHeader.rating || 0) ? "fill-primary text-primary" : "text-primary/20"
+                className: i < (ratingHeader2.rating || 0) ? "fill-primary text-primary" : "text-primary/20"
               },
               i
             )) }),
-            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader.description })
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader2.description })
           ] })
         ] }),
         /* @__PURE__ */ jsx("div", { className: "flex-grow w-full overflow-hidden", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "h-[300px] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }) }) : /* @__PURE__ */ jsx(
@@ -11371,7 +11371,7 @@ const addMenuThumbnail = (propertyId, formData) => API.post(`api/v1/menu-thumbna
 const getAllMenuThumbnails = () => API.get("api/v1/menu-thumbnails/getAllThumbnail");
 const getMenuThumbnailById = (id) => API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
 const updateMenuThumbnail = (propertyId, thumbnailId, formData) => API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-const EMPTY_FORM$4 = {
+const EMPTY_FORM$5 = {
   name: "",
   phone: "",
   email: "",
@@ -11541,7 +11541,7 @@ function GroupBookingSection$1({
   const [propertyTypeId, setPropertyTypeId] = useState(
     initialPropertyTypeId
   );
-  const [formData, setFormData] = useState(EMPTY_FORM$4);
+  const [formData, setFormData] = useState(EMPTY_FORM$5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
@@ -11746,7 +11746,7 @@ function GroupBookingSection$1({
                               setSelectedOffer(booking);
                               setStep(1);
                               setDateRange(null);
-                              setFormData(EMPTY_FORM$4);
+                              setFormData(EMPTY_FORM$5);
                             },
                             className: `flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`,
                             children: [
@@ -11801,7 +11801,7 @@ function GroupBookingSection$1({
                 setSelectedOffer(null);
                 setStep(1);
                 setDateRange(null);
-                setFormData(EMPTY_FORM$4);
+                setFormData(EMPTY_FORM$5);
               }
             },
             children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[500px]", children: [
@@ -15739,12 +15739,12 @@ const getAmenityName$4 = (amenity) => {
   }
   return null;
 };
-const fadeIn$2 = {
+const fadeIn$3 = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer$2 = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer$3 = { animate: { transition: { staggerChildren: 0.1 } } };
 const VERIFIED_REVIEWS_SCALE$1 = 1e6;
 const parseCombinedRatingMeta$1 = (value) => {
   if (value === null || value === void 0 || value === "") {
@@ -16372,7 +16372,7 @@ function HotelDetail() {
       /* @__PURE__ */ jsxs(
         motion.nav,
         {
-          variants: fadeIn$2,
+          variants: fadeIn$3,
           initial: "initial",
           animate: "animate",
           className: "hotel-breadcrumb",
@@ -16396,16 +16396,16 @@ function HotelDetail() {
         /* @__PURE__ */ jsxs(
           motion.div,
           {
-            variants: staggerContainer$2,
+            variants: staggerContainer$3,
             initial: "initial",
             animate: "animate",
             className: "space-y-3 w-full text-left",
             children: [
-              hotel.tagline && /* @__PURE__ */ jsx(motion.div, { variants: fadeIn$2, children: /* @__PURE__ */ jsx("span", { className: "inline-block text-[11px] font-semibold text-red-500 bg-red-500/10 px-3 py-1 rounded-md", children: hotel.tagline }) }),
+              hotel.tagline && /* @__PURE__ */ jsx(motion.div, { variants: fadeIn$3, children: /* @__PURE__ */ jsx("span", { className: "inline-block text-[11px] font-semibold text-red-500 bg-red-500/10 px-3 py-1 rounded-md", children: hotel.tagline }) }),
               /* @__PURE__ */ jsx(
                 motion.h1,
                 {
-                  variants: fadeIn$2,
+                  variants: fadeIn$3,
                   className: "text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 dark:text-white",
                   children: hotel.name
                 }
@@ -16413,7 +16413,7 @@ function HotelDetail() {
               /* @__PURE__ */ jsxs(
                 motion.div,
                 {
-                  variants: fadeIn$2,
+                  variants: fadeIn$3,
                   className: "flex items-center gap-2 text-muted-foreground text-sm flex-wrap",
                   children: [
                     /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1.5", children: [
@@ -16438,7 +16438,7 @@ function HotelDetail() {
               hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                 motion.div,
                 {
-                  variants: fadeIn$2,
+                  variants: fadeIn$3,
                   className: "flex items-center gap-4 text-xs text-muted-foreground flex-wrap",
                   children: hotel.nearbyPlaces.slice(0, 2).map((place, i) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
                     /* @__PURE__ */ jsx(Navigation$1, { className: "w-3 h-3 text-primary" }),
@@ -16456,7 +16456,7 @@ function HotelDetail() {
               hotel.rating && /* @__PURE__ */ jsxs(
                 motion.div,
                 {
-                  variants: fadeIn$2,
+                  variants: fadeIn$3,
                   className: "flex items-center gap-4 pt-1",
                   children: [
                     /* @__PURE__ */ jsxs("div", { className: "bg-green-600 text-white text-xs font-bold px-3 py-1 rounded flex items-center gap-1", children: [
@@ -16888,12 +16888,12 @@ const FALLBACK_RESTAURANT = {
   image: { src: "", alt: "Kennedia Blu Restaurant Ghaziabad" },
   nearbyPlaces: [{ nearbyLocationName: "300 meters from T&T Fragrance" }]
 };
-const fadeIn$1 = {
+const fadeIn$2 = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer$1 = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer$2 = { animate: { transition: { staggerChildren: 0.1 } } };
 const EmptySlot$1 = ({ className = "" }) => /* @__PURE__ */ jsx(
   "div",
   {
@@ -17024,7 +17024,7 @@ function ResturantBanner({
     setInitialGalleryIndex(index);
     setIsGalleryOpen(true);
   };
-  const mapsLink = restaurant.coordinates ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}` : "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
+  const mapsLink2 = restaurant.coordinates ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}` : "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
   if (loading)
     return /* @__PURE__ */ jsx("div", { className: "min-h-[60vh] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin w-10 h-10 text-primary" }) });
   if (!restaurant) return null;
@@ -17055,7 +17055,7 @@ function ResturantBanner({
           /* @__PURE__ */ jsxs(
             motion.nav,
             {
-              variants: fadeIn$1,
+              variants: fadeIn$2,
               className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
               children: [
                 /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
@@ -17068,10 +17068,10 @@ function ResturantBanner({
             /* @__PURE__ */ jsxs(
               motion.div,
               {
-                variants: staggerContainer$1,
+                variants: staggerContainer$2,
                 className: "space-y-3 w-full text-left",
                 children: [
-                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$2, className: "flex items-center gap-3", children: [
                     /* @__PURE__ */ jsx("span", { className: "inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: restaurant.tagline }),
                     restaurant.rating && /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 bg-green-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm", children: [
                       /* @__PURE__ */ jsx("span", { children: restaurant.rating }),
@@ -17081,7 +17081,7 @@ function ResturantBanner({
                   /* @__PURE__ */ jsx(
                     motion.h1,
                     {
-                      variants: fadeIn$1,
+                      variants: fadeIn$2,
                       className: "text-4xl md:text-5xl font-serif font-bold tracking-tight",
                       children: restaurant.name
                     }
@@ -17090,7 +17090,7 @@ function ResturantBanner({
                     /* @__PURE__ */ jsxs(
                       motion.div,
                       {
-                        variants: fadeIn$1,
+                        variants: fadeIn$2,
                         className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
                         children: [
                           /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
@@ -17103,7 +17103,7 @@ function ResturantBanner({
                           /* @__PURE__ */ jsxs(
                             "a",
                             {
-                              href: mapsLink,
+                              href: mapsLink2,
                               target: "_blank",
                               rel: "noopener noreferrer",
                               className: "text-sm font-bold text-destructive hover:underline flex items-center gap-1",
@@ -17119,7 +17119,7 @@ function ResturantBanner({
                     restaurant.nearbyPlaces && restaurant.nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                       motion.div,
                       {
-                        variants: fadeIn$1,
+                        variants: fadeIn$2,
                         className: "flex flex-wrap items-center gap-4 pt-1",
                         children: restaurant.nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
                           "div",
@@ -17215,7 +17215,7 @@ function ResturantBanner({
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, children: [
+          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$2, children: [
             /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden bg-black md:hidden", children: [
               /* @__PURE__ */ jsx("div", { className: "absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic", children: "GALLERY" }),
               galleryMedia.length === 0 ? /* @__PURE__ */ jsx(EmptySlot$1, { className: "absolute inset-0" }) : /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
@@ -18024,7 +18024,7 @@ const COLOR_PALETTE = [
   { color: "bg-[#FFF3E0] text-[#E67E22]", border: "border-[#FFE0B2]" },
   { color: "bg-[#E8F5E9] text-[#2E7D32]", border: "border-[#C8E6C9]" }
 ];
-const EMPTY_FORM$3 = {
+const EMPTY_FORM$4 = {
   name: "",
   email: "",
   phone: "",
@@ -18063,7 +18063,7 @@ function ResturantpageEvents({ propertyId }) {
   );
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState(EMPTY_FORM$3);
+  const [formData, setFormData] = useState(EMPTY_FORM$4);
   const nextEvent = () => {
     setCurrentIndex((prev) => {
       const nextIdx = prev + 2;
@@ -18123,7 +18123,7 @@ function ResturantpageEvents({ propertyId }) {
     setBookingType(type);
     setSelectedBookingId(id ?? null);
     setStep(1);
-    setFormData(EMPTY_FORM$3);
+    setFormData(EMPTY_FORM$4);
     setShowModal(true);
   };
   const handleFinalSubmit = async () => {
@@ -18930,7 +18930,7 @@ function BuffetCarousel({ items, onBook }) {
     ] })
   ] });
 }
-function AnimatedCounter({ target }) {
+function AnimatedCounter$1({ target }) {
   const [count2, setCount] = useState(Math.floor(target * 0.8));
   useEffect(() => {
     let start = count2;
@@ -19285,7 +19285,7 @@ function EnhancedCulinaryCuration({ propertyId }) {
                 /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-1.5 text-primary", children: [
                   /* @__PURE__ */ jsx(Heart, { size: 14, className: "fill-primary" }),
                   /* @__PURE__ */ jsxs("span", { className: "text-sm font-black", children: [
-                    /* @__PURE__ */ jsx(AnimatedCounter, { target: likes }),
+                    /* @__PURE__ */ jsx(AnimatedCounter$1, { target: likes }),
                     "+"
                   ] })
                 ] })
@@ -20430,13 +20430,13 @@ function GalleryItem({ item }) {
     /* @__PURE__ */ jsx("div", { className: "absolute top-4 right-4 bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity", children: /* @__PURE__ */ jsx(Maximize2, { size: 16, className: "text-white" }) })
   ] });
 }
-const FALLBACK = {
+const FALLBACK$1 = {
   header1: "Secure Your",
   header2: "Table.",
   description: "A curated dining experience awaits. Reserve your space in our premier destination.",
   footer: "Guaranteed Response within 24 Hours • Call +91-9211308384"
 };
-const EMPTY_FORM$2 = {
+const EMPTY_FORM$3 = {
   guestName: "",
   contactNumber: "",
   date: "",
@@ -20447,10 +20447,10 @@ function ReservationForm({ propertyId }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM$2);
+  const [formData, setFormData] = useState(EMPTY_FORM$3);
   const containerRef = useRef(null);
   const setField = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
-  const [header, setHeader] = useState(FALLBACK);
+  const [header, setHeader] = useState(FALLBACK$1);
   useEffect(() => {
     if (!propertyId) return;
     getPrimaryConversionsHeader().then((res) => {
@@ -20459,10 +20459,10 @@ function ReservationForm({ propertyId }) {
       const latest = matched[0] || null;
       if (latest) {
         setHeader({
-          header1: latest.header1 || FALLBACK.header1,
-          header2: latest.header2 || FALLBACK.header2,
-          description: latest.description || FALLBACK.description,
-          footer: latest.footer || FALLBACK.footer
+          header1: latest.header1 || FALLBACK$1.header1,
+          header2: latest.header2 || FALLBACK$1.header2,
+          description: latest.description || FALLBACK$1.description,
+          footer: latest.footer || FALLBACK$1.footer
         });
       }
     }).catch(() => {
@@ -20503,7 +20503,7 @@ function ReservationForm({ propertyId }) {
     }
   };
   const handleReset = () => {
-    setFormData(EMPTY_FORM$2);
+    setFormData(EMPTY_FORM$3);
     setSubmitError(null);
     setCurrentStep(1);
   };
@@ -20796,7 +20796,7 @@ const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" }
 ];
-function RestaurantHomepage() {
+function RestaurantHomepage$1() {
   const { propertyId, propertySlug } = useParams();
   const { propertyDetail } = useSsrData();
   const slugTail = propertySlug?.split("-").pop() || "";
@@ -20927,12 +20927,12 @@ function RestaurantHomepage() {
     /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
   ] });
 }
-const fadeIn = {
+const fadeIn$1 = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer$1 = { animate: { transition: { staggerChildren: 0.1 } } };
 const FALLBACK_LOCATION = "Ghaziabad, India";
 const FALLBACK_NEARBY = [
   "0.2 km from Gateway of India",
@@ -20993,7 +20993,7 @@ function CategoryHero({
     }
     return FALLBACK_NEARBY.map((name) => ({ nearbyLocationName: name }));
   }, [propertyData, content]);
-  const mapsLink = useMemo(() => {
+  const mapsLink2 = useMemo(() => {
     if (propertyData?.latitude && propertyData?.longitude) {
       return `https://www.google.com/maps?q=${propertyData.latitude},${propertyData.longitude}`;
     }
@@ -21108,7 +21108,7 @@ function CategoryHero({
           /* @__PURE__ */ jsxs(
             motion.nav,
             {
-              variants: fadeIn,
+              variants: fadeIn$1,
               className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
               children: [
                 /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
@@ -21130,10 +21130,10 @@ function CategoryHero({
             /* @__PURE__ */ jsxs(
               motion.div,
               {
-                variants: staggerContainer,
+                variants: staggerContainer$1,
                 className: "space-y-3 w-full text-left",
                 children: [
-                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, className: "flex items-center gap-3", children: [
                     /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2 bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: [
                       /* @__PURE__ */ jsx(Sparkles, { size: 12, className: "animate-pulse" }),
                       " ",
@@ -21147,7 +21147,7 @@ function CategoryHero({
                   /* @__PURE__ */ jsxs(
                     motion.h1,
                     {
-                      variants: fadeIn,
+                      variants: fadeIn$1,
                       className: "text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-balance leading-tight",
                       children: [
                         content.title.split(" ")[0],
@@ -21160,7 +21160,7 @@ function CategoryHero({
                     /* @__PURE__ */ jsxs(
                       motion.div,
                       {
-                        variants: fadeIn,
+                        variants: fadeIn$1,
                         className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
                         children: [
                           /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
@@ -21173,7 +21173,7 @@ function CategoryHero({
                           /* @__PURE__ */ jsxs(
                             "a",
                             {
-                              href: mapsLink,
+                              href: mapsLink2,
                               target: "_blank",
                               rel: "noopener noreferrer",
                               className: "text-sm font-bold text-destructive hover:underline flex items-center gap-1",
@@ -21189,7 +21189,7 @@ function CategoryHero({
                     nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                       motion.div,
                       {
-                        variants: fadeIn,
+                        variants: fadeIn$1,
                         className: "flex flex-wrap items-center gap-4 pt-1",
                         children: nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
                           "div",
@@ -21285,7 +21285,7 @@ function CategoryHero({
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, children: [
+          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, children: [
             /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden rounded-3xl shadow-xl md:hidden", children: [
               galleryMedia.length === 0 ? /* @__PURE__ */ jsx(EmptySlot, { className: "absolute inset-0 rounded-3xl" }) : /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
                 motion.div,
@@ -22233,6 +22233,2416 @@ function ResturantCategoryPageTemplate() {
     /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
   ] });
 }
+const CAFE_GALLERY_ITEMS = [
+  {
+    id: 1,
+    category: "INTERIOR",
+    categoryName: "INTERIOR",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 1,
+      type: "IMAGE",
+      url: siteContent.images.cafes.parisian.src,
+      fileName: "Parisian Cafe Interior",
+      alt: "Parisian Cafe Interior",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 2,
+    category: "BREWS",
+    categoryName: "BREWS",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 2,
+      type: "IMAGE",
+      url: siteContent.images.cafes.minimalist.src,
+      fileName: "Coffee Brew Bar",
+      alt: "Coffee Brew Bar",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 3,
+    category: "BAKERY",
+    categoryName: "BAKERY",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 3,
+      type: "IMAGE",
+      url: siteContent.images.cafes.bakery.src,
+      fileName: "Artisan Bakery Counter",
+      alt: "Artisan Bakery Counter",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 4,
+    category: "EVENTS",
+    categoryName: "EVENTS",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 4,
+      type: "IMAGE",
+      url: siteContent.images.cafes.highTea.src,
+      fileName: "High Tea Setup",
+      alt: "High Tea Setup",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 5,
+    category: "OUTDOOR",
+    categoryName: "OUTDOOR",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 5,
+      type: "IMAGE",
+      url: siteContent.images.cafes.garden.src,
+      fileName: "Garden Terrace",
+      alt: "Garden Terrace",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 6,
+    category: "INTERIOR",
+    categoryName: "INTERIOR",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 6,
+      type: "IMAGE",
+      url: siteContent.images.cafes.library.src,
+      fileName: "Library Corner",
+      alt: "Library Corner",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 7,
+    category: "BREWS",
+    categoryName: "BREWS",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 7,
+      type: "IMAGE",
+      url: siteContent.images.cafes.library.src,
+      fileName: "Library Cafe",
+      alt: "Library Cafe",
+      width: null,
+      height: null
+    }
+  },
+  {
+    id: 8,
+    category: "EVENTS",
+    categoryName: "EVENTS",
+    propertyId: 1,
+    propertyName: "Kennedia Cafe",
+    isActive: true,
+    media: {
+      mediaId: 8,
+      type: "IMAGE",
+      url: siteContent.images.cafes.garden.src,
+      fileName: "Outdoor Event",
+      alt: "Outdoor Event",
+      width: null,
+      height: null
+    }
+  }
+];
+const CAFE_GALLERY_MEDIA = CAFE_GALLERY_ITEMS.map((item) => item.media);
+const CAFE_DATA = {
+  name: "Kennedia Cafe",
+  location: "Noor Nagar, Raj Nagar Extension, Ghaziabad, Uttar Pradesh 201003",
+  tagline: "Artisan Brews & All-Day Comfort",
+  nearbyPlaces: [
+    { nearbyLocationName: "300 meters from City Center Mall" },
+    { nearbyLocationName: "Near Raj Nagar Metro Station" }
+  ]
+};
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+};
+const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
+const mapsLink = "https://www.google.com/maps/search/Kennedia+Cafe+Ghaziabad";
+function CafeBanner() {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShareReactions, setShowShareReactions] = useState(false);
+  const [mobileIndex, setMobileIndex] = useState(0);
+  const mobileTouchStart = useRef(null);
+  const mobilePrev = () => setMobileIndex(
+    (c) => (c - 1 + CAFE_GALLERY_MEDIA.length) % CAFE_GALLERY_MEDIA.length
+  );
+  const mobileNext = () => setMobileIndex((c) => (c + 1) % CAFE_GALLERY_MEDIA.length);
+  const openGalleryAt = (index) => {
+    setInitialGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const socialPlatforms = [
+    {
+      name: "WhatsApp",
+      icon: /* @__PURE__ */ jsx(MessageCircle, { size: 20 }),
+      color: "bg-[#25D366]",
+      link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`
+    },
+    {
+      name: "Facebook",
+      icon: /* @__PURE__ */ jsx(Facebook, { size: 20 }),
+      color: "bg-[#1877F2]",
+      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
+    },
+    {
+      name: "X (Twitter)",
+      icon: /* @__PURE__ */ jsx(Twitter, { size: 18 }),
+      color: "bg-black",
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`
+    },
+    {
+      name: "LinkedIn",
+      icon: /* @__PURE__ */ jsx(Linkedin, { size: 20 }),
+      color: "bg-[#0A66C2]",
+      link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
+    }
+  ];
+  const gridImages = CAFE_GALLERY_MEDIA.slice(0, 4);
+  const totalImages = CAFE_GALLERY_MEDIA.length;
+  return /* @__PURE__ */ jsxs(
+    motion.div,
+    {
+      initial: "initial",
+      animate: "animate",
+      className: "pt-24 pb-12 bg-gradient-to-b from-background to-muted/20",
+      children: [
+        /* @__PURE__ */ jsx(
+          GalleryModal,
+          {
+            isOpen: isGalleryOpen,
+            onClose: () => setIsGalleryOpen(false),
+            hotel: {
+              name: CAFE_DATA.name,
+              location: CAFE_DATA.location,
+              propertyId: 1,
+              media: CAFE_GALLERY_MEDIA
+            },
+            initialImageIndex: initialGalleryIndex,
+            galleryData: CAFE_GALLERY_ITEMS
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 md:px-8 lg:px-12", children: [
+          /* @__PURE__ */ jsxs(
+            motion.nav,
+            {
+              variants: fadeIn,
+              className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
+              children: [
+                /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
+                /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" }),
+                /* @__PURE__ */ jsx("span", { className: "text-foreground font-semibold truncate", children: CAFE_DATA.name })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8", children: [
+            /* @__PURE__ */ jsxs(
+              motion.div,
+              {
+                variants: staggerContainer,
+                className: "space-y-3 w-full text-left",
+                children: [
+                  /* @__PURE__ */ jsx(motion.div, { variants: fadeIn, className: "flex items-center gap-3", children: /* @__PURE__ */ jsx("span", { className: "inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: CAFE_DATA.tagline }) }),
+                  /* @__PURE__ */ jsx(
+                    motion.h1,
+                    {
+                      variants: fadeIn,
+                      className: "text-4xl md:text-5xl font-serif font-bold tracking-tight",
+                      children: CAFE_DATA.name
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                    /* @__PURE__ */ jsxs(
+                      motion.div,
+                      {
+                        variants: fadeIn,
+                        className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
+                        children: [
+                          /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
+                            /* @__PURE__ */ jsx(MapPin, { className: "w-4 h-4 text-primary" }),
+                            /* @__PURE__ */ jsx("span", { className: "text-sm font-medium", children: CAFE_DATA.location })
+                          ] }),
+                          /* @__PURE__ */ jsxs(
+                            "a",
+                            {
+                              href: mapsLink,
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                              className: "text-sm font-bold text-destructive hover:underline flex items-center gap-1",
+                              children: [
+                                /* @__PURE__ */ jsx(Navigation$1, { className: "w-4 h-4" }),
+                                " View Map"
+                              ]
+                            }
+                          )
+                        ]
+                      }
+                    ),
+                    /* @__PURE__ */ jsx(
+                      motion.div,
+                      {
+                        variants: fadeIn,
+                        className: "flex flex-wrap items-center gap-4 pt-1",
+                        children: CAFE_DATA.nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
+                          "div",
+                          {
+                            className: "flex items-center gap-1.5 text-xs text-muted-foreground/80",
+                            children: [
+                              /* @__PURE__ */ jsx("div", { className: "w-1 h-1 rounded-full bg-primary/40" }),
+                              /* @__PURE__ */ jsx("span", { children: place.nearbyLocationName })
+                            ]
+                          },
+                          i
+                        ))
+                      }
+                    )
+                  ] })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-3 relative", children: [
+              /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "relative",
+                  onMouseEnter: () => setShowShareReactions(true),
+                  onMouseLeave: () => setShowShareReactions(false),
+                  children: [
+                    /* @__PURE__ */ jsx(AnimatePresence, { children: showShareReactions && /* @__PURE__ */ jsx(
+                      motion.div,
+                      {
+                        initial: { opacity: 0, y: 10, scale: 0.9 },
+                        animate: { opacity: 1, y: -60, scale: 1 },
+                        exit: { opacity: 0, y: 10, scale: 0.9 },
+                        className: "absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md",
+                        children: socialPlatforms.map((platform, index) => /* @__PURE__ */ jsxs(
+                          motion.a,
+                          {
+                            href: platform.link,
+                            target: "_blank",
+                            rel: "noreferrer",
+                            initial: { opacity: 0, scale: 0 },
+                            animate: { opacity: 1, scale: 1 },
+                            transition: { delay: index * 0.04 },
+                            whileHover: { scale: 1.2, y: -3 },
+                            className: `${platform.color} text-white p-2.5 rounded-full shadow-lg transition-transform flex items-center justify-center`,
+                            children: [
+                              platform.icon,
+                              /* @__PURE__ */ jsx("span", { className: "sr-only", children: platform.name })
+                            ]
+                          },
+                          platform.name
+                        ))
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsxs(Button, { variant: "outline", className: "rounded-full active:scale-95", children: [
+                      /* @__PURE__ */ jsx(Share2, { className: "w-4 h-4 mr-2" }),
+                      " Share"
+                    ] })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  variant: "outline",
+                  className: `rounded-full active:scale-95 transition-all ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`,
+                  onClick: () => setIsBookmarked((b) => !b),
+                  children: [
+                    /* @__PURE__ */ jsx(
+                      Heart,
+                      {
+                        className: `w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`
+                      }
+                    ),
+                    isBookmarked ? "Bookmarked" : "Save"
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, children: [
+            /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden bg-black md:hidden", children: [
+              /* @__PURE__ */ jsx("div", { className: "absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic", children: "GALLERY" }),
+              /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
+                motion.div,
+                {
+                  initial: { opacity: 0 },
+                  animate: { opacity: 1 },
+                  exit: { opacity: 0 },
+                  transition: { duration: 1.5 },
+                  className: "absolute inset-0 cursor-pointer",
+                  onClick: () => openGalleryAt(mobileIndex),
+                  onTouchStart: (e) => {
+                    mobileTouchStart.current = e.touches[0].clientX;
+                  },
+                  onTouchEnd: (e) => {
+                    if (mobileTouchStart.current === null) return;
+                    const diff = mobileTouchStart.current - e.changedTouches[0].clientX;
+                    if (Math.abs(diff) > 40) {
+                      diff > 0 ? mobileNext() : mobilePrev();
+                    }
+                    mobileTouchStart.current = null;
+                  },
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" }),
+                    /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: CAFE_GALLERY_MEDIA[mobileIndex]?.url || "",
+                        alt: CAFE_GALLERY_MEDIA[mobileIndex]?.alt || "",
+                        className: "absolute inset-0 w-full h-full object-cover object-center scale-110"
+                      }
+                    )
+                  ]
+                },
+                mobileIndex
+              ) }),
+              /* @__PURE__ */ jsxs("div", { className: "absolute bottom-8 right-5 z-30 flex items-center gap-6", children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-end", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-baseline gap-2", children: [
+                    /* @__PURE__ */ jsxs("span", { className: "text-white text-4xl font-serif italic tracking-tighter", children: [
+                      "0",
+                      mobileIndex + 1
+                    ] }),
+                    /* @__PURE__ */ jsxs("span", { className: "text-white/20 text-lg font-serif", children: [
+                      "/",
+                      String(CAFE_GALLERY_MEDIA.length).padStart(2, "0")
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsx("div", { className: "w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden", children: /* @__PURE__ */ jsx(
+                    motion.div,
+                    {
+                      className: "absolute h-full bg-primary top-0 left-0",
+                      animate: {
+                        width: `${(mobileIndex + 1) / CAFE_GALLERY_MEDIA.length * 100}%`
+                      },
+                      transition: { duration: 0.5 }
+                    }
+                  ) })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      onClick: mobilePrev,
+                      className: "p-3 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95",
+                      children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-5 h-5 group-hover:-translate-x-1 transition-transform" })
+                    }
+                  ),
+                  /* @__PURE__ */ jsx(
+                    "button",
+                    {
+                      onClick: mobileNext,
+                      className: "p-3 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95",
+                      children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-5 h-5 group-hover:translate-x-1 transition-transform" })
+                    }
+                  )
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl", children: [
+              /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "md:col-span-2 relative group overflow-hidden rounded-2xl cursor-pointer",
+                  onClick: () => openGalleryAt(0),
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" }),
+                    /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: gridImages[0].url,
+                        alt: gridImages[0].alt,
+                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                      }
+                    )
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsx("div", { className: "md:col-span-1 flex flex-col gap-3", children: [1, 2].map((idx) => /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "relative group overflow-hidden rounded-2xl flex-1 cursor-pointer",
+                  onClick: () => openGalleryAt(idx),
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" }),
+                    /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: gridImages[idx].url,
+                        alt: gridImages[idx].alt,
+                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                      }
+                    )
+                  ]
+                },
+                idx
+              )) }),
+              /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: "md:col-span-1 relative group overflow-hidden rounded-2xl cursor-pointer",
+                  onClick: () => openGalleryAt(3),
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" }),
+                    /* @__PURE__ */ jsx(
+                      "img",
+                      {
+                        src: gridImages[3].url,
+                        alt: gridImages[3].alt,
+                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-20 flex items-center justify-center pointer-events-none", children: /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          setIsGalleryOpen(true);
+                        },
+                        className: "pointer-events-auto bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white",
+                        children: [
+                          /* @__PURE__ */ jsx(Image$1, { className: "w-4 h-4 text-primary" }),
+                          /* @__PURE__ */ jsx("span", { children: totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY" })
+                        ]
+                      }
+                    ) })
+                  ]
+                }
+              )
+            ] })
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+const STORY_CARDS = [
+  {
+    id: 1,
+    eyebrow: "Our Roots",
+    title: "Born From A Love Of Craft Coffee",
+    description: "Kennedia Cafe started as a single roastery counter in 2018, driven by a belief that good coffee and calm spaces could transform any ordinary day into something worth remembering.",
+    benefit: "Where it all began",
+    accent: "The Beginning",
+    image: siteContent.images.cafes.minimalist.src,
+    icon: Coffee,
+    stats: ["Est. 2018", "Ghaziabad"]
+  },
+  {
+    id: 2,
+    eyebrow: "Sourcing",
+    title: "Beans Traced Back To Their Origin",
+    description: "Every bean we use is sourced directly from small-batch farms across 12 countries. We visit the farms, meet the growers, and select only what aligns with our flavour standards and ethical practices.",
+    benefit: "Traceable & Ethical",
+    accent: "The Source",
+    image: siteContent.images.cafes.library.src,
+    icon: Leaf,
+    stats: ["12 Origins", "Direct Trade"]
+  },
+  {
+    id: 3,
+    eyebrow: "The Roastery",
+    title: "Roasted In-House Every Morning",
+    description: "Our in-house roasting setup allows us to control every variable — from roast curve to rest time. The result is a consistently fresh cup with no compromise on flavour.",
+    benefit: "Always fresh, never stale",
+    accent: "The Process",
+    image: siteContent.images.cafes.parisian.src,
+    icon: SunMedium,
+    stats: ["Daily Roast", "Small Batch"]
+  },
+  {
+    id: 4,
+    eyebrow: "The Kitchen",
+    title: "Baked Fresh Before You Arrive",
+    description: "Our bakery team starts at 5 AM every day. By the time the cafe opens, every croissant, sourdough loaf, and pastry is fresh out of the oven — because we think that matters.",
+    benefit: "No day-old bakes, ever",
+    accent: "The Bakery",
+    image: siteContent.images.cafes.bakery.src,
+    icon: Sparkles,
+    stats: ["5 AM Bake", "All-Natural"]
+  },
+  {
+    id: 5,
+    eyebrow: "The Spaces",
+    title: "Rooms Designed For Staying",
+    description: "From our quiet library corner to the open garden terrace and the high-tea lounge — every space is designed with a specific kind of visitor in mind. You are not rushed here.",
+    benefit: "Built for long stays",
+    accent: "The Atmosphere",
+    image: siteContent.images.cafes.garden.src,
+    icon: Waves,
+    stats: ["4 Spaces", "All-Day Open"]
+  },
+  {
+    id: 6,
+    eyebrow: "The Community",
+    title: "A Cafe That Grows With Its Guests",
+    description: "We run workshops, cupping sessions, and monthly brunch pop-ups because we believe the best cafes are not just places to drink coffee — they are places where regulars become regulars for a reason.",
+    benefit: "Events every month",
+    accent: "The People",
+    image: siteContent.images.cafes.highTea.src,
+    icon: MoonStar,
+    stats: ["Monthly Events", "Open to All"]
+  }
+];
+function DesktopStoryCard({ card, index, progress, total }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const unit = 1 / total;
+  const start = index * unit;
+  const end = (index + 1) * unit;
+  const range = [start - unit * 0.6, start, end, end + unit * 0.6];
+  const y = useSpring(useTransform(progress, range, [80, 0, 0, -80]), { stiffness: 40, damping: 20 });
+  const scale = useSpring(useTransform(progress, range, [0.96, 1, 1, 0.96]), { stiffness: 40, damping: 20 });
+  const opacity = useTransform(progress, range, [0, 1, 1, 0]);
+  const Icon = card.icon;
+  return /* @__PURE__ */ jsxs(
+    motion.article,
+    {
+      onMouseEnter: () => setIsHovered(true),
+      onMouseLeave: () => setIsHovered(false),
+      style: { y, scale, opacity, zIndex: total - index },
+      className: "absolute inset-0 flex h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "relative flex-grow h-full overflow-hidden", children: [
+          /* @__PURE__ */ jsx(
+            motion.img,
+            {
+              src: card.image,
+              alt: card.title,
+              animate: { scale: isHovered ? 1.05 : 1.1 },
+              transition: { duration: 1 },
+              className: "h-full w-full object-cover object-center"
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent" }),
+          /* @__PURE__ */ jsxs("div", { className: "absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md", children: [
+            /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
+            " ",
+            card.eyebrow
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs(
+          motion.div,
+          {
+            animate: { width: isHovered ? "420px" : "80px" },
+            transition: { type: "spring", stiffness: 70, damping: 20 },
+            className: "relative h-full flex flex-col border-l border-zinc-100 bg-[#fffaf4] dark:bg-zinc-950 dark:border-white/5",
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "h-full w-full overflow-hidden flex flex-col justify-between p-8 xl:p-10", children: [
+                /* @__PURE__ */ jsxs("div", { className: "space-y-4 min-w-[300px]", children: [
+                  /* @__PURE__ */ jsx("p", { className: "text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60", children: card.accent }),
+                  /* @__PURE__ */ jsx("h3", { className: "text-3xl font-serif leading-tight text-zinc-950 dark:text-white", children: card.title }),
+                  /* @__PURE__ */ jsx(
+                    motion.p,
+                    {
+                      animate: { opacity: isHovered ? 1 : 0 },
+                      className: "text-sm leading-relaxed text-zinc-600 dark:text-white/50",
+                      children: card.description
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    animate: { opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 },
+                    className: "space-y-4 min-w-[300px]",
+                    children: [
+                      /* @__PURE__ */ jsxs("div", { className: "rounded-3xl bg-[#2b1d14] p-5 text-white shadow-lg", children: [
+                        /* @__PURE__ */ jsx("p", { className: "mb-1 text-[9px] font-bold uppercase tracking-widest text-white/40", children: "Highlight" }),
+                        /* @__PURE__ */ jsx("p", { className: "font-serif text-base italic", children: card.benefit })
+                      ] }),
+                      /* @__PURE__ */ jsx("div", { className: "flex gap-2", children: card.stats.map((s) => /* @__PURE__ */ jsx("span", { className: "text-[9px] font-bold border border-zinc-200 px-3 py-1 rounded-full text-zinc-400", children: s }, s)) })
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx(
+                motion.div,
+                {
+                  animate: { opacity: isHovered ? 0 : 1 },
+                  className: "absolute inset-0 flex items-center justify-center pointer-events-none",
+                  children: /* @__PURE__ */ jsxs("p", { className: "rotate-90 text-[10px] font-bold uppercase tracking-[0.6em] text-zinc-300 whitespace-nowrap", children: [
+                    card.eyebrow,
+                    " — STORY"
+                  ] })
+                }
+              )
+            ]
+          }
+        )
+      ]
+    }
+  );
+}
+function MobileStoryCard({ card }) {
+  const Icon = card.icon;
+  return /* @__PURE__ */ jsxs("article", { className: "w-full bg-white dark:bg-zinc-900 rounded-[2rem] overflow-hidden shadow-xl border border-zinc-100 dark:border-white/5 mb-8", children: [
+    /* @__PURE__ */ jsx("div", { className: "aspect-video w-full overflow-hidden", children: /* @__PURE__ */ jsx("img", { src: card.image, className: "h-full w-full object-cover", alt: card.title }) }),
+    /* @__PURE__ */ jsxs("div", { className: "p-6 space-y-3", children: [
+      /* @__PURE__ */ jsxs("div", { className: "inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
+        /* @__PURE__ */ jsx(Icon, { className: "h-3 w-3" }),
+        " ",
+        card.eyebrow
+      ] }),
+      /* @__PURE__ */ jsx("h3", { className: "text-2xl font-serif text-zinc-950 dark:text-white", children: card.title }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-zinc-600 dark:text-white/50 leading-relaxed", children: card.description }),
+      /* @__PURE__ */ jsx("div", { className: "bg-[#2b1d14] p-4 rounded-2xl text-white", children: /* @__PURE__ */ jsx("p", { className: "text-sm italic font-serif", children: card.benefit }) }),
+      /* @__PURE__ */ jsx("div", { className: "flex gap-2 pt-1", children: card.stats.map((s) => /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold border border-zinc-200 dark:border-white/10 px-3 py-1 rounded-full text-zinc-400", children: s }, s)) })
+    ] })
+  ] });
+}
+const AUTO_SKIP_DELAY = 2e3;
+const THRESHOLD = 1 / STORY_CARDS.length;
+function CafeSubCategories() {
+  const sectionRef = useRef(null);
+  const timerRef = useRef(null);
+  const showRef = useRef(false);
+  const continuedRef = useRef(false);
+  const [showContinue, setShowContinue] = useState(false);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"]
+  });
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 25, damping: 15, mass: 1 });
+  const triggerAutoSkip = () => {
+    timerRef.current = setTimeout(() => {
+      if (sectionRef.current) {
+        const bottom = sectionRef.current.offsetTop + sectionRef.current.offsetHeight;
+        window.scrollTo({ top: bottom, behavior: "smooth" });
+      }
+    }, AUTO_SKIP_DELAY);
+  };
+  useMotionValueEvent(smoothProgress, "change", (v) => {
+    if (v > THRESHOLD && !showRef.current && !continuedRef.current) {
+      showRef.current = true;
+      setShowContinue(true);
+      triggerAutoSkip();
+    }
+    if (v < THRESHOLD * 0.3 && (showRef.current || continuedRef.current)) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      showRef.current = false;
+      continuedRef.current = false;
+      setShowContinue(false);
+    }
+  });
+  const handleContinue = () => {
+    continuedRef.current = true;
+    showRef.current = false;
+    setShowContinue(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+  return /* @__PURE__ */ jsxs("section", { ref: sectionRef, className: "relative bg-[#fdfaf6] dark:bg-[#080808] h-[600vh] lg:h-[700vh]", children: [
+    /* @__PURE__ */ jsx("div", { className: "sticky top-0 hidden h-screen w-full items-center lg:flex overflow-hidden", children: /* @__PURE__ */ jsxs("div", { className: "grid h-full w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col justify-center h-full max-h-[65vh]", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
+          /* @__PURE__ */ jsx(Coffee, { className: "h-3.5 w-3.5" }),
+          " Our Story"
+        ] }),
+        /* @__PURE__ */ jsxs("h2", { className: "mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white", children: [
+          "Six Chapters ",
+          /* @__PURE__ */ jsx("br", {}),
+          /* @__PURE__ */ jsx("span", { className: "italic text-amber-800", children: "One Cafe" })
+        ] }),
+        /* @__PURE__ */ jsx("p", { className: "text-base leading-relaxed text-zinc-600 dark:text-white/60 mb-10 max-w-sm", children: "Scroll to move through our story — from where we started to what makes us stay." }),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-col gap-5", children: STORY_CARDS.map((card, i) => {
+          const active = useTransform(
+            smoothProgress,
+            [i / 6, (i + 0.5) / 6, (i + 1) / 6],
+            [0.2, 1, 0.2]
+          );
+          return /* @__PURE__ */ jsxs(
+            motion.div,
+            {
+              style: { opacity: active },
+              className: "flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white",
+              children: [
+                /* @__PURE__ */ jsx("span", { className: "h-px w-8 bg-amber-800" }),
+                " ",
+                card.eyebrow
+              ]
+            },
+            card.id
+          );
+        }) })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "relative flex items-center justify-center h-full", children: /* @__PURE__ */ jsxs("div", { className: "relative h-[65vh] w-full", children: [
+        STORY_CARDS.map((card, index) => /* @__PURE__ */ jsx(
+          DesktopStoryCard,
+          {
+            card,
+            index,
+            progress: smoothProgress,
+            total: STORY_CARDS.length
+          },
+          card.id
+        )),
+        /* @__PURE__ */ jsx(AnimatePresence, { children: showContinue && /* @__PURE__ */ jsxs(
+          motion.div,
+          {
+            onClick: handleContinue,
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+            transition: { duration: 0.3 },
+            className: "absolute inset-0 z-[60] flex flex-col items-center justify-center cursor-pointer rounded-[2.5rem] overflow-hidden",
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/15 rounded-[2.5rem]" }),
+              /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex flex-col items-center gap-3 select-none", children: [
+                /* @__PURE__ */ jsx("p", { className: "font-serif text-3xl xl:text-4xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]", children: "Continue Story" }),
+                /* @__PURE__ */ jsx(
+                  motion.div,
+                  {
+                    animate: { y: [0, 8, 0] },
+                    transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
+                    children: /* @__PURE__ */ jsx(ChevronDown, { className: "h-7 w-7 text-white/80 drop-shadow-lg" })
+                  }
+                ),
+                /* @__PURE__ */ jsx("div", { className: "w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1", children: /* @__PURE__ */ jsx(
+                  motion.div,
+                  {
+                    initial: { scaleX: 1 },
+                    animate: { scaleX: 0 },
+                    transition: { duration: AUTO_SKIP_DELAY / 1e3, ease: "linear" },
+                    className: "h-full bg-white/70 origin-left"
+                  },
+                  showContinue ? "bar-on" : "bar-off"
+                ) })
+              ] })
+            ]
+          },
+          "continue-overlay"
+        ) })
+      ] }) })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "lg:hidden w-full px-6 py-20", children: [
+      /* @__PURE__ */ jsxs("div", { className: "mb-12", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900", children: [
+          /* @__PURE__ */ jsx(Coffee, { className: "h-3 w-3" }),
+          " Our Story"
+        ] }),
+        /* @__PURE__ */ jsxs("h2", { className: "text-4xl font-serif text-zinc-950 dark:text-white mb-4", children: [
+          "Six Chapters, ",
+          /* @__PURE__ */ jsx("span", { className: "italic text-amber-800", children: "One Cafe" })
+        ] }),
+        /* @__PURE__ */ jsx("p", { className: "text-zinc-500 text-sm", children: "The story behind every cup and every corner." })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "space-y-0", children: STORY_CARDS.map((card) => /* @__PURE__ */ jsx(MobileStoryCard, { card }, card.id)) })
+    ] }),
+    /* @__PURE__ */ jsx(AnimatePresence, { children: showContinue && /* @__PURE__ */ jsx(
+      motion.div,
+      {
+        onClick: handleContinue,
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        className: "lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-black/25",
+        children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center gap-3 select-none", children: [
+          /* @__PURE__ */ jsx("p", { className: "font-serif text-3xl italic text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.6)]", children: "Continue Story" }),
+          /* @__PURE__ */ jsx(
+            motion.div,
+            {
+              animate: { y: [0, 8, 0] },
+              transition: { repeat: Infinity, duration: 1.4, ease: "easeInOut" },
+              children: /* @__PURE__ */ jsx(ChevronDown, { className: "h-7 w-7 text-white/80" })
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "w-20 h-px bg-white/30 rounded-full overflow-hidden mt-1", children: /* @__PURE__ */ jsx(
+            motion.div,
+            {
+              initial: { scaleX: 1 },
+              animate: { scaleX: 0 },
+              transition: { duration: AUTO_SKIP_DELAY / 1e3, ease: "linear" },
+              className: "h-full bg-white/70 origin-left"
+            },
+            showContinue ? "mob-bar-on" : "mob-bar-off"
+          ) })
+        ] })
+      },
+      "mobile-overlay"
+    ) })
+  ] });
+}
+const ABOUT_SECTIONS = [
+  {
+    id: 1,
+    subTitle: "Our Roots — Est. 2018",
+    sectionTitle: "A Cafe Built On Craft & Community",
+    description: "Kennedia Cafe was born from a simple belief — that a great cup of coffee and a welcoming space can transform an ordinary day. We source our beans directly from small-batch farms, roast in-house every morning, and bake everything fresh before you arrive.",
+    image: siteContent.images.cafes.minimalist.src
+  },
+  {
+    id: 2,
+    subTitle: "The Spaces",
+    sectionTitle: "Rooms Designed For Staying, Not Rushing",
+    description: "From our quiet library corner to the open garden terrace and the high-tea lounge — every space is designed with a specific kind of visitor in mind. You are never rushed here. Stay as long as you need to.",
+    image: siteContent.images.cafes.library.src
+  },
+  {
+    id: 3,
+    subTitle: "Tea & Dessert Lounge",
+    sectionTitle: "A Slower Format Built Around Warm Service",
+    description: "From plated desserts and tea towers to low-light lounge corners, every detail is arranged to feel intimate, polished, and easy to return to. Our high-tea lounge is the highlight of every weekend.",
+    image: siteContent.images.cafes.highTea.src
+  },
+  {
+    id: 4,
+    subTitle: "Garden Terrace",
+    sectionTitle: "Open-Air Brunch With a View Worth the Wait",
+    description: "Our outdoor terrace seats 40 guests under natural shade, surrounded by greenery and morning light. It's where brunch tables run long and cold brews flow freely — perfect for catching up or starting the week right.",
+    image: siteContent.images.cafes.garden.src
+  }
+];
+function AboutCafePage() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % ABOUT_SECTIONS.length);
+    }, 5e3);
+    return () => clearInterval(timer);
+  }, []);
+  const section = ABOUT_SECTIONS[currentIndex];
+  return /* @__PURE__ */ jsx("section", { className: "bg-white px-6 py-16 lg:py-28 transition-colors duration-500 dark:bg-[#050505]", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto max-w-7xl", children: /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 items-center gap-10 lg:grid-cols-[45%_55%]", children: [
+    /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        initial: { opacity: 0, x: -50 },
+        animate: { opacity: 1, x: 0 },
+        transition: { duration: 0.5 },
+        className: "relative",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "relative z-10 aspect-[4/3] overflow-hidden rounded-xl border border-zinc-200/10 shadow-2xl dark:border-white/10", children: [
+            /* @__PURE__ */ jsx(
+              "img",
+              {
+                src: section.image,
+                alt: section.sectionTitle,
+                className: "h-full w-full object-cover"
+              }
+            ),
+            /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "absolute -bottom-4 -right-4 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0" }),
+          /* @__PURE__ */ jsx("div", { className: "absolute -left-4 -top-4 h-1/2 w-1/2 rounded-xl bg-zinc-100/80 -z-0 dark:bg-white/5" })
+        ]
+      },
+      `about-image-${currentIndex}`
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "relative lg:pl-4", children: [
+      /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
+        motion.div,
+        {
+          initial: { opacity: 0, x: 20 },
+          animate: { opacity: 1, x: 0 },
+          exit: { opacity: 0, x: -20 },
+          transition: { duration: 0.5 },
+          className: "space-y-5",
+          children: [
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsxs("h3", { className: "mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary", children: [
+                /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
+                section.subTitle
+              ] }),
+              /* @__PURE__ */ jsx("h2", { className: "mb-3 text-3xl font-serif leading-tight text-zinc-900 dark:text-white md:text-4xl", children: section.sectionTitle })
+            ] }),
+            /* @__PURE__ */ jsx("p", { className: "text-base font-light leading-relaxed text-zinc-500 dark:text-white/60", children: section.description }),
+            /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-6 border-t border-zinc-200 pt-4 dark:border-white/10", children: [
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("h4", { className: "mb-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/40", children: "Availability" }),
+                /* @__PURE__ */ jsxs("p", { className: "flex items-center gap-2 font-serif text-base italic text-zinc-900 dark:text-white", children: [
+                  /* @__PURE__ */ jsx(Clock, { className: "h-3.5 w-3.5 text-primary" }),
+                  "7:00 AM – 11:00 PM"
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "mt-1 text-[10px] font-bold tracking-tighter text-zinc-400 dark:text-white/30", children: "MONDAY – SUNDAY" })
+              ] }),
+              /* @__PURE__ */ jsxs("div", { children: [
+                /* @__PURE__ */ jsx("h4", { className: "mb-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/40", children: "Connect" }),
+                /* @__PURE__ */ jsx(
+                  "a",
+                  {
+                    href: "tel:+919876543210",
+                    className: "block font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white",
+                    children: "+91 98765 43210"
+                  }
+                ),
+                /* @__PURE__ */ jsx("span", { className: "text-[10px] font-bold uppercase tracking-tighter text-zinc-400 dark:text-white/30", children: "Reservations & Private Tables" })
+              ] })
+            ] })
+          ]
+        },
+        currentIndex
+      ) }),
+      /* @__PURE__ */ jsx("div", { className: "mt-6 flex gap-2", children: ABOUT_SECTIONS.map((_, idx) => /* @__PURE__ */ jsx(
+        "button",
+        {
+          onClick: () => setCurrentIndex(idx),
+          className: `h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "w-6 bg-primary" : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"}`
+        },
+        idx
+      )) })
+    ] })
+  ] }) }) });
+}
+const OFFERS = [
+  {
+    id: "offer-1",
+    type: "Offer",
+    title: "Morning Brew & Bake Combo",
+    description: "Fresh croissant, house roast espresso, and a quick breakfast format designed for early-hour guests.",
+    image: siteContent.images.cafes.bakery.src,
+    date: "Daily · 7 AM – 11 AM",
+    location: "All Outlets",
+    slug: "morning-brew-bake",
+    icon: Gift
+  },
+  {
+    id: "offer-2",
+    type: "Offer",
+    title: "High Tea For Two",
+    description: "Tea tower service with petit desserts and savouries in a lounge-style format for pairs.",
+    image: siteContent.images.cafes.highTea.src,
+    date: "Weekends · 3 PM – 6 PM",
+    location: "Lounge Only",
+    slug: "high-tea-for-two",
+    icon: Gift
+  },
+  {
+    id: "offer-3",
+    type: "Offer",
+    title: "Late Night Dessert Bar",
+    description: "Specialty desserts, cold brews, and artisan toppings available post-dinner for late-hour guests.",
+    image: siteContent.images.cafes.minimalist.src,
+    date: "Fri – Sat · 9 PM – 12 AM",
+    location: "Main Cafe",
+    slug: "late-night-dessert",
+    icon: Coffee
+  }
+];
+const EVENTS = [
+  {
+    id: "event-1",
+    type: "Event",
+    title: "Acoustic Evenings & Slow Sips",
+    description: "Intimate live sessions paired with curated brews and dessert tastings in the garden.",
+    image: siteContent.images.cafes.garden.src,
+    date: "Every Friday · 7 PM",
+    location: "Garden Terrace",
+    slug: "acoustic-evenings",
+    icon: Calendar$1
+  },
+  {
+    id: "event-2",
+    type: "Event",
+    title: "Latte Art Workshop",
+    description: "Interactive cafe sessions focused on pouring techniques, bean origins, and tasting notes.",
+    image: siteContent.images.cafes.library.src,
+    date: "2nd Saturday · 11 AM",
+    location: "Brew Lab",
+    slug: "latte-art-workshops",
+    icon: Coffee
+  },
+  {
+    id: "event-3",
+    type: "Event",
+    title: "Sunday Jazz Brunch",
+    description: "Live jazz quartet, bottomless cold brews, and a rotating brunch menu every Sunday morning.",
+    image: siteContent.images.cafes.parisian.src,
+    date: "Every Sunday · 10 AM",
+    location: "Main Hall",
+    slug: "sunday-jazz-brunch",
+    icon: Calendar$1
+  }
+];
+const GROUP_BOOKINGS = [
+  {
+    id: 1,
+    title: "Creative Team Coffee Meetups",
+    description: "Pre-set tables, quick service flow, and shared platters for compact office gatherings.",
+    image: siteContent.images.cafes.minimalist.src,
+    slug: "team-coffee-meetups"
+  },
+  {
+    id: 2,
+    title: "Celebration Tables For Small Parties",
+    description: "Birthdays, catch-ups, and cosy celebrations arranged with dessert add-ons.",
+    image: siteContent.images.cafes.parisian.src,
+    slug: "celebration-tables"
+  },
+  {
+    id: 3,
+    title: "Corporate Tasting Sessions",
+    description: "Curated tasting menus and private seating for team outings and client meetings.",
+    image: siteContent.images.cafes.library.src,
+    slug: "corporate-tasting"
+  }
+];
+function ShowcaseCard({ item }) {
+  return /* @__PURE__ */ jsxs("div", { className: "group relative flex h-[460px] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative h-full w-full overflow-hidden", children: [
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: item.image,
+          alt: item.title,
+          className: "h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        }
+      ),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3 z-10 rounded bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm", children: item.type }),
+    /* @__PURE__ */ jsx("div", { className: "absolute right-3 top-3 z-10 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1", children: [
+      /* @__PURE__ */ jsx(MapPin, { className: "h-2.5 w-2.5" }),
+      /* @__PURE__ */ jsx("span", { children: item.location })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 bottom-0 z-10 flex flex-col p-4", children: [
+      /* @__PURE__ */ jsx("h3", { className: "font-serif text-base font-bold leading-snug text-white line-clamp-2", children: item.title }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-2 flex items-center gap-1.5 text-white/70", children: [
+        /* @__PURE__ */ jsx(Calendar$1, { size: 11, className: "text-primary" }),
+        /* @__PURE__ */ jsx("span", { className: "text-[11px] font-medium italic uppercase", children: item.date })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "mt-2 line-clamp-2 text-[11px] italic text-white/65", children: item.description }),
+      /* @__PURE__ */ jsx(Link, { to: `/cafe/${item.slug}`, className: "mt-4", children: /* @__PURE__ */ jsxs(Button, { className: "h-auto w-full rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20", children: [
+        "Explore ",
+        /* @__PURE__ */ jsx(ExternalLink, { className: "ml-2 h-3 w-3" })
+      ] }) })
+    ] })
+  ] });
+}
+function CarouselColumn({ title, icon: Icon, items }) {
+  const [swiper, setSwiper] = useState(null);
+  return /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col rounded-2xl border bg-card p-5", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mb-5 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs("h3", { className: "flex items-center gap-2 font-serif text-lg font-semibold", children: [
+        /* @__PURE__ */ jsx(Icon, { className: "h-5 w-5 text-primary" }),
+        title
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slidePrev(),
+            className: "rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted",
+            children: /* @__PURE__ */ jsx(ChevronLeft, { size: 16 })
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => swiper?.slideNext(),
+            className: "rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted",
+            children: /* @__PURE__ */ jsx(ChevronRight$1, { size: 16 })
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Swiper,
+      {
+        modules: [Navigation, Autoplay],
+        slidesPerView: 1,
+        spaceBetween: 0,
+        autoplay: { delay: 4500, disableOnInteraction: false, pauseOnMouseEnter: true },
+        onSwiper: setSwiper,
+        className: "w-full flex-1",
+        children: items.map((item) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx(ShowcaseCard, { item }) }, item.id))
+      }
+    )
+  ] });
+}
+function GroupBookingColumn() {
+  return /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col rounded-2xl border bg-card p-5", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mb-5 flex items-center gap-2", children: [
+      /* @__PURE__ */ jsx(Users, { className: "h-5 w-5 text-primary" }),
+      /* @__PURE__ */ jsx("h3", { className: "font-serif text-lg font-semibold", children: "Group Booking" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "space-y-3", children: GROUP_BOOKINGS.map((item, i) => /* @__PURE__ */ jsx(
+      motion.div,
+      {
+        initial: { opacity: 0, y: 14 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { delay: i * 0.07 },
+        className: "group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md",
+        children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 p-3", children: [
+          /* @__PURE__ */ jsx("div", { className: "h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/30 bg-muted shadow-sm", children: /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: item.image,
+              alt: item.title,
+              className: "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            }
+          ) }),
+          /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1", children: [
+            /* @__PURE__ */ jsx("h4", { className: "line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary", children: item.title }),
+            /* @__PURE__ */ jsx("p", { className: "mt-0.5 line-clamp-1 text-[11px] text-muted-foreground", children: item.description })
+          ] }),
+          /* @__PURE__ */ jsx(Link, { to: `/cafe/group/${item.slug}`, children: /* @__PURE__ */ jsx(Button, { type: "button", size: "icon", className: "h-9 w-9 shrink-0 rounded-full", children: /* @__PURE__ */ jsx(ArrowRight$1, { className: "h-4 w-4" }) }) })
+        ] })
+      },
+      item.id
+    )) }),
+    /* @__PURE__ */ jsxs("div", { className: "relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl", children: [
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-px bg-white/70" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute -left-10 top-6 h-28 w-28 rounded-full bg-rose-200/40 blur-3xl" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-slate-400/20 blur-3xl" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute bottom-[-16px] right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute bottom-8 left-6 h-20 w-20 rounded-full bg-sky-200/30 blur-3xl" }),
+      /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-2xl ring-1 ring-black/5" }),
+      /* @__PURE__ */ jsxs("div", { className: "relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center", children: [
+        /* @__PURE__ */ jsx(Users, { className: "h-8 w-8 text-primary/60" }),
+        /* @__PURE__ */ jsx("p", { className: "font-serif text-sm font-semibold text-foreground/80", children: "Planning something bigger?" }),
+        /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground", children: "Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers." }),
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            onClick: () => document.getElementById("reservation")?.scrollIntoView({ behavior: "smooth" }),
+            className: "mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold",
+            children: "Enquire Now"
+          }
+        )
+      ] })
+    ] })
+  ] });
+}
+function CafepageEvents() {
+  return /* @__PURE__ */ jsx("section", { id: "events", className: "bg-muted py-10", children: /* @__PURE__ */ jsxs("div", { className: "mx-auto w-[92%] max-w-7xl", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mb-8 text-center", children: [
+      /* @__PURE__ */ jsx("h2", { className: "font-serif text-2xl md:text-3xl", children: "Offers, Events & Group Booking" }),
+      /* @__PURE__ */ jsx("div", { className: "mx-auto mt-3 h-0.5 w-16 bg-primary" })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-6 lg:grid-cols-3", children: [
+      /* @__PURE__ */ jsx(CarouselColumn, { title: "Offers", icon: Gift, items: OFFERS }),
+      /* @__PURE__ */ jsx(CarouselColumn, { title: "Events", icon: Sparkles, items: EVENTS }),
+      /* @__PURE__ */ jsx(GroupBookingColumn, {})
+    ] })
+  ] }) });
+}
+const FILTERS = ["Brews", "Bites"];
+const MENU_ITEMS = [
+  {
+    id: 1,
+    title: "Single Origin Pour-Over",
+    description: "Hand-poured through a single filter, this brew highlights the natural clarity and fruit tones of its origin bean.",
+    image: siteContent.images.cafes.minimalist.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Specialty Coffee",
+    likes: 1180
+  },
+  {
+    id: 2,
+    title: "Iced Matcha Latte",
+    description: "Ceremonial-grade matcha whisked into cold oat milk for a smooth, grassy, and lightly sweet glass.",
+    image: siteContent.images.cafes.library.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Cold Beverages",
+    likes: 960
+  },
+  {
+    id: 3,
+    title: "Classic Cold Brew",
+    description: "Slow-steeped overnight for 18 hours. Low acid, high clarity, cocoa and malt undertones.",
+    image: siteContent.images.cafes.garden.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Cold Coffee",
+    likes: 1025
+  },
+  {
+    id: 4,
+    title: "Hazelnut Cappuccino",
+    description: "Toasted nut sweetness folded into velvet milk foam and a warm aromatic espresso base.",
+    image: siteContent.images.cafes.parisian.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Hot Coffee",
+    likes: 890
+  },
+  {
+    id: 5,
+    title: "Espresso Tonic",
+    description: "Bright tonic sparkle, fresh espresso, and a citrus wedge — a sharper modern coffee serve.",
+    image: siteContent.images.cafes.highTea.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Special Brew",
+    likes: 775
+  },
+  {
+    id: 6,
+    title: "Salted Caramel Frappe",
+    description: "Blended coffee, cream, and caramel in a frozen profile made for long slow cafe hours.",
+    image: siteContent.images.cafes.bakery.src,
+    tags: ["Brews", "Best Seller"],
+    category: "Blended Coffee",
+    likes: 840
+  },
+  {
+    id: 7,
+    title: "Avocado Toast & Poached Egg",
+    description: "Thick-cut sourdough, smashed avocado, two poached eggs, chilli flakes, and a drizzle of herb oil.",
+    image: siteContent.images.cafes.minimalist.src,
+    tags: ["Bites", "Best Seller"],
+    category: "All-Day Brunch",
+    likes: 1120
+  },
+  {
+    id: 8,
+    title: "Belgian Waffle Stack",
+    description: "Crisp on the outside, fluffy inside, topped with mascarpone, berries, and maple drizzle.",
+    image: siteContent.images.cafes.bakery.src,
+    tags: ["Bites", "Best Seller"],
+    category: "Bakery",
+    likes: 980
+  },
+  {
+    id: 9,
+    title: "High Tea Platter for Two",
+    description: "A tiered selection of finger sandwiches, petit fours, scones, and seasonal preserves.",
+    image: siteContent.images.cafes.highTea.src,
+    tags: ["Bites", "Best Seller"],
+    category: "High Tea",
+    likes: 870
+  },
+  {
+    id: 10,
+    title: "Garden Brunch Board",
+    description: "Cold cuts, artisan cheeses, seasonal fruit, house hummus, and warm flatbread on a sharing board.",
+    image: siteContent.images.cafes.garden.src,
+    tags: ["Bites", "Best Seller"],
+    category: "Sharing Platter",
+    likes: 810
+  },
+  {
+    id: 11,
+    title: "Croissant & Jam",
+    description: "Freshly baked butter croissant served warm with house-made seasonal jam and French-style cultured butter.",
+    image: siteContent.images.cafes.parisian.src,
+    tags: ["Bites", "Best Seller"],
+    category: "Bakery",
+    likes: 750
+  },
+  {
+    id: 12,
+    title: "Smashed Banana Pancakes",
+    description: "Fluffy banana pancakes topped with honey yoghurt, toasted granola, and a cocoa dust finish.",
+    image: siteContent.images.cafes.library.src,
+    tags: ["Bites", "Best Seller"],
+    category: "All-Day Brunch",
+    likes: 695
+  }
+];
+function CoffeeImage({ src, alt }) {
+  const [errored, setErrored] = useState(false);
+  if (!src || errored) {
+    return /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-zinc-100", children: /* @__PURE__ */ jsx(ImageOff, { size: 32, className: "text-zinc-300" }) });
+  }
+  return /* @__PURE__ */ jsx(
+    "img",
+    {
+      src,
+      alt,
+      className: "h-full w-full object-cover",
+      onError: () => setErrored(true)
+    }
+  );
+}
+function AnimatedCounter({ target }) {
+  const [count2, setCount] = useState(Math.floor(target * 0.8));
+  useEffect(() => {
+    let current = Math.floor(target * 0.8);
+    const increment = Math.max(1, Math.ceil((target - current) / 40));
+    const timer = window.setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setCount(target);
+        window.clearInterval(timer);
+      } else {
+        setCount(current);
+      }
+    }, 20);
+    return () => window.clearInterval(timer);
+  }, [target]);
+  return /* @__PURE__ */ jsx("span", { children: count2.toLocaleString() });
+}
+function CafeSignatureDrinks() {
+  const [activeFilter, setActiveFilter] = useState("Brews");
+  const [expanded, setExpanded] = useState(false);
+  const [menuItems, setMenuItems] = useState(MENU_ITEMS);
+  const [likedItems, setLikedItems] = useState({});
+  const [likeSubmitting, setLikeSubmitting] = useState(false);
+  const [likeModal, setLikeModal] = useState({ isOpen: false, item: null });
+  const [likeForm, setLikeForm] = useState({ name: "", phone: "", description: "" });
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => item.tags.includes(activeFilter));
+  }, [activeFilter, menuItems]);
+  const primaryItems = filteredItems.slice(0, 4);
+  const extraItems = filteredItems.slice(4);
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+    setExpanded(false);
+  };
+  const handleLikeSubmit = () => {
+    if (!likeModal.item) return;
+    setLikeSubmitting(true);
+    window.setTimeout(() => {
+      setMenuItems(
+        (prev) => prev.map(
+          (item) => item.id === likeModal.item.id ? { ...item, likes: item.likes + 1 } : item
+        )
+      );
+      setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
+      setLikeModal({ isOpen: false, item: null });
+      setLikeForm({ name: "", phone: "", description: "" });
+      setLikeSubmitting(false);
+      toast$2.success("Thanks for the love!");
+    }, 500);
+  };
+  const closeLikeModal = () => {
+    setLikeModal({ isOpen: false, item: null });
+    setLikeForm({ name: "", phone: "", description: "" });
+    setLikeSubmitting(false);
+  };
+  const renderCard = (item, index, keyPrefix = "") => /* @__PURE__ */ jsxs(
+    motion.div,
+    {
+      initial: { opacity: 0, y: 24 },
+      whileInView: { opacity: 1, y: 0 },
+      viewport: { once: true },
+      transition: { delay: index * 0.08 },
+      className: "group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-8 text-center",
+      children: [
+        /* @__PURE__ */ jsxs("div", { className: "relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white shadow-xl transition-transform duration-700 group-hover:scale-105", children: [
+          /* @__PURE__ */ jsx(CoffeeImage, { src: item.image, alt: item.title }),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: (e) => {
+                e.stopPropagation();
+                setLikeModal({ isOpen: true, item });
+              },
+              className: "absolute right-4 top-4 rounded-full bg-white/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110",
+              "aria-label": `Like ${item.title}`,
+              children: /* @__PURE__ */ jsx(Heart, { size: 18, className: likedItems[item.id] ? "fill-primary" : "" })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "mb-2 text-[10px] font-bold uppercase tracking-widest text-primary", children: item.category }),
+        /* @__PURE__ */ jsxs("div", { className: "flex w-full flex-col items-center", children: [
+          /* @__PURE__ */ jsx("h3", { className: "mb-2 text-2xl font-serif leading-tight text-zinc-900", children: item.title }),
+          item.description && /* @__PURE__ */ jsxs("p", { className: "mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500", children: [
+            '"',
+            item.description,
+            '"'
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-1.5 text-primary", children: [
+            /* @__PURE__ */ jsx(Heart, { size: 14, className: "fill-primary" }),
+            /* @__PURE__ */ jsxs("span", { className: "text-sm font-black", children: [
+              /* @__PURE__ */ jsx(AnimatedCounter, { target: item.likes }),
+              "+"
+            ] })
+          ] })
+        ] })
+      ]
+    },
+    `${keyPrefix}${item.id}`
+  );
+  return /* @__PURE__ */ jsxs("section", { className: "bg-white pb-2 pt-16", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[1400px] px-6 text-left md:px-12", children: [
+      /* @__PURE__ */ jsxs("div", { className: "mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row", children: [
+        /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1 lg:max-w-[80%]", children: [
+          /* @__PURE__ */ jsxs("div", { className: "mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-primary", children: [
+            /* @__PURE__ */ jsx(Sparkles, { className: "h-3.5 w-3.5" }),
+            "Cafe Menu Spotlight"
+          ] }),
+          /* @__PURE__ */ jsxs("h2", { className: "mb-2 text-3xl font-serif md:text-4xl", children: [
+            "Our Signature ",
+            /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: "Menu" })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "max-w-[80%]", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-light leading-relaxed text-zinc-500", children: "From specialty brews and cold glasses to bakery bites and brunch boards — these are the items guests come back for." }) })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: FILTERS.map((filter) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => handleFilterChange(filter),
+            className: `rounded-full border px-4 py-2 text-sm font-semibold transition-all ${activeFilter === filter ? filter === "Brews" ? "border-amber-500 bg-amber-500 text-white" : "border-emerald-500 bg-emerald-500 text-white" : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"}`,
+            children: filter
+          },
+          filter
+        )) })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4", children: primaryItems.map((item, index) => renderCard(item, index)) }),
+      extraItems.length > 0 && /* @__PURE__ */ jsxs("div", { className: "px-5 pb-5 pt-8 lg:px-0 lg:pb-6", children: [
+        /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: () => setExpanded((current) => !current),
+            className: "inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary",
+            children: [
+              expanded ? "Show Less" : `Show More (${extraItems.length})`,
+              expanded ? /* @__PURE__ */ jsx(ChevronUp, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4" })
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: expanded && /* @__PURE__ */ jsx(
+          motion.div,
+          {
+            initial: { opacity: 0, height: 0, y: 10 },
+            animate: { opacity: 1, height: "auto", y: 0 },
+            exit: { opacity: 0, height: 0, y: 10 },
+            transition: { duration: 0.25 },
+            className: "overflow-hidden",
+            children: /* @__PURE__ */ jsx("div", { className: "mt-20 grid grid-cols-1 gap-x-6 gap-y-20 md:grid-cols-2 lg:grid-cols-4", children: extraItems.map((item, index) => renderCard(item, index, "extra-")) })
+          }
+        ) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(AnimatePresence, { children: likeModal.isOpen && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        initial: { scale: 0.9, opacity: 0 },
+        animate: { scale: 1, opacity: 1 },
+        exit: { scale: 0.9, opacity: 0 },
+        className: "relative w-full max-w-md rounded-[2.5rem] border border-zinc-100 bg-white p-10 text-left shadow-2xl",
+        children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              type: "button",
+              onClick: closeLikeModal,
+              className: "absolute right-6 top-6 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100",
+              children: /* @__PURE__ */ jsx(X, { size: 20 })
+            }
+          ),
+          /* @__PURE__ */ jsx("h3", { className: "mb-2 text-2xl font-serif text-zinc-900", children: "Show your love" }),
+          /* @__PURE__ */ jsxs("p", { className: "mb-6 text-xs italic text-zinc-500", children: [
+            "Share your details to like ",
+            likeModal.item?.title || "this item",
+            "."
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              Input,
+              {
+                placeholder: "Your Name",
+                value: likeForm.name,
+                onChange: (e) => setLikeForm((prev) => ({ ...prev, name: e.target.value })),
+                className: "h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              Input,
+              {
+                placeholder: "Phone Number",
+                value: likeForm.phone,
+                onChange: (e) => setLikeForm((prev) => ({ ...prev, phone: e.target.value })),
+                className: "h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              Input,
+              {
+                placeholder: "Leave a comment",
+                value: likeForm.description,
+                onChange: (e) => setLikeForm((prev) => ({ ...prev, description: e.target.value })),
+                className: "h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              Button,
+              {
+                disabled: !likeForm.name || !likeForm.phone || likeSubmitting,
+                onClick: handleLikeSubmit,
+                className: "h-14 w-full rounded-2xl bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95",
+                children: likeSubmitting ? /* @__PURE__ */ jsx(Loader2, { size: 18, className: "mx-auto animate-spin" }) : "Submit Like"
+              }
+            )
+          ] })
+        ]
+      }
+    ) }) })
+  ] });
+}
+const sectionHeader = {
+  sectionTag: "Guest Impressions",
+  title: "Cafe Moments Worth Returning For"
+};
+const ratingHeader = {
+  description: "Average guest cafe rating",
+  rating: 5
+};
+const guestReviews = [
+  {
+    id: 1,
+    author: "Priya Mehta",
+    description: "Kennedia Cafe is my go-to morning spot. The cold brew is exceptional and the sourdough toast is something I look forward to every weekend.",
+    imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    id: 2,
+    author: "Arjun Kapoor",
+    description: "The Bean-to-Cup Journey event completely changed how I think about coffee. The baristas are knowledgeable and passionate.",
+    imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    id: 3,
+    author: "Simran Gill",
+    description: "The Belgian waffles and High Tea Sunday experience were absolutely stunning. The garden terrace is a hidden gem — lush, quiet, and perfect.",
+    imageUrl: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    id: 4,
+    author: "Rahul Verma",
+    description: "Fast WiFi, great power sockets, and the best matcha latte I've had. The library corner is quiet enough to actually get work done.",
+    imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
+  }
+];
+function CafeTestimonials() {
+  const swiperRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [mediaPreviews, setMediaPreviews] = useState([]);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [ytLink, setYtLink] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaUploading] = useState(false);
+  const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
+  const handleFileUpload = (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newPreviews = Array.from(files).map((file) => ({
+        type: file.type.startsWith("video") ? "video" : "image",
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setMediaPreviews((prev) => [...prev, ...newPreviews]);
+    }
+  };
+  const handleSubmit = async () => {
+    if (!isVerified) {
+      setShowPopup(true);
+      return;
+    }
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    setIsSubmitting(false);
+    setFeedbackText("");
+    setMediaPreviews([]);
+    setYtLink("");
+    setIsVerified(false);
+    setAuthorName("");
+    setEmail("");
+    setPhone("");
+  };
+  return /* @__PURE__ */ jsxs("section", { id: "reviews", className: "bg-background py-12", children: [
+    /* @__PURE__ */ jsx("div", { className: "container mx-auto px-4", children: /* @__PURE__ */ jsxs("div", { className: "flex min-w-0 flex-col items-stretch gap-6 lg:flex-row", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex w-full min-w-0 flex-col rounded-2xl border bg-card p-6 shadow-sm lg:w-3/4", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-6 flex items-start justify-between", children: [
+          /* @__PURE__ */ jsxs("div", { children: [
+            /* @__PURE__ */ jsx("p", { className: "mb-1 text-xs font-bold uppercase tracking-widest text-primary", children: sectionHeader.sectionTag }),
+            /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold italic", children: sectionHeader.title })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
+            /* @__PURE__ */ jsx("div", { className: "mb-1 flex items-center justify-end gap-1 text-primary", children: [...Array(5)].map((_, i) => /* @__PURE__ */ jsx(
+              Star,
+              {
+                size: 14,
+                className: i < ratingHeader.rating ? "fill-primary text-primary" : "text-primary/20"
+              },
+              i
+            )) }),
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase tracking-tighter", children: ratingHeader.description })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "w-full flex-grow overflow-hidden", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
+          Swiper,
+          {
+            modules: [Autoplay, Navigation],
+            spaceBetween: 15,
+            slidesPerView: 1.2,
+            breakpoints: { 768: { slidesPerView: 3 } },
+            autoplay: { delay: 6e3, disableOnInteraction: false },
+            onSwiper: (s) => {
+              swiperRef.current = s;
+            },
+            onMouseEnter: () => {
+              swiperRef.current?.autoplay?.stop();
+            },
+            onMouseLeave: () => {
+              swiperRef.current?.autoplay?.start();
+            },
+            className: "h-full w-full",
+            children: guestReviews.map((item) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx("div", { className: "group flex h-full flex-col overflow-hidden rounded-xl border bg-background", children: /* @__PURE__ */ jsxs("div", { className: "relative aspect-[3/4] overflow-hidden bg-muted", children: [
+              /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: item.imageUrl,
+                  alt: item.author,
+                  className: "h-full w-full object-cover"
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/25 to-transparent p-4", children: [
+                /* @__PURE__ */ jsxs("p", { className: "line-clamp-4 text-base italic text-white", children: [
+                  '"',
+                  item.description,
+                  '"'
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-white", children: item.author })
+              ] })
+            ] }) }) }, item.id))
+          }
+        ) }) })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "flex w-full flex-col lg:w-1/4", children: /* @__PURE__ */ jsxs("div", { className: "flex h-full w-full flex-col rounded-2xl border bg-card p-6 shadow-sm", children: [
+        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex items-center justify-between", children: [
+          /* @__PURE__ */ jsx("h4", { className: "text-sm font-bold", children: "Share Experience" }),
+          hasContent && /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => setShowPopup(true),
+              className: "rounded-full p-1 text-primary hover:bg-primary/10",
+              children: /* @__PURE__ */ jsx(Edit2$1, { size: 16 })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-3", children: [
+          /* @__PURE__ */ jsx("div", { className: "rounded-full bg-white p-2 text-red-400 shadow-sm", children: /* @__PURE__ */ jsx(User, { size: 18 }) }),
+          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+            /* @__PURE__ */ jsx("p", { className: "text-[10px] font-bold uppercase leading-none text-red-400", children: "Posting as" }),
+            /* @__PURE__ */ jsx("p", { className: "truncate text-sm font-bold text-gray-800", children: authorName || "Guest User" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx(
+          "textarea",
+          {
+            value: feedbackText,
+            onChange: (e) => setFeedbackText(e.target.value),
+            placeholder: "Tell us about your cafe experience...",
+            className: "mb-3 w-full flex-grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "mb-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 rounded-xl border border-transparent bg-secondary/20 px-3 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white", children: [
+          /* @__PURE__ */ jsx(
+            Youtube,
+            {
+              size: 15,
+              className: ytLink ? "text-red-500" : "text-muted-foreground"
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "url",
+              value: ytLink,
+              onChange: (e) => setYtLink(e.target.value),
+              placeholder: "Paste YouTube or Instagram Reel link",
+              className: "flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+            }
+          ),
+          ytLink && /* @__PURE__ */ jsx("button", { onClick: () => setYtLink(""), children: /* @__PURE__ */ jsx(X, { size: 12 }) })
+        ] }) }),
+        mediaPreviews.length > 0 && /* @__PURE__ */ jsx("div", { className: "mb-3 grid grid-cols-4 gap-2", children: mediaPreviews.map((m, i) => /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "relative aspect-square overflow-hidden rounded-lg border",
+            children: [
+              m.type === "image" ? /* @__PURE__ */ jsx("img", { src: m.url, alt: "", className: "h-full w-full object-cover" }) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-black", children: /* @__PURE__ */ jsx(Video, { size: 12, className: "text-white" }) }),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  onClick: () => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i)),
+                  className: "absolute right-0 top-0 bg-black/50 text-white",
+                  children: /* @__PURE__ */ jsx(X, { size: 10 })
+                }
+              )
+            ]
+          },
+          i
+        )) }),
+        /* @__PURE__ */ jsxs("div", { className: "mb-4 flex gap-2", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: () => fileInputRef.current?.click(),
+              className: "flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60",
+              children: /* @__PURE__ */ jsxs("span", { className: "flex items-center justify-center gap-2", children: [
+                mediaUploading ? /* @__PURE__ */ jsx(Loader2, { size: 16, className: "animate-spin" }) : /* @__PURE__ */ jsx(ImageIcon, { size: 16 }),
+                "Media"
+              ] })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "file",
+              ref: fileInputRef,
+              className: "hidden",
+              multiple: true,
+              onChange: handleFileUpload
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx(
+          "button",
+          {
+            disabled: isSubmitting || !feedbackText && mediaPreviews.length === 0 && !ytLink.trim(),
+            onClick: handleSubmit,
+            className: "w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50",
+            children: isSubmitting ? /* @__PURE__ */ jsx(Loader2, { className: "mx-auto animate-spin", size: 20 }) : "Submit Story"
+          }
+        )
+      ] }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(AnimatePresence, { children: showPopup && /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm", children: /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        initial: { scale: 0.9 },
+        animate: { scale: 1 },
+        className: "w-full max-w-sm rounded-2xl border bg-card p-8 shadow-2xl",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "mb-6 flex items-center justify-between", children: [
+            /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
+            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: authorName,
+                onChange: (e) => setAuthorName(e.target.value),
+                placeholder: "Full Name",
+                className: "w-full rounded-lg bg-muted p-3 outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: email,
+                onChange: (e) => setEmail(e.target.value),
+                placeholder: "Email",
+                className: "w-full rounded-lg bg-muted p-3 outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "input",
+              {
+                value: phone,
+                onChange: (e) => setPhone(e.target.value),
+                placeholder: "Phone",
+                maxLength: 10,
+                className: "w-full rounded-lg bg-muted p-3 outline-none"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: () => {
+                  setIsVerified(true);
+                  setShowPopup(false);
+                  handleSubmit();
+                },
+                className: "w-full rounded-lg bg-primary py-3 font-bold text-white",
+                children: "Save & Continue"
+              }
+            )
+          ] })
+        ]
+      }
+    ) }) })
+  ] });
+}
+const CATEGORIES = ["All", "Interior", "Brews", "Bakery", "Events", "Outdoor"];
+function CafeGalleryPage() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const filtered = useMemo(() => {
+    const normalized = CAFE_GALLERY_ITEMS.map((item) => ({
+      id: item.id,
+      category: item.categoryName.charAt(0) + item.categoryName.slice(1).toLowerCase(),
+      image: item.media.url,
+      alt: item.media.alt || item.media.fileName || item.propertyName
+    }));
+    return activeCategory === "All" ? normalized : normalized.filter((item) => item.category === activeCategory);
+  }, [activeCategory]);
+  const columns = useMemo(
+    () => [0, 1, 2].map(
+      (columnIndex) => filtered.filter((_, index) => index % 3 === columnIndex)
+    ),
+    [filtered]
+  );
+  const openLightbox = (index) => setLightboxIndex(index);
+  const closeLightbox = () => setLightboxIndex(null);
+  const lightboxPrev = () => setLightboxIndex((current) => (current - 1 + filtered.length) % filtered.length);
+  const lightboxNext = () => setLightboxIndex((current) => (current + 1) % filtered.length);
+  return /* @__PURE__ */ jsxs("section", { className: "py-16 lg:py-28 bg-zinc-50 dark:bg-zinc-900/40", children: [
+    /* @__PURE__ */ jsxs("div", { className: "max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10", children: [
+        /* @__PURE__ */ jsxs(
+          motion.div,
+          {
+            initial: { opacity: 0, y: 20 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true },
+            children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 mb-3", children: [
+                /* @__PURE__ */ jsx(Camera, { className: "w-4 h-4 text-primary" }),
+                /* @__PURE__ */ jsx("span", { className: "text-primary text-[11px] font-bold uppercase tracking-[0.4em]", children: "Visual Gallery" })
+              ] }),
+              /* @__PURE__ */ jsxs("h2", { className: "text-4xl md:text-5xl font-serif text-zinc-900 dark:text-white tracking-tight", children: [
+                "Moments from the ",
+                /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: "Cafe" })
+              ] })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx("div", { className: "flex flex-wrap gap-2", children: CATEGORIES.map((cat) => /* @__PURE__ */ jsx(
+          "button",
+          {
+            onClick: () => setActiveCategory(cat),
+            className: `px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === cat ? "bg-primary text-white shadow-md" : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"}`,
+            children: cat
+          },
+          cat
+        )) })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "relative overflow-hidden rounded-[2rem] border border-zinc-200/70 dark:border-white/10 bg-white dark:bg-zinc-950 shadow-[0_35px_80px_-35px_rgba(0,0,0,0.35)]", children: [
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" }),
+        /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-[760px] overflow-hidden", children: columns.map((columnItems, columnIndex) => {
+          const loopItems = columnItems.length > 0 ? [...columnItems, ...columnItems] : [];
+          return /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "relative h-full overflow-hidden rounded-[1.5rem] bg-zinc-100/70 dark:bg-white/[0.03]",
+              children: /* @__PURE__ */ jsx(
+                motion.div,
+                {
+                  initial: { y: columnIndex % 2 === 0 ? "0%" : "-50%" },
+                  animate: {
+                    y: columnIndex % 2 === 0 ? ["0%", "-50%"] : ["-50%", "0%"]
+                  },
+                  transition: {
+                    duration: 20 + columnIndex * 4,
+                    repeat: Infinity,
+                    ease: "linear"
+                  },
+                  className: "flex flex-col gap-4 p-4",
+                  children: loopItems.map((item, loopIndex) => {
+                    const sourceIndex = filtered.findIndex(
+                      (entry) => entry.id === item.id
+                    );
+                    return /* @__PURE__ */ jsx(
+                      motion.button,
+                      {
+                        type: "button",
+                        initial: { opacity: 0, y: 30 },
+                        whileInView: { opacity: 1, y: 0 },
+                        viewport: { once: true },
+                        transition: { delay: Math.min(loopIndex * 0.04, 0.2) },
+                        onClick: () => openLightbox(sourceIndex),
+                        className: "relative group overflow-hidden rounded-[1.5rem] text-left",
+                        children: /* @__PURE__ */ jsxs(
+                          "div",
+                          {
+                            className: `relative ${loopIndex % 3 === 0 ? "aspect-[4/5]" : "aspect-[5/4]"}`,
+                            children: [
+                              /* @__PURE__ */ jsx(
+                                "img",
+                                {
+                                  src: item.image,
+                                  alt: item.alt,
+                                  className: "w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                }
+                              ),
+                              /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-90" }),
+                              /* @__PURE__ */ jsx("div", { className: "absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300", children: /* @__PURE__ */ jsx("div", { className: "bg-white/90 backdrop-blur-sm rounded-full p-3", children: /* @__PURE__ */ jsx(Camera, { className: "w-5 h-5 text-zinc-900" }) }) }),
+                              /* @__PURE__ */ jsxs("div", { className: "absolute left-4 right-4 bottom-4 flex items-end justify-between gap-4", children: [
+                                /* @__PURE__ */ jsxs("div", { children: [
+                                  /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase tracking-[0.35em] text-white/70 mb-2", children: item.category }),
+                                  /* @__PURE__ */ jsx("p", { className: "text-white font-serif text-xl leading-tight", children: item.alt })
+                                ] }),
+                                /* @__PURE__ */ jsx("div", { className: "shrink-0 rounded-full border border-white/20 bg-white/10 backdrop-blur-md p-2.5", children: /* @__PURE__ */ jsx(Camera, { className: "w-4 h-4 text-white" }) })
+                              ] })
+                            ]
+                          }
+                        )
+                      },
+                      `${item.id}-${loopIndex}`
+                    );
+                  })
+                }
+              )
+            },
+            columnIndex
+          );
+        }) })
+      ] })
+    ] }),
+    lightboxIndex !== null && filtered.length > 0 && /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "fixed inset-0 z-50 bg-black/95 flex items-center justify-center",
+        onClick: closeLightbox,
+        children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: closeLightbox,
+              className: "absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors",
+              children: /* @__PURE__ */ jsx(X, { className: "w-6 h-6" })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                lightboxPrev();
+              },
+              className: "absolute left-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors",
+              children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-6 h-6" })
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            motion.img,
+            {
+              initial: { opacity: 0, scale: 0.95 },
+              animate: { opacity: 1, scale: 1 },
+              transition: { duration: 0.3 },
+              src: filtered[lightboxIndex].image,
+              alt: filtered[lightboxIndex].alt,
+              className: "max-h-[85vh] max-w-[85vw] object-contain rounded-2xl shadow-2xl",
+              onClick: (e) => e.stopPropagation()
+            },
+            lightboxIndex
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                lightboxNext();
+              },
+              className: "absolute right-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors",
+              children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-6 h-6" })
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "absolute bottom-5 text-white/60 text-sm", children: [
+            lightboxIndex + 1,
+            " / ",
+            filtered.length
+          ] })
+        ]
+      }
+    )
+  ] });
+}
+const FALLBACK = {
+  header1: "Reserve Your",
+  header2: "Cafe Table.",
+  description: "Set your time, confirm the details, and let the cafe experience be ready when you arrive.",
+  footer: "Guaranteed Response within 24 Hours • Call +91-9211308384"
+};
+const EMPTY_FORM$2 = {
+  guestName: "",
+  contactNumber: "",
+  date: "",
+  time: "",
+  totalGuest: ""
+};
+function CafeReservationForm() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [formData, setFormData] = useState(EMPTY_FORM$2);
+  const containerRef = useRef(null);
+  const setField = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  const bgTextX = useTransform(scrollYProgress, [0, 1], ["10%", "-20%"]);
+  const formY = useTransform(scrollYProgress, [0, 1], ["50px", "-100px"]);
+  const smoothFormY = useSpring(formY, { stiffness: 100, damping: 30 });
+  const handleNext = () => {
+    const { guestName, contactNumber, date, time, totalGuest } = formData;
+    if (!guestName.trim() || !contactNumber.trim() || !date || !time || !totalGuest) {
+      return;
+    }
+    setSubmitError(null);
+    setCurrentStep(2);
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      setCurrentStep(3);
+    } catch {
+      setSubmitError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const handleReset = () => {
+    setFormData(EMPTY_FORM$2);
+    setSubmitError(null);
+    setCurrentStep(1);
+  };
+  return /* @__PURE__ */ jsxs(
+    "section",
+    {
+      ref: containerRef,
+      id: "reservation",
+      className: "relative py-4 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[400px]",
+      children: [
+        /* @__PURE__ */ jsx(
+          motion.div,
+          {
+            style: { x: bgTextX },
+            className: "absolute top-1/4 left-0 whitespace-nowrap text-[12rem] md:text-[15rem] font-black text-zinc-900/[0.03] dark:text-white/[0.02] pointer-events-none select-none italic uppercase z-0",
+            children: "Cafe Reservations Table Booking Experience"
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-6 relative z-10", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row gap-16 items-start", children: [
+            /* @__PURE__ */ jsxs("div", { className: "lg:w-1/3 lg:sticky lg:top-32", children: [
+              /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 mb-6", children: [
+                /* @__PURE__ */ jsx(Sparkles, { className: "w-5 h-5 text-primary animate-pulse" }),
+                /* @__PURE__ */ jsx("span", { className: "text-primary text-[10px] font-bold uppercase tracking-[0.5em]", children: "Primary Conversion" })
+              ] }),
+              /* @__PURE__ */ jsxs("h2", { className: "text-5xl md:text-7xl font-serif text-zinc-900 dark:text-white leading-none mb-8 transition-colors", children: [
+                FALLBACK.header1,
+                " ",
+                /* @__PURE__ */ jsx("br", {}),
+                /* @__PURE__ */ jsx("span", { className: "italic text-zinc-400 dark:text-white/30", children: FALLBACK.header2 })
+              ] }),
+              /* @__PURE__ */ jsx("p", { className: "text-zinc-600 dark:text-white/50 text-lg leading-relaxed font-light mb-8 transition-colors", children: FALLBACK.description }),
+              /* @__PURE__ */ jsx("div", { className: "h-1 w-20 bg-primary/30" })
+            ] }),
+            /* @__PURE__ */ jsx(motion.div, { style: { y: smoothFormY }, className: "lg:w-2/3 w-full", children: /* @__PURE__ */ jsxs("div", { className: "bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-zinc-200 dark:border-white/10 p-8 md:p-12 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] dark:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden rounded-3xl", children: [
+              currentStep < 3 && /* @__PURE__ */ jsx("div", { className: "flex gap-2 mb-12", children: [1, 2].map((step) => /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: "flex-1 h-1 bg-zinc-200 dark:bg-white/10 relative overflow-hidden",
+                  children: /* @__PURE__ */ jsx(
+                    motion.div,
+                    {
+                      className: "absolute inset-0 bg-primary",
+                      initial: false,
+                      animate: { x: currentStep >= step ? "0%" : "-100%" }
+                    }
+                  )
+                },
+                step
+              )) }),
+              /* @__PURE__ */ jsx("form", { onSubmit: handleSubmit, children: /* @__PURE__ */ jsxs(AnimatePresence, { mode: "wait", children: [
+                currentStep === 1 && /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, x: 20 },
+                    animate: { opacity: 1, x: 0 },
+                    exit: { opacity: 0, x: -20 },
+                    className: "space-y-6",
+                    children: [
+                      /* @__PURE__ */ jsx("h3", { className: "text-zinc-900 dark:text-white font-serif text-2xl mb-8 italic opacity-60", children: "Tell us about your visit" }),
+                      /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-2 gap-6", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Guest Name" }),
+                          /* @__PURE__ */ jsx(
+                            Input,
+                            {
+                              required: true,
+                              value: formData.guestName,
+                              onChange: (e) => setField("guestName", e.target.value),
+                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
+                              placeholder: "Full Name"
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Contact Number" }),
+                          /* @__PURE__ */ jsx(
+                            Input,
+                            {
+                              required: true,
+                              value: formData.contactNumber,
+                              onChange: (e) => setField("contactNumber", e.target.value),
+                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 transition-all focus:ring-primary",
+                              placeholder: "+91"
+                            }
+                          )
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ jsxs("div", { className: "grid md:grid-cols-3 gap-6", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Date" }),
+                          /* @__PURE__ */ jsx(
+                            Input,
+                            {
+                              required: true,
+                              type: "date",
+                              value: formData.date,
+                              onChange: (e) => setField("date", e.target.value),
+                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Select Time" }),
+                          /* @__PURE__ */ jsx(
+                            Input,
+                            {
+                              required: true,
+                              type: "time",
+                              value: formData.time,
+                              onChange: (e) => setField("time", e.target.value),
+                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            }
+                          )
+                        ] }),
+                        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                          /* @__PURE__ */ jsx(Label, { className: "text-[10px] uppercase tracking-widest text-primary", children: "Total Guests" }),
+                          /* @__PURE__ */ jsx(
+                            Input,
+                            {
+                              required: true,
+                              type: "number",
+                              min: "1",
+                              value: formData.totalGuest,
+                              onChange: (e) => setField("totalGuest", e.target.value),
+                              className: "bg-zinc-100/50 dark:bg-white/5 border-zinc-200 dark:border-white/10 rounded-xl h-14 dark:text-white"
+                            }
+                          )
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ jsxs(
+                        Button,
+                        {
+                          type: "button",
+                          onClick: handleNext,
+                          className: "w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-primary dark:hover:bg-primary hover:text-white transition-all rounded-xl uppercase text-xs font-black",
+                          children: [
+                            "Review & Confirm",
+                            /* @__PURE__ */ jsx(ChevronRight$1, { className: "ml-2 w-4 h-4" })
+                          ]
+                        }
+                      )
+                    ]
+                  },
+                  "step1"
+                ),
+                currentStep === 2 && /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, x: 20 },
+                    animate: { opacity: 1, x: 0 },
+                    exit: { opacity: 0, x: -20 },
+                    className: "space-y-6",
+                    children: [
+                      /* @__PURE__ */ jsx("h3", { className: "text-zinc-900 dark:text-white font-serif text-2xl mb-8 italic opacity-60", children: "Confirm your details" }),
+                      /* @__PURE__ */ jsx("div", { className: "p-6 bg-primary/5 border border-primary/20 rounded-xl space-y-3", children: [
+                        { label: "Guest Name", value: formData.guestName },
+                        {
+                          label: "Contact",
+                          value: formData.contactNumber
+                        },
+                        { label: "Date", value: formData.date },
+                        { label: "Time", value: formData.time },
+                        {
+                          label: "Total Guests",
+                          value: formData.totalGuest
+                        }
+                      ].map(({ label, value }) => /* @__PURE__ */ jsxs(
+                        "div",
+                        {
+                          className: "flex items-center justify-between",
+                          children: [
+                            /* @__PURE__ */ jsx("span", { className: "text-[10px] font-black uppercase tracking-widest text-zinc-400", children: label }),
+                            /* @__PURE__ */ jsx("span", { className: "text-sm font-semibold text-zinc-800 dark:text-white", children: value })
+                          ]
+                        },
+                        label
+                      )) }),
+                      /* @__PURE__ */ jsx("p", { className: "text-zinc-500 dark:text-white/40 text-xs italic", children: "By confirming, you are sending a reservation request. We will contact you via phone to finalize." }),
+                      submitError && /* @__PURE__ */ jsx("p", { className: "text-xs font-bold text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2", children: submitError }),
+                      /* @__PURE__ */ jsxs("div", { className: "flex gap-4", children: [
+                        /* @__PURE__ */ jsx(
+                          Button,
+                          {
+                            type: "button",
+                            variant: "outline",
+                            onClick: () => setCurrentStep(1),
+                            className: "h-14 px-8 border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white rounded-xl",
+                            children: "Modify"
+                          }
+                        ),
+                        /* @__PURE__ */ jsx(
+                          Button,
+                          {
+                            type: "submit",
+                            disabled: isSubmitting,
+                            className: "flex-1 h-14 bg-primary text-white hover:bg-primary/90 transition-all rounded-xl uppercase text-xs font-black shadow-lg shadow-primary/20",
+                            children: isSubmitting ? "Sending..." : "Confirm My Table"
+                          }
+                        )
+                      ] })
+                    ]
+                  },
+                  "step2"
+                ),
+                currentStep === 3 && /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, scale: 0.95 },
+                    animate: { opacity: 1, scale: 1 },
+                    className: "flex flex-col items-center text-center py-8 space-y-6",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        motion.div,
+                        {
+                          initial: { scale: 0 },
+                          animate: { scale: 1 },
+                          transition: {
+                            type: "spring",
+                            stiffness: 200,
+                            damping: 15,
+                            delay: 0.1
+                          },
+                          children: /* @__PURE__ */ jsx(
+                            CheckCircle2,
+                            {
+                              className: "w-20 h-20 text-primary",
+                              strokeWidth: 1.5
+                            }
+                          )
+                        }
+                      ),
+                      /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
+                        /* @__PURE__ */ jsxs("h3", { className: "text-zinc-900 dark:text-white font-serif text-3xl", children: [
+                          "Request ",
+                          /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: "Received!" })
+                        ] }),
+                        /* @__PURE__ */ jsxs("p", { className: "text-zinc-500 dark:text-white/50 text-sm leading-relaxed max-w-sm mx-auto", children: [
+                          "Thank you,",
+                          " ",
+                          /* @__PURE__ */ jsx("strong", { className: "text-zinc-700 dark:text-white", children: formData.guestName }),
+                          ". Your cafe reservation for",
+                          " ",
+                          /* @__PURE__ */ jsxs("strong", { className: "text-zinc-700 dark:text-white", children: [
+                            formData.totalGuest,
+                            " guest",
+                            Number(formData.totalGuest) !== 1 ? "s" : ""
+                          ] }),
+                          " ",
+                          "on",
+                          " ",
+                          /* @__PURE__ */ jsx("strong", { className: "text-zinc-700 dark:text-white", children: formData.date }),
+                          " ",
+                          "at",
+                          " ",
+                          /* @__PURE__ */ jsx("strong", { className: "text-zinc-700 dark:text-white", children: formData.time }),
+                          " ",
+                          "has been requested. We will reach you at",
+                          " ",
+                          /* @__PURE__ */ jsx("strong", { className: "text-zinc-700 dark:text-white", children: formData.contactNumber }),
+                          " ",
+                          "for final confirmation."
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ jsx(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: handleReset,
+                          className: "text-xs font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity",
+                          children: "Make another reservation"
+                        }
+                      )
+                    ]
+                  },
+                  "step3"
+                )
+              ] }) }),
+              currentStep < 3 && /* @__PURE__ */ jsxs("div", { className: "absolute top-12 right-12 text-zinc-900/5 dark:text-white/5 text-8xl font-black italic select-none", children: [
+                "0",
+                currentStep
+              ] })
+            ] }) })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "mt-20 flex flex-col items-center", children: /* @__PURE__ */ jsx("p", { className: "text-zinc-400 dark:text-white/20 text-[9px] uppercase tracking-[0.5em] font-bold", children: FALLBACK.footer }) })
+        ] })
+      ]
+    }
+  );
+}
+const CAFE_NAV_ITEMS = [
+  { type: "link", label: "HOME", key: "home", href: "#home" },
+  { type: "link", label: "MENU", key: "menu", href: "#menu" },
+  { type: "link", label: "ABOUT", key: "about", href: "#about" },
+  { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" }
+];
+function CafePage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  return /* @__PURE__ */ jsxs("div", { className: "min-h-screen bg-background", children: [
+    /* @__PURE__ */ jsx(Navbar$1, { navItems: CAFE_NAV_ITEMS, logo: siteContent.brand.logo_cafe }),
+    /* @__PURE__ */ jsxs("main", { children: [
+      /* @__PURE__ */ jsx("div", { id: "home", children: /* @__PURE__ */ jsx(CafeBanner, {}) }),
+      /* @__PURE__ */ jsxs("div", { id: "menu", children: [
+        /* @__PURE__ */ jsx(CafeSubCategories, {}),
+        /* @__PURE__ */ jsx(CafeSignatureDrinks, {})
+      ] }),
+      /* @__PURE__ */ jsx("div", { id: "about", children: /* @__PURE__ */ jsx(AboutCafePage, {}) }),
+      /* @__PURE__ */ jsx("div", { id: "events", children: /* @__PURE__ */ jsx(CafepageEvents, {}) }),
+      /* @__PURE__ */ jsx(CafeTestimonials, {}),
+      /* @__PURE__ */ jsx("div", { id: "gallery", children: /* @__PURE__ */ jsx(CafeGalleryPage, {}) }),
+      /* @__PURE__ */ jsx(CafeReservationForm, {})
+    ] }),
+    /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
+  ] });
+}
 const VERTICAL_HERO_IMAGES = [
   {
     src: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1920&q=80",
@@ -22776,11 +25186,11 @@ function TakeawayTreats() {
   ] });
 }
 const RoomSelection = lazy(() => import("./assets/RoomSelection-NzltMzz4.js"));
-lazy(
+const RestaurantHomepage = lazy(
   () => import("./assets/RestaurantHomepage-2wKo63De.js")
 );
-lazy(
-  () => import("./assets/CafeHomepage-Beqai0UW.js")
+const CafeHomepage = lazy(
+  () => import("./assets/CafeHomepage-BOrlo8E_.js")
 );
 function withRouteSuspense(element) {
   return /* @__PURE__ */ jsx(
@@ -22798,7 +25208,7 @@ function PropertyDetailRoute() {
   const isRestaurantHost = hostname.startsWith("restaurants.");
   const slugTail = propertySlug?.split("-").pop() || "";
   const resolvedPropertyId = Number(propertyId || slugTail) || null;
-  const ssrResolvedType = propertyDetail?.propertyId === resolvedPropertyId && (propertyDetail?.propertyType === "restaurant" || propertyDetail?.propertyType === "hotel") ? propertyDetail.propertyType : null;
+  const ssrResolvedType = propertyDetail?.propertyId === resolvedPropertyId && (propertyDetail?.propertyType === "restaurant" || propertyDetail?.propertyType === "cafe" || propertyDetail?.propertyType === "hotel") ? propertyDetail.propertyType : null;
   const [resolvedType, setResolvedType] = useState(ssrResolvedType);
   useEffect(() => {
     let isMounted = true;
@@ -22814,7 +25224,8 @@ function PropertyDetailRoute() {
         return;
       }
       if (!resolvedPropertyId) {
-        if (isMounted) setResolvedType("hotel");
+        if (isMounted)
+          setResolvedType(slugTail === "cafe" ? "cafe" : "hotel");
         return;
       }
       try {
@@ -22830,10 +25241,12 @@ function PropertyDetailRoute() {
         const parentTypes = matched?.propertyResponseDTO?.propertyTypes || [];
         const listingTypes = (matched?.propertyListingResponseDTOS || []).map((l) => l?.propertyType).filter(Boolean);
         const allTypes = [...parentTypes, ...listingTypes].map((t) => String(t).toLowerCase().trim());
+        const isCafe = allTypes.some((t) => t === "cafe");
         const isRestaurant = allTypes.some(
-          (t) => ["restaurant", "resturant", "cafe", "wine & dine", "winedine", "dining"].includes(t)
+          (t) => ["restaurant", "resturant", "wine & dine", "winedine", "dining"].includes(t)
         );
-        if (isMounted) setResolvedType(isRestaurant ? "restaurant" : "hotel");
+        if (isMounted)
+          setResolvedType(isCafe ? "cafe" : isRestaurant ? "restaurant" : "hotel");
       } catch {
         if (isMounted) setResolvedType("hotel");
       }
@@ -22847,7 +25260,7 @@ function PropertyDetailRoute() {
   if (!resolvedType) {
     return /* @__PURE__ */ jsx("div", { className: "min-h-screen flex items-center justify-center text-sm text-muted-foreground", children: "Loading property..." });
   }
-  return resolvedType === "restaurant" ? /* @__PURE__ */ jsx(RestaurantHomepage, {}) : /* @__PURE__ */ jsx(HotelDetail, {});
+  return resolvedType === "cafe" ? /* @__PURE__ */ jsx(CafePage, {}) : resolvedType === "restaurant" ? /* @__PURE__ */ jsx(RestaurantHomepage$1, {}) : /* @__PURE__ */ jsx(HotelDetail, {});
 }
 const WebsiteRoutes = [
   /* @__PURE__ */ jsx(Route, { path: "/", element: /* @__PURE__ */ jsx(Home, {}) }, "home"),
@@ -22868,9 +25281,10 @@ const WebsiteRoutes = [
   /* @__PURE__ */ jsx(Route, { path: "/reviews", element: /* @__PURE__ */ jsx(Reviews, {}) }, "reviews"),
   /* @__PURE__ */ jsx(Route, { path: "/login", element: /* @__PURE__ */ jsx(Login, {}) }, "login"),
   // <Route key="careers" path="/careers" element={<Careers />} />,
-  // <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
-  // <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
-  /* @__PURE__ */ jsx(Route, { path: "/resturant/:propertyId", element: withRouteSuspense(/* @__PURE__ */ jsx(RestaurantHomepage, {})) }, "resturant-detail-legacy"),
+  /* @__PURE__ */ jsx(Route, { path: "/restaurant-homepage", element: withRouteSuspense(/* @__PURE__ */ jsx(RestaurantHomepage, {})) }, "restaurant-homepage"),
+  /* @__PURE__ */ jsx(Route, { path: "/cafe-homepage", element: withRouteSuspense(/* @__PURE__ */ jsx(CafeHomepage, {})) }, "cafe-homepage"),
+  /* @__PURE__ */ jsx(Route, { path: "/cafe-page", element: /* @__PURE__ */ jsx(CafePage, {}) }, "cafe-page-preview"),
+  /* @__PURE__ */ jsx(Route, { path: "/resturant/:propertyId", element: withRouteSuspense(/* @__PURE__ */ jsx(RestaurantHomepage$1, {})) }, "resturant-detail-legacy"),
   // Restaurant Sub-Verticals
   /* @__PURE__ */ jsx(Route, { path: "/:citySlug/:propertySlug/:categoryType", element: /* @__PURE__ */ jsx(ResturantCategoryPageTemplate, {}) }),
   /* @__PURE__ */ jsx(Route, { path: "/restaurant/italian", element: /* @__PURE__ */ jsx(Italian, {}) }, "restaurant-italian"),

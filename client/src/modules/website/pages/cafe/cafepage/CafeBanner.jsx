@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,7 +15,8 @@ import {
   Twitter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { siteContent } from "@/data/siteContent";
+import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
+import { CAFE_GALLERY_ITEMS, CAFE_GALLERY_MEDIA } from "./cafeGalleryData";
 
 const CAFE_DATA = {
   name: "Kennedia Cafe",
@@ -28,15 +29,6 @@ const CAFE_DATA = {
   ],
 };
 
-const GALLERY_IMAGES = [
-  { url: siteContent.images.cafes.parisian.src, alt: "Cafe Interior" },
-  { url: siteContent.images.cafes.minimalist.src, alt: "Coffee Bar" },
-  { url: siteContent.images.cafes.bakery.src, alt: "Bakery Counter" },
-  { url: siteContent.images.cafes.highTea.src, alt: "High Tea Lounge" },
-  { url: siteContent.images.cafes.garden.src, alt: "Garden Terrace" },
-  { url: siteContent.images.cafes.library.src, alt: "Library Corner" },
-];
-
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -48,15 +40,24 @@ const mapsLink =
   "https://www.google.com/maps/search/Kennedia+Cafe+Ghaziabad";
 
 export default function CafeBanner() {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
   const [mobileIndex, setMobileIndex] = useState(0);
   const mobileTouchStart = useRef(null);
 
   const mobilePrev = () =>
-    setMobileIndex((c) => (c - 1 + GALLERY_IMAGES.length) % GALLERY_IMAGES.length);
+    setMobileIndex(
+      (c) => (c - 1 + CAFE_GALLERY_MEDIA.length) % CAFE_GALLERY_MEDIA.length,
+    );
   const mobileNext = () =>
-    setMobileIndex((c) => (c + 1) % GALLERY_IMAGES.length);
+    setMobileIndex((c) => (c + 1) % CAFE_GALLERY_MEDIA.length);
+
+  const openGalleryAt = (index) => {
+    setInitialGalleryIndex(index);
+    setIsGalleryOpen(true);
+  };
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
@@ -87,8 +88,8 @@ export default function CafeBanner() {
     },
   ];
 
-  const gridImages = GALLERY_IMAGES.slice(0, 4);
-  const totalImages = GALLERY_IMAGES.length;
+  const gridImages = CAFE_GALLERY_MEDIA.slice(0, 4);
+  const totalImages = CAFE_GALLERY_MEDIA.length;
 
   return (
     <motion.div
@@ -96,8 +97,20 @@ export default function CafeBanner() {
       animate="animate"
       className="pt-24 pb-12 bg-gradient-to-b from-background to-muted/20"
     >
+      <GalleryModal
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        hotel={{
+          name: CAFE_DATA.name,
+          location: CAFE_DATA.location,
+          propertyId: 1,
+          media: CAFE_GALLERY_MEDIA,
+        }}
+        initialImageIndex={initialGalleryIndex}
+        galleryData={CAFE_GALLERY_ITEMS}
+      />
+
       <div className="container mx-auto px-4 md:px-8 lg:px-12">
-        {/* Breadcrumb */}
         <motion.nav
           variants={fadeIn}
           className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
@@ -111,9 +124,11 @@ export default function CafeBanner() {
           </span>
         </motion.nav>
 
-        {/* Title row */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
-          <motion.div variants={staggerContainer} className="space-y-3 w-full text-left">
+          <motion.div
+            variants={staggerContainer}
+            className="space-y-3 w-full text-left"
+          >
             <motion.div variants={fadeIn} className="flex items-center gap-3">
               <span className="inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
                 {CAFE_DATA.tagline}
@@ -165,7 +180,6 @@ export default function CafeBanner() {
             </div>
           </motion.div>
 
-          {/* Share + Save */}
           <div className="flex gap-3 relative">
             <div
               className="relative"
@@ -224,7 +238,6 @@ export default function CafeBanner() {
         </div>
 
         <motion.div variants={fadeIn}>
-          {/* Mobile carousel */}
           <div className="relative w-full h-[420px] overflow-hidden bg-black md:hidden">
             <div className="absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic">
               GALLERY
@@ -238,6 +251,7 @@ export default function CafeBanner() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.5 }}
                 className="absolute inset-0 cursor-pointer"
+                onClick={() => openGalleryAt(mobileIndex)}
                 onTouchStart={(e) => {
                   mobileTouchStart.current = e.touches[0].clientX;
                 }}
@@ -245,14 +259,16 @@ export default function CafeBanner() {
                   if (mobileTouchStart.current === null) return;
                   const diff =
                     mobileTouchStart.current - e.changedTouches[0].clientX;
-                  if (Math.abs(diff) > 40) diff > 0 ? mobileNext() : mobilePrev();
+                  if (Math.abs(diff) > 40) {
+                    diff > 0 ? mobileNext() : mobilePrev();
+                  }
                   mobileTouchStart.current = null;
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" />
                 <img
-                  src={GALLERY_IMAGES[mobileIndex]?.url || ""}
-                  alt={GALLERY_IMAGES[mobileIndex]?.alt || ""}
+                  src={CAFE_GALLERY_MEDIA[mobileIndex]?.url || ""}
+                  alt={CAFE_GALLERY_MEDIA[mobileIndex]?.alt || ""}
                   className="absolute inset-0 w-full h-full object-cover object-center scale-110"
                 />
               </motion.div>
@@ -265,14 +281,14 @@ export default function CafeBanner() {
                     0{mobileIndex + 1}
                   </span>
                   <span className="text-white/20 text-lg font-serif">
-                    /{String(GALLERY_IMAGES.length).padStart(2, "0")}
+                    /{String(CAFE_GALLERY_MEDIA.length).padStart(2, "0")}
                   </span>
                 </div>
                 <div className="w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden">
                   <motion.div
                     className="absolute h-full bg-primary top-0 left-0"
                     animate={{
-                      width: `${((mobileIndex + 1) / GALLERY_IMAGES.length) * 100}%`,
+                      width: `${((mobileIndex + 1) / CAFE_GALLERY_MEDIA.length) * 100}%`,
                     }}
                     transition={{ duration: 0.5 }}
                   />
@@ -295,10 +311,11 @@ export default function CafeBanner() {
             </div>
           </div>
 
-          {/* Desktop grid */}
           <div className="hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl">
-            {/* Main image — col-span-2 */}
-            <div className="md:col-span-2 relative group overflow-hidden rounded-2xl cursor-pointer">
+            <div
+              className="md:col-span-2 relative group overflow-hidden rounded-2xl cursor-pointer"
+              onClick={() => openGalleryAt(0)}
+            >
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
               <img
                 src={gridImages[0].url}
@@ -307,12 +324,12 @@ export default function CafeBanner() {
               />
             </div>
 
-            {/* Stacked middle column */}
             <div className="md:col-span-1 flex flex-col gap-3">
               {[1, 2].map((idx) => (
                 <div
                   key={idx}
                   className="relative group overflow-hidden rounded-2xl flex-1 cursor-pointer"
+                  onClick={() => openGalleryAt(idx)}
                 >
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" />
                   <img
@@ -324,8 +341,10 @@ export default function CafeBanner() {
               ))}
             </div>
 
-            {/* Last column + view gallery */}
-            <div className="md:col-span-1 relative group overflow-hidden rounded-2xl cursor-pointer">
+            <div
+              className="md:col-span-1 relative group overflow-hidden rounded-2xl cursor-pointer"
+              onClick={() => openGalleryAt(3)}
+            >
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" />
               <img
                 src={gridImages[3].url}
@@ -333,10 +352,18 @@ export default function CafeBanner() {
                 className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                <button className="pointer-events-auto bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsGalleryOpen(true);
+                  }}
+                  className="pointer-events-auto bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white"
+                >
                   <ImageIcon className="w-4 h-4 text-primary" />
                   <span>
-                    {totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY"}
+                    {totalImages > 4
+                      ? `+${totalImages - 4} MORE`
+                      : "VIEW GALLERY"}
                   </span>
                 </button>
               </div>

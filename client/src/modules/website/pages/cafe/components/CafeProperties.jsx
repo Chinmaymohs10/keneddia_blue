@@ -178,7 +178,7 @@ export default function CafeProperties() {
                 onClick={() => navigate(`/${activeCafe.citySlug}/${activeCafe.propertySlug}`)}
                 className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Explore →
+                Explore Now →
               </button>
             </div>
           </div>
