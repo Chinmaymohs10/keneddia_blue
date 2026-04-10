@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Calendar,
   ChevronLeft,
@@ -13,6 +13,9 @@ import {
   PartyPopper,
   HandPlatter,
   CalendarCheck2,
+  Volume2,
+  VolumeX,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -130,9 +133,33 @@ function getGroupBookingIcon(index) {
 function EventCard({ event, index }) {
   const media = event.media;
   const isVideo = media?.type === "VIDEO";
-  const isReel =
-    !!media?.width && !!media?.height && media.width / media.height <= 0.85;
-  const showFullMedia = isVideo || isReel;
+  const [isMuted, setIsMuted] = useState(true);
+  const [naturalRatio, setNaturalRatio] = useState(
+    media?.width && media?.height ? media.width / media.height : null,
+  );
+  const videoRef = useRef(null);
+  const TARGET_RATIO = 1080 / 1350;
+  const showFullMedia =
+    naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalHeight > 0) setNaturalRatio(naturalWidth / naturalHeight);
+  };
+
+  const handleVideoMeta = (e) => {
+    const { videoWidth, videoHeight } = e.currentTarget;
+    if (videoHeight > 0) setNaturalRatio(videoWidth / videoHeight);
+  };
+
+  const toggleMute = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    }
+  };
 
   return (
     <motion.div
@@ -142,83 +169,171 @@ function EventCard({ event, index }) {
       transition={{ delay: index * 0.08 }}
       className="group relative flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
     >
-      <div
-        className={`relative overflow-hidden bg-card ${showFullMedia ? "h-full" : "h-[280px]"}`}
-      >
-        {isVideo ? (
-          <video
-            src={media?.src}
-            className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${
-              isReel ? "object-cover" : "object-cover"
-            }`}
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        ) : (
-          <img
-            src={media?.src}
-            alt={media?.alt || event.title}
-            className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${
-              showFullMedia ? "object-cover" : "object-cover object-center"
-            }`}
-          />
-        )}
-
-        <div className="absolute left-3 top-3 z-10 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-          {isVideo ? "Reel" : "Event"}
-        </div>
-
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3 w-3" />
-            <span>{event.location}</span>
-          </div>
-        </div>
-      </div>
-
       {showFullMedia ? (
-        <div className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="mb-3">
-            <h3 className="line-clamp-2 text-sm font-bold text-white">
-              {event.title}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-[10px] text-white/80">
-              {event.description}
-            </p>
+        <div className="relative h-full w-full">
+          {media?.src ? (
+            <>
+              <img
+                src={media.src}
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full scale-110 object-cover"
+                style={{ filter: "blur(18px)", opacity: 0.55 }}
+              />
+              <div className="absolute inset-0 bg-black/40" />
+            </>
+          ) : null}
+
+          {media?.src ? (
+            isVideo ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={media.src}
+                  className="absolute inset-0 z-10 h-full w-full object-contain"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onLoadedMetadata={handleVideoMeta}
+                />
+                <button
+                  onClick={toggleMute}
+                  className="absolute bottom-3 right-3 z-30 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </button>
+              </>
+            ) : (
+              <img
+                src={media.src}
+                alt={media?.alt || event.title}
+                className="absolute inset-0 z-10 h-full w-full object-contain"
+                onLoad={handleImageLoad}
+              />
+            )
+          ) : (
+            <div className="absolute inset-0 z-10 flex items-center justify-center">
+              <ImageIcon className="h-10 w-10 text-white/20" />
+            </div>
+          )}
+
+          <div className="absolute left-3 top-3 z-20 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {isVideo ? "Reel" : "Event"}
           </div>
-          <Link to={event.detailPath}>
-            <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90">
-              View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="flex flex-1 flex-col p-4">
-          <h3 className="line-clamp-2 font-serif text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
-            {event.title}
-          </h3>
 
-          <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
-            <Calendar size={12} className="text-primary" />
-            <span className="text-[11px] font-medium italic uppercase">
-              {event.date}
-            </span>
+          <div className="absolute right-3 top-3 z-20 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3 w-3" />
+              <span>{event.location}</span>
+            </div>
           </div>
 
-          <p className="mt-3 line-clamp-3 text-[11px] italic text-muted-foreground">
-            {event.description}
-          </p>
-
-          <div className="mt-auto border-t border-muted pt-4">
+          <div className="absolute inset-0 z-20 flex translate-y-2 flex-col justify-end bg-gradient-to-t from-black via-black/50 to-transparent p-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+            <div className="mb-3">
+              <h3 className="line-clamp-2 text-sm font-bold text-white">
+                {event.title}
+              </h3>
+              {event.description ? (
+                <p className="mt-1 line-clamp-2 text-[10px] text-white/80">
+                  {event.description}
+                </p>
+              ) : null}
+            </div>
             <Link to={event.detailPath}>
-              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary/90">
+              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90">
                 View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>
         </div>
+      ) : (
+        <>
+          <div className="relative h-[280px] overflow-hidden bg-black">
+            {media?.src ? (
+              <>
+                <img
+                  src={media.src}
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover"
+                  style={{ filter: "blur(14px)", opacity: 0.5 }}
+                />
+                <div className="absolute inset-0 bg-black/20" />
+              </>
+            ) : null}
+
+            {isVideo ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={media?.src}
+                  className="relative z-10 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onLoadedMetadata={handleVideoMeta}
+                />
+                <button
+                  onClick={toggleMute}
+                  className="absolute bottom-3 right-3 z-30 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </button>
+              </>
+            ) : (
+              <img
+                src={media?.src}
+                alt={media?.alt || event.title}
+                className="relative z-10 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105"
+                onLoad={handleImageLoad}
+              />
+            )}
+
+            <div className="absolute left-3 top-3 z-20 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+              {isVideo ? "Reel" : "Event"}
+            </div>
+
+            <div className="absolute right-3 top-3 z-20 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-3 w-3" />
+                <span>{event.location}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col p-4">
+            <h3 className="line-clamp-2 font-serif text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+              {event.title}
+            </h3>
+
+            <div className="mt-2 flex items-center gap-1.5 text-muted-foreground">
+              <Calendar size={12} className="text-primary" />
+              <span className="text-[11px] font-medium italic uppercase">
+                {event.date}
+              </span>
+            </div>
+
+            <p className="mt-3 line-clamp-3 text-[11px] italic text-muted-foreground">
+              {event.description}
+            </p>
+
+            <div className="mt-auto border-t border-muted pt-4">
+              <Link to={event.detailPath}>
+                <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary/90">
+                  View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </>
       )}
     </motion.div>
   );

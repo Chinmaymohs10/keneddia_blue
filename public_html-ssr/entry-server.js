@@ -9,7 +9,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
-import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Menu, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, ShoppingCart, LogOut, Home as Home$1, Save, Plus, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags } from "lucide-react";
+import { X, Search, Loader2, ExternalLink, ChevronRight as ChevronRight$1, Sun, Moon, ChevronDown, LogIn, Calendar as Calendar$1, ChevronLeft, Video, Image as Image$1, Music, Briefcase, Wine, Coffee, UtensilsCrossed, Building2, ArrowRight as ArrowRight$1, MapPin, TrendingUp, Star, Users, Award, Sparkles, Facebook, Instagram, Youtube, Linkedin, Twitter, ArrowUp, VolumeX, Volume2, ArrowUpRight, Tag, Clock, Navigation as Navigation$1, Phone, Mail, ChevronUp, Edit2 as Edit2$1, User, ImageIcon, RotateCcw, SlidersHorizontal, Grid3x3, List, Film, Gamepad2, Ticket, Shield, Target, ArrowLeft, Quote, EyeOff, Eye, AlertCircle, Percent, Share2, Info, ShieldCheck, IndianRupee, CheckCircle2, Maximize2, Camera, Play, MessageCircle, Send, Reply, Globe, ThumbsUp, Grid3X3, CheckCircle, CreditCard, Expand, Check, MessageSquare, Heart, Beer, Contact2, Link as Link$1, PartyPopper, ChefHat, ImageOff, Upload, Utensils, CalendarCheck, Flame, ShoppingBag, Leaf, SunMedium, Waves, MoonStar, Gift, Menu, Map as Map$1, CalendarClock, BriefcaseBusiness, CalendarCheck2, HandPlatter, PlayCircle, ShoppingCart, LogOut, Home as Home$1, Save, Plus, Ruler, ToggleRight, ToggleLeft, Edit, Trash2, Pencil, Power, PowerOff, Images, FileEdit, ImagePlus, BookOpen, RefreshCw, Hash, UserCheck, XCircle, FileText, AlertTriangle, CornerDownRight, Type, FilterX, Inbox, DollarSign, Newspaper, Building, Layers, LinkIcon, Filter, Zap, Tags } from "lucide-react";
 import { toast as toast$3, ToastContainer } from "react-toastify";
 import { useLocation, useNavigate, Link, useParams, useSearchParams, Route, Navigate, Routes } from "react-router-dom";
 import { AnimatePresence, motion, useScroll, useTransform, useSpring } from "framer-motion";
@@ -1021,6 +1021,9 @@ const searchGallery = ({ propertyId, verticalId }) => API.get("api/v1/gallery/se
 const addGroupBooking = (data) => API.post("/api/v1/group-bookings", data);
 const updateGroupBooking = (id, data) => API.put(`/api/v1/group-bookings/${id}`, data);
 const getGroupBookings = () => API.get("/api/v1/group-bookings");
+const updateGroupBookingActiveStatus = (id, active) => API.patch(`/api/v1/group-bookings/${id}/active`, null, {
+  params: { active }
+});
 const createRoomType = (data) => API.post("api/v1/room-types", data);
 const getAllRoomTypes = () => API.get("api/v1/room-types");
 const deleteRoomType = (id) => API.delete(`api/v1/room-types/${id}`);
@@ -10774,6 +10777,8 @@ function NewsCard$2({ item }) {
     ] })
   ] });
 }
+const normalize$a = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isHotelType = (value = "") => normalize$a(value) === "hotel";
 const isYoutubeUrl$2 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl$1 = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
 const getYoutubeId$2 = (url) => {
@@ -10822,7 +10827,8 @@ const buildMediaList$2 = (item) => {
   return allMedia;
 };
 function HotelReviewsSection({
-  initialData
+  initialData,
+  initialHotelTypeId
 }) {
   const [guestExperiences, setGuestExperiences] = useState(
     Array.isArray(initialData?.guestExperiences) ? initialData.guestExperiences : []
@@ -10850,6 +10856,9 @@ function HotelReviewsSection({
   const [ratingHeader2, setRatingHeader] = useState(
     initialData?.ratingHeader || null
   );
+  const [hotelTypeId, setHotelTypeId] = useState(
+    initialHotelTypeId ?? null
+  );
   const swiperRef = useRef(null);
   const sectionRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -10861,25 +10870,55 @@ function HotelReviewsSection({
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-  const fetchExperiences = async () => {
+  const fetchExperiences = async (resolvedHotelTypeId) => {
     try {
-      const res = await getGuestExperienceSection({ size: 20 });
-      const rawData = res?.data?.data || res?.data || res;
-      setGuestExperiences(rawData || []);
+      const res = await getGuestExperienceSection({ size: 100 });
+      const rawData = res?.data?.data || res?.data || res || [];
+      const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
+      const filtered = list.filter(
+        (item) => resolvedHotelTypeId != null ? Number(item?.propertyTypeId) === Number(resolvedHotelTypeId) : false
+      ).sort((a, b) => {
+        const dateA = new Date(a?.createdAt || 0).getTime();
+        const dateB = new Date(b?.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+      setGuestExperiences(filtered);
     } catch (err) {
       console.error(err);
+      setGuestExperiences([]);
     } finally {
       setIsLoading(false);
     }
   };
   useEffect(() => {
-    getGuestExperienceSectionHeader().then(
-      (res) => setSectionHeader(Array.isArray(res.data) ? res.data[0] : res.data)
-    );
-    getGuestExperineceRatingHeader().then(
-      (res) => setRatingHeader(Array.isArray(res.data) ? res.data[0] : res.data)
-    );
-    fetchExperiences();
+    if (Array.isArray(initialData?.guestExperiences) && initialHotelTypeId != null) {
+      return;
+    }
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        const [typesRes, headerRes, ratingRes] = await Promise.all([
+          getPropertyTypes(),
+          getGuestExperienceSectionHeader(),
+          getGuestExperineceRatingHeader()
+        ]);
+        const types = typesRes?.data || typesRes || [];
+        const hotelType = Array.isArray(types) ? types.find((type) => type?.isActive && isHotelType(type?.typeName)) : null;
+        const resolvedHotelTypeId = hotelType?.id ? Number(hotelType.id) : null;
+        setHotelTypeId(resolvedHotelTypeId);
+        setSectionHeader(
+          Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data
+        );
+        setRatingHeader(
+          Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data
+        );
+        await fetchExperiences(resolvedHotelTypeId);
+      } catch (error2) {
+        console.error("Failed to initialize hotel reviews section", error2);
+        setIsLoading(false);
+      }
+    };
+    init();
   }, []);
   const handleFileUpload = (e) => {
     const files = e.target.files;
@@ -10912,7 +10951,7 @@ function HotelReviewsSection({
       setMediaPreviews([]);
       setYtLink("");
       setIsVerified(false);
-      await fetchExperiences();
+      await fetchExperiences(hotelTypeId);
     } catch (err) {
       console.error(err);
     } finally {
@@ -11410,11 +11449,11 @@ const formatDate$5 = (dateString) => {
   };
 };
 const CARD_COLORS$1 = [
-  "bg-pink-50 border-pink-200 hover:border-pink-300",
-  "bg-blue-50 border-blue-200 hover:border-blue-300",
-  "bg-orange-50 border-orange-200 hover:border-orange-300",
-  "bg-purple-50 border-purple-200 hover:border-purple-300",
-  "bg-green-50 border-green-200 hover:border-green-300"
+  "bg-pink-50 border-pink-200 hover:border-pink-300 dark:bg-pink-950/25 dark:border-pink-900/60 dark:hover:border-pink-700/70",
+  "bg-blue-50 border-blue-200 hover:border-blue-300 dark:bg-blue-950/25 dark:border-blue-900/60 dark:hover:border-blue-700/70",
+  "bg-orange-50 border-orange-200 hover:border-orange-300 dark:bg-orange-950/25 dark:border-orange-900/60 dark:hover:border-orange-700/70",
+  "bg-purple-50 border-purple-200 hover:border-purple-300 dark:bg-purple-950/25 dark:border-purple-900/60 dark:hover:border-purple-700/70",
+  "bg-green-50 border-green-200 hover:border-green-300 dark:bg-green-950/25 dark:border-green-900/60 dark:hover:border-green-700/70"
 ];
 function EventCard$3({ event, index }) {
   const navigate = useNavigate();
@@ -11613,7 +11652,7 @@ function GroupBookingSection$1({
           )
         );
         const filteredBookings = (Array.isArray(rawBookings) ? rawBookings : []).filter(
-          (b) => propertyTypeId ? b.propertyTypeName === "Restaurant" ? false : b.propertyTypeId == null || Number(b.propertyTypeId) === Number(propertyTypeId) : b.propertyTypeName !== "Restaurant"
+          (b) => b?.isActive !== false && (propertyTypeId ? b.propertyTypeName === "Restaurant" ? false : b.propertyTypeId == null || Number(b.propertyTypeId) === Number(propertyTypeId) : b.propertyTypeName !== "Restaurant")
         ).sort((a, b) => b.id - a.id);
         setGroupBookings(filteredBookings);
       } catch (err) {
@@ -11783,8 +11822,8 @@ function GroupBookingSection$1({
                                 }
                               ) : /* @__PURE__ */ jsx(Image$1, { className: "w-5 h-5 text-muted-foreground/40 m-auto" }) }),
                               /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0", children: [
-                                /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold line-clamp-1 group-hover:text-primary", children: booking.title }),
-                                booking.description && /* @__PURE__ */ jsx("p", { className: "text-[11px] text-muted-foreground line-clamp-2 mt-0.5", children: booking.description }),
+                                /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary", children: booking.title }),
+                                booking.description && /* @__PURE__ */ jsx("p", { className: "mt-0.5 line-clamp-2 text-[11px] text-muted-foreground dark:text-foreground/80", children: booking.description }),
                                 booking.ctaLink && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight", children: [
                                   booking.ctaText || "Details",
                                   " ",
@@ -12988,7 +13027,13 @@ function Hotels() {
         id: "ratings",
         "data-ssr-section": "hotel-reviews",
         "data-ssr-count": ssrHotels?.hotelReviews?.guestExperiences?.length ?? 0,
-        children: /* @__PURE__ */ jsx(HotelReviewsSection, { initialData: ssrHotels?.hotelReviews })
+        children: /* @__PURE__ */ jsx(
+          HotelReviewsSection,
+          {
+            initialData: ssrHotels?.hotelReviews,
+            initialHotelTypeId: hotelTypeId
+          }
+        )
       }
     ),
     /* @__PURE__ */ jsxs("div", { id: "contact", children: [
@@ -16814,20 +16859,20 @@ function HotelDetail() {
                   /* @__PURE__ */ jsx(Info, { className: "w-4 h-4" }),
                   " CHECK-IN / CHECK-OUT"
                 ] }),
-                /* @__PURE__ */ jsxs("div", { className: "space-y-5 text-sm text-muted-foreground", children: [
+                /* @__PURE__ */ jsxs("div", { className: "space-y-5 text-sm text-muted-foreground dark:text-foreground/80", children: [
                   /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
                     /* @__PURE__ */ jsxs("div", { className: "flex justify-between md:justify-start md:gap-6", children: [
                       /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground min-w-[100px]", children: "Check-in:" }),
-                      /* @__PURE__ */ jsx("span", { children: policies?.checkInTime || "2:00 PM" })
+                      /* @__PURE__ */ jsx("span", { className: "text-foreground dark:text-foreground/85", children: policies?.checkInTime || "2:00 PM" })
                     ] }),
                     /* @__PURE__ */ jsxs("div", { className: "flex justify-between md:justify-start md:gap-6", children: [
                       /* @__PURE__ */ jsx("span", { className: "font-medium text-foreground min-w-[100px]", children: "Check-out:" }),
-                      /* @__PURE__ */ jsx("span", { children: policies?.checkOutTime || "11:00 AM" })
+                      /* @__PURE__ */ jsx("span", { className: "text-foreground dark:text-foreground/85", children: policies?.checkOutTime || "11:00 AM" })
                     ] })
                   ] }),
                   /* @__PURE__ */ jsxs("div", { className: "hotel-policy-box", children: [
                     /* @__PURE__ */ jsx("p", { className: "font-medium text-foreground mb-2", children: "Cancellation Policy" }),
-                    /* @__PURE__ */ jsx("p", { className: "leading-relaxed", children: policies?.cancellationPolicy || "Non-refundable for promotional rates" })
+                    /* @__PURE__ */ jsx("p", { className: "leading-relaxed text-foreground/80 dark:text-foreground/85", children: policies?.cancellationPolicy || "Non-refundable for promotional rates" })
                   ] })
                 ] })
               ] }),
@@ -16842,7 +16887,7 @@ function HotelDetail() {
                     className: "flex items-start gap-2 text-foreground",
                     children: [
                       /* @__PURE__ */ jsx("span", { className: "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" }),
-                      /* @__PURE__ */ jsx("span", { className: "leading-snug", children: p.name })
+                      /* @__PURE__ */ jsx("span", { className: "leading-snug text-foreground dark:text-foreground/85", children: p.name })
                     ]
                   },
                   p.id
@@ -18123,7 +18168,9 @@ function ResturantpageEvents({ propertyId }) {
         );
         const allBookings = Array.isArray(bookingRes) ? bookingRes : bookingRes?.data ?? [];
         setGroupBookings(
-          allBookings.filter((b) => propertyId ? b.propertyId === propertyId : true).sort((a, b) => b.id - a.id)
+          allBookings.filter(
+            (b) => b?.isActive !== false && (propertyId ? b.propertyId === propertyId : true)
+          ).sort((a, b) => b.id - a.id)
         );
         const headerData = headerRes?.data;
         const header = Array.isArray(headerData) ? headerData[0] : headerData;
@@ -25713,16 +25760,6 @@ function RestaurantProperties({ initialRestaurants }) {
     ] }) }),
     /* @__PURE__ */ jsxs("div", { className: "p-8", children: [
       /* @__PURE__ */ jsx("div", { className: "mb-8 flex flex-col gap-4 border-b border-border/10 pb-6", children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 md:flex-row md:items-center md:justify-between", children: [
-        /* @__PURE__ */ jsxs("div", { className: "inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm", children: [
-          /* @__PURE__ */ jsxs("button", { onClick: () => setViewMode("gallery"), className: `flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`, children: [
-            /* @__PURE__ */ jsx(Grid3x3, { className: "h-3 w-3" }),
-            /* @__PURE__ */ jsx("span", { className: "hidden sm:inline", children: "Gallery" })
-          ] }),
-          /* @__PURE__ */ jsxs("button", { onClick: () => setViewMode("map"), className: `flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`, children: [
-            /* @__PURE__ */ jsx(Map$1, { className: "h-3 w-3" }),
-            /* @__PURE__ */ jsx("span", { className: "hidden sm:inline", children: "Map" })
-          ] })
-        ] }),
         /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2", children: [
           /* @__PURE__ */ jsxs("div", { className: "relative", children: [
             /* @__PURE__ */ jsxs("button", { onClick: () => setShowCityDropdown((prev) => !prev), className: "flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50", children: [
@@ -25739,10 +25776,22 @@ function RestaurantProperties({ initialRestaurants }) {
             /* @__PURE__ */ jsx(Building2, { className: "h-3 w-3" }),
             "Restaurant"
           ] }),
-          /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
-            /* @__PURE__ */ jsx(Star, { className: "h-3 w-3 fill-current" }),
-            filteredRestaurants.length,
-            " Restaurants"
+          /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs", children: [
+            /* @__PURE__ */ jsx(Star, { className: "h-3 w-3 fill-current text-primary" }),
+            /* @__PURE__ */ jsxs("span", { className: "font-semibold text-foreground", children: [
+              filteredRestaurants.length,
+              " Restaurants"
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm", children: [
+          /* @__PURE__ */ jsxs("button", { onClick: () => setViewMode("gallery"), className: `flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`, children: [
+            /* @__PURE__ */ jsx(Grid3x3, { className: "h-3 w-3" }),
+            /* @__PURE__ */ jsx("span", { className: "hidden sm:inline", children: "Gallery" })
+          ] }),
+          /* @__PURE__ */ jsxs("button", { onClick: () => setViewMode("map"), className: `flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`, children: [
+            /* @__PURE__ */ jsx(Map$1, { className: "h-3 w-3" }),
+            /* @__PURE__ */ jsx("span", { className: "hidden sm:inline", children: "Map" })
           ] })
         ] })
       ] }) }),
@@ -25950,6 +25999,7 @@ function OfferCard({ offer, index }) {
     "from-[#ffb000] via-[#ffc73a] to-[#f59e0b] text-[#2f1f00]"
   ];
   const accentClass = accentStyles[index % accentStyles.length];
+  const hasCta = Boolean(offer?.ctaText?.trim()) && Boolean(offer?.link?.trim());
   return /* @__PURE__ */ jsxs(
     motion.div,
     {
@@ -25963,14 +26013,14 @@ function OfferCard({ offer, index }) {
           /* @__PURE__ */ jsx("div", { className: "absolute -right-8 -top-10 h-28 w-28 rounded-full bg-white/30 blur-2xl" }),
           /* @__PURE__ */ jsx("div", { className: "absolute -bottom-10 left-4 h-24 w-24 rounded-full bg-white/15 blur-2xl" })
         ] }),
-        /* @__PURE__ */ jsx(
+        hasCta && /* @__PURE__ */ jsx(
           "a",
           {
-            href: offer.link || "#",
+            href: offer.link,
             target: "_blank",
             rel: "noopener noreferrer",
             className: "absolute right-4 top-4 z-20",
-            "aria-label": offer.ctaText || "View Offer",
+            "aria-label": offer.ctaText,
             children: /* @__PURE__ */ jsx("div", { className: "flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/15 text-current backdrop-blur-md transition-colors hover:bg-white hover:text-black", children: /* @__PURE__ */ jsx(ExternalLink, { className: "h-4 w-4" }) })
           }
         ),
@@ -26137,7 +26187,7 @@ function normalise(item) {
 function DishImage({ src, alt }) {
   const [errored, setErrored] = useState(false);
   if (!src || errored) {
-    return /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-zinc-100", children: /* @__PURE__ */ jsx(ImageOff, { size: 32, className: "text-zinc-300" }) });
+    return /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-muted", children: /* @__PURE__ */ jsx(ImageOff, { size: 32, className: "text-muted-foreground/40" }) });
   }
   return /* @__PURE__ */ jsx(
     "img",
@@ -26238,9 +26288,9 @@ function RestaurantBestSellers({ initialItems }) {
       whileInView: { opacity: 1, y: 0 },
       viewport: { once: true },
       transition: { delay: index * 0.08 },
-      className: "group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-8 text-center",
+      className: "group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-border bg-card p-8 text-center",
       children: [
-        /* @__PURE__ */ jsxs("div", { className: "relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white shadow-xl transition-transform duration-700 group-hover:scale-105", children: [
+        /* @__PURE__ */ jsxs("div", { className: "relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-background shadow-xl transition-transform duration-700 group-hover:scale-105", children: [
           /* @__PURE__ */ jsx(DishImage, { src: item.image, alt: item.title }),
           /* @__PURE__ */ jsx(
             "button",
@@ -26250,7 +26300,7 @@ function RestaurantBestSellers({ initialItems }) {
                 event.stopPropagation();
                 setLikeModal({ isOpen: true, item });
               },
-              className: "absolute right-4 top-4 rounded-full bg-white/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110",
+              className: "absolute right-4 top-4 rounded-full bg-background/85 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110",
               "aria-label": `Like ${item.title}`,
               children: /* @__PURE__ */ jsx(
                 Heart,
@@ -26264,8 +26314,8 @@ function RestaurantBestSellers({ initialItems }) {
         ] }),
         /* @__PURE__ */ jsx("span", { className: "mb-2 text-[10px] font-bold uppercase tracking-widest text-primary", children: item.category }),
         /* @__PURE__ */ jsxs("div", { className: "flex w-full flex-col items-center", children: [
-          /* @__PURE__ */ jsx("h3", { className: "mb-2 text-2xl font-serif leading-tight text-zinc-900", children: item.title }),
-          item.description && /* @__PURE__ */ jsxs("p", { className: "mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500", children: [
+          /* @__PURE__ */ jsx("h3", { className: "mb-2 text-2xl font-serif leading-tight text-foreground", children: item.title }),
+          item.description && /* @__PURE__ */ jsxs("p", { className: "mb-3 line-clamp-2 text-[13px] italic leading-snug text-muted-foreground", children: [
             '"',
             item.description,
             '"'
@@ -26282,7 +26332,7 @@ function RestaurantBestSellers({ initialItems }) {
     },
     `${keyPrefix}${item.id}`
   );
-  return /* @__PURE__ */ jsxs("section", { className: "bg-white pb-2 pt-16", children: [
+  return /* @__PURE__ */ jsxs("section", { className: "bg-background pb-2 pt-16 text-foreground", children: [
     /* @__PURE__ */ jsxs("div", { className: "mx-auto max-w-[1400px] px-6 text-left md:px-12", children: [
       /* @__PURE__ */ jsxs("div", { className: "mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row", children: [
         /* @__PURE__ */ jsxs("div", { className: "min-w-0 flex-1 lg:max-w-[80%]", children: [
@@ -26290,31 +26340,31 @@ function RestaurantBestSellers({ initialItems }) {
             /* @__PURE__ */ jsx(Sparkles, { className: "h-3.5 w-3.5" }),
             "Menu Spotlight"
           ] }),
-          /* @__PURE__ */ jsxs("h2", { className: "mb-2 text-3xl font-serif md:text-4xl", children: [
+          /* @__PURE__ */ jsxs("h2", { className: "mb-2 text-3xl font-serif text-foreground md:text-4xl", children: [
             "Best Seller ",
             /* @__PURE__ */ jsx("span", { className: "italic text-primary", children: "Dishes" })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "max-w-[80%]", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-light leading-relaxed text-zinc-500", children: "Discover our best seller selection, then browse it by veg and non-veg in the same signature menu showcase format as the restaurant detail page." }) })
+          /* @__PURE__ */ jsx("div", { className: "max-w-[80%]", children: /* @__PURE__ */ jsx("p", { className: "text-sm font-light leading-relaxed text-muted-foreground", children: "Discover our best seller selection, then browse it by veg and non-veg in the same signature menu showcase format as the restaurant detail page." }) })
         ] }),
         /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center gap-2", children: FILTERS$1.map((filter) => /* @__PURE__ */ jsx(
           "button",
           {
             type: "button",
             onClick: () => handleFilterChange(filter),
-            className: `rounded-full border px-4 py-2 text-sm font-semibold transition-all ${activeFilter === filter ? filter === "Veg" ? "border-emerald-500 bg-emerald-500 text-white" : filter === "Non-Veg" ? "border-rose-400 bg-white text-rose-500" : "border-primary bg-primary text-white" : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"}`,
+            className: `rounded-full border px-4 py-2 text-sm font-semibold transition-all ${activeFilter === filter ? filter === "Veg" ? "border-emerald-500 bg-emerald-500 text-white" : filter === "Non-Veg" ? "border-rose-400 bg-background text-rose-500" : "border-primary bg-primary text-white" : "border-border bg-card text-foreground hover:border-primary/40 hover:text-primary"}`,
             children: filter
           },
           filter
         )) })
       ] }),
-      fetchLoading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-24", children: /* @__PURE__ */ jsx(Loader2, { className: "h-8 w-8 animate-spin text-primary" }) }) : filteredItems.length === 0 ? /* @__PURE__ */ jsx("div", { className: "py-24 text-center text-zinc-400", children: /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No top selling items found." }) }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4", children: primaryItems.map((item, index) => renderCard(item, index)) }),
+      fetchLoading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-24", children: /* @__PURE__ */ jsx(Loader2, { className: "h-8 w-8 animate-spin text-primary" }) }) : filteredItems.length === 0 ? /* @__PURE__ */ jsx("div", { className: "py-24 text-center text-muted-foreground", children: /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No top selling items found." }) }) : /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4", children: primaryItems.map((item, index) => renderCard(item, index)) }),
       !fetchLoading && extraItems.length > 0 && /* @__PURE__ */ jsxs("div", { className: "px-5 pb-5 pt-8 lg:px-0 lg:pb-6", children: [
         /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxs(
           "button",
           {
             type: "button",
             onClick: () => setExpanded((current) => !current),
-            className: "inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary",
+            className: "inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary",
             children: [
               expanded ? "Show Less" : `Show More (${extraItems.length})`,
               expanded ? /* @__PURE__ */ jsx(ChevronUp, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx(ChevronDown, { className: "h-4 w-4" })
@@ -26957,6 +27007,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
         }).filter((item) => item?.media?.src);
         const rawBookings = bookingsResponse?.data || bookingsResponse || [];
         const mappedBookings = (Array.isArray(rawBookings) ? rawBookings : []).filter((item) => {
+          if (item?.isActive === false) return false;
           const byTypeName = isRestaurantType$4(item?.propertyTypeName);
           const byTypeId = restaurantTypeId2 !== null && Number(item?.propertyTypeId) === restaurantTypeId2;
           return byTypeName || byTypeId;
@@ -32796,6 +32847,22 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const [detectedBannerType, setDetectedBannerType] = useState(null);
   const [isBannerDetected, setIsBannerDetected] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
+  const getPropertyTypeNameById = (typeId) => {
+    const matchedType = propertyTypes.find(
+      (type) => String(type.id) === String(typeId)
+    );
+    return matchedType?.typeName || "";
+  };
+  const getPropertyTypeOptionsForProperty = (property) => {
+    if (!property) return propertyTypes;
+    const propertyTypeNames = Array.isArray(property.propertyTypes) ? property.propertyTypes : [];
+    if (!propertyTypeNames.length) return propertyTypes;
+    return propertyTypes.filter(
+      (type) => propertyTypeNames.some(
+        (name) => String(name).trim().toLowerCase() === String(type.typeName || "").trim().toLowerCase()
+      )
+    );
+  };
   useEffect(() => {
     if (isOpen) {
       fetchProperties();
@@ -32946,27 +33013,49 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     return isInstagramBanner ? "instagramBannerReel" : null;
   };
   const handlePropertySelect = (propertyId) => {
-    const selectedProperty = availableProperties.find(
+    const selectedProperty2 = availableProperties.find(
       (p) => p.id === parseInt(propertyId)
     );
-    if (selectedProperty) {
-      const propertyTypeName = selectedProperty.propertyTypes?.[0] || "";
-      const matchedType = propertyTypes.find(
-        (t) => t.typeName?.toLowerCase() === propertyTypeName.toLowerCase()
-      );
+    if (selectedProperty2) {
+      const matchedTypes = getPropertyTypeOptionsForProperty(selectedProperty2);
+      const defaultType = matchedTypes[0] || null;
       setFormData((prev) => ({
         ...prev,
-        propertyId: selectedProperty.id,
-        propertyTypeId: matchedType?.id || null,
-        propertyName: selectedProperty.propertyName,
-        propertyType: matchedType?.typeName || propertyTypeName || "",
-        location: `${selectedProperty.area || ""}, ${selectedProperty.locationName || ""}`.replace(
+        propertyId: selectedProperty2.id,
+        propertyTypeId: defaultType?.id || null,
+        propertyName: selectedProperty2.propertyName,
+        propertyType: defaultType?.typeName || "",
+        location: `${selectedProperty2.area || ""}, ${selectedProperty2.locationName || ""}`.replace(
           /^, |, $/g,
           ""
         )
       }));
-      setTouchedFields((prev) => ({ ...prev, propertyId: true }));
+      setTouchedFields((prev) => ({
+        ...prev,
+        propertyId: true,
+        propertyTypeId: true
+      }));
+      return;
     }
+    setFormData((prev) => ({
+      ...prev,
+      propertyId: null,
+      propertyTypeId: null,
+      propertyName: "",
+      propertyType: "",
+      location: ""
+    }));
+    setTouchedFields((prev) => ({ ...prev, propertyId: true }));
+  };
+  const handlePropertyTypeSelect = (propertyTypeId) => {
+    const normalizedTypeId = propertyTypeId ? Number(propertyTypeId) : null;
+    const propertyTypeName = normalizedTypeId ? getPropertyTypeNameById(normalizedTypeId) : "";
+    setFormData((prev) => ({
+      ...prev,
+      propertyTypeId: normalizedTypeId,
+      propertyType: propertyTypeName
+    }));
+    setTouchedFields((prev) => ({ ...prev, propertyTypeId: true }));
   };
   const formatTimeTo12h = (timeStr) => {
     const [hours, minutes] = timeStr.split(":");
@@ -33018,21 +33107,39 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     }
   };
   const isPropertyRequired = formData.displayLocation === "PROPERTY_PAGE" || formData.displayLocation === "BOTH";
+  const selectedProperty = useMemo(
+    () => availableProperties.find(
+      (property) => String(property.id) === String(formData.propertyId)
+    ) || null,
+    [availableProperties, formData.propertyId]
+  );
+  const propertyTypeOptions = useMemo(
+    () => getPropertyTypeOptionsForProperty(selectedProperty),
+    [selectedProperty, propertyTypes]
+  );
   const formValidation = useMemo(() => {
     const errors = [];
     if (!uploadedMediaId && !formData.imageMediaId) errors.push("visual");
     if (isPropertyRequired && !formData.propertyId) errors.push("property");
+    if (isPropertyRequired && !formData.propertyTypeId)
+      errors.push("property type");
     return { isValid: errors.length === 0, errors };
   }, [
     uploadedMediaId,
     formData.imageMediaId,
     formData.propertyId,
+    formData.propertyTypeId,
     formData.title,
     isBannerDetected,
     isPropertyRequired
   ]);
   const handleButtonClick = () => {
-    setTouchedFields({ title: true, propertyId: true, image: true });
+    setTouchedFields({
+      title: true,
+      propertyId: true,
+      propertyTypeId: true,
+      image: true
+    });
     if (!formValidation.isValid) {
       showError(`Please complete: ${formValidation.errors.join(", ")}`);
       return;
@@ -33070,23 +33177,12 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     }
   };
   const resolvePropertyTypeForPayload = () => {
-    if (formData.displayLocation === "BOTH") {
-      const bothType = propertyTypes.find(
-        (t) => t.typeName?.toLowerCase() === "both"
-      );
-      return {
-        propertyTypeId: bothType?.id || null,
-        propertyType: bothType?.typeName || "both"
-      };
-    }
+    const resolvedTypeName = getPropertyTypeNameById(formData.propertyTypeId) || formData.propertyType;
     return {
       propertyTypeId: formData.propertyTypeId,
-      propertyType: formData.propertyType
+      propertyType: resolvedTypeName
     };
   };
-  propertyTypes.some(
-    (t) => t.typeName?.toLowerCase() === "both"
-  );
   if (!isOpen) return null;
   return /* @__PURE__ */ jsxs("div", { className: "admin-modal-overlay fixed inset-0 flex items-center justify-center z-50 p-4", children: [
     /* @__PURE__ */ jsx("style", { children: inputStyles }),
@@ -33127,6 +33223,26 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                 children: [
                   /* @__PURE__ */ jsx("option", { value: "", children: "Choose a property..." }),
                   availableProperties.map((p) => /* @__PURE__ */ jsx("option", { value: p.id, children: p.propertyName }, p.id))
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+            /* @__PURE__ */ jsxs("label", { className: "text-xs font-bold text-gray-500 uppercase flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx(Ruler, { size: 12 }),
+              " Property Type",
+              " ",
+              isPropertyRequired && /* @__PURE__ */ jsx("span", { className: "text-red-500", children: "*" })
+            ] }),
+            /* @__PURE__ */ jsxs(
+              "select",
+              {
+                value: formData.propertyTypeId || "",
+                onChange: (e) => handlePropertyTypeSelect(e.target.value),
+                className: `w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm outline-none ${isPropertyRequired && touchedFields.propertyTypeId && !formData.propertyTypeId ? "border-red-500 border-2" : ""}`,
+                children: [
+                  /* @__PURE__ */ jsx("option", { value: "", children: "Choose property type..." }),
+                  propertyTypeOptions.map((type) => /* @__PURE__ */ jsx("option", { value: type.id, children: type.typeName }, type.id))
                 ]
               }
             )
@@ -40932,6 +41048,7 @@ function GroupBookings() {
   const [enquiriesSearch, setEnquiriesSearch] = useState("");
   const [enquiriesPropertyTypeId, setEnquiriesPropertyTypeId] = useState("");
   const [enquiryPage, setEnquiryPage] = useState(1);
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
   const fetchBookings = async () => {
     try {
       setLoading(true);
@@ -41184,6 +41301,22 @@ function GroupBookings() {
       setSubmitting(false);
     }
   };
+  const handleToggleActive = async (item) => {
+    const currentActive = item?.isActive ?? item?.active ?? true;
+    const nextActive = !currentActive;
+    try {
+      setStatusUpdatingId(item.id);
+      await updateGroupBookingActiveStatus(item.id, nextActive);
+      toast$2.success(
+        `Group booking ${nextActive ? "activated" : "deactivated"} successfully`
+      );
+      await fetchBookings();
+    } catch {
+      toast$2.error("Failed to update booking status");
+    } finally {
+      setStatusUpdatingId(null);
+    }
+  };
   return /* @__PURE__ */ jsxs("div", { className: "rounded-lg p-4 sm:p-5 shadow-sm", style: { backgroundColor: colors.contentBg }, children: [
     /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between mb-5 gap-4 flex-wrap", children: [
       /* @__PURE__ */ jsx("h2", { className: "text-lg font-bold text-gray-800", children: "Group Bookings" }),
@@ -41290,7 +41423,7 @@ function GroupBookings() {
         /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: "w-full text-sm", children: [
           /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { className: "bg-gray-50 border-b border-gray-100", children: [
             { label: "ID" },
-            { label: "Image" },
+            // { label: "Image" },
             { label: "Title" },
             { label: "Property" },
             { label: "Property Type" },
@@ -41305,44 +41438,56 @@ function GroupBookings() {
             },
             label
           )) }) }),
-          /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-50", children: paginatedBookings.map((item, index) => /* @__PURE__ */ jsxs(
-            "tr",
-            {
-              className: "bg-white hover:bg-gray-50/50 transition-colors",
-              children: [
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-[11px] font-mono text-gray-400 whitespace-nowrap", children: (page - 1) * PAGE_SIZE$2 + index + 1 }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: item.media?.[0]?.url ? /* @__PURE__ */ jsx(
-                  "img",
-                  {
-                    src: item.media[0].url,
-                    alt: item.title,
-                    className: "h-12 w-16 rounded-md object-cover border border-gray-100"
-                  }
-                ) : /* @__PURE__ */ jsx("div", { className: "flex h-12 w-16 items-center justify-center rounded-md border border-dashed border-gray-200 bg-gray-50 text-[10px] text-gray-300", children: "No Image" }) }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 font-semibold text-gray-800 whitespace-nowrap", children: item.title || "—" }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-700 whitespace-nowrap", children: item.propertyId && propertyNameById[item.propertyId] ? propertyNameById[item.propertyId] : "—" }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-500 whitespace-nowrap", children: item.propertyTypeName || (item.propertyId ? propertyTypeByPropertyId[item.propertyId] : "") || "—" }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 whitespace-nowrap", children: item.numberOfPersons ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 rounded-full bg-primary/5 px-2 py-0.5 text-[10px] font-bold text-primary", children: [
-                  /* @__PURE__ */ jsx(Users, { size: 10 }),
-                  " ",
-                  item.numberOfPersons
-                ] }) : /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-400", children: "—" }) }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-600 max-w-[280px]", children: /* @__PURE__ */ jsx("p", { className: "line-clamp-2", children: item.description || "—" }) }),
-                /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxs(
-                  "button",
-                  {
-                    onClick: () => openEdit(item),
-                    className: "inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50",
-                    children: [
-                      /* @__PURE__ */ jsx(Pencil, { size: 12 }),
-                      " Edit"
-                    ]
-                  }
-                ) })
-              ]
-            },
-            item.id
-          )) })
+          /* @__PURE__ */ jsx("tbody", { className: "divide-y divide-gray-50", children: paginatedBookings.map((item, index) => (() => {
+            const isBookingActive = item?.isActive ?? item?.active ?? true;
+            return /* @__PURE__ */ jsxs(
+              "tr",
+              {
+                className: `transition-colors ${isBookingActive ? "bg-white hover:bg-gray-50/50" : "bg-red-50/70 hover:bg-red-50"}`,
+                children: [
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-[11px] font-mono text-gray-400 whitespace-nowrap", children: (page - 1) * PAGE_SIZE$2 + index + 1 }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 font-semibold text-gray-800 whitespace-nowrap", children: item.title || "—" }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-700 whitespace-nowrap", children: item.propertyId && propertyNameById[item.propertyId] ? propertyNameById[item.propertyId] : "—" }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-500 whitespace-nowrap", children: item.propertyTypeName || (item.propertyId ? propertyTypeByPropertyId[item.propertyId] : "") || "—" }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 whitespace-nowrap", children: item.numberOfPersons ? /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 rounded-full bg-primary/5 px-2 py-0.5 text-[10px] font-bold text-primary", children: [
+                    /* @__PURE__ */ jsx(Users, { size: 10 }),
+                    " ",
+                    item.numberOfPersons
+                  ] }) : /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-400", children: "—" }) }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-xs text-gray-600 max-w-[280px]", children: /* @__PURE__ */ jsx("p", { className: "line-clamp-2", children: item.description || "—" }) }),
+                  /* @__PURE__ */ jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: () => openEdit(item),
+                        className: "inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50",
+                        children: [
+                          /* @__PURE__ */ jsx(Pencil, { size: 12 }),
+                          " Edit"
+                        ]
+                      }
+                    ),
+                    /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: () => handleToggleActive(item),
+                        disabled: statusUpdatingId === item.id,
+                        className: `inline-flex min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity ${statusUpdatingId === item.id ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:opacity-90"}`,
+                        style: {
+                          backgroundColor: isBookingActive ? "#16A34A" : "#DC2626"
+                        },
+                        children: [
+                          statusUpdatingId === item.id ? /* @__PURE__ */ jsx(Loader2, { size: 12, className: "animate-spin" }) : null,
+                          isBookingActive ? "Active" : "Inactive"
+                        ]
+                      }
+                    )
+                  ] }) })
+                ]
+              },
+              item.id
+            );
+          })()) })
         ] }) }),
         totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50", children: [
           /* @__PURE__ */ jsxs("p", { className: "text-xs text-gray-400", children: [
@@ -44284,7 +44429,7 @@ function EditPropertyModal({
     // ✅ NEW FIELD
     nearbyLocations: p.nearbyLocations && p.nearbyLocations.length > 0 ? p.nearbyLocations : [{ nearbyLocationName: "", googleMapLink: "" }]
   });
-  const isHotelType = form.propertyTypeIds.some((id) => {
+  const isHotelType2 = form.propertyTypeIds.some((id) => {
     const matchedType = propertyTypes?.find((type) => type.id === id);
     return String(matchedType?.typeName || "").toLowerCase() === "hotel";
   });
@@ -44375,7 +44520,7 @@ function EditPropertyModal({
         toast$2.error("Enter the main address URL");
         return;
       }
-      const combinedRatingValue = isHotelType ? encodeCombinedRating(form.rating, form.verifiedUsers) : form.rating !== "" ? Number(form.rating) : null;
+      const combinedRatingValue = isHotelType2 ? encodeCombinedRating(form.rating, form.verifiedUsers) : form.rating !== "" ? Number(form.rating) : null;
       const payload = {
         propertyName: form.propertyName,
         propertyTypeIds: form.propertyTypeIds,
@@ -44886,7 +45031,7 @@ function EditPropertyModal({
                 className: inputCls
               }
             ) }),
-            isHotelType && /* @__PURE__ */ jsx(Field$8, { label: "Verified Users Rating", icon: Users, children: /* @__PURE__ */ jsx(
+            isHotelType2 && /* @__PURE__ */ jsx(Field$8, { label: "Verified Users Rating", icon: Users, children: /* @__PURE__ */ jsx(
               "input",
               {
                 type: "number",
@@ -59889,6 +60034,7 @@ const normalizeGroupBookings$1 = (response, propertyTypeId) => {
   const rawBookings = response?.data || response || [];
   if (!Array.isArray(rawBookings)) return [];
   return rawBookings.filter((booking) => {
+    if (booking?.isActive === false) return false;
     if (booking.propertyTypeName === "Restaurant") return false;
     if (!propertyTypeId) {
       return booking.propertyTypeName !== "Restaurant";
@@ -59896,10 +60042,15 @@ const normalizeGroupBookings$1 = (response, propertyTypeId) => {
     return booking.propertyTypeId == null || Number(booking.propertyTypeId) === Number(propertyTypeId);
   }).sort((a, b) => b.id - a.id);
 };
-const normalizeHotelReviews = (experiencesRes, headerRes, ratingRes) => {
+const normalizeHotelReviews = (experiencesRes, headerRes, ratingRes, hotelTypeId) => {
   const rawData = experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
+  const list = Array.isArray(rawData) ? rawData : [];
   return {
-    guestExperiences: Array.isArray(rawData) ? rawData : [],
+    guestExperiences: list.filter(
+      (item) => hotelTypeId != null ? Number(item?.propertyTypeId) === Number(hotelTypeId) : false
+    ).sort(
+      (a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime()
+    ),
     sectionHeader: Array.isArray(headerRes?.data) ? headerRes.data[0] || null : headerRes?.data || null,
     ratingHeader: Array.isArray(ratingRes?.data) ? ratingRes.data[0] || null : ratingRes?.data || null
   };
@@ -59956,7 +60107,8 @@ const fetchHotelsPageData = async () => {
     hotelReviews: normalizeHotelReviews(
       reviewExperiencesRes,
       reviewHeaderRes,
-      reviewRatingRes
+      reviewRatingRes,
+      hotelTypeId
     ),
     hotelCollection: collectionRes ? normalizeHotelCollection(collectionRes) : [],
     hotelLocations: normalizeHotelLocations(locationsRes)
@@ -60113,6 +60265,7 @@ const normalizeEvents = (eventsRes, restaurantTypeId) => {
 const normalizeGroupBookings = (bookingsRes, restaurantTypeId) => {
   const rawBookings = bookingsRes?.data || bookingsRes || [];
   return (Array.isArray(rawBookings) ? rawBookings : []).filter((item) => {
+    if (item?.isActive === false) return false;
     const byTypeName = isRestaurantType$1(item?.propertyTypeName);
     const byTypeId = restaurantTypeId != null && Number(item?.propertyTypeId) === restaurantTypeId;
     return byTypeName || byTypeId;
