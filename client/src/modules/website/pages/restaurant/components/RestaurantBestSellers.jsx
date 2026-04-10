@@ -42,8 +42,8 @@ function DishImage({ src, alt }) {
 
   if (!src || errored) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-zinc-100">
-        <ImageOff size={32} className="text-zinc-300" />
+      <div className="flex h-full w-full items-center justify-center bg-muted">
+        <ImageOff size={32} className="text-muted-foreground/40" />
       </div>
     );
   }
@@ -164,9 +164,9 @@ export default function RestaurantBestSellers({ initialItems }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-zinc-100 bg-zinc-50 p-8 text-center"
+      className="group relative flex cursor-pointer flex-col items-center rounded-[2.5rem] border border-border bg-card p-8 text-center"
     >
-      <div className="relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-white shadow-xl transition-transform duration-700 group-hover:scale-105">
+      <div className="relative -mt-24 mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border-4 border-background shadow-xl transition-transform duration-700 group-hover:scale-105">
         <DishImage src={item.image} alt={item.title} />
 
         <button
@@ -175,7 +175,7 @@ export default function RestaurantBestSellers({ initialItems }) {
             event.stopPropagation();
             setLikeModal({ isOpen: true, item });
           }}
-          className="absolute right-4 top-4 rounded-full bg-white/80 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110"
+          className="absolute right-4 top-4 rounded-full bg-background/85 p-2 text-primary shadow-md backdrop-blur-md transition-transform hover:scale-110"
           aria-label={`Like ${item.title}`}
         >
           <Heart
@@ -190,12 +190,12 @@ export default function RestaurantBestSellers({ initialItems }) {
       </span>
 
       <div className="flex w-full flex-col items-center">
-        <h3 className="mb-2 text-2xl font-serif leading-tight text-zinc-900">
+        <h3 className="mb-2 text-2xl font-serif leading-tight text-foreground">
           {item.title}
         </h3>
 
         {item.description && (
-          <p className="mb-3 line-clamp-2 text-[13px] italic leading-snug text-zinc-500">
+          <p className="mb-3 line-clamp-2 text-[13px] italic leading-snug text-muted-foreground">
             "{item.description}"
           </p>
         )}
@@ -211,7 +211,7 @@ export default function RestaurantBestSellers({ initialItems }) {
   );
 
   return (
-    <section className="bg-white pb-2 pt-16">
+    <section className="bg-background pb-2 pt-16 text-foreground">
       <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
         <div className="mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row">
           <div className="min-w-0 flex-1 lg:max-w-[80%]">
@@ -220,12 +220,12 @@ export default function RestaurantBestSellers({ initialItems }) {
               Menu Spotlight
             </div>
 
-            <h2 className="mb-2 text-3xl font-serif md:text-4xl">
+            <h2 className="mb-2 text-3xl font-serif text-foreground md:text-4xl">
               Best Seller <span className="italic text-primary">Dishes</span>
             </h2>
 
             <div className="max-w-[80%]">
-              <p className="text-sm font-light leading-relaxed text-zinc-500">
+              <p className="text-sm font-light leading-relaxed text-muted-foreground">
                 Discover our best seller selection, then browse it by veg and
                 non-veg in the same signature menu showcase format as the
                 restaurant detail page.
@@ -244,9 +244,9 @@ export default function RestaurantBestSellers({ initialItems }) {
                     ? filter === "Veg"
                       ? "border-emerald-500 bg-emerald-500 text-white"
                       : filter === "Non-Veg"
-                        ? "border-rose-400 bg-white text-rose-500"
+                        ? "border-rose-400 bg-background text-rose-500"
                         : "border-primary bg-primary text-white"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-primary/40 hover:text-primary"
+                    : "border-border bg-card text-foreground hover:border-primary/40 hover:text-primary"
                 }`}
               >
                 {filter}
@@ -260,7 +260,7 @@ export default function RestaurantBestSellers({ initialItems }) {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="py-24 text-center text-zinc-400">
+          <div className="py-24 text-center text-muted-foreground">
             <p className="font-medium">No top selling items found.</p>
           </div>
         ) : (
@@ -275,7 +275,7 @@ export default function RestaurantBestSellers({ initialItems }) {
               <button
                 type="button"
                 onClick={() => setExpanded((current) => !current)}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
               >
                 {expanded ? "Show Less" : `Show More (${extraItems.length})`}
                 {expanded ? (

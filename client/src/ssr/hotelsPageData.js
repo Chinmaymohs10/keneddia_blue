@@ -276,6 +276,7 @@ const normalizeGroupBookings = (response, propertyTypeId) => {
 
   return rawBookings
     .filter((booking) => {
+      if (booking?.isActive === false) return false;
       if (booking.propertyTypeName === "Restaurant") return false;
 
       if (!propertyTypeId) {
@@ -290,12 +291,28 @@ const normalizeGroupBookings = (response, propertyTypeId) => {
     .sort((a, b) => b.id - a.id);
 };
 
-const normalizeHotelReviews = (experiencesRes, headerRes, ratingRes) => {
+const normalizeHotelReviews = (
+  experiencesRes,
+  headerRes,
+  ratingRes,
+  hotelTypeId,
+) => {
   const rawData =
     experiencesRes?.data?.data || experiencesRes?.data || experiencesRes || [];
+  const list = Array.isArray(rawData) ? rawData : [];
 
   return {
-    guestExperiences: Array.isArray(rawData) ? rawData : [],
+    guestExperiences: list
+      .filter((item) =>
+        hotelTypeId != null
+          ? Number(item?.propertyTypeId) === Number(hotelTypeId)
+          : false,
+      )
+      .sort(
+        (a, b) =>
+          new Date(b?.createdAt || 0).getTime() -
+          new Date(a?.createdAt || 0).getTime(),
+      ),
     sectionHeader: Array.isArray(headerRes?.data)
       ? headerRes.data[0] || null
       : headerRes?.data || null,
@@ -375,6 +392,7 @@ export const fetchHotelsPageData = async () => {
       reviewExperiencesRes,
       reviewHeaderRes,
       reviewRatingRes,
+      hotelTypeId,
     ),
     hotelCollection: collectionRes ? normalizeHotelCollection(collectionRes) : [],
     hotelLocations: normalizeHotelLocations(locationsRes),

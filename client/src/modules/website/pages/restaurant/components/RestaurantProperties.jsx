@@ -70,17 +70,17 @@ export default function RestaurantProperties({ initialRestaurants }) {
         <div className="p-8">
           <div className="mb-8 flex flex-col gap-4 border-b border-border/10 pb-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
-                <button onClick={() => setViewMode("gallery")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Grid3x3 className="h-3 w-3" /><span className="hidden sm:inline">Gallery</span></button>
-                <button onClick={() => setViewMode("map")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Map className="h-3 w-3" /><span className="hidden sm:inline">Map</span></button>
-              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <button onClick={() => setShowCityDropdown((prev) => !prev)} className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50"><MapPin className="h-3 w-3 text-primary" /><span className="font-medium">{selectedCity}</span><ArrowRight className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${showCityDropdown ? "rotate-90" : ""}`} /></button>
                   {showCityDropdown && <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-card shadow-xl">{cities.map((city) => <button key={city} onClick={() => { setSelectedCity(city); setShowCityDropdown(false); }} className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""}`}>{city}</button>)}</div>}
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Building2 className="h-3 w-3" />Restaurant</span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Star className="h-3 w-3 fill-current" />{filteredRestaurants.length} Restaurants</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs"><Star className="h-3 w-3 fill-current text-primary" /><span className="font-semibold text-foreground">{filteredRestaurants.length} Restaurants</span></span>
+              </div>
+              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
+                <button onClick={() => setViewMode("gallery")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Grid3x3 className="h-3 w-3" /><span className="hidden sm:inline">Gallery</span></button>
+                <button onClick={() => setViewMode("map")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Map className="h-3 w-3" /><span className="hidden sm:inline">Map</span></button>
               </div>
             </div>
           </div>

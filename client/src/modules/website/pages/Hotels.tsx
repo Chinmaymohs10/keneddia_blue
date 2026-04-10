@@ -559,7 +559,10 @@ export default function Hotels() {
         data-ssr-section="hotel-reviews"
         data-ssr-count={ssrHotels?.hotelReviews?.guestExperiences?.length ?? 0}
       >
-        <HotelReviewsSection initialData={ssrHotels?.hotelReviews} />
+        <HotelReviewsSection
+          initialData={ssrHotels?.hotelReviews}
+          initialHotelTypeId={hotelTypeId}
+        />
       </div>
 
       <div id="contact">

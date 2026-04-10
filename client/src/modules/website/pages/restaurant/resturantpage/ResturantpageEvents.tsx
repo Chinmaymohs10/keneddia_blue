@@ -190,7 +190,11 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
           : (bookingRes?.data ?? []);
         setGroupBookings(
           allBookings
-            .filter((b) => (propertyId ? b.propertyId === propertyId : true))
+            .filter(
+              (b) =>
+                b?.isActive !== false &&
+                (propertyId ? b.propertyId === propertyId : true),
+            )
             .sort((a, b) => b.id - a.id),
         );
         const headerData = headerRes?.data;

@@ -318,6 +318,10 @@ export const searchGallery = ({ propertyId, verticalId }) =>
 export const addGroupBooking = (data) =>API.post("/api/v1/group-bookings", data);
 export const updateGroupBooking = (id, data) =>API.put(`/api/v1/group-bookings/${id}`, data);
 export const getGroupBookings = () =>API.get("/api/v1/group-bookings");
+export const updateGroupBookingActiveStatus = (id, active) =>
+  API.patch(`/api/v1/group-bookings/${id}/active`, null, {
+    params: { active },
+  });
 
 
 // ===============================

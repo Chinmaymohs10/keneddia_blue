@@ -358,12 +358,13 @@ export default function GroupBookingSection({
         // Sort: latest first (ID descending)
         const filteredBookings = (Array.isArray(rawBookings) ? rawBookings : [])
           .filter((b: GroupBooking) =>
-            propertyTypeId
+            (b as any)?.isActive !== false &&
+            (propertyTypeId
               ? b.propertyTypeName === "Restaurant"
                 ? false
                 : (b as any).propertyTypeId == null ||
                   Number((b as any).propertyTypeId) === Number(propertyTypeId)
-              : b.propertyTypeName !== "Restaurant",
+              : b.propertyTypeName !== "Restaurant"),
           )
           .sort((a, b) => b.id - a.id);
 

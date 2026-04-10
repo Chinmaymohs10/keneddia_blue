@@ -21,6 +21,7 @@ import {
   createGuestExperienceByGuest,
   getGuestExperienceSectionHeader,
   getGuestExperineceRatingHeader,
+  getPropertyTypes,
 } from "@/Api/Api";
 
 import "swiper/css";
@@ -55,6 +56,10 @@ interface HotelReviewsInitialData {
   sectionHeader?: SectionHeader | null;
   ratingHeader?: RatingHeader | null;
 }
+
+const normalize = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isHotelType = (value = "") => normalize(value) === "hotel";
 
 const isYoutubeUrl = (url: string): boolean =>
   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
@@ -123,8 +128,10 @@ const buildMediaList = (
 
 export default function HotelReviewsSection({
   initialData,
+  initialHotelTypeId,
 }: {
   initialData?: HotelReviewsInitialData;
+  initialHotelTypeId?: number | null;
 }) {
   const [guestExperiences, setGuestExperiences] = useState<ExperienceItem[]>(
     Array.isArray(initialData?.guestExperiences)
@@ -156,6 +163,9 @@ export default function HotelReviewsSection({
   const [ratingHeader, setRatingHeader] = useState<RatingHeader | null>(
     initialData?.ratingHeader || null,
   );
+  const [hotelTypeId, setHotelTypeId] = useState<number | null>(
+    initialHotelTypeId ?? null,
+  );
   const swiperRef = useRef<any>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -170,26 +180,67 @@ export default function HotelReviewsSection({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const fetchExperiences = async () => {
+  const fetchExperiences = async (resolvedHotelTypeId: number | null) => {
     try {
-      const res = await getGuestExperienceSection({ size: 20 });
-      const rawData = res?.data?.data || res?.data || res;
-      setGuestExperiences(rawData || []);
+      const res = await getGuestExperienceSection({ size: 100 });
+      const rawData = res?.data?.data || res?.data || res || [];
+      const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
+      const filtered = list
+        .filter((item) =>
+          resolvedHotelTypeId != null
+            ? Number(item?.propertyTypeId) === Number(resolvedHotelTypeId)
+            : false,
+        )
+        .sort((a, b) => {
+          const dateA = new Date(a?.createdAt || 0).getTime();
+          const dateB = new Date(b?.createdAt || 0).getTime();
+          return dateB - dateA;
+        });
+      setGuestExperiences(filtered);
     } catch (err) {
       console.error(err);
+      setGuestExperiences([]);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    getGuestExperienceSectionHeader().then((res) =>
-      setSectionHeader(Array.isArray(res.data) ? res.data[0] : res.data),
-    );
-    getGuestExperineceRatingHeader().then((res) =>
-      setRatingHeader(Array.isArray(res.data) ? res.data[0] : res.data),
-    );
-    fetchExperiences();
+    if (Array.isArray(initialData?.guestExperiences) && initialHotelTypeId != null) {
+      return;
+    }
+
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        const [typesRes, headerRes, ratingRes] = await Promise.all([
+          getPropertyTypes(),
+          getGuestExperienceSectionHeader(),
+          getGuestExperineceRatingHeader(),
+        ]);
+
+        const types = typesRes?.data || typesRes || [];
+        const hotelType = Array.isArray(types)
+          ? types.find((type) => type?.isActive && isHotelType(type?.typeName))
+          : null;
+        const resolvedHotelTypeId = hotelType?.id ? Number(hotelType.id) : null;
+        setHotelTypeId(resolvedHotelTypeId);
+
+        setSectionHeader(
+          Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data,
+        );
+        setRatingHeader(
+          Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data,
+        );
+
+        await fetchExperiences(resolvedHotelTypeId);
+      } catch (error) {
+        console.error("Failed to initialize hotel reviews section", error);
+        setIsLoading(false);
+      }
+    };
+
+    init();
   }, []);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -224,7 +275,7 @@ export default function HotelReviewsSection({
       setMediaPreviews([]);
       setYtLink("");
       setIsVerified(false);
-      await fetchExperiences();
+      await fetchExperiences(hotelTypeId);
     } catch (err) {
       console.error(err);
     } finally {

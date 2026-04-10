@@ -23,6 +23,7 @@ import {
 import {
   addGroupBooking,
   updateGroupBooking,
+  updateGroupBookingActiveStatus,
   getGroupBookings,
   GetAllPropertyDetails,
   getPropertyTypes,
@@ -99,6 +100,7 @@ export default function GroupBookings() {
   const [enquiriesSearch, setEnquiriesSearch] = useState("");
   const [enquiriesPropertyTypeId, setEnquiriesPropertyTypeId] = useState("");
   const [enquiryPage, setEnquiryPage] = useState(1);
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
   const fetchBookings = async () => {
     try {
@@ -403,6 +405,24 @@ export default function GroupBookings() {
     }
   };
 
+  const handleToggleActive = async (item) => {
+    const currentActive = item?.isActive ?? item?.active ?? true;
+    const nextActive = !currentActive;
+
+    try {
+      setStatusUpdatingId(item.id);
+      await updateGroupBookingActiveStatus(item.id, nextActive);
+      toast.success(
+        `Group booking ${nextActive ? "activated" : "deactivated"} successfully`,
+      );
+      await fetchBookings();
+    } catch {
+      toast.error("Failed to update booking status");
+    } finally {
+      setStatusUpdatingId(null);
+    }
+  };
+
   return (
     <div className="rounded-lg p-4 sm:p-5 shadow-sm" style={{ backgroundColor: colors.contentBg }}>
       <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
@@ -515,7 +535,7 @@ export default function GroupBookings() {
                     <tr className="bg-gray-50 border-b border-gray-100">
                       {[
                         { label: "ID" },
-                        { label: "Image" },
+                        // { label: "Image" },
                         { label: "Title" },
                         { label: "Property" },
                         { label: "Property Type" },
@@ -534,14 +554,22 @@ export default function GroupBookings() {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {paginatedBookings.map((item, index) => (
+                      (() => {
+                        const isBookingActive =
+                          item?.isActive ?? item?.active ?? true;
+                        return (
                       <tr
                         key={item.id}
-                        className="bg-white hover:bg-gray-50/50 transition-colors"
+                        className={`transition-colors ${
+                          isBookingActive
+                            ? "bg-white hover:bg-gray-50/50"
+                            : "bg-red-50/70 hover:bg-red-50"
+                        }`}
                       >
                         <td className="px-4 py-3 text-[11px] font-mono text-gray-400 whitespace-nowrap">
                           {(page - 1) * PAGE_SIZE + index + 1}
                         </td>
-                        <td className="px-4 py-3">
+                        {/* <td className="px-4 py-3">
                           {item.media?.[0]?.url ? (
                             <img
                               src={item.media[0].url}
@@ -553,7 +581,7 @@ export default function GroupBookings() {
                               No Image
                             </div>
                           )}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap">
                           {item.title || "—"}
                         </td>
@@ -582,14 +610,37 @@ export default function GroupBookings() {
                           <p className="line-clamp-2">{item.description || "—"}</p>
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => openEdit(item)}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-                          >
-                            <Pencil size={12} /> Edit
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openEdit(item)}
+                              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                            >
+                              <Pencil size={12} /> Edit
+                            </button>
+                            <button
+                              onClick={() => handleToggleActive(item)}
+                              disabled={statusUpdatingId === item.id}
+                              className={`inline-flex min-w-[92px] items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity ${
+                                statusUpdatingId === item.id
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer hover:opacity-90"
+                              }`}
+                              style={{
+                                backgroundColor: isBookingActive
+                                  ? "#16A34A"
+                                  : "#DC2626",
+                              }}
+                            >
+                              {statusUpdatingId === item.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : null}
+                              {isBookingActive ? "Active" : "Inactive"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
+                        );
+                      })()
                     ))}
                   </tbody>
                 </table>

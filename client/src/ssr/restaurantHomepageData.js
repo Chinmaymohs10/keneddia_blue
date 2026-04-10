@@ -228,6 +228,7 @@ const normalizeGroupBookings = (bookingsRes, restaurantTypeId) => {
   const rawBookings = bookingsRes?.data || bookingsRes || [];
   return (Array.isArray(rawBookings) ? rawBookings : [])
     .filter((item) => {
+      if (item?.isActive === false) return false;
       const byTypeName = isRestaurantType(item?.propertyTypeName);
       const byTypeId = restaurantTypeId != null && Number(item?.propertyTypeId) === restaurantTypeId;
       return byTypeName || byTypeId;

@@ -324,6 +324,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
         const rawBookings = bookingsResponse?.data || bookingsResponse || [];
         const mappedBookings = (Array.isArray(rawBookings) ? rawBookings : [])
           .filter((item) => {
+            if (item?.isActive === false) return false;
             const byTypeName = isRestaurantType(item?.propertyTypeName);
             const byTypeId =
               restaurantTypeId !== null &&
