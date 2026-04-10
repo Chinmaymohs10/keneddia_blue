@@ -95,11 +95,11 @@ const formatDate = (dateString: string) => {
 };
 
 const CARD_COLORS = [
-  "bg-pink-50 border-pink-200 hover:border-pink-300",
-  "bg-blue-50 border-blue-200 hover:border-blue-300",
-  "bg-orange-50 border-orange-200 hover:border-orange-300",
-  "bg-purple-50 border-purple-200 hover:border-purple-300",
-  "bg-green-50 border-green-200 hover:border-green-300",
+  "bg-pink-50 border-pink-200 hover:border-pink-300 dark:bg-pink-950/25 dark:border-pink-900/60 dark:hover:border-pink-700/70",
+  "bg-blue-50 border-blue-200 hover:border-blue-300 dark:bg-blue-950/25 dark:border-blue-900/60 dark:hover:border-blue-700/70",
+  "bg-orange-50 border-orange-200 hover:border-orange-300 dark:bg-orange-950/25 dark:border-orange-900/60 dark:hover:border-orange-700/70",
+  "bg-purple-50 border-purple-200 hover:border-purple-300 dark:bg-purple-950/25 dark:border-purple-900/60 dark:hover:border-purple-700/70",
+  "bg-green-50 border-green-200 hover:border-green-300 dark:bg-green-950/25 dark:border-green-900/60 dark:hover:border-green-700/70",
 ];
 
 /* ================= EVENT CARD ================= */
@@ -590,12 +590,12 @@ export default function GroupBookingSection({
 
                         {/* TEXT */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold line-clamp-1 group-hover:text-primary">
+                          <p className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary">
                             {booking.title}
                           </p>
 
                           {booking.description && (
-                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
+                            <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground dark:text-foreground/80">
                               {booking.description}
                             </p>
                           )}

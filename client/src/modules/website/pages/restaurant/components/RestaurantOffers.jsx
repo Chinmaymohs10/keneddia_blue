@@ -23,6 +23,8 @@ function OfferCard({ offer, index }) {
     "from-[#ffb000] via-[#ffc73a] to-[#f59e0b] text-[#2f1f00]",
   ];
   const accentClass = accentStyles[index % accentStyles.length];
+  const hasCta =
+    Boolean(offer?.ctaText?.trim()) && Boolean(offer?.link?.trim());
 
   return (
     <motion.div
@@ -37,17 +39,19 @@ function OfferCard({ offer, index }) {
         <div className="absolute -bottom-10 left-4 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
       </div>
 
-      <a
-        href={offer.link || "#"}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute right-4 top-4 z-20"
-        aria-label={offer.ctaText || "View Offer"}
-      >
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/15 text-current backdrop-blur-md transition-colors hover:bg-white hover:text-black">
-          <ExternalLink className="h-4 w-4" />
-        </div>
-      </a>
+      {hasCta && (
+        <a
+          href={offer.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute right-4 top-4 z-20"
+          aria-label={offer.ctaText}
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/15 text-current backdrop-blur-md transition-colors hover:bg-white hover:text-black">
+            <ExternalLink className="h-4 w-4" />
+          </div>
+        </a>
+      )}
 
       <div className="relative z-10 min-w-0">
         {offer.location && (

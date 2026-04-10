@@ -93,6 +93,31 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   const [isBannerDetected, setIsBannerDetected] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
 
+  const getPropertyTypeNameById = (typeId) => {
+    const matchedType = propertyTypes.find(
+      (type) => String(type.id) === String(typeId),
+    );
+    return matchedType?.typeName || "";
+  };
+
+  const getPropertyTypeOptionsForProperty = (property) => {
+    if (!property) return propertyTypes;
+
+    const propertyTypeNames = Array.isArray(property.propertyTypes)
+      ? property.propertyTypes
+      : [];
+
+    if (!propertyTypeNames.length) return propertyTypes;
+
+    return propertyTypes.filter((type) =>
+      propertyTypeNames.some(
+        (name) =>
+          String(name).trim().toLowerCase() ===
+          String(type.typeName || "").trim().toLowerCase(),
+      ),
+    );
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchProperties();
@@ -267,28 +292,52 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     );
 
     if (selectedProperty) {
-      // Extract the first property type name from the array
-      const propertyTypeName = selectedProperty.propertyTypes?.[0] || "";
-
-      // Find matching type from propertyTypes list by name
-      const matchedType = propertyTypes.find(
-        (t) => t.typeName?.toLowerCase() === propertyTypeName.toLowerCase(),
-      );
+      const matchedTypes = getPropertyTypeOptionsForProperty(selectedProperty);
+      const defaultType = matchedTypes[0] || null;
 
       setFormData((prev) => ({
         ...prev,
         propertyId: selectedProperty.id,
-        propertyTypeId: matchedType?.id || null,
+        propertyTypeId: defaultType?.id || null,
         propertyName: selectedProperty.propertyName,
-        propertyType: matchedType?.typeName || propertyTypeName || "",
+        propertyType: defaultType?.typeName || "",
         location:
           `${selectedProperty.area || ""}, ${selectedProperty.locationName || ""}`.replace(
             /^, |, $/g,
             "",
           ),
       }));
-      setTouchedFields((prev) => ({ ...prev, propertyId: true }));
+      setTouchedFields((prev) => ({
+        ...prev,
+        propertyId: true,
+        propertyTypeId: true,
+      }));
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      propertyId: null,
+      propertyTypeId: null,
+      propertyName: "",
+      propertyType: "",
+      location: "",
+    }));
+    setTouchedFields((prev) => ({ ...prev, propertyId: true }));
+  };
+
+  const handlePropertyTypeSelect = (propertyTypeId) => {
+    const normalizedTypeId = propertyTypeId ? Number(propertyTypeId) : null;
+    const propertyTypeName = normalizedTypeId
+      ? getPropertyTypeNameById(normalizedTypeId)
+      : "";
+
+    setFormData((prev) => ({
+      ...prev,
+      propertyTypeId: normalizedTypeId,
+      propertyType: propertyTypeName,
+    }));
+    setTouchedFields((prev) => ({ ...prev, propertyTypeId: true }));
   };
 
   const formatTimeTo12h = (timeStr) => {
@@ -349,22 +398,43 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     formData.displayLocation === "PROPERTY_PAGE" ||
     formData.displayLocation === "BOTH";
 
+  const selectedProperty = useMemo(
+    () =>
+      availableProperties.find(
+        (property) => String(property.id) === String(formData.propertyId),
+      ) || null,
+    [availableProperties, formData.propertyId],
+  );
+
+  const propertyTypeOptions = useMemo(
+    () => getPropertyTypeOptionsForProperty(selectedProperty),
+    [selectedProperty, propertyTypes],
+  );
+
   const formValidation = useMemo(() => {
     const errors = [];
     if (!uploadedMediaId && !formData.imageMediaId) errors.push("visual");
     if (isPropertyRequired && !formData.propertyId) errors.push("property");
+    if (isPropertyRequired && !formData.propertyTypeId)
+      errors.push("property type");
     return { isValid: errors.length === 0, errors };
   }, [
     uploadedMediaId,
     formData.imageMediaId,
     formData.propertyId,
+    formData.propertyTypeId,
     formData.title,
     isBannerDetected,
     isPropertyRequired,
   ]);
 
   const handleButtonClick = () => {
-    setTouchedFields({ title: true, propertyId: true, image: true });
+    setTouchedFields({
+      title: true,
+      propertyId: true,
+      propertyTypeId: true,
+      image: true,
+    });
     if (!formValidation.isValid) {
       showError(`Please complete: ${formValidation.errors.join(", ")}`);
       return;
@@ -411,27 +481,14 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
   };
 
   const resolvePropertyTypeForPayload = () => {
-    if (formData.displayLocation === "BOTH") {
-      const bothType = propertyTypes.find(
-        (t) => t.typeName?.toLowerCase() === "both",
-      );
+    const resolvedTypeName =
+      getPropertyTypeNameById(formData.propertyTypeId) || formData.propertyType;
 
-      return {
-        propertyTypeId: bothType?.id || null,
-        propertyType: bothType?.typeName || "both",
-      };
-    }
-
-    // Normal property page case
     return {
       propertyTypeId: formData.propertyTypeId,
-      propertyType: formData.propertyType,
+      propertyType: resolvedTypeName,
     };
   };
-
-  const bothTypeAvailable = propertyTypes.some(
-    (t) => t.typeName?.toLowerCase() === "both",
-  );
 
   if (!isOpen) return null;
 
@@ -479,6 +536,27 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                   {availableProperties.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.propertyName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2">
+                  <Ruler size={12} /> Property Type{" "}
+                  {isPropertyRequired && (
+                    <span className="text-red-500">*</span>
+                  )}
+                </label>
+                <select
+                  value={formData.propertyTypeId || ""}
+                  onChange={(e) => handlePropertyTypeSelect(e.target.value)}
+                  className={`w-full p-2.5 rounded-lg border bg-[#F3F4F6] text-sm outline-none ${isPropertyRequired && touchedFields.propertyTypeId && !formData.propertyTypeId ? "border-red-500 border-2" : ""}`}
+                >
+                  <option value="">Choose property type...</option>
+                  {propertyTypeOptions.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.typeName}
                     </option>
                   ))}
                 </select>

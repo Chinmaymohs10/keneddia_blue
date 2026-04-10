@@ -200,11 +200,11 @@
   }
 
   .hotel-policy-panel {
-    @apply rounded-xl border bg-white p-6 shadow-sm md:p-8;
+    @apply rounded-xl border border-border bg-card p-6 text-foreground shadow-sm md:p-8;
   }
 
   .hotel-policy-box {
-    @apply rounded-lg border border-border/60 bg-muted/20 px-4 py-4;
+    @apply rounded-lg border border-border/60 bg-muted/40 px-4 py-4 text-foreground;
   }
 
   .hotel-amenity-row {

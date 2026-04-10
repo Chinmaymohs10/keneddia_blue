@@ -1524,26 +1524,30 @@ export default function HotelDetail() {
                       <div className="flex items-center gap-2 text-destructive font-bold text-xs uppercase tracking-widest">
                         <Info className="w-4 h-4" /> CHECK-IN / CHECK-OUT
                       </div>
-                      <div className="space-y-5 text-sm text-muted-foreground">
+                      <div className="space-y-5 text-sm text-muted-foreground dark:text-foreground/80">
                         <div className="space-y-3">
                           <div className="flex justify-between md:justify-start md:gap-6">
                             <span className="font-medium text-foreground min-w-[100px]">
                               Check-in:
                             </span>
-                            <span>{policies?.checkInTime || "2:00 PM"}</span>
+                            <span className="text-foreground dark:text-foreground/85">
+                              {policies?.checkInTime || "2:00 PM"}
+                            </span>
                           </div>
                           <div className="flex justify-between md:justify-start md:gap-6">
                             <span className="font-medium text-foreground min-w-[100px]">
                               Check-out:
                             </span>
-                            <span>{policies?.checkOutTime || "11:00 AM"}</span>
+                            <span className="text-foreground dark:text-foreground/85">
+                              {policies?.checkOutTime || "11:00 AM"}
+                            </span>
                           </div>
                         </div>
                         <div className="hotel-policy-box">
                           <p className="font-medium text-foreground mb-2">
                             Cancellation Policy
                           </p>
-                          <p className="leading-relaxed">
+                          <p className="leading-relaxed text-foreground/80 dark:text-foreground/85">
                             {policies?.cancellationPolicy ||
                               "Non-refundable for promotional rates"}
                           </p>
@@ -1562,7 +1566,9 @@ export default function HotelDetail() {
                               className="flex items-start gap-2 text-foreground"
                             >
                               <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                              <span className="leading-snug">{p.name}</span>
+                              <span className="leading-snug text-foreground dark:text-foreground/85">
+                                {p.name}
+                              </span>
                             </li>
                           ))}
                         </ul>
