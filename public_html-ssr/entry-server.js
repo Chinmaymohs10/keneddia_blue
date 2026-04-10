@@ -15756,12 +15756,12 @@ const getAmenityName$4 = (amenity) => {
   }
   return null;
 };
-const fadeIn$3 = {
+const fadeIn$2 = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer$3 = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer$2 = { animate: { transition: { staggerChildren: 0.1 } } };
 const VERIFIED_REVIEWS_SCALE$1 = 1e6;
 const parseCombinedRatingMeta$1 = (value) => {
   if (value === null || value === void 0 || value === "") {
@@ -16389,7 +16389,7 @@ function HotelDetail() {
       /* @__PURE__ */ jsxs(
         motion.nav,
         {
-          variants: fadeIn$3,
+          variants: fadeIn$2,
           initial: "initial",
           animate: "animate",
           className: "hotel-breadcrumb",
@@ -16413,16 +16413,16 @@ function HotelDetail() {
         /* @__PURE__ */ jsxs(
           motion.div,
           {
-            variants: staggerContainer$3,
+            variants: staggerContainer$2,
             initial: "initial",
             animate: "animate",
             className: "space-y-3 w-full text-left",
             children: [
-              hotel.tagline && /* @__PURE__ */ jsx(motion.div, { variants: fadeIn$3, children: /* @__PURE__ */ jsx("span", { className: "inline-block text-[11px] font-semibold text-red-500 bg-red-500/10 px-3 py-1 rounded-md", children: hotel.tagline }) }),
+              hotel.tagline && /* @__PURE__ */ jsx(motion.div, { variants: fadeIn$2, children: /* @__PURE__ */ jsx("span", { className: "inline-block text-[11px] font-semibold text-red-500 bg-red-500/10 px-3 py-1 rounded-md", children: hotel.tagline }) }),
               /* @__PURE__ */ jsx(
                 motion.h1,
                 {
-                  variants: fadeIn$3,
+                  variants: fadeIn$2,
                   className: "text-4xl md:text-5xl font-serif font-bold tracking-tight text-zinc-900 dark:text-white",
                   children: hotel.name
                 }
@@ -16430,7 +16430,7 @@ function HotelDetail() {
               /* @__PURE__ */ jsxs(
                 motion.div,
                 {
-                  variants: fadeIn$3,
+                  variants: fadeIn$2,
                   className: "flex items-center gap-2 text-muted-foreground text-sm flex-wrap",
                   children: [
                     /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1.5", children: [
@@ -16455,7 +16455,7 @@ function HotelDetail() {
               hotel.nearbyPlaces && hotel.nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                 motion.div,
                 {
-                  variants: fadeIn$3,
+                  variants: fadeIn$2,
                   className: "flex items-center gap-4 text-xs text-muted-foreground flex-wrap",
                   children: hotel.nearbyPlaces.slice(0, 2).map((place, i) => /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
                     /* @__PURE__ */ jsx(Navigation$1, { className: "w-3 h-3 text-primary" }),
@@ -16473,7 +16473,7 @@ function HotelDetail() {
               hotel.rating && /* @__PURE__ */ jsxs(
                 motion.div,
                 {
-                  variants: fadeIn$3,
+                  variants: fadeIn$2,
                   className: "flex items-center gap-4 pt-1",
                   children: [
                     /* @__PURE__ */ jsxs("div", { className: "bg-green-600 text-white text-xs font-bold px-3 py-1 rounded flex items-center gap-1", children: [
@@ -16905,12 +16905,12 @@ const FALLBACK_RESTAURANT = {
   image: { src: "", alt: "Kennedia Blu Restaurant Ghaziabad" },
   nearbyPlaces: [{ nearbyLocationName: "300 meters from T&T Fragrance" }]
 };
-const fadeIn$2 = {
+const fadeIn$1 = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer$2 = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer$1 = { animate: { transition: { staggerChildren: 0.1 } } };
 const EmptySlot$1 = ({ className = "" }) => /* @__PURE__ */ jsx(
   "div",
   {
@@ -17072,7 +17072,7 @@ function ResturantBanner({
           /* @__PURE__ */ jsxs(
             motion.nav,
             {
-              variants: fadeIn$2,
+              variants: fadeIn$1,
               className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
               children: [
                 /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
@@ -17085,10 +17085,10 @@ function ResturantBanner({
             /* @__PURE__ */ jsxs(
               motion.div,
               {
-                variants: staggerContainer$2,
+                variants: staggerContainer$1,
                 className: "space-y-3 w-full text-left",
                 children: [
-                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$2, className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, className: "flex items-center gap-3", children: [
                     /* @__PURE__ */ jsx("span", { className: "inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: restaurant.tagline }),
                     restaurant.rating && /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 bg-green-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm", children: [
                       /* @__PURE__ */ jsx("span", { children: restaurant.rating }),
@@ -17098,7 +17098,7 @@ function ResturantBanner({
                   /* @__PURE__ */ jsx(
                     motion.h1,
                     {
-                      variants: fadeIn$2,
+                      variants: fadeIn$1,
                       className: "text-4xl md:text-5xl font-serif font-bold tracking-tight",
                       children: restaurant.name
                     }
@@ -17107,7 +17107,7 @@ function ResturantBanner({
                     /* @__PURE__ */ jsxs(
                       motion.div,
                       {
-                        variants: fadeIn$2,
+                        variants: fadeIn$1,
                         className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
                         children: [
                           /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
@@ -17136,7 +17136,7 @@ function ResturantBanner({
                     restaurant.nearbyPlaces && restaurant.nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                       motion.div,
                       {
-                        variants: fadeIn$2,
+                        variants: fadeIn$1,
                         className: "flex flex-wrap items-center gap-4 pt-1",
                         children: restaurant.nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
                           "div",
@@ -17232,7 +17232,7 @@ function ResturantBanner({
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$2, children: [
+          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, children: [
             /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden bg-black md:hidden", children: [
               /* @__PURE__ */ jsx("div", { className: "absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic", children: "GALLERY" }),
               galleryMedia.length === 0 ? /* @__PURE__ */ jsx(EmptySlot$1, { className: "absolute inset-0" }) : /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
@@ -20944,12 +20944,12 @@ function RestaurantHomepage$1() {
     /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
   ] });
 }
-const fadeIn$1 = {
+const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.5 }
 };
-const staggerContainer$1 = { animate: { transition: { staggerChildren: 0.1 } } };
+const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 const FALLBACK_LOCATION = "Ghaziabad, India";
 const FALLBACK_NEARBY = [
   "0.2 km from Gateway of India",
@@ -21125,7 +21125,7 @@ function CategoryHero({
           /* @__PURE__ */ jsxs(
             motion.nav,
             {
-              variants: fadeIn$1,
+              variants: fadeIn,
               className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
               children: [
                 /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
@@ -21147,10 +21147,10 @@ function CategoryHero({
             /* @__PURE__ */ jsxs(
               motion.div,
               {
-                variants: staggerContainer$1,
+                variants: staggerContainer,
                 className: "space-y-3 w-full text-left",
                 children: [
-                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, className: "flex items-center gap-3", children: [
                     /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-2 bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: [
                       /* @__PURE__ */ jsx(Sparkles, { size: 12, className: "animate-pulse" }),
                       " ",
@@ -21164,7 +21164,7 @@ function CategoryHero({
                   /* @__PURE__ */ jsxs(
                     motion.h1,
                     {
-                      variants: fadeIn$1,
+                      variants: fadeIn,
                       className: "text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-balance leading-tight",
                       children: [
                         content.title.split(" ")[0],
@@ -21177,7 +21177,7 @@ function CategoryHero({
                     /* @__PURE__ */ jsxs(
                       motion.div,
                       {
-                        variants: fadeIn$1,
+                        variants: fadeIn,
                         className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
                         children: [
                           /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
@@ -21206,7 +21206,7 @@ function CategoryHero({
                     nearbyPlaces.length > 0 && /* @__PURE__ */ jsx(
                       motion.div,
                       {
-                        variants: fadeIn$1,
+                        variants: fadeIn,
                         className: "flex flex-wrap items-center gap-4 pt-1",
                         children: nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
                           "div",
@@ -21302,7 +21302,7 @@ function CategoryHero({
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn$1, children: [
+          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, children: [
             /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden rounded-3xl shadow-xl md:hidden", children: [
               galleryMedia.length === 0 ? /* @__PURE__ */ jsx(EmptySlot, { className: "absolute inset-0 rounded-3xl" }) : /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
                 motion.div,
@@ -22392,379 +22392,488 @@ const CAFE_GALLERY_MEDIA = CAFE_GALLERY_ITEMS.map((item) => item.media);
 const CAFE_DATA = {
   name: "Kennedia Cafe",
   location: "Noor Nagar, Raj Nagar Extension, Ghaziabad, Uttar Pradesh 201003",
-  tagline: "Artisan Brews & All-Day Comfort",
-  nearbyPlaces: [
-    { nearbyLocationName: "300 meters from City Center Mall" },
-    { nearbyLocationName: "Near Raj Nagar Metro Station" }
-  ]
+  city: "Ghaziabad"
 };
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
-const staggerContainer = { animate: { transition: { staggerChildren: 0.1 } } };
 const mapsLink = "https://www.google.com/maps/search/Kennedia+Cafe+Ghaziabad";
 function CafeBanner() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [showShareReactions, setShowShareReactions] = useState(false);
-  const [mobileIndex, setMobileIndex] = useState(0);
-  const mobileTouchStart = useRef(null);
-  const mobilePrev = () => setMobileIndex(
-    (c) => (c - 1 + CAFE_GALLERY_MEDIA.length) % CAFE_GALLERY_MEDIA.length
-  );
-  const mobileNext = () => setMobileIndex((c) => (c + 1) % CAFE_GALLERY_MEDIA.length);
-  const openGalleryAt = (index) => {
-    setInitialGalleryIndex(index);
-    setIsGalleryOpen(true);
-  };
+  const [showShare, setShowShare] = useState(false);
+  const [activeThumb, setActiveThumb] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const socialPlatforms = [
-    {
-      name: "WhatsApp",
-      icon: /* @__PURE__ */ jsx(MessageCircle, { size: 20 }),
-      color: "bg-[#25D366]",
-      link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`
-    },
-    {
-      name: "Facebook",
-      icon: /* @__PURE__ */ jsx(Facebook, { size: 20 }),
-      color: "bg-[#1877F2]",
-      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`
-    },
-    {
-      name: "X (Twitter)",
-      icon: /* @__PURE__ */ jsx(Twitter, { size: 18 }),
-      color: "bg-black",
-      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`
-    },
-    {
-      name: "LinkedIn",
-      icon: /* @__PURE__ */ jsx(Linkedin, { size: 20 }),
-      color: "bg-[#0A66C2]",
-      link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
-    }
-  ];
-  const gridImages = CAFE_GALLERY_MEDIA.slice(0, 4);
   const totalImages = CAFE_GALLERY_MEDIA.length;
-  return /* @__PURE__ */ jsxs(
-    motion.div,
-    {
-      initial: "initial",
-      animate: "animate",
-      className: "pt-24 pb-12 bg-gradient-to-b from-background to-muted/20",
-      children: [
-        /* @__PURE__ */ jsx(
-          GalleryModal,
-          {
-            isOpen: isGalleryOpen,
-            onClose: () => setIsGalleryOpen(false),
-            hotel: {
-              name: CAFE_DATA.name,
-              location: CAFE_DATA.location,
-              propertyId: 1,
-              media: CAFE_GALLERY_MEDIA
-            },
-            initialImageIndex: initialGalleryIndex,
-            galleryData: CAFE_GALLERY_ITEMS
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "container mx-auto px-4 md:px-8 lg:px-12", children: [
-          /* @__PURE__ */ jsxs(
-            motion.nav,
+  const thumbImages = CAFE_GALLERY_MEDIA.slice(0, Math.min(6, totalImages));
+  const mainImg = CAFE_GALLERY_MEDIA[activeThumb];
+  const companions = [
+    CAFE_GALLERY_MEDIA[(activeThumb + 1) % totalImages],
+    CAFE_GALLERY_MEDIA[(activeThumb + 2) % totalImages]
+  ];
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const t = setInterval(() => setActiveThumb((p) => (p + 1) % totalImages), 3500);
+    return () => clearInterval(t);
+  }, [isAutoPlaying, totalImages]);
+  const handleThumbClick = (i) => {
+    setActiveThumb(i);
+    setInitialGalleryIndex(i);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 8e3);
+  };
+  const socialPlatforms = [
+    { name: "WhatsApp", icon: /* @__PURE__ */ jsx(MessageCircle, { size: 15 }), color: "bg-[#25D366]", link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}` },
+    { name: "Facebook", icon: /* @__PURE__ */ jsx(Facebook, { size: 15 }), color: "bg-[#1877F2]", link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
+    { name: "X", icon: /* @__PURE__ */ jsx(Twitter, { size: 13 }), color: "bg-black", link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` },
+    { name: "LinkedIn", icon: /* @__PURE__ */ jsx(Linkedin, { size: 15 }), color: "bg-[#0A66C2]", link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` }
+  ];
+  return (
+    /* ── Root: light = warm off-white | dark = deep espresso ── */
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "h-screen overflow-hidden flex flex-col bg-[#f5ede0] dark:bg-[#14100b] transition-colors duration-300",
+        style: { paddingTop: "var(--navbar-height,72px)" },
+        children: [
+          /* @__PURE__ */ jsx(
+            GalleryModal,
             {
-              variants: fadeIn,
-              className: "flex items-center gap-2 text-sm text-muted-foreground mb-6",
-              children: [
-                /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:text-primary transition-colors", children: "Home" }),
-                /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-4 h-4" }),
-                /* @__PURE__ */ jsx("span", { className: "text-foreground font-semibold truncate", children: CAFE_DATA.name })
-              ]
+              isOpen: isGalleryOpen,
+              onClose: () => setIsGalleryOpen(false),
+              hotel: { name: CAFE_DATA.name, location: CAFE_DATA.location, propertyId: 1, media: CAFE_GALLERY_MEDIA },
+              initialImageIndex: initialGalleryIndex,
+              galleryData: CAFE_GALLERY_ITEMS
             }
           ),
-          /* @__PURE__ */ jsxs("div", { className: "flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex-1 min-h-0 flex flex-col lg:flex-row px-6 md:px-8 lg:px-10 pt-4 pb-5 gap-0 overflow-hidden", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0 flex flex-col pr-0 lg:pr-10 overflow-hidden", children: [
+              /* @__PURE__ */ jsx("div", { style: { flex: "0.25", minHeight: 0 } }),
+              /* @__PURE__ */ jsxs("div", { className: "flex flex-col shrink-0", children: [
+                /* @__PURE__ */ jsxs(
+                  motion.nav,
+                  {
+                    initial: { opacity: 0, y: -8 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.4 },
+                    className: "flex items-center gap-1.5 text-xs font-semibold mb-4",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        Link,
+                        {
+                          to: "/",
+                          className: "text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors",
+                          children: "Home"
+                        }
+                      ),
+                      /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" }),
+                      /* @__PURE__ */ jsx("span", { className: "text-[#3d1f00] dark:text-[#f0dfc0] font-black", children: CAFE_DATA.name })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, x: -30 },
+                    animate: { opacity: 1, x: 0 },
+                    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+                    className: "mb-1",
+                    children: [
+                      /* @__PURE__ */ jsx(
+                        "h1",
+                        {
+                          className: "text-[#1e0d00] dark:text-[#f0dfc0]",
+                          style: {
+                            fontFamily: '"Georgia","Times New Roman",serif',
+                            fontSize: "clamp(2.1rem, 5.8vw, 4.96rem)",
+                            lineHeight: 1,
+                            fontStyle: "italic",
+                            fontWeight: 900,
+                            letterSpacing: "-0.02em",
+                            whiteSpace: "nowrap"
+                          },
+                          children: "Kennedia Café"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxs(
+                        "svg",
+                        {
+                          viewBox: "0 0 320 22",
+                          style: { width: "clamp(130px,32vw,290px)", height: "14px", display: "block", marginTop: "4px", marginBottom: "12px" },
+                          fill: "none",
+                          children: [
+                            /* @__PURE__ */ jsx("path", { d: "M4 16 C 40 4, 100 20, 160 11 S 260 2, 316 13", stroke: "#c0392b", strokeWidth: "3", strokeLinecap: "round" }),
+                            /* @__PURE__ */ jsx("path", { d: "M20 19 C 70 8, 130 18, 200 14 S 280 6, 312 16", stroke: "#c0392b", strokeWidth: "1.5", strokeLinecap: "round", opacity: "0.4" })
+                          ]
+                        }
+                      )
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  motion.h2,
+                  {
+                    initial: { opacity: 0, y: 8 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.5, delay: 0.28 },
+                    className: "font-black text-[#1e0d00] dark:text-[#e8d0b0] mb-2",
+                    style: { fontSize: "clamp(0.78rem, 1.5vw, 1.05rem)" },
+                    children: "Where Every Sip Feels Like a Hug"
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  motion.p,
+                  {
+                    initial: { opacity: 0, y: 8 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.5, delay: 0.36 },
+                    className: "text-[#5a3e28] dark:text-[#b09070] italic leading-relaxed mb-4",
+                    style: {
+                      fontSize: "clamp(0.7rem, 1.15vw, 0.88rem)",
+                      maxWidth: "560px",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden"
+                    },
+                    children: "Crafted with love, every blend at Kennedia Café is more than just coffee — it's a comforting embrace in a cup. From the first sip to the last, our flavors are designed to bring you warmth, comfort, and joy, turning everyday moments into something truly special."
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  motion.div,
+                  {
+                    initial: { opacity: 0 },
+                    animate: { opacity: 1 },
+                    transition: { duration: 0.4, delay: 0.42 },
+                    className: "flex flex-wrap items-center gap-x-3 gap-y-1 mb-5",
+                    children: [
+                      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 text-xs font-medium text-[#7a5c3a] dark:text-[#a07850]", children: [
+                        /* @__PURE__ */ jsx(MapPin, { className: "w-3 h-3 shrink-0" }),
+                        /* @__PURE__ */ jsx("span", { className: "truncate max-w-[220px]", children: CAFE_DATA.location })
+                      ] }),
+                      /* @__PURE__ */ jsxs(
+                        "a",
+                        {
+                          href: mapsLink,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          className: "flex items-center gap-1 text-xs font-black text-red-700 dark:text-red-400 hover:underline",
+                          children: [
+                            /* @__PURE__ */ jsx(Navigation$1, { className: "w-3 h-3" }),
+                            " View Map"
+                          ]
+                        }
+                      )
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  motion.div,
+                  {
+                    initial: { opacity: 0, y: 8 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.5, delay: 0.48 },
+                    children: /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        onClick: () => setIsGalleryOpen(true),
+                        className: "px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] transition-all active:scale-95 hover:opacity-90 shadow-lg",
+                        style: { background: "var(--cta-bg, #1e0d00)" },
+                        onMouseEnter: (e) => e.currentTarget.style.background = "#3d1f00",
+                        onMouseLeave: (e) => e.currentTarget.style.background = "#1e0d00",
+                        children: "Explore Now"
+                      }
+                    )
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "flex-1 min-h-0" }),
+              /* @__PURE__ */ jsxs(
+                motion.div,
+                {
+                  initial: { opacity: 0, y: 14 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { duration: 0.5, delay: 0.56 },
+                  className: "flex items-end gap-2 shrink-0 overflow-x-auto",
+                  style: { paddingBottom: "4px", scrollbarWidth: "none" },
+                  children: [
+                    thumbImages.map((img, i) => /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: () => handleThumbClick(i),
+                        className: "relative rounded-xl overflow-hidden focus:outline-none",
+                        style: {
+                          width: "clamp(56px,8vw,90px)",
+                          height: "clamp(56px,8vw,90px)",
+                          flexShrink: 0,
+                          transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
+                          border: activeThumb === i ? "2.5px solid #1e0d00" : "2.5px solid transparent",
+                          transform: activeThumb === i ? "scale(1.08)" : "scale(1)",
+                          boxShadow: activeThumb === i ? "0 6px 18px rgba(30,13,0,0.35)" : "0 2px 8px rgba(30,13,0,0.14)"
+                        },
+                        children: [
+                          /* @__PURE__ */ jsx("img", { src: img.url, alt: img.alt, className: "w-full h-full object-cover" }),
+                          activeThumb !== i && /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/20 dark:bg-black/40" }),
+                          activeThumb === i && isAutoPlaying && /* @__PURE__ */ jsx("div", { className: "absolute inset-0 rounded-xl ring-2 ring-white/60 animate-pulse pointer-events-none" })
+                        ]
+                      },
+                      i
+                    )),
+                    totalImages > 6 && /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: () => setIsGalleryOpen(true),
+                        className: "rounded-xl flex flex-col items-center justify-center font-black transition-all active:scale-95 shrink-0 text-[#3d1f00] dark:text-[#e8d0b0]",
+                        style: {
+                          width: "clamp(56px,8vw,90px)",
+                          height: "clamp(56px,8vw,90px)",
+                          background: "rgba(30,13,0,0.08)",
+                          border: "2px dashed rgba(30,13,0,0.25)"
+                        },
+                        children: [
+                          /* @__PURE__ */ jsxs("span", { className: "text-base font-black", children: [
+                            "+",
+                            totalImages - 6
+                          ] }),
+                          /* @__PURE__ */ jsx("span", { className: "text-[9px] font-semibold opacity-60 mt-0.5", children: "MORE" })
+                        ]
+                      }
+                    )
+                  ]
+                }
+              )
+            ] }),
             /* @__PURE__ */ jsxs(
               motion.div,
               {
-                variants: staggerContainer,
-                className: "space-y-3 w-full text-left",
+                initial: { opacity: 0, x: 40 },
+                animate: { opacity: 1, x: 0 },
+                transition: { duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] },
+                className: "hidden lg:flex lg:w-[36%] shrink-0 flex-col gap-3",
                 children: [
-                  /* @__PURE__ */ jsx(motion.div, { variants: fadeIn, className: "flex items-center gap-3", children: /* @__PURE__ */ jsx("span", { className: "inline-flex bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest", children: CAFE_DATA.tagline }) }),
-                  /* @__PURE__ */ jsx(
-                    motion.h1,
-                    {
-                      variants: fadeIn,
-                      className: "text-4xl md:text-5xl font-serif font-bold tracking-tight",
-                      children: CAFE_DATA.name
-                    }
-                  ),
-                  /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between shrink-0 px-1 mt-2", children: [
                     /* @__PURE__ */ jsxs(
-                      motion.div,
+                      "div",
                       {
-                        variants: fadeIn,
-                        className: "flex flex-wrap items-center gap-y-2 gap-x-6 text-muted-foreground",
+                        className: "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#3d1f00] dark:text-[#e8d0b0]",
+                        style: {
+                          background: "rgba(245,237,224,0.7)",
+                          backdropFilter: "blur(10px)",
+                          border: "1px solid rgba(255,255,255,0.5)"
+                        },
                         children: [
-                          /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5 cursor-default", children: [
-                            /* @__PURE__ */ jsx(MapPin, { className: "w-4 h-4 text-primary" }),
-                            /* @__PURE__ */ jsx("span", { className: "text-sm font-medium", children: CAFE_DATA.location })
-                          ] }),
-                          /* @__PURE__ */ jsxs(
-                            "a",
-                            {
-                              href: mapsLink,
-                              target: "_blank",
-                              rel: "noopener noreferrer",
-                              className: "text-sm font-bold text-destructive hover:underline flex items-center gap-1",
-                              children: [
-                                /* @__PURE__ */ jsx(Navigation$1, { className: "w-4 h-4" }),
-                                " View Map"
-                              ]
-                            }
-                          )
+                          /* @__PURE__ */ jsx(Link, { to: "/", className: "hover:underline", children: "Home" }),
+                          /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-2.5 h-2.5 opacity-50" }),
+                          /* @__PURE__ */ jsx("span", { className: "font-black", children: CAFE_DATA.name })
                         ]
                       }
                     ),
-                    /* @__PURE__ */ jsx(
+                    /* @__PURE__ */ jsxs(
+                      "div",
+                      {
+                        className: "px-3 py-1.5 rounded-full text-[10px] font-black text-[#f0dfc0]",
+                        style: { background: "rgba(30,13,0,0.65)", backdropFilter: "blur(10px)" },
+                        children: [
+                          totalImages,
+                          " Photos"
+                        ]
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "relative flex-1 min-h-0", children: [
+                    /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
                       motion.div,
                       {
-                        variants: fadeIn,
-                        className: "flex flex-wrap items-center gap-4 pt-1",
-                        children: CAFE_DATA.nearbyPlaces.map((place, i) => /* @__PURE__ */ jsxs(
-                          "div",
-                          {
-                            className: "flex items-center gap-1.5 text-xs text-muted-foreground/80",
-                            children: [
-                              /* @__PURE__ */ jsx("div", { className: "w-1 h-1 rounded-full bg-primary/40" }),
-                              /* @__PURE__ */ jsx("span", { children: place.nearbyLocationName })
-                            ]
-                          },
-                          i
-                        ))
+                        initial: { opacity: 0, scale: 0.88 },
+                        animate: { opacity: 1, scale: 1, rotate: 6 },
+                        exit: { opacity: 0, scale: 0.9 },
+                        transition: { duration: 0.5, delay: 0.05 },
+                        className: "absolute top-0 right-0 rounded-2xl overflow-hidden cursor-pointer z-10",
+                        style: { width: "46%", aspectRatio: "4/5", boxShadow: "0 12px 36px rgba(30,13,0,0.28)", transformOrigin: "top right" },
+                        onClick: () => {
+                          setInitialGalleryIndex((activeThumb + 1) % totalImages);
+                          setIsGalleryOpen(true);
+                        },
+                        children: [
+                          /* @__PURE__ */ jsx("img", { src: companions[0]?.url, alt: companions[0]?.alt, className: "w-full h-full object-cover" }),
+                          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10" })
+                        ]
+                      },
+                      `c1-${activeThumb}`
+                    ) }),
+                    /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
+                      motion.div,
+                      {
+                        initial: { opacity: 0, scale: 0.88 },
+                        animate: { opacity: 1, scale: 1, rotate: -5 },
+                        exit: { opacity: 0, scale: 0.9 },
+                        transition: { duration: 0.5, delay: 0.1 },
+                        className: "absolute bottom-0 left-0 rounded-2xl overflow-hidden cursor-pointer z-10",
+                        style: { width: "42%", aspectRatio: "4/5", boxShadow: "0 12px 36px rgba(30,13,0,0.28)", transformOrigin: "bottom left" },
+                        onClick: () => {
+                          setInitialGalleryIndex((activeThumb + 2) % totalImages);
+                          setIsGalleryOpen(true);
+                        },
+                        children: [
+                          /* @__PURE__ */ jsx("img", { src: companions[1]?.url, alt: companions[1]?.alt, className: "w-full h-full object-cover" }),
+                          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10" })
+                        ]
+                      },
+                      `c2-${activeThumb}`
+                    ) }),
+                    /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
+                      motion.div,
+                      {
+                        initial: { opacity: 0, scale: 0.93, y: 10 },
+                        animate: { opacity: 1, scale: 1, y: 0 },
+                        exit: { opacity: 0, scale: 0.95, y: -6 },
+                        transition: { duration: 0.5 },
+                        className: "absolute inset-x-[12%] inset-y-[8%] rounded-3xl overflow-hidden cursor-pointer z-20",
+                        style: { boxShadow: "0 24px 56px rgba(30,13,0,0.45)" },
+                        onClick: () => {
+                          setInitialGalleryIndex(activeThumb);
+                          setIsGalleryOpen(true);
+                        },
+                        children: [
+                          /* @__PURE__ */ jsx("img", { src: mainImg?.url, alt: mainImg?.alt, className: "w-full h-full object-cover object-center", draggable: false }),
+                          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 pointer-events-none", style: { background: "linear-gradient(to top,rgba(20,10,5,0.6) 0%,transparent 55%)" } }),
+                          isAutoPlaying && /* @__PURE__ */ jsx(
+                            motion.div,
+                            {
+                              initial: { scaleX: 0 },
+                              animate: { scaleX: 1 },
+                              transition: { duration: 3.5, ease: "linear" },
+                              className: "absolute bottom-0 left-0 right-0 h-0.5 bg-white/70 origin-left z-30 pointer-events-none"
+                            },
+                            `bar-${activeThumb}`
+                          ),
+                          /* @__PURE__ */ jsxs("div", { className: "absolute bottom-4 left-4 pointer-events-none z-10", children: [
+                            /* @__PURE__ */ jsxs(
+                              "p",
+                              {
+                                className: "text-white font-black italic leading-none",
+                                style: { fontFamily: '"Georgia",serif', fontSize: "clamp(1rem,2.4vw,1.5rem)", textShadow: "0 2px 10px rgba(0,0,0,0.6)" },
+                                children: [
+                                  "Kennedia",
+                                  /* @__PURE__ */ jsx("br", {}),
+                                  "Café"
+                                ]
+                              }
+                            ),
+                            /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1 mt-1", children: [
+                              /* @__PURE__ */ jsx(MapPin, { className: "w-2.5 h-2.5 text-white/70" }),
+                              /* @__PURE__ */ jsx("span", { className: "text-white/70 text-[9px] font-medium", children: CAFE_DATA.city })
+                            ] })
+                          ] }),
+                          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none", children: /* @__PURE__ */ jsx("div", { className: "bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-[10px] font-black tracking-widest uppercase", children: "View Gallery" }) })
+                        ]
+                      },
+                      `main-${activeThumb}`
+                    ) })
+                  ] }),
+                  /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-center gap-3 shrink-0 pt-1", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "relative", onMouseEnter: () => setShowShare(true), onMouseLeave: () => setShowShare(false), children: [
+                      /* @__PURE__ */ jsx(AnimatePresence, { children: showShare && /* @__PURE__ */ jsx(
+                        motion.div,
+                        {
+                          initial: { opacity: 0, y: 6, scale: 0.9 },
+                          animate: { opacity: 1, y: -52, scale: 1 },
+                          exit: { opacity: 0, y: 6, scale: 0.9 },
+                          className: "absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-800 shadow-xl rounded-full px-2 py-1.5 flex gap-1.5 z-50",
+                          children: socialPlatforms.map((p, i) => /* @__PURE__ */ jsx(
+                            motion.a,
+                            {
+                              href: p.link,
+                              target: "_blank",
+                              rel: "noreferrer",
+                              initial: { opacity: 0, scale: 0 },
+                              animate: { opacity: 1, scale: 1 },
+                              transition: { delay: i * 0.04 },
+                              whileHover: { scale: 1.15, y: -2 },
+                              className: `${p.color} text-white p-1.5 rounded-full flex items-center justify-center`,
+                              children: p.icon
+                            },
+                            p.name
+                          ))
+                        }
+                      ) }),
+                      /* @__PURE__ */ jsxs(
+                        "button",
+                        {
+                          className: "flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15",
+                          children: [
+                            /* @__PURE__ */ jsx(Share2, { className: "w-3.5 h-3.5" }),
+                            " Share"
+                          ]
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxs(
+                      "button",
+                      {
+                        onClick: () => setIsBookmarked((b) => !b),
+                        className: `flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${isBookmarked ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30" : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"}`,
+                        children: [
+                          /* @__PURE__ */ jsx(Heart, { className: `w-3.5 h-3.5 ${isBookmarked ? "fill-red-600 dark:fill-red-400" : ""}` }),
+                          isBookmarked ? "Saved" : "Save"
+                        ]
                       }
                     )
                   ] })
                 ]
               }
             ),
-            /* @__PURE__ */ jsxs("div", { className: "flex gap-3 relative", children: [
+            /* @__PURE__ */ jsxs("div", { className: "lg:hidden mt-4 shrink-0 flex flex-col gap-2", children: [
               /* @__PURE__ */ jsxs(
                 "div",
                 {
-                  className: "relative",
-                  onMouseEnter: () => setShowShareReactions(true),
-                  onMouseLeave: () => setShowShareReactions(false),
-                  children: [
-                    /* @__PURE__ */ jsx(AnimatePresence, { children: showShareReactions && /* @__PURE__ */ jsx(
-                      motion.div,
-                      {
-                        initial: { opacity: 0, y: 10, scale: 0.9 },
-                        animate: { opacity: 1, y: -60, scale: 1 },
-                        exit: { opacity: 0, y: 10, scale: 0.9 },
-                        className: "absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md",
-                        children: socialPlatforms.map((platform, index) => /* @__PURE__ */ jsxs(
-                          motion.a,
-                          {
-                            href: platform.link,
-                            target: "_blank",
-                            rel: "noreferrer",
-                            initial: { opacity: 0, scale: 0 },
-                            animate: { opacity: 1, scale: 1 },
-                            transition: { delay: index * 0.04 },
-                            whileHover: { scale: 1.2, y: -3 },
-                            className: `${platform.color} text-white p-2.5 rounded-full shadow-lg transition-transform flex items-center justify-center`,
-                            children: [
-                              platform.icon,
-                              /* @__PURE__ */ jsx("span", { className: "sr-only", children: platform.name })
-                            ]
-                          },
-                          platform.name
-                        ))
-                      }
-                    ) }),
-                    /* @__PURE__ */ jsxs(Button, { variant: "outline", className: "rounded-full active:scale-95", children: [
-                      /* @__PURE__ */ jsx(Share2, { className: "w-4 h-4 mr-2" }),
-                      " Share"
-                    ] })
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsxs(
-                Button,
-                {
-                  variant: "outline",
-                  className: `rounded-full active:scale-95 transition-all ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`,
-                  onClick: () => setIsBookmarked((b) => !b),
-                  children: [
-                    /* @__PURE__ */ jsx(
-                      Heart,
-                      {
-                        className: `w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`
-                      }
-                    ),
-                    isBookmarked ? "Bookmarked" : "Save"
-                  ]
-                }
-              )
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxs(motion.div, { variants: fadeIn, children: [
-            /* @__PURE__ */ jsxs("div", { className: "relative w-full h-[420px] overflow-hidden bg-black md:hidden", children: [
-              /* @__PURE__ */ jsx("div", { className: "absolute top-1/4 left-0 whitespace-nowrap text-[8rem] font-black text-white/[0.03] select-none z-0 pointer-events-none italic", children: "GALLERY" }),
-              /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxs(
-                motion.div,
-                {
-                  initial: { opacity: 0 },
-                  animate: { opacity: 1 },
-                  exit: { opacity: 0 },
-                  transition: { duration: 1.5 },
-                  className: "absolute inset-0 cursor-pointer",
-                  onClick: () => openGalleryAt(mobileIndex),
-                  onTouchStart: (e) => {
-                    mobileTouchStart.current = e.touches[0].clientX;
+                  className: "relative w-full h-44 rounded-2xl overflow-hidden cursor-pointer",
+                  onClick: () => {
+                    setInitialGalleryIndex(activeThumb);
+                    setIsGalleryOpen(true);
                   },
-                  onTouchEnd: (e) => {
-                    if (mobileTouchStart.current === null) return;
-                    const diff = mobileTouchStart.current - e.changedTouches[0].clientX;
-                    if (Math.abs(diff) > 40) {
-                      diff > 0 ? mobileNext() : mobilePrev();
-                    }
-                    mobileTouchStart.current = null;
-                  },
+                  style: { boxShadow: "0 12px 32px rgba(30,13,0,0.28)" },
                   children: [
-                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-10" }),
-                    /* @__PURE__ */ jsx(
-                      "img",
+                    /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
+                      motion.img,
                       {
-                        src: CAFE_GALLERY_MEDIA[mobileIndex]?.url || "",
-                        alt: CAFE_GALLERY_MEDIA[mobileIndex]?.alt || "",
-                        className: "absolute inset-0 w-full h-full object-cover object-center scale-110"
-                      }
-                    )
-                  ]
-                },
-                mobileIndex
-              ) }),
-              /* @__PURE__ */ jsxs("div", { className: "absolute bottom-8 right-5 z-30 flex items-center gap-6", children: [
-                /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-end", children: [
-                  /* @__PURE__ */ jsxs("div", { className: "flex items-baseline gap-2", children: [
-                    /* @__PURE__ */ jsxs("span", { className: "text-white text-4xl font-serif italic tracking-tighter", children: [
-                      "0",
-                      mobileIndex + 1
-                    ] }),
-                    /* @__PURE__ */ jsxs("span", { className: "text-white/20 text-lg font-serif", children: [
-                      "/",
-                      String(CAFE_GALLERY_MEDIA.length).padStart(2, "0")
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ jsx("div", { className: "w-24 h-[2px] bg-white/10 relative mt-1.5 overflow-hidden", children: /* @__PURE__ */ jsx(
-                    motion.div,
-                    {
-                      className: "absolute h-full bg-primary top-0 left-0",
-                      animate: {
-                        width: `${(mobileIndex + 1) / CAFE_GALLERY_MEDIA.length * 100}%`
+                        src: mainImg?.url,
+                        alt: mainImg?.alt,
+                        initial: { opacity: 0 },
+                        animate: { opacity: 1 },
+                        exit: { opacity: 0 },
+                        transition: { duration: 0.4 },
+                        className: "absolute inset-0 w-full h-full object-cover"
                       },
-                      transition: { duration: 0.5 }
-                    }
-                  ) })
-                ] }),
-                /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      onClick: mobilePrev,
-                      className: "p-3 border border-white/10 text-white hover:bg-white hover:text-black transition-all group active:scale-95",
-                      children: /* @__PURE__ */ jsx(ChevronLeft, { className: "w-5 h-5 group-hover:-translate-x-1 transition-transform" })
-                    }
-                  ),
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      onClick: mobileNext,
-                      className: "p-3 bg-white text-black hover:bg-primary hover:text-white transition-all group active:scale-95",
-                      children: /* @__PURE__ */ jsx(ChevronRight$1, { className: "w-5 h-5 group-hover:translate-x-1 transition-transform" })
-                    }
-                  )
-                ] })
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "hidden md:grid grid-cols-4 gap-3 h-[440px] rounded-3xl overflow-hidden shadow-xl", children: [
-              /* @__PURE__ */ jsxs(
-                "div",
-                {
-                  className: "md:col-span-2 relative group overflow-hidden rounded-2xl cursor-pointer",
-                  onClick: () => openGalleryAt(0),
-                  children: [
-                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" }),
-                    /* @__PURE__ */ jsx(
-                      "img",
-                      {
-                        src: gridImages[0].url,
-                        alt: gridImages[0].alt,
-                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-                      }
-                    )
+                      activeThumb
+                    ) }),
+                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0", style: { background: "linear-gradient(to top,rgba(20,10,5,0.55) 0%,transparent 60%)" } }),
+                    /* @__PURE__ */ jsx("p", { className: "absolute bottom-3 left-4 text-white font-black italic text-base", style: { fontFamily: '"Georgia",serif' }, children: "Kennedia Café" })
                   ]
                 }
               ),
-              /* @__PURE__ */ jsx("div", { className: "md:col-span-1 flex flex-col gap-3", children: [1, 2].map((idx) => /* @__PURE__ */ jsxs(
-                "div",
-                {
-                  className: "relative group overflow-hidden rounded-2xl flex-1 cursor-pointer",
-                  onClick: () => openGalleryAt(idx),
-                  children: [
-                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors z-10" }),
-                    /* @__PURE__ */ jsx(
-                      "img",
-                      {
-                        src: gridImages[idx].url,
-                        alt: gridImages[idx].alt,
-                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                      }
-                    )
-                  ]
-                },
-                idx
-              )) }),
-              /* @__PURE__ */ jsxs(
-                "div",
-                {
-                  className: "md:col-span-1 relative group overflow-hidden rounded-2xl cursor-pointer",
-                  onClick: () => openGalleryAt(3),
-                  children: [
-                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors z-10" }),
-                    /* @__PURE__ */ jsx(
-                      "img",
-                      {
-                        src: gridImages[3].url,
-                        alt: gridImages[3].alt,
-                        className: "absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                      }
-                    ),
-                    /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-20 flex items-center justify-center pointer-events-none", children: /* @__PURE__ */ jsxs(
-                      "button",
-                      {
-                        onClick: (e) => {
-                          e.stopPropagation();
-                          setIsGalleryOpen(true);
-                        },
-                        className: "pointer-events-auto bg-white/80 backdrop-blur-xl px-5 py-2.5 rounded-2xl flex items-center gap-2 text-black text-[11px] font-black shadow-lg transition-all group-hover:scale-110 hover:bg-white",
-                        children: [
-                          /* @__PURE__ */ jsx(Image$1, { className: "w-4 h-4 text-primary" }),
-                          /* @__PURE__ */ jsx("span", { children: totalImages > 4 ? `+${totalImages - 4} MORE` : "VIEW GALLERY" })
-                        ]
-                      }
-                    ) })
-                  ]
-                }
-              )
+              /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
+                /* @__PURE__ */ jsxs("button", { className: "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]", children: [
+                  /* @__PURE__ */ jsx(Share2, { className: "w-3 h-3" }),
+                  " Share"
+                ] }),
+                /* @__PURE__ */ jsxs(
+                  "button",
+                  {
+                    onClick: () => setIsBookmarked((b) => !b),
+                    className: `flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400" : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"}`,
+                    children: [
+                      /* @__PURE__ */ jsx(Heart, { className: `w-3 h-3 ${isBookmarked ? "fill-red-600" : ""}` }),
+                      " ",
+                      isBookmarked ? "Saved" : "Save"
+                    ]
+                  }
+                )
+              ] })
             ] })
           ] })
-        ] })
-      ]
-    }
+        ]
+      }
+    )
   );
 }
 const STORY_CARDS = [

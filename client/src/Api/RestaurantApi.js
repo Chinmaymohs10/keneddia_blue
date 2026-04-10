@@ -195,3 +195,16 @@ export const getAllMenuThumbnails = () =>API.get("api/v1/menu-thumbnails/getAllT
 export const getAllActiveMenuThumbnails = () =>API.get("api/v1/menu-thumbnails/getAllActiveThumbnail");
 export const getMenuThumbnailById = (id) =>API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
 export const updateMenuThumbnail = (propertyId, thumbnailId, formData) =>API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`,formData,{headers: { "Content-Type": "multipart/form-data" },});
+
+// ─────────────────────────────
+// PROPERTIES BY DINE-IN / TAKEAWAY
+// ?dineIn=true, ?takeaway=true, ?dineIn=true&takeaway=true
+// ─────────────────────────────
+export const getPropertiesByDineInAndTakeaway = (params) =>
+  API.get("api/v1/properties/getPropertiesByDineInAndTakeaway", { params });
+
+// ─────────────────────────────
+// PROPERTIES BY PROPERTY TYPE
+// ─────────────────────────────
+export const getPropertiesByPropertyType = (typeId) =>
+  API.get(`api/v1/properties/byPropertyType/${typeId}`);
