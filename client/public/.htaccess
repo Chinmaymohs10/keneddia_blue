@@ -26,5 +26,6 @@ Options -MultiViews
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  RewriteRule ^(restaurant-homepage|resturant-homepage)/?$ /index.html [L]
   RewriteRule ^ index.html [L]
 </IfModule>

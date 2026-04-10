@@ -12,9 +12,14 @@ import { ThemeToggle } from "./ThemeToggle";
 const BUSINESS_ITEMS = [
   // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
   { label: "Hotels & Resorts", href: "/hotels", external: true },
+  // {
+  //   label: "Restaurants",
+  //   href: "/ghaziabad/kennedia-blu-restaurant-27",
+  //   external: true,
+  // },
   {
     label: "Restaurants",
-    href: "/ghaziabad/kennedia-blu-restaurant-27",
+    href: "/restaurant-homepage",
     external: true,
   },
   // { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31",external: true }
