@@ -308,6 +308,7 @@ const EMPTY = {
   likeCount: 0,
   foodType: "VEG",
   signatureItem: false,
+  topSold: false,
   status: true,
   image: "",
   imageFile: null,
@@ -382,6 +383,7 @@ function AddMenuItemModal({
           likeCount: initialData.likeCount || 0,
           foodType: initialData.foodType || "VEG",
           signatureItem: initialData.signatureItem ?? false,
+          topSold: initialData.topSold ?? false,
           status: initialData.status ?? true,
           image: initialData.image?.url || initialData.media?.url || "",
           imageFile: null,
@@ -451,6 +453,7 @@ function AddMenuItemModal({
       fd.append("type_id", form.type_id);
       fd.append("foodType", form.foodType);
       fd.append("signatureItem", String(form.signatureItem));
+      fd.append("topSold", String(form.topSold));
       fd.append("status", String(form.status));
       fd.append("likeCount", String(form.likeCount));
       fd.append("propertyId", String(propertyId || ""));
@@ -653,6 +656,26 @@ function AddMenuItemModal({
                 </div>
                 <span className="text-xs font-semibold text-gray-600">
                   {form.signatureItem ? "⭐ Yes" : "No"}
+                </span>
+              </label>
+            </div>
+
+            {/* Top Sold */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                Top Selling
+              </span>
+              <label className="flex items-center gap-2 cursor-pointer h-[34px]">
+                <div
+                  onClick={() => set("topSold", !form.topSold)}
+                  className={`relative w-9 h-5 rounded-full transition-colors ${form.topSold ? "bg-orange-400" : "bg-gray-300"}`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.topSold ? "translate-x-4" : "translate-x-0.5"}`}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-600">
+                  {form.topSold ? "🔥 Yes" : "No"}
                 </span>
               </label>
             </div>

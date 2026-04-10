@@ -41,10 +41,14 @@ const mapApiToRestaurantUI = (item) => {
   };
 };
 
-export default function RestaurantProperties() {
+export default function RestaurantProperties({ initialRestaurants }) {
   const navigate = useNavigate();
-  const [restaurants, setRestaurants] = useState([]), [loading, setLoading] = useState(true), [activeIndex, setActiveIndex] = useState(0), [viewMode, setViewMode] = useState("gallery"), [selectedCity, setSelectedCity] = useState("All Cities"), [showCityDropdown, setShowCityDropdown] = useState(false), [isPaused, setIsPaused] = useState(false);
-  useEffect(() => { const fetchRestaurants = async () => { try { setLoading(true); const response = await GetAllPropertyDetails(); const rawData = response?.data?.data || response?.data || []; const mapped = Array.isArray(rawData) ? rawData.map((item) => mapApiToRestaurantUI(item)).filter((r) => r.isActive && isRestaurantType(r.type)) : []; setRestaurants([...mapped].reverse()); } catch (error) { console.error("Failed to load restaurant properties", error); setRestaurants([]); } finally { setLoading(false); } }; fetchRestaurants(); }, []);
+  const ssrLoaded = Array.isArray(initialRestaurants) && initialRestaurants.length > 0;
+  const [restaurants, setRestaurants] = useState(ssrLoaded ? initialRestaurants : []), [loading, setLoading] = useState(!ssrLoaded), [activeIndex, setActiveIndex] = useState(0), [viewMode, setViewMode] = useState("gallery"), [selectedCity, setSelectedCity] = useState("All Cities"), [showCityDropdown, setShowCityDropdown] = useState(false), [isPaused, setIsPaused] = useState(false);
+  useEffect(() => {
+    if (ssrLoaded) return;
+    const fetchRestaurants = async () => { try { setLoading(true); const response = await GetAllPropertyDetails(); const rawData = response?.data?.data || response?.data || []; const mapped = Array.isArray(rawData) ? rawData.map((item) => mapApiToRestaurantUI(item)).filter((r) => r.isActive && isRestaurantType(r.type)) : []; setRestaurants([...mapped].reverse()); } catch (error) { console.error("Failed to load restaurant properties", error); setRestaurants([]); } finally { setLoading(false); } }; fetchRestaurants();
+  }, []);
   const cities = useMemo(() => ["All Cities", ...new Set(restaurants.map((item) => item.city).filter(Boolean))], [restaurants]);
   const filteredRestaurants = useMemo(() => selectedCity === "All Cities" ? restaurants : restaurants.filter((item) => item.city === selectedCity), [restaurants, selectedCity]);
   useEffect(() => setActiveIndex(0), [selectedCity]);

@@ -12,143 +12,30 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getMenuItemsByTopSold, addItemLike } from "@/Api/RestaurantApi";
 
 const FILTERS = ["Veg", "Non-Veg"];
 
-const BEST_SELLERS = [
-  {
-    id: 1,
-    title: "Hyderabadi Biryani",
-    description:
-      "Dum-cooked rice, deep spice layers, and signature slow-cooked aroma.",
-    image:
-      "https://images.unsplash.com/photo-1701579231305-d84d8af9a3fd?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Main Course",
-    likes: 1240,
-  },
-  {
-    id: 2,
-    title: "Kebabs",
-    description:
-      "Charred grills, smoky marinades, and platter-style indulgence.",
-    image:
-      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Starter",
-    likes: 980,
-  },
-  {
-    id: 3,
-    title: "Butter Chicken",
-    description:
-      "Tandoor-roasted chicken folded into a velvety tomato-butter gravy.",
-    image:
-      "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Signature Curry",
-    likes: 1110,
-  },
-  {
-    id: 4,
-    title: "Mutton Rogan Josh",
-    description:
-      "Slow-braised lamb with Kashmiri spice depth and a rich aromatic finish.",
-    image:
-      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Chef Special",
-    likes: 930,
-  },
-  {
-    id: 5,
-    title: "Prawn Tikka",
-    description:
-      "Juicy prawns charred over flame with citrus, chili, and smoky masala.",
-    image:
-      "https://images.unsplash.com/photo-1625944525533-473f1b3d54b3?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Seafood",
-    likes: 845,
-  },
-  {
-    id: 6,
-    title: "Chicken Malai Tikka",
-    description:
-      "Creamy, mildly spiced chicken bites with a soft smoky tandoor finish.",
-    image:
-      "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=900&q=80",
-    tags: ["Non-Veg", "Best Seller"],
-    category: "Starter",
-    likes: 890,
-  },
-  {
-    id: 7,
-    title: "Korma And Curries",
-    description:
-      "Rich gravies and comforting classics finished with polished presentation.",
-    image:
-      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Signature Curry",
-    likes: 860,
-  },
-  {
-    id: 8,
-    title: "Desserts",
-    description:
-      "Signature endings with warm textures, cream notes, and plated elegance.",
-    image:
-      "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Dessert",
-    likes: 710,
-  },
-  {
-    id: 9,
-    title: "Paneer Tikka",
-    description:
-      "Charred cottage cheese cubes with peppers, onions, and bold tandoori spice.",
-    image:
-      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Starter",
-    likes: 920,
-  },
-  {
-    id: 10,
-    title: "Dal Makhani",
-    description:
-      "Black lentils simmered overnight for a creamy, slow-cooked Punjabi classic.",
-    image:
-      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Main Course",
-    likes: 875,
-  },
-  {
-    id: 11,
-    title: "Vegetable Biryani",
-    description:
-      "Fragrant basmati layered with garden vegetables, herbs, and saffron notes.",
-    image:
-      "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Rice Special",
-    likes: 790,
-  },
-  {
-    id: 12,
-    title: "Malai Kofta",
-    description:
-      "Soft paneer-potato dumplings in a silky cashew and tomato-based gravy.",
-    image:
-      "https://images.unsplash.com/photo-1666190092159-3171cf0fbb12?auto=format&fit=crop&w=900&q=80",
-    tags: ["Veg", "Best Seller"],
-    category: "Chef Special",
-    likes: 835,
-  },
-];
+// Map API food type → filter tag
+function toTag(foodType) {
+  if (!foodType) return "Veg";
+  const f = foodType.toUpperCase();
+  if (f === "NON_VEG") return "Non-Veg";
+  return "Veg"; // VEG and EGG both fall under Veg filter
+}
+
+// Normalise API item → component shape
+function normalise(item) {
+  return {
+    id: item.id,
+    title: item.itemName,
+    description: item.description || "",
+    image: item.image?.url || item.media?.url || "",
+    tags: [toTag(item.foodType), "Best Seller"],
+    category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "",
+    likes: item.likeCount || 0,
+  };
+}
 
 function DishImage({ src, alt }) {
   const [errored, setErrored] = useState(false);
@@ -193,10 +80,12 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function RestaurantBestSellers() {
+export default function RestaurantBestSellers({ initialItems }) {
+  const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
-  const [menuItems, setMenuItems] = useState(BEST_SELLERS);
+  const [menuItems, setMenuItems] = useState(ssrLoaded ? initialItems : []);
+  const [fetchLoading, setFetchLoading] = useState(!ssrLoaded);
   const [likedItems, setLikedItems] = useState({});
   const [likeSubmitting, setLikeSubmitting] = useState(false);
   const [likeModal, setLikeModal] = useState({
@@ -205,9 +94,20 @@ export default function RestaurantBestSellers() {
   });
   const [likeForm, setLikeForm] = useState({
     name: "",
-    phone: "",
+    mobileNumber: "",
     description: "",
   });
+
+  useEffect(() => {
+    if (ssrLoaded) return;
+    getMenuItemsByTopSold(true)
+      .then((res) => {
+        const data = res.data ?? [];
+        setMenuItems((Array.isArray(data) ? data : []).map(normalise));
+      })
+      .catch(() => setMenuItems([]))
+      .finally(() => setFetchLoading(false));
+  }, [ssrLoaded]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => item.tags.includes(activeFilter));
@@ -221,30 +121,39 @@ export default function RestaurantBestSellers() {
     setExpanded(false);
   };
 
-  const handleLikeSubmit = () => {
+  const handleLikeSubmit = async () => {
     if (!likeModal.item) return;
-
     setLikeSubmitting(true);
-
-    window.setTimeout(() => {
+    try {
+      const res = await addItemLike(likeModal.item.id, {
+        name: likeForm.name,
+        mobileNumber: likeForm.mobileNumber,
+        description: likeForm.description || "Great taste!",
+      });
+      const updated = res?.data || res;
       setMenuItems((prev) =>
         prev.map((item) =>
           item.id === likeModal.item.id
-            ? { ...item, likes: item.likes + 1 }
+            ? { ...item, likes: updated.totalLikeCount ?? item.likes + 1 }
             : item,
         ),
       );
       setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
-      setLikeModal({ isOpen: false, item: null });
-      setLikeForm({ name: "", phone: "", description: "" });
-      setLikeSubmitting(false);
       toast.success("Thanks for liking this dish.");
-    }, 500);
+    } catch {
+      // still mark as liked locally so UI doesn't feel broken
+      setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
+      toast.error("Failed to submit. Please try again.");
+    } finally {
+      setLikeModal({ isOpen: false, item: null });
+      setLikeForm({ name: "", mobileNumber: "", description: "" });
+      setLikeSubmitting(false);
+    }
   };
 
   const closeLikeModal = () => {
     setLikeModal({ isOpen: false, item: null });
-    setLikeForm({ name: "", phone: "", description: "" });
+    setLikeForm({ name: "", mobileNumber: "", description: "" });
     setLikeSubmitting(false);
   };
 
@@ -346,11 +255,21 @@ export default function RestaurantBestSellers() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4">
-          {primaryItems.map((item, index) => renderCard(item, index))}
-        </div>
+        {fetchLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="py-24 text-center text-zinc-400">
+            <p className="font-medium">No top selling items found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4">
+            {primaryItems.map((item, index) => renderCard(item, index))}
+          </div>
+        )}
 
-        {extraItems.length > 0 && (
+        {!fetchLoading && extraItems.length > 0 && (
           <div className="px-5 pb-5 pt-8 lg:px-0 lg:pb-6">
             <div className="flex justify-center">
               <button
@@ -390,71 +309,61 @@ export default function RestaurantBestSellers() {
 
       <AnimatePresence>
         {likeModal.isOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-md rounded-[2.5rem] border border-zinc-100 bg-white p-10 text-left shadow-2xl"
+              className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl relative text-left border border-zinc-100 dark:border-white/5"
             >
               <button
                 type="button"
                 onClick={closeLikeModal}
-                className="absolute right-6 top-6 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-100"
+                className="absolute top-6 right-6 p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
               >
                 <X size={20} />
               </button>
 
-              <h3 className="mb-2 text-2xl font-serif text-zinc-900">
+              <h3 className="mb-2 text-2xl font-serif dark:text-white">
                 Show your love
               </h3>
               <p className="mb-6 text-xs italic text-zinc-500">
-                Share your details to like{" "}
-                {likeModal.item?.title || "this dish"}.
+                Share your details to like {likeModal.item?.title || "this dish"}.
               </p>
 
               <div className="space-y-4">
                 <Input
                   placeholder="Your Name"
                   value={likeForm.name}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
+                  onChange={(e) =>
+                    setLikeForm((prev) => ({ ...prev, name: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
                 <Input
                   placeholder="Phone Number"
-                  value={likeForm.phone}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      phone: event.target.value,
-                    }))
+                  value={likeForm.mobileNumber}
+                  onChange={(e) =>
+                    setLikeForm((prev) => ({ ...prev, mobileNumber: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
                 <Input
-                  placeholder="Leave a comment"
+                  placeholder="Leave a comment (optional)"
                   value={likeForm.description}
-                  onChange={(event) =>
-                    setLikeForm((prev) => ({
-                      ...prev,
-                      description: event.target.value,
-                    }))
+                  onChange={(e) =>
+                    setLikeForm((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 shadow-sm"
+                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
 
                 <Button
-                  disabled={!likeForm.name || !likeForm.phone || likeSubmitting}
+                  disabled={!likeForm.name || !likeForm.mobileNumber || likeSubmitting}
                   onClick={handleLikeSubmit}
-                  className="h-14 w-full rounded-2xl bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95"
+                  className="w-full h-14 bg-primary text-white rounded-2xl font-black uppercase shadow-lg hover:bg-primary/90 transition-all active:scale-95"
                 >
                   {likeSubmitting ? (
-                    <Loader2 size={18} className="mx-auto animate-spin" />
+                    <Loader2 size={18} className="animate-spin mx-auto" />
                   ) : (
                     "Submit Like"
                   )}

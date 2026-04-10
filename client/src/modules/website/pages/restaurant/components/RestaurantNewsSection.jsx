@@ -177,12 +177,14 @@ function NewsCard({ item }) {
   );
 }
 
-export default function RestaurantNewsSection() {
+export default function RestaurantNewsSection({ initialNews }) {
   const swiperRef = useRef(null);
-  const [newsItems, setNewsItems] = useState(FALLBACK_NEWS_ITEMS);
-  const [loading, setLoading] = useState(true);
+  const ssrLoaded = Array.isArray(initialNews) && initialNews.length > 0;
+  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : FALLBACK_NEWS_ITEMS);
+  const [loading, setLoading] = useState(!ssrLoaded);
 
   useEffect(() => {
+    if (ssrLoaded) return;
     const fetchRestaurantNews = async () => {
       try {
         setLoading(true);
@@ -263,7 +265,7 @@ export default function RestaurantNewsSection() {
     };
 
     fetchRestaurantNews();
-  }, []);
+  }, [ssrLoaded]);
 
   return (
     <section

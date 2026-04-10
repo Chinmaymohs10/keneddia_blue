@@ -17,6 +17,7 @@ import SignatureDishes from "./components/SignatureDishes";
 import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
 import { siteContent } from "@/data/siteContent";
+import { useSsrData } from "@/ssr/SsrDataContext";
 
 // Restaurant Navigation Items (following Hotels page pattern)
 const RESTAURANT_NAV_ITEMS = [
@@ -36,13 +37,24 @@ const RESTAURANT_NAV_ITEMS = [
 ];
 
 export default function RestaurantHomepage() {
+  const { restaurantHomepage: ssr } = useSsrData();
+
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
+    <div
+      className="min-h-screen bg-background [scrollbar-gutter:stable]"
+      data-ssr-hero={ssr?.heroSlides?.length ?? 0}
+      data-ssr-offers={ssr?.restaurantOffers?.length ?? 0}
+      data-ssr-properties={ssr?.restaurantProperties?.length ?? 0}
+      data-ssr-best-sellers={ssr?.bestSellers?.length ?? 0}
+      data-ssr-news={ssr?.restaurantNews?.length ?? 0}
+      data-ssr-events={ssr?.restaurantEvents?.length ?? 0}
+      data-ssr-reviews={ssr?.guestExperiences?.length ?? 0}
+    >
       {/* Main Navbar with Restaurant-specific items */}
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
@@ -53,18 +65,26 @@ export default function RestaurantHomepage() {
       <main>
         {/* Hero Section */}
         <div id="home">
-          <HeroBanner />
+          <HeroBanner initialSlides={ssr?.heroSlides} />
         </div>
 
-        <RestaurantQuickBooking />
-        <RestaurantOffers />
-        <RestaurantProperties />
-        <RestaurantBestSellers />
-        <AboutRestaurant />
-        {/* Events Schedule */}
-        <EventsSchedule />
-        <RestaurantNewsSection />
-        <RestaurantGuestReviews />
+        <RestaurantQuickBooking initialLocations={ssr?.locations} />
+        <RestaurantOffers initialOffers={ssr?.restaurantOffers} />
+        <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
+        <RestaurantBestSellers initialItems={ssr?.bestSellers} />
+        <AboutRestaurant initialSections={ssr?.aboutSections} />
+        <EventsSchedule
+          initialEvents={ssr?.restaurantEvents}
+          initialGroupBookings={ssr?.groupBookings}
+          initialRestaurantTypeId={ssr?.restaurantTypeId}
+        />
+        <RestaurantNewsSection initialNews={ssr?.restaurantNews} />
+        <RestaurantGuestReviews
+          initialExperiences={ssr?.guestExperiences}
+          initialSectionHeader={ssr?.sectionHeader}
+          initialRatingHeader={ssr?.ratingHeader}
+          initialRestaurantTypeId={ssr?.restaurantTypeId}
+        />
       </main>
 
       {/* Footer */}

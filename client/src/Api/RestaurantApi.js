@@ -81,6 +81,7 @@ export const toggleGalleryDropdownStatus = (id, isActive) =>API.patch(`api/v1/dy
 
 export const createMenuItem = (formData) =>API.post("api/v1/menu-items/createMenuItem", formData, {headers: {"Content-Type": "multipart/form-data",},});
 export const getMenuItems = () =>API.get("api/v1/menu-items/getMenuItems");
+export const getMenuItemsByTopSold = (topSold) =>API.get(`api/v1/menu-items/getMenuItemsByTopSold/${topSold}`);
 export const getActiveMenuItems = () =>API.get("api/v1/menu-items/getActiveMenuItems");
 export const getMenuItemById = (id) =>API.get(`api/v1/menu-items/getMenuItemById/${id}`);
 export const updateMenuItem = (id, data) =>API.patch(`api/v1/menu-items/updateMenuItem/${id}`, data);

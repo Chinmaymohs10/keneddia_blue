@@ -224,14 +224,16 @@ function EventCard({ event, index }) {
   );
 }
 
-export default function EventsSchedule() {
+export default function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurantTypeId }) {
+  const ssrEvents = Array.isArray(initialEvents) && initialEvents.length > 0;
+  const ssrBookings = Array.isArray(initialGroupBookings) && initialGroupBookings.length > 0;
   const [swiper, setSwiper] = useState(null);
-  const [events, setEvents] = useState(FALLBACK_EVENTS);
+  const [events, setEvents] = useState(ssrEvents ? initialEvents : FALLBACK_EVENTS);
   const [groupBookingItems, setGroupBookingItems] = useState(
-    FALLBACK_GROUP_BOOKING_ITEMS,
+    ssrBookings ? initialGroupBookings : FALLBACK_GROUP_BOOKING_ITEMS,
   );
-  const [loading, setLoading] = useState(true);
-  const [restaurantTypeId, setRestaurantTypeId] = useState(null);
+  const [loading, setLoading] = useState(!(ssrEvents || ssrBookings));
+  const [restaurantTypeId, setRestaurantTypeId] = useState(initialRestaurantTypeId ?? null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState(null);
@@ -239,6 +241,7 @@ export default function EventsSchedule() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (ssrEvents || ssrBookings) return;
     const fetchRestaurantData = async () => {
       try {
         setLoading(true);

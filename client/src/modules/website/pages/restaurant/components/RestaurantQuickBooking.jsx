@@ -82,19 +82,24 @@ function CustomSelect({ options, value, onChange, placeholder, disabled }) {
   );
 }
 
-export default function RestaurantQuickBooking() {
+export default function RestaurantQuickBooking({ initialLocations }) {
   const navigate = useNavigate();
   const [bookingType, setBookingType] = useState("");
   const [location, setLocation] = useState("");
   const [allProperties, setAllProperties] = useState([]);
-  const [locationOptions, setLocationOptions] = useState([]);
+  const [locationOptions, setLocationOptions] = useState(
+    Array.isArray(initialLocations) && initialLocations.length > 0
+      ? initialLocations
+      : [],
+  );
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedTypeLabel = BOOKING_TYPES.find((o) => o.value === bookingType)?.label ?? "";
 
-  // Fetch all locations on mount to pre-populate the dropdown
+  // Fetch locations only if not provided by SSR
   useEffect(() => {
+    if (Array.isArray(initialLocations) && initialLocations.length > 0) return;
     getAllLocations()
       .then((res) => {
         const data = res.data ?? [];
@@ -107,7 +112,7 @@ export default function RestaurantQuickBooking() {
         setLocationOptions(opts);
       })
       .catch(() => {});
-  }, []);
+  }, [initialLocations]);
 
   // Filter by selected location (client-side after search)
   const visibleProperties = useMemo(() => {

@@ -83,11 +83,18 @@ const HeroMedia = ({ slide }) => {
   return <img src={slide.img} alt={slide.title} className="h-full w-full object-cover" />;
 };
 
-export default function HeroBanner() {
+export default function HeroBanner({ initialSlides }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [slides, setSlides] = useState(FALLBACK_SLIDES);
+  const [slides, setSlides] = useState(
+    Array.isArray(initialSlides) && initialSlides.length > 0
+      ? initialSlides
+      : FALLBACK_SLIDES,
+  );
 
   useEffect(() => {
+    // Skip client fetch if SSR already provided slides
+    if (Array.isArray(initialSlides) && initialSlides.length > 0) return;
+
     let isMounted = true;
 
     const fetchRestaurantHero = async () => {
@@ -122,7 +129,7 @@ export default function HeroBanner() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialSlides]);
 
   useEffect(() => {
     if (slides.length <= 1) return undefined;

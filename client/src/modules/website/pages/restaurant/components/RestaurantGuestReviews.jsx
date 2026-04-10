@@ -101,15 +101,35 @@ const buildMediaList = (item) => {
   return allMedia;
 };
 
-export default function RestaurantGuestReviews() {
+export default function RestaurantGuestReviews({
+  initialExperiences,
+  initialSectionHeader,
+  initialRatingHeader,
+  initialRestaurantTypeId,
+}) {
   const swiperRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  const [guestExperiences, setGuestExperiences] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sectionHeader, setSectionHeader] = useState(DEFAULT_SECTION_HEADER);
-  const [ratingHeader, setRatingHeader] = useState(DEFAULT_RATING_HEADER);
-  const [restaurantTypeId, setRestaurantTypeId] = useState(null);
+  const ssrLoaded = Array.isArray(initialExperiences);
+  const [guestExperiences, setGuestExperiences] = useState(ssrLoaded ? initialExperiences : []);
+  const [isLoading, setIsLoading] = useState(!ssrLoaded);
+  const [sectionHeader, setSectionHeader] = useState(
+    initialSectionHeader
+      ? {
+          sectionTag: initialSectionHeader.sectionTag || DEFAULT_SECTION_HEADER.sectionTag,
+          title: initialSectionHeader.title || DEFAULT_SECTION_HEADER.title,
+        }
+      : DEFAULT_SECTION_HEADER,
+  );
+  const [ratingHeader, setRatingHeader] = useState(
+    initialRatingHeader
+      ? {
+          description: initialRatingHeader.description || DEFAULT_RATING_HEADER.description,
+          rating: Number(initialRatingHeader.rating || DEFAULT_RATING_HEADER.rating),
+        }
+      : DEFAULT_RATING_HEADER,
+  );
+  const [restaurantTypeId, setRestaurantTypeId] = useState(initialRestaurantTypeId ?? null);
 
   const [mediaPreviews, setMediaPreviews] = useState([]);
   const [feedbackText, setFeedbackText] = useState("");
@@ -158,6 +178,7 @@ export default function RestaurantGuestReviews() {
   };
 
   useEffect(() => {
+    if (ssrLoaded && initialRestaurantTypeId != null) return;
     const init = async () => {
       try {
         setIsLoading(true);

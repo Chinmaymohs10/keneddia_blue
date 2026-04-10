@@ -98,13 +98,15 @@ const mapSection = (section, recognitions = []) => ({
     })),
 });
 
-export default function AboutRestaurant() {
-  const [sections, setSections] = useState(FALLBACK_SECTIONS);
-  const [loading, setLoading] = useState(true);
+export default function AboutRestaurant({ initialSections }) {
+  const ssrLoaded = Array.isArray(initialSections) && initialSections.length > 0;
+  const [sections, setSections] = useState(ssrLoaded ? initialSections : FALLBACK_SECTIONS);
+  const [loading, setLoading] = useState(!ssrLoaded);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentRecognitionIndex, setCurrentRecognitionIndex] = useState(0);
 
   const fetchRestaurantAboutSections = useCallback(async () => {
+    if (ssrLoaded) return;
     try {
       setLoading(true);
 

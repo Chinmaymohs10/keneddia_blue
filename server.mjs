@@ -45,6 +45,12 @@ const isSsrRoute = (pathname) =>
   pathname === "/" ||
   pathname === "/hotels" ||
   pathname === "/hotels/" ||
+  pathname === "/restaurant-homepage" ||
+  pathname === "/restaurant-homepage/" ||
+  pathname === "/resturant-homepage" ||
+  pathname === "/resturant-homepage/" ||
+  pathname === "/cafe-homepage" ||
+  pathname === "/cafe-homepage/" ||
   pathname === "/offers" ||
   pathname === "/offers/" ||
   pathname === "/events" ||

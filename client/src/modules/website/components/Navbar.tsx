@@ -141,6 +141,7 @@ export default function Navbar({
     location.pathname === "/" ||
     location.pathname === "/hotels" ||
     location.pathname === "/restaurant-homepage"||
+    location.pathname === "/resturant-homepage"||
     location.pathname === "/cafe-homepage";
   const showQuickBook = isTransparentHeroRoute;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;

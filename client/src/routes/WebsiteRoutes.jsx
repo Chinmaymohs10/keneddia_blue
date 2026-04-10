@@ -24,6 +24,8 @@ import HotelDetail from "@/modules/website/pages/HotelDetail";
 import ResturantPage from "@/modules/website/pages/restaurant/ResturantPage";
 import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/ResturantCategoryPageTemplate";
 import CafePage from "@/modules/website/pages/cafe/CafePage";
+import RestaurantHomepage from "@/modules/website/pages/restaurant/RestaurantHomepage";
+import CafeHomepage from "@/modules/website/pages/cafe/CafeHomepage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
@@ -32,12 +34,6 @@ import { GetAllPropertyDetails } from "@/Api/Api";
 import { useSsrData } from "@/ssr/SsrDataContext";
 
 const RoomSelection = lazy(() => import("@/modules/website/pages/RoomSelection"));
-const RestaurantHomepage = lazy(
-  () => import("@/modules/website/pages/restaurant/RestaurantHomepage"),
-);
-const CafeHomepage = lazy(
-  () => import("@/modules/website/pages/cafe/CafeHomepage"),
-);
 function withRouteSuspense(element) {
   return (
     <Suspense
@@ -165,6 +161,11 @@ const WebsiteRoutes = [
   // <Route key="careers" path="/careers" element={<Careers />} />,
 
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
+  <Route
+    key="resturant-homepage-legacy"
+    path="/resturant-homepage"
+    element={<Navigate to="/restaurant-homepage" replace />}
+  />,
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
 

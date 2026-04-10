@@ -77,12 +77,17 @@ const normalize = (value) =>
     .toLowerCase()
     .replace(/\s+/g, " ");
 
-export default function RestaurantOffers() {
+export default function RestaurantOffers({ initialOffers }) {
   const [swiper, setSwiper] = useState(null);
-  const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [offers, setOffers] = useState(
+    Array.isArray(initialOffers) && initialOffers.length > 0 ? initialOffers : [],
+  );
+  const [loading, setLoading] = useState(
+    !(Array.isArray(initialOffers) && initialOffers.length > 0),
+  );
 
   useEffect(() => {
+    if (Array.isArray(initialOffers) && initialOffers.length > 0) return;
     const fetchOffers = async () => {
       try {
         setLoading(true);
@@ -165,7 +170,7 @@ export default function RestaurantOffers() {
     };
 
     fetchOffers();
-  }, []);
+  }, [initialOffers]);
 
   if (loading) {
     return (
