@@ -59,6 +59,7 @@ export default function RestaurantHomepage() {
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
+        quickBookOptions={[{ label: "Reserve Restaurant", href: "#quick-booking" }]}
       />
 
       {/* Main Content */}
@@ -68,7 +69,9 @@ export default function RestaurantHomepage() {
           <HeroBanner initialSlides={ssr?.heroSlides} />
         </div>
 
-        <RestaurantQuickBooking />
+        <div id="quick-booking">
+          <RestaurantQuickBooking />
+        </div>
         <RestaurantOffers initialOffers={ssr?.restaurantOffers} />
         <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
         <RestaurantBestSellers initialItems={ssr?.bestSellers} />

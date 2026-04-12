@@ -166,6 +166,8 @@ export default function RestaurantHomepage() {
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
+        showQuickBook={true}
+        quickBookOptions={[{ label: "Reserve Restaurant", href: "#reservation" }]}
       />
 
       <main>
@@ -199,7 +201,9 @@ export default function RestaurantHomepage() {
           <ResturantGallerypage propertyId={numericPropertyId} />
         </div>
 
-        <ReservationForm propertyId={numericPropertyId} />
+        <div id="reservation">
+          <ReservationForm propertyId={numericPropertyId} />
+        </div>
       </main>
 
       <div id="contact">

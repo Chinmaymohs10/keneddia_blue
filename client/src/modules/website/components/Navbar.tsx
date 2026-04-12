@@ -46,6 +46,11 @@ const QUICK_BOOKING_OPTIONS = [
   // { label: "Takeaway / Delivery", category: "delivery" as const },
 ];
 
+// Quick Book Option Type
+type QuickBookOption =
+  | { label: string; category: "hotel" | "dining" | "delivery"; href?: never }
+  | { label: string; category?: never; href: string };
+
 // Types
 type NavItem =
   | { type: "link"; label: string; href: string; key: string }
@@ -120,9 +125,13 @@ interface NavbarBrand {
 export default function Navbar({
   navItems = NAV_ITEMS,
   logo,
+  quickBookOptions,
+  showQuickBook: showQuickBookProp,
 }: {
   navItems?: NavItem[];
   logo?: NavbarBrand;
+  quickBookOptions?: QuickBookOption[];
+  showQuickBook?: boolean;
 }) {
   const brandLogo = logo || siteContent.brand.logo;
   const darkLogo = (brandLogo as any).darkImage || brandLogo.image;
@@ -148,7 +157,8 @@ export default function Navbar({
     location.pathname === "/restaurant-homepage"||
     location.pathname === "/resturant-homepage"||
     location.pathname === "/cafe-homepage";
-  const showQuickBook = isTransparentHeroRoute;
+  const showQuickBook = showQuickBookProp !== undefined ? showQuickBookProp : isTransparentHeroRoute;
+  const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions || QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
   const shouldUseDarkLogoOnTransparentInLightMode =
@@ -171,6 +181,26 @@ export default function Navbar({
     setBookingCategory(category);
     setBookingOpen(true);
     setActiveDropdown(null);
+  };
+
+  const handleQuickBookOption = (option: QuickBookOption) => {
+    if (option.category) {
+      openBooking(option.category);
+    } else if (option.href) {
+      if (option.href.startsWith("#")) {
+        const el = document.getElementById(option.href.slice(1));
+        if (el) {
+          const offsetPosition =
+            el.getBoundingClientRect().top +
+            window.scrollY -
+            NAVBAR_CONFIG.navbarHeight;
+          window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        }
+      } else {
+        navigate(option.href);
+      }
+      setActiveDropdown(null);
+    }
   };
 
   useEffect(() => {
@@ -314,10 +344,10 @@ export default function Navbar({
                 </button>
                 <div className="site-nav-quickbook-panel">
                   <div className="py-1">
-                    {QUICK_BOOKING_OPTIONS.map((option, index) => (
+                    {effectiveQuickBookOptions.map((option, index) => (
                       <button
                         key={index}
-                        onClick={() => openBooking(option.category)}
+                        onClick={() => handleQuickBookOption(option)}
                         className="site-nav-quickbook-option"
                       >
                         {option.label}
@@ -353,7 +383,7 @@ export default function Navbar({
           <div className="xl:hidden flex items-center gap-3">
             {showQuickBook && (
               <button
-                onClick={() => openBooking("hotel")}
+                onClick={() => handleQuickBookOption(effectiveQuickBookOptions[0])}
                 className={`transition-colors cursor-pointer rounded-full p-2 ${
                   transparentMode
                     ? `${transparentTextClass} ${transparentActionOverlayClass}`
