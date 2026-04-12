@@ -41,62 +41,6 @@ import { toast } from "react-hot-toast";
 import "swiper/css";
 import "swiper/css/pagination";
 
-const FALLBACK_GROUP_BOOKING_ITEMS = [
-  {
-    id: 1,
-    title: "Private Dining Celebrations",
-    description: "Birthdays, anniversaries and private celebration dining.",
-    ctaLink: "",
-  },
-  {
-    id: 2,
-    title: "Corporate Lunch Packages",
-    description: "Team lunches, client meets and executive dining setups.",
-    ctaLink: "",
-  },
-  {
-    id: 3,
-    title: "Festive Group Reservations",
-    description: "Seasonal group reservations with customizable menus.",
-    ctaLink: "",
-  },
-];
-
-const FALLBACK_EVENTS = [
-  {
-    id: "fallback-event-1",
-    title: "Weekend Chef Special Tasting",
-    description:
-      "A curated tasting experience with signature seasonal courses.",
-    date: "Upcoming",
-    location: "Restaurant Venue",
-    detailPath: "/events",
-    media: {
-      type: "IMAGE",
-      src: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-      alt: "Restaurant event",
-      width: null,
-      height: null,
-    },
-  },
-  {
-    id: "fallback-event-2",
-    title: "Live Kitchen Showcase",
-    description:
-      "Interactive service and chef table showcase for evening guests.",
-    date: "Upcoming",
-    location: "Restaurant Venue",
-    detailPath: "/events",
-    media: {
-      type: "IMAGE",
-      src: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-      alt: "Live kitchen event",
-      width: null,
-      height: null,
-    },
-  },
-];
-
 const normalize = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isRestaurantType = (value = "") =>
@@ -343,9 +287,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
   const ssrEvents = Array.isArray(initialEvents) && initialEvents.length > 0;
   const ssrBookings = Array.isArray(initialGroupBookings) && initialGroupBookings.length > 0;
   const [swiper, setSwiper] = useState(null);
-  const [events, setEvents] = useState(ssrEvents ? initialEvents : FALLBACK_EVENTS);
+  const [events, setEvents] = useState(ssrEvents ? initialEvents : []);
   const [groupBookingItems, setGroupBookingItems] = useState(
-    ssrBookings ? initialGroupBookings : FALLBACK_GROUP_BOOKING_ITEMS,
+    ssrBookings ? initialGroupBookings : [],
   );
   const [loading, setLoading] = useState(!(ssrEvents || ssrBookings));
   const [restaurantTypeId, setRestaurantTypeId] = useState(initialRestaurantTypeId ?? null);
@@ -455,16 +399,12 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
             ctaLink: item?.ctaLink || "",
           }));
 
-        setEvents(mappedEvents.length > 0 ? mappedEvents : FALLBACK_EVENTS);
-        setGroupBookingItems(
-          mappedBookings.length > 0
-            ? mappedBookings
-            : FALLBACK_GROUP_BOOKING_ITEMS,
-        );
+        setEvents(mappedEvents);
+        setGroupBookingItems(mappedBookings);
       } catch (error) {
         console.error("Failed to load restaurant events/group bookings", error);
-        setEvents(FALLBACK_EVENTS);
-        setGroupBookingItems(FALLBACK_GROUP_BOOKING_ITEMS);
+        setEvents([]);
+        setGroupBookingItems([]);
       } finally {
         setLoading(false);
       }
@@ -472,6 +412,10 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
 
     fetchRestaurantData();
   }, []);
+
+  if (!loading && events.length === 0 && groupBookingItems.length === 0) {
+    return null;
+  }
 
   const openGroupBookingForm = (item) => {
     setSelectedOffer(item);
@@ -575,28 +519,34 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <Swiper
-                modules={[Navigation, Autoplay]}
-                slidesPerView={1}
-                spaceBetween={16}
-                breakpoints={{
-                  640: { slidesPerView: 2 },
-                  1024: { slidesPerView: 2.2 },
-                }}
-                autoplay={{
-                  delay: 5000,
-                  disableOnInteraction: false,
-                  pauseOnMouseEnter: true,
-                }}
-                onSwiper={setSwiper}
-                className="!pb-2"
-              >
-                {events.map((event, index) => (
-                  <SwiperSlide key={event.id || `${event.title}-${index}`}>
-                    <EventCard event={event} index={index} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+              events.length > 0 ? (
+                <Swiper
+                  modules={[Navigation, Autoplay]}
+                  slidesPerView={1}
+                  spaceBetween={16}
+                  breakpoints={{
+                    640: { slidesPerView: 2 },
+                    1024: { slidesPerView: 2.2 },
+                  }}
+                  autoplay={{
+                    delay: 5000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                  }}
+                  onSwiper={setSwiper}
+                  className="!pb-2"
+                >
+                  {events.map((event, index) => (
+                    <SwiperSlide key={event.id || `${event.title}-${index}`}>
+                      <EventCard event={event} index={index} />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              ) : (
+                <div className="flex h-[420px] items-center justify-center rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground">
+                  No upcoming restaurant events available.
+                </div>
+              )
             )}
           </div>
 
@@ -609,42 +559,48 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
             </div>
 
             <div className="space-y-3">
-              {groupBookingItems.map((item, index) => {
-                const Icon = getGroupBookingIcon(index);
-                return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
-                >
-                  <div className="flex items-start gap-3 p-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm">
-                      <Icon className="h-5 w-5" />
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h4 className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
-                        {item.title}
-                      </h4>
-                      <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
-                        {item.description || "Multi-purpose group booking support."}
-                      </p>
-                    </div>
-
-                    <Button
-                      type="button"
-                      size="icon"
-                      className="h-10 w-10 shrink-0 rounded-full"
-                      onClick={() => openGroupBookingForm(item)}
+              {groupBookingItems.length > 0 ? (
+                groupBookingItems.map((item, index) => {
+                  const Icon = getGroupBookingIcon(index);
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                     >
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </motion.div>
-              );
-              })}
+                      <div className="flex items-start gap-3 p-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm">
+                          <Icon className="h-5 w-5" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <h4 className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
+                            {item.title}
+                          </h4>
+                          <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
+                            {item.description || "Multi-purpose group booking support."}
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          size="icon"
+                          className="h-10 w-10 shrink-0 rounded-full"
+                          onClick={() => openGroupBookingForm(item)}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              ) : (
+                <div className="rounded-xl border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+                  Group booking packages are not available right now.
+                </div>
+              )}
             </div>
 
             <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">

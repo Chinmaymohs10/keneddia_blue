@@ -24975,38 +24975,6 @@ function CafePage() {
     /* @__PURE__ */ jsx("div", { id: "contact", children: /* @__PURE__ */ jsx(Footer, {}) })
   ] });
 }
-const FALLBACK_SLIDES = [
-  {
-    id: 1,
-    tag: "The Experience",
-    title: "Culinary Artistry Across Asia",
-    desc: "A curated journey through Chinese, Italian, and Indian Tandoor traditions.",
-    img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "AUTHENTIC",
-    ctaText: "Reserve"
-  },
-  {
-    id: 2,
-    tag: "BYOB Friendly",
-    title: "Your Choice, Our Expertise",
-    desc: "Pair your favorite vintage with our signature Asian Fusion menu.",
-    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "PREMIUM",
-    ctaText: "Reserve"
-  },
-  {
-    id: 3,
-    tag: "The Ambience",
-    title: "Modern Spirit, Timeless Flavor",
-    desc: "An elegant setting designed for intimate dinners and grand celebrations.",
-    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "ELEGANCE",
-    ctaText: "Reserve"
-  }
-];
 const transformApiDataToSlides = (content) => (Array.isArray(content) ? content : []).filter((item) => item.active === true).sort((a, b) => b.id - a.id).slice(0, 3).map((item) => {
   const backgroundMedia = item.backgroundAll?.[0] || item.backgroundLight?.[0] || item.backgroundDark?.[0] || null;
   if (!backgroundMedia?.url) return null;
@@ -25041,7 +25009,7 @@ const HeroMedia = ({ slide }) => {
 function HeroBanner({ initialSlides }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [slides, setSlides] = useState(
-    Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : FALLBACK_SLIDES
+    Array.isArray(initialSlides) && initialSlides.length > 0 ? initialSlides : []
   );
   useEffect(() => {
     if (Array.isArray(initialSlides) && initialSlides.length > 0) return;
@@ -25080,10 +25048,8 @@ function HeroBanner({ initialSlides }) {
   const goToSlide = (index) => {
     setActiveIndex((index + slides.length) % slides.length);
   };
-  const activeSlide = useMemo(
-    () => slides[activeIndex] || FALLBACK_SLIDES[0],
-    [activeIndex, slides]
-  );
+  const activeSlide = useMemo(() => slides[activeIndex] || null, [activeIndex, slides]);
+  if (!activeSlide) return null;
   return /* @__PURE__ */ jsxs("section", { className: "relative h-[90vh] w-full overflow-hidden bg-background", children: [
     /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsx(
       motion.div,
@@ -25275,7 +25241,7 @@ function HeroBanner({ initialSlides }) {
         ]
       }
     ) }),
-    /* @__PURE__ */ jsxs("div", { className: "absolute bottom-48 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12", children: [
+    /* @__PURE__ */ jsxs("div", { className: "absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 pr-2 md:gap-4 lg:gap-6", children: [
         /* @__PURE__ */ jsx("div", { className: "flex items-center gap-1.5 md:gap-2", children: slides.map((_, index) => /* @__PURE__ */ jsx(
           "div",
@@ -26452,75 +26418,13 @@ function RestaurantBestSellers({ initialItems }) {
     ) }) })
   ] });
 }
-const FALLBACK_SECTIONS = [
-  {
-    id: 1,
-    subTitle: "Ghaziabad Destination",
-    sectionTitle: "A Symphony of Fine Flavors",
-    description: "We believe dining is more than just a meal. It is a curated premium experience designed to ground you in the moment. Our philosophy balances bold Indian tradition with refined global favorites in a thoughtfully designed setting.",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
-    recognitions: [
-      {
-        id: 1,
-        value: "11 AM",
-        title: "Opens Daily",
-        subTitle: "Serving guests every day from morning to night",
-        isActive: true
-      },
-      {
-        id: 2,
-        value: "INR899",
-        title: "Lunch Buffet",
-        subTitle: "Grand spread served daily from 12 PM to 4 PM",
-        isActive: true
-      },
-      {
-        id: 3,
-        value: "BYOB",
-        title: "Premium Setting",
-        subTitle: "Bring your own bottle with a curated dining ambience",
-        isActive: true
-      }
-    ]
-  },
-  {
-    id: 2,
-    subTitle: "Signature Experience",
-    sectionTitle: "Where Heritage Meets Modern Craft",
-    description: "Our chefs blend age-old recipes with contemporary presentation. Each visit becomes a story written with seasonal produce, refined technique, and signature hospitality.",
-    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200",
-    recognitions: [
-      {
-        id: 4,
-        value: "50+",
-        title: "Menu Items",
-        subTitle: "Rotating seasonal specials added regularly",
-        isActive: true
-      },
-      {
-        id: 5,
-        value: "4.8",
-        title: "Guest Rating",
-        subTitle: "Consistently rated highly across platforms",
-        isActive: true
-      },
-      {
-        id: 6,
-        value: "15yr",
-        title: "Legacy",
-        subTitle: "Serving guests with established culinary expertise",
-        isActive: true
-      }
-    ]
-  }
-];
 const normalize$6 = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const mapSection$1 = (section, recognitions = []) => ({
   id: section?.id,
   subTitle: section?.subTitle || "Restaurant Experience",
   sectionTitle: section?.sectionTitle || "Dining With Signature Hospitality",
   description: section?.description || "Curated dining experience with signature hospitality and thoughtfully designed spaces.",
-  image: section?.media?.find((item) => item?.type === "IMAGE")?.url || FALLBACK_SECTIONS[0].image,
+  image: section?.media?.find((item) => item?.type === "IMAGE")?.url || "",
   recognitions: recognitions.filter((item) => item?.isActive).map((item) => ({
     id: item.id,
     value: item.value,
@@ -26531,7 +26435,7 @@ const mapSection$1 = (section, recognitions = []) => ({
 });
 function AboutRestaurant({ initialSections }) {
   const ssrLoaded = Array.isArray(initialSections) && initialSections.length > 0;
-  const [sections, setSections] = useState(ssrLoaded ? initialSections : FALLBACK_SECTIONS);
+  const [sections, setSections] = useState(ssrLoaded ? initialSections : []);
   const [loading, setLoading] = useState(!ssrLoaded);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentRecognitionIndex, setCurrentRecognitionIndex] = useState(0);
@@ -26545,14 +26449,14 @@ function AboutRestaurant({ initialSections }) {
         (type) => type?.isActive && normalize$6(type?.typeName) === "restaurant"
       ) : null;
       if (!restaurantType?.id) {
-        setSections(FALLBACK_SECTIONS);
+        setSections([]);
         return;
       }
       const aboutResponse = await getAboutUsByPropertyType(restaurantType.id);
       const aboutData = aboutResponse?.data || aboutResponse;
       const activeSections = Array.isArray(aboutData) ? aboutData.filter((item) => item?.isActive === true && item?.showOnPropertyPage === true).sort((a, b) => b.id - a.id).slice(0, 3) : [];
       if (activeSections.length === 0) {
-        setSections(FALLBACK_SECTIONS);
+        setSections([]);
         return;
       }
       const recognitionGroups = await Promise.all(
@@ -26577,10 +26481,10 @@ function AboutRestaurant({ initialSections }) {
       const mappedSections = activeSections.map(
         (section, index) => mapSection$1(section, recognitionGroups[index] || [])
       );
-      setSections(mappedSections.length > 0 ? mappedSections : FALLBACK_SECTIONS);
+      setSections(mappedSections);
     } catch (error) {
       console.error("Failed to load restaurant about sections", error);
-      setSections(FALLBACK_SECTIONS);
+      setSections([]);
     } finally {
       setLoading(false);
     }
@@ -26606,7 +26510,8 @@ function AboutRestaurant({ initialSections }) {
     }, 2e3);
     return () => window.clearInterval(timer);
   }, [currentIndex, sections]);
-  const activeSection = sections[currentIndex] || FALLBACK_SECTIONS[0];
+  const activeSection = sections[currentIndex] || null;
+  if (!loading && !activeSection) return null;
   const recognitions = activeSection?.recognitions?.filter((item) => item?.isActive) || [];
   return /* @__PURE__ */ jsx("section", { id: "about", className: "bg-white px-6 py-8 transition-colors duration-500 dark:bg-[#050505]", children: /* @__PURE__ */ jsx("div", { className: "container mx-auto max-w-7xl", children: loading ? /* @__PURE__ */ jsx("div", { className: "flex items-center justify-center py-20", children: /* @__PURE__ */ jsx(Loader2, { className: "h-10 w-10 animate-spin text-primary" }) }) : /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 items-center gap-8 lg:grid-cols-[45%_55%]", children: [
     /* @__PURE__ */ jsxs(
@@ -26618,14 +26523,14 @@ function AboutRestaurant({ initialSections }) {
         className: "relative",
         children: [
           /* @__PURE__ */ jsxs("div", { className: "relative z-10 aspect-[4/3] overflow-hidden rounded-xl border border-zinc-200/10 shadow-2xl dark:border-white/10", children: [
-            /* @__PURE__ */ jsx(
+            activeSection.image ? /* @__PURE__ */ jsx(
               "img",
               {
                 src: activeSection.image,
                 alt: activeSection.sectionTitle,
                 className: "h-full w-full object-cover"
               }
-            ),
+            ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400 dark:bg-white/5 dark:text-white/20", children: /* @__PURE__ */ jsx(MapPin, { className: "h-8 w-8" }) }),
             /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" })
           ] }),
           /* @__PURE__ */ jsx("div", { className: "absolute -bottom-4 -right-4 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0" }),
@@ -26789,58 +26694,6 @@ const signatureDishes = [
     description: "Assorted premium flavors"
   }
 ];
-const FALLBACK_GROUP_BOOKING_ITEMS = [
-  {
-    id: 1,
-    title: "Private Dining Celebrations",
-    description: "Birthdays, anniversaries and private celebration dining.",
-    ctaLink: ""
-  },
-  {
-    id: 2,
-    title: "Corporate Lunch Packages",
-    description: "Team lunches, client meets and executive dining setups.",
-    ctaLink: ""
-  },
-  {
-    id: 3,
-    title: "Festive Group Reservations",
-    description: "Seasonal group reservations with customizable menus.",
-    ctaLink: ""
-  }
-];
-const FALLBACK_EVENTS = [
-  {
-    id: "fallback-event-1",
-    title: "Weekend Chef Special Tasting",
-    description: "A curated tasting experience with signature seasonal courses.",
-    date: "Upcoming",
-    location: "Restaurant Venue",
-    detailPath: "/events",
-    media: {
-      type: "IMAGE",
-      src: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-      alt: "Restaurant event",
-      width: null,
-      height: null
-    }
-  },
-  {
-    id: "fallback-event-2",
-    title: "Live Kitchen Showcase",
-    description: "Interactive service and chef table showcase for evening guests.",
-    date: "Upcoming",
-    location: "Restaurant Venue",
-    detailPath: "/events",
-    media: {
-      type: "IMAGE",
-      src: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-      alt: "Live kitchen event",
-      width: null,
-      height: null
-    }
-  }
-];
 const normalize$5 = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isRestaurantType$4 = (value = "") => ["restaurant", "resturant"].includes(normalize$5(value));
 const GROUP_BOOKING_ICONS = [
@@ -26872,9 +26725,30 @@ function getGroupBookingIcon(index) {
 function EventCard({ event, index }) {
   const media = event.media;
   const isVideo = media?.type === "VIDEO";
-  const isReel = !!media?.width && !!media?.height && media.width / media.height <= 0.85;
-  const showFullMedia = isVideo || isReel;
-  return /* @__PURE__ */ jsxs(
+  const [isMuted, setIsMuted] = useState(true);
+  const [naturalRatio, setNaturalRatio] = useState(
+    media?.width && media?.height ? media.width / media.height : null
+  );
+  const videoRef = useRef(null);
+  const TARGET_RATIO = 1080 / 1350;
+  const showFullMedia = naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.05;
+  const handleImageLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalHeight > 0) setNaturalRatio(naturalWidth / naturalHeight);
+  };
+  const handleVideoMeta = (e) => {
+    const { videoWidth, videoHeight } = e.currentTarget;
+    if (videoHeight > 0) setNaturalRatio(videoWidth / videoHeight);
+  };
+  const toggleMute = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted((prev) => !prev);
+    }
+  };
+  return /* @__PURE__ */ jsx(
     motion.div,
     {
       initial: { opacity: 0, y: 20 },
@@ -26882,48 +26756,117 @@ function EventCard({ event, index }) {
       viewport: { once: true },
       transition: { delay: index * 0.08 },
       className: "group relative flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl",
-      children: [
-        /* @__PURE__ */ jsxs(
-          "div",
+      children: showFullMedia ? /* @__PURE__ */ jsxs("div", { className: "relative h-full w-full", children: [
+        media?.src ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: media.src,
+              "aria-hidden": "true",
+              className: "absolute inset-0 h-full w-full scale-110 object-cover",
+              style: { filter: "blur(18px)", opacity: 0.55 }
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/40" })
+        ] }) : null,
+        media?.src ? isVideo ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(
+            "video",
+            {
+              ref: videoRef,
+              src: media.src,
+              className: "absolute inset-0 z-10 h-full w-full object-contain",
+              autoPlay: true,
+              muted: true,
+              loop: true,
+              playsInline: true,
+              onLoadedMetadata: handleVideoMeta
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              onClick: toggleMute,
+              className: "absolute bottom-3 right-3 z-30 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80",
+              children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "h-4 w-4" })
+            }
+          )
+        ] }) : /* @__PURE__ */ jsx(
+          "img",
           {
-            className: `relative overflow-hidden bg-card ${showFullMedia ? "h-full" : "h-[280px]"}`,
-            children: [
-              isVideo ? /* @__PURE__ */ jsx(
-                "video",
-                {
-                  src: media?.src,
-                  className: `h-full w-full transition-transform duration-500 group-hover:scale-105 ${isReel ? "object-cover" : "object-cover"}`,
-                  autoPlay: true,
-                  muted: true,
-                  loop: true,
-                  playsInline: true
-                }
-              ) : /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: media?.src,
-                  alt: media?.alt || event.title,
-                  className: `h-full w-full transition-transform duration-500 group-hover:scale-105 ${showFullMedia ? "object-cover" : "object-cover object-center"}`
-                }
-              ),
-              /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3 z-10 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white", children: isVideo ? "Reel" : "Event" }),
-              /* @__PURE__ */ jsx("div", { className: "absolute right-3 top-3 z-10 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
-                /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
-                /* @__PURE__ */ jsx("span", { children: event.location })
-              ] }) })
-            ]
+            src: media.src,
+            alt: media?.alt || event.title,
+            className: "absolute inset-0 z-10 h-full w-full object-contain",
+            onLoad: handleImageLoad
           }
-        ),
-        showFullMedia ? /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/20 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100", children: [
+        ) : /* @__PURE__ */ jsx("div", { className: "absolute inset-0 z-10 flex items-center justify-center", children: /* @__PURE__ */ jsx(Image$1, { className: "h-10 w-10 text-white/20" }) }),
+        /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3 z-20 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white", children: isVideo ? "Reel" : "Event" }),
+        /* @__PURE__ */ jsx("div", { className: "absolute right-3 top-3 z-20 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+          /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
+          /* @__PURE__ */ jsx("span", { children: event.location })
+        ] }) }),
+        /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 z-20 flex translate-y-2 flex-col justify-end bg-gradient-to-t from-black via-black/50 to-transparent p-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100", children: [
           /* @__PURE__ */ jsxs("div", { className: "mb-3", children: [
             /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 text-sm font-bold text-white", children: event.title }),
-            /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[10px] text-white/80", children: event.description })
+            event.description ? /* @__PURE__ */ jsx("p", { className: "mt-1 line-clamp-2 text-[10px] text-white/80", children: event.description }) : null
           ] }),
           /* @__PURE__ */ jsx(Link, { to: event.detailPath, children: /* @__PURE__ */ jsxs(Button, { className: "h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90", children: [
             "View Event ",
             /* @__PURE__ */ jsx(ExternalLink, { className: "ml-2 h-3.5 w-3.5" })
           ] }) })
-        ] }) : /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col p-4", children: [
+        ] })
+      ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "relative h-[280px] overflow-hidden bg-black", children: [
+          media?.src ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(
+              "img",
+              {
+                src: media.src,
+                "aria-hidden": "true",
+                className: "absolute inset-0 h-full w-full scale-110 object-cover",
+                style: { filter: "blur(14px)", opacity: 0.5 }
+              }
+            ),
+            /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-black/20" })
+          ] }) : null,
+          isVideo ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx(
+              "video",
+              {
+                ref: videoRef,
+                src: media?.src,
+                className: "relative z-10 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105",
+                autoPlay: true,
+                muted: true,
+                loop: true,
+                playsInline: true,
+                onLoadedMetadata: handleVideoMeta
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                onClick: toggleMute,
+                className: "absolute bottom-3 right-3 z-30 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80",
+                children: isMuted ? /* @__PURE__ */ jsx(VolumeX, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx(Volume2, { className: "h-4 w-4" })
+              }
+            )
+          ] }) : /* @__PURE__ */ jsx(
+            "img",
+            {
+              src: media?.src,
+              alt: media?.alt || event.title,
+              className: "relative z-10 h-full w-full object-contain transition-transform duration-700 group-hover:scale-105",
+              onLoad: handleImageLoad
+            }
+          ),
+          /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3 z-20 rounded bg-black/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white", children: isVideo ? "Reel" : "Event" }),
+          /* @__PURE__ */ jsx("div", { className: "absolute right-3 top-3 z-20 rounded-full bg-primary px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-md", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
+            /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
+            /* @__PURE__ */ jsx("span", { children: event.location })
+          ] }) })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col p-4", children: [
           /* @__PURE__ */ jsx("h3", { className: "line-clamp-2 font-serif text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary", children: event.title }),
           /* @__PURE__ */ jsxs("div", { className: "mt-2 flex items-center gap-1.5 text-muted-foreground", children: [
             /* @__PURE__ */ jsx(Calendar$1, { size: 12, className: "text-primary" }),
@@ -26935,7 +26878,7 @@ function EventCard({ event, index }) {
             /* @__PURE__ */ jsx(ExternalLink, { className: "ml-2 h-3.5 w-3.5" })
           ] }) }) })
         ] })
-      ]
+      ] })
     }
   );
 }
@@ -26943,9 +26886,9 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
   const ssrEvents = Array.isArray(initialEvents) && initialEvents.length > 0;
   const ssrBookings = Array.isArray(initialGroupBookings) && initialGroupBookings.length > 0;
   const [swiper, setSwiper] = useState(null);
-  const [events, setEvents] = useState(ssrEvents ? initialEvents : FALLBACK_EVENTS);
+  const [events, setEvents] = useState(ssrEvents ? initialEvents : []);
   const [groupBookingItems, setGroupBookingItems] = useState(
-    ssrBookings ? initialGroupBookings : FALLBACK_GROUP_BOOKING_ITEMS
+    ssrBookings ? initialGroupBookings : []
   );
   const [loading, setLoading] = useState(!(ssrEvents || ssrBookings));
   const [restaurantTypeId, setRestaurantTypeId] = useState(initialRestaurantTypeId ?? null);
@@ -27017,20 +26960,21 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
           description: item?.description || "Custom group dining experience.",
           ctaLink: item?.ctaLink || ""
         }));
-        setEvents(mappedEvents.length > 0 ? mappedEvents : FALLBACK_EVENTS);
-        setGroupBookingItems(
-          mappedBookings.length > 0 ? mappedBookings : FALLBACK_GROUP_BOOKING_ITEMS
-        );
+        setEvents(mappedEvents);
+        setGroupBookingItems(mappedBookings);
       } catch (error) {
         console.error("Failed to load restaurant events/group bookings", error);
-        setEvents(FALLBACK_EVENTS);
-        setGroupBookingItems(FALLBACK_GROUP_BOOKING_ITEMS);
+        setEvents([]);
+        setGroupBookingItems([]);
       } finally {
         setLoading(false);
       }
     };
     fetchRestaurantData();
   }, []);
+  if (!loading && events.length === 0 && groupBookingItems.length === 0) {
+    return null;
+  }
   const openGroupBookingForm = (item) => {
     setSelectedOffer(item);
     setStep(1);
@@ -27113,7 +27057,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
               )
             ] })
           ] }),
-          loading ? /* @__PURE__ */ jsx("div", { className: "flex h-[420px] items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "h-8 w-8 animate-spin text-primary" }) }) : /* @__PURE__ */ jsx(
+          loading ? /* @__PURE__ */ jsx("div", { className: "flex h-[420px] items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "h-8 w-8 animate-spin text-primary" }) }) : events.length > 0 ? /* @__PURE__ */ jsx(
             Swiper,
             {
               modules: [Navigation, Autoplay],
@@ -27132,14 +27076,14 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
               className: "!pb-2",
               children: events.map((event, index) => /* @__PURE__ */ jsx(SwiperSlide, { children: /* @__PURE__ */ jsx(EventCard, { event, index }) }, event.id || `${event.title}-${index}`))
             }
-          )
+          ) : /* @__PURE__ */ jsx("div", { className: "flex h-[420px] items-center justify-center rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground", children: "No upcoming restaurant events available." })
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "flex h-full flex-col rounded-2xl border bg-card p-5", children: [
           /* @__PURE__ */ jsxs("div", { className: "mb-4 flex items-center gap-2", children: [
             /* @__PURE__ */ jsx(Users, { className: "h-5 w-5 text-primary" }),
             /* @__PURE__ */ jsx("h3", { className: "text-lg font-serif font-semibold", children: "Group Booking" })
           ] }),
-          /* @__PURE__ */ jsx("div", { className: "space-y-3", children: groupBookingItems.map((item, index) => {
+          /* @__PURE__ */ jsx("div", { className: "space-y-3", children: groupBookingItems.length > 0 ? groupBookingItems.map((item, index) => {
             const Icon = getGroupBookingIcon(index);
             return /* @__PURE__ */ jsx(
               motion.div,
@@ -27168,7 +27112,7 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
               },
               item.id
             );
-          }) }),
+          }) : /* @__PURE__ */ jsx("div", { className: "rounded-xl border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground", children: "Group booking packages are not available right now." }) }),
           /* @__PURE__ */ jsxs("div", { className: "relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl", children: [
             /* @__PURE__ */ jsx("div", { className: "absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" }),
             /* @__PURE__ */ jsx("div", { className: "absolute inset-x-0 top-0 h-px bg-white/70" }),
@@ -27287,30 +27231,6 @@ function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurant
     )
   ] });
 }
-const FALLBACK_NEWS_ITEMS = [
-  {
-    id: "fallback-news-1",
-    category: "PRESS",
-    title: "Kennedia Introduces A Curated Seasonal Tasting Menu",
-    description: "The restaurant unveils a new chef-led tasting experience built around regional produce and elevated evening service.",
-    dateBadge: "2026-02-18",
-    badgeType: "Restaurant",
-    ctaText: "Read Story",
-    ctaLink: "/news",
-    imageUrl: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    id: "fallback-news-2",
-    category: "NEWS",
-    title: "Weekend Brunch Program Expands With Live Kitchen Counters",
-    description: "A refreshed brunch format brings interactive stations and family-style sharing platters.",
-    dateBadge: "2026-01-26",
-    badgeType: "Restaurant",
-    ctaText: "Read Story",
-    ctaLink: "/news",
-    imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80"
-  }
-];
 const normalize$4 = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isRestaurantType$3 = (value = "") => ["restaurant", "resturant"].includes(normalize$4(value));
 const STYLE_CONFIG = {
@@ -27375,14 +27295,14 @@ function NewsCard$1({ item }) {
   });
   return /* @__PURE__ */ jsxs("div", { className: "group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50", children: [
     /* @__PURE__ */ jsxs("div", { className: "relative h-[220px] w-full overflow-hidden bg-black md:h-[240px]", children: [
-      /* @__PURE__ */ jsx(
+      item.imageUrl ? /* @__PURE__ */ jsx(
         "img",
         {
           src: item.imageUrl,
           alt: item.title,
           className: "block h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         }
-      ),
+      ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-muted text-muted-foreground", children: /* @__PURE__ */ jsx(Loader2, { className: "h-6 w-6 opacity-40" }) }),
       /* @__PURE__ */ jsx("div", { className: "absolute left-3 top-3", children: /* @__PURE__ */ jsx("span", { className: "rounded bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md", children: date }) })
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "flex flex-grow flex-col p-5", children: [
@@ -27435,7 +27355,7 @@ function NewsCard$1({ item }) {
 function RestaurantNewsSection({ initialNews }) {
   const swiperRef = useRef(null);
   const ssrLoaded = Array.isArray(initialNews) && initialNews.length > 0;
-  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : FALLBACK_NEWS_ITEMS);
+  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : []);
   const [loading, setLoading] = useState(!ssrLoaded);
   useEffect(() => {
     if (ssrLoaded) return;
@@ -27470,18 +27390,19 @@ function RestaurantNewsSection({ initialNews }) {
           badgeType: item?.badgeTypeName || item?.badgeType || item?.badge?.typeName || "Restaurant",
           ctaText: item?.ctaText || "Read Story",
           ctaLink: buildNewsDetailPath(item),
-          imageUrl: item?.imageUrl || item?.image || item?.media?.[0]?.url || FALLBACK_NEWS_ITEMS[0].imageUrl
+          imageUrl: item?.imageUrl || item?.image || item?.media?.[0]?.url || ""
         }));
-        setNewsItems(mappedNews.length > 0 ? mappedNews : FALLBACK_NEWS_ITEMS);
+        setNewsItems(mappedNews);
       } catch (error) {
         console.error("Failed to load restaurant news", error);
-        setNewsItems(FALLBACK_NEWS_ITEMS);
+        setNewsItems([]);
       } finally {
         setLoading(false);
       }
     };
     fetchRestaurantNews();
   }, [ssrLoaded]);
+  if (!loading && newsItems.length === 0) return null;
   return /* @__PURE__ */ jsx(
     "section",
     {

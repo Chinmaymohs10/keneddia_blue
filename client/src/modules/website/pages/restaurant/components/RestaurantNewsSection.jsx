@@ -15,35 +15,6 @@ import { getAllNews, getPropertyTypes } from "@/Api/Api";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import "swiper/css";
 
-const FALLBACK_NEWS_ITEMS = [
-  {
-    id: "fallback-news-1",
-    category: "PRESS",
-    title: "Kennedia Introduces A Curated Seasonal Tasting Menu",
-    description:
-      "The restaurant unveils a new chef-led tasting experience built around regional produce and elevated evening service.",
-    dateBadge: "2026-02-18",
-    badgeType: "Restaurant",
-    ctaText: "Read Story",
-    ctaLink: "/news",
-    imageUrl:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: "fallback-news-2",
-    category: "NEWS",
-    title: "Weekend Brunch Program Expands With Live Kitchen Counters",
-    description:
-      "A refreshed brunch format brings interactive stations and family-style sharing platters.",
-    dateBadge: "2026-01-26",
-    badgeType: "Restaurant",
-    ctaText: "Read Story",
-    ctaLink: "/news",
-    imageUrl:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-  },
-];
-
 const normalize = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
 const isRestaurantType = (value = "") =>
@@ -112,11 +83,17 @@ function NewsCard({ item }) {
   return (
     <div className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-primary/50">
       <div className="relative h-[220px] w-full overflow-hidden bg-black md:h-[240px]">
-        <img
-          src={item.imageUrl}
-          alt={item.title}
-          className="block h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="block h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+            <Loader2 className="h-6 w-6 opacity-40" />
+          </div>
+        )}
         <div className="absolute left-3 top-3">
           <span className="rounded bg-black/60 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
             {date}
@@ -180,7 +157,7 @@ function NewsCard({ item }) {
 export default function RestaurantNewsSection({ initialNews }) {
   const swiperRef = useRef(null);
   const ssrLoaded = Array.isArray(initialNews) && initialNews.length > 0;
-  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : FALLBACK_NEWS_ITEMS);
+  const [newsItems, setNewsItems] = useState(ssrLoaded ? initialNews : []);
   const [loading, setLoading] = useState(!ssrLoaded);
 
   useEffect(() => {
@@ -252,13 +229,13 @@ export default function RestaurantNewsSection({ initialNews }) {
               item?.imageUrl ||
               item?.image ||
               item?.media?.[0]?.url ||
-              FALLBACK_NEWS_ITEMS[0].imageUrl,
+              "",
           }));
 
-        setNewsItems(mappedNews.length > 0 ? mappedNews : FALLBACK_NEWS_ITEMS);
+        setNewsItems(mappedNews);
       } catch (error) {
         console.error("Failed to load restaurant news", error);
-        setNewsItems(FALLBACK_NEWS_ITEMS);
+        setNewsItems([]);
       } finally {
         setLoading(false);
       }
@@ -266,6 +243,8 @@ export default function RestaurantNewsSection({ initialNews }) {
 
     fetchRestaurantNews();
   }, [ssrLoaded]);
+
+  if (!loading && newsItems.length === 0) return null;
 
   return (
     <section

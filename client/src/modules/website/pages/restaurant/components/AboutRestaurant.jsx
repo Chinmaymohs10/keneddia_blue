@@ -7,73 +7,6 @@ import {
   getPublicRecognitionsByAboutUsId,
 } from "@/Api/Api";
 
-const FALLBACK_SECTIONS = [
-  {
-    id: 1,
-    subTitle: "Ghaziabad Destination",
-    sectionTitle: "A Symphony of Fine Flavors",
-    description:
-      "We believe dining is more than just a meal. It is a curated premium experience designed to ground you in the moment. Our philosophy balances bold Indian tradition with refined global favorites in a thoughtfully designed setting.",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
-    recognitions: [
-      {
-        id: 1,
-        value: "11 AM",
-        title: "Opens Daily",
-        subTitle: "Serving guests every day from morning to night",
-        isActive: true,
-      },
-      {
-        id: 2,
-        value: "INR899",
-        title: "Lunch Buffet",
-        subTitle: "Grand spread served daily from 12 PM to 4 PM",
-        isActive: true,
-      },
-      {
-        id: 3,
-        value: "BYOB",
-        title: "Premium Setting",
-        subTitle: "Bring your own bottle with a curated dining ambience",
-        isActive: true,
-      },
-    ],
-  },
-  {
-    id: 2,
-    subTitle: "Signature Experience",
-    sectionTitle: "Where Heritage Meets Modern Craft",
-    description:
-      "Our chefs blend age-old recipes with contemporary presentation. Each visit becomes a story written with seasonal produce, refined technique, and signature hospitality.",
-    image:
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200",
-    recognitions: [
-      {
-        id: 4,
-        value: "50+",
-        title: "Menu Items",
-        subTitle: "Rotating seasonal specials added regularly",
-        isActive: true,
-      },
-      {
-        id: 5,
-        value: "4.8",
-        title: "Guest Rating",
-        subTitle: "Consistently rated highly across platforms",
-        isActive: true,
-      },
-      {
-        id: 6,
-        value: "15yr",
-        title: "Legacy",
-        subTitle: "Serving guests with established culinary expertise",
-        isActive: true,
-      },
-    ],
-  },
-];
-
 const normalize = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
 
@@ -84,9 +17,7 @@ const mapSection = (section, recognitions = []) => ({
   description:
     section?.description ||
     "Curated dining experience with signature hospitality and thoughtfully designed spaces.",
-  image:
-    section?.media?.find((item) => item?.type === "IMAGE")?.url ||
-    FALLBACK_SECTIONS[0].image,
+  image: section?.media?.find((item) => item?.type === "IMAGE")?.url || "",
   recognitions: recognitions
     .filter((item) => item?.isActive)
     .map((item) => ({
@@ -100,7 +31,7 @@ const mapSection = (section, recognitions = []) => ({
 
 export default function AboutRestaurant({ initialSections }) {
   const ssrLoaded = Array.isArray(initialSections) && initialSections.length > 0;
-  const [sections, setSections] = useState(ssrLoaded ? initialSections : FALLBACK_SECTIONS);
+  const [sections, setSections] = useState(ssrLoaded ? initialSections : []);
   const [loading, setLoading] = useState(!ssrLoaded);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentRecognitionIndex, setCurrentRecognitionIndex] = useState(0);
@@ -119,7 +50,7 @@ export default function AboutRestaurant({ initialSections }) {
         : null;
 
       if (!restaurantType?.id) {
-        setSections(FALLBACK_SECTIONS);
+        setSections([]);
         return;
       }
 
@@ -133,7 +64,7 @@ export default function AboutRestaurant({ initialSections }) {
         : [];
 
       if (activeSections.length === 0) {
-        setSections(FALLBACK_SECTIONS);
+        setSections([]);
         return;
       }
 
@@ -162,10 +93,10 @@ export default function AboutRestaurant({ initialSections }) {
         mapSection(section, recognitionGroups[index] || []),
       );
 
-      setSections(mappedSections.length > 0 ? mappedSections : FALLBACK_SECTIONS);
+      setSections(mappedSections);
     } catch (error) {
       console.error("Failed to load restaurant about sections", error);
-      setSections(FALLBACK_SECTIONS);
+      setSections([]);
     } finally {
       setLoading(false);
     }
@@ -200,7 +131,9 @@ export default function AboutRestaurant({ initialSections }) {
     return () => window.clearInterval(timer);
   }, [currentIndex, sections]);
 
-  const activeSection = sections[currentIndex] || FALLBACK_SECTIONS[0];
+  const activeSection = sections[currentIndex] || null;
+  if (!loading && !activeSection) return null;
+
   const recognitions =
     activeSection?.recognitions?.filter((item) => item?.isActive) || [];
 
@@ -221,11 +154,17 @@ export default function AboutRestaurant({ initialSections }) {
               className="relative"
             >
               <div className="relative z-10 aspect-[4/3] overflow-hidden rounded-xl border border-zinc-200/10 shadow-2xl dark:border-white/10">
-                <img
-                  src={activeSection.image}
-                  alt={activeSection.sectionTitle}
-                  className="h-full w-full object-cover"
-                />
+                {activeSection.image ? (
+                  <img
+                    src={activeSection.image}
+                    alt={activeSection.sectionTitle}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-zinc-400 dark:bg-white/5 dark:text-white/20">
+                    <MapPin className="h-8 w-8" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
               <div className="absolute -bottom-4 -right-4 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0" />
