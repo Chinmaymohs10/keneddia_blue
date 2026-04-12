@@ -4,39 +4,6 @@ import { Calendar, Menu, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
 
-const FALLBACK_SLIDES = [
-  {
-    id: 1,
-    tag: "The Experience",
-    title: "Culinary Artistry Across Asia",
-    desc: "A curated journey through Chinese, Italian, and Indian Tandoor traditions.",
-    img: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "AUTHENTIC",
-    ctaText: "Reserve",
-  },
-  {
-    id: 2,
-    tag: "BYOB Friendly",
-    title: "Your Choice, Our Expertise",
-    desc: "Pair your favorite vintage with our signature Asian Fusion menu.",
-    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "PREMIUM",
-    ctaText: "Reserve",
-  },
-  {
-    id: 3,
-    tag: "The Ambience",
-    title: "Modern Spirit, Timeless Flavor",
-    desc: "An elegant setting designed for intimate dinners and grand celebrations.",
-    img: "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1600",
-    isVideo: false,
-    bgTitle: "ELEGANCE",
-    ctaText: "Reserve",
-  },
-];
-
 const transformApiDataToSlides = (content) =>
   (Array.isArray(content) ? content : [])
     .filter((item) => item.active === true)
@@ -88,7 +55,7 @@ export default function HeroBanner({ initialSlides }) {
   const [slides, setSlides] = useState(
     Array.isArray(initialSlides) && initialSlides.length > 0
       ? initialSlides
-      : FALLBACK_SLIDES,
+      : [],
   );
 
   useEffect(() => {
@@ -145,10 +112,9 @@ export default function HeroBanner({ initialSlides }) {
     setActiveIndex((index + slides.length) % slides.length);
   };
 
-  const activeSlide = useMemo(
-    () => slides[activeIndex] || FALLBACK_SLIDES[0],
-    [activeIndex, slides],
-  );
+  const activeSlide = useMemo(() => slides[activeIndex] || null, [activeIndex, slides]);
+
+  if (!activeSlide) return null;
 
   return (
     <section className="relative h-[90vh] w-full overflow-hidden bg-background">
@@ -335,7 +301,7 @@ export default function HeroBanner({ initialSlides }) {
         </div>
       </div>
 
-      <div className="absolute bottom-48 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
+      <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
         <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
             {slides.map((_, index) => (
