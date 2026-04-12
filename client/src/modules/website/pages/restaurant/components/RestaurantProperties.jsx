@@ -43,6 +43,7 @@ const mapApiToRestaurantUI = (item) => {
     cuisines: amenities.slice(0, 6),
     highlightedAmenities: highlightedAmenities.filter(Boolean),
     nearbyLocation: parent?.nearbyLocations?.[0]?.nearbyLocationName || listing?.landmark || parent?.locationName || "Prime location",
+    area: parent?.area || null,
     serviceHours: "Open Daily",
     googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
     isActive: parent?.isActive && (listing ? listing?.isActive : true),
@@ -146,7 +147,7 @@ export default function RestaurantProperties({ initialRestaurants }) {
                       </div>
                       <div className="grid grid-cols-3 gap-3 pb-1">
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><MapPin className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">City</p><p className="text-xs font-bold text-foreground">{activeRestaurant.city}</p></div>
-                        <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><Building2 className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Type</p><p className="text-xs font-bold text-foreground">{activeRestaurant.type}</p></div>
+                        <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><Map className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Area</p><p className="text-xs font-bold text-foreground">{activeRestaurant.area || "N/A"}</p></div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><CalendarClock className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Rating</p><p className="text-xs font-bold text-foreground">{activeRestaurant.rating || "N/A"}</p></div>
                       </div>
                       <div>
@@ -185,7 +186,7 @@ export default function RestaurantProperties({ initialRestaurants }) {
                     <div className="p-4">
                       <div className="mb-4 grid grid-cols-3 gap-3 border-b border-border pb-4">
                         <div className="text-center"><MapPin className="mx-auto mb-0.5 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">City</p><p className="text-xs font-bold text-foreground">{activeRestaurant.city}</p></div>
-                        <div className="text-center"><Building2 className="mx-auto mb-0.5 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Type</p><p className="text-xs font-bold text-foreground">{activeRestaurant.type}</p></div>
+                        <div className="text-center"><Map className="mx-auto mb-0.5 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Area</p><p className="text-xs font-bold text-foreground">{activeRestaurant.area || "N/A"}</p></div>
                         <div className="text-center"><Star className="mx-auto mb-0.5 h-4 w-4 fill-current text-primary" /><p className="text-[10px] text-muted-foreground">Rating</p><p className="text-xs font-bold text-foreground">{activeRestaurant.rating || "N/A"}</p></div>
                       </div>
                       <div className="mb-4"><h4 className="mb-2 text-xs font-bold text-foreground">Top Highlights</h4><div className="flex flex-wrap gap-1.5">{(activeRestaurant.highlightedAmenities?.length > 0 ? activeRestaurant.highlightedAmenities : ["Dining", "Walk-in Only"]).map((item) => <span key={item} className="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-foreground">{item}</span>)}</div></div>
