@@ -353,10 +353,10 @@ export default function CategoryHero({
                           rel="noopener noreferrer"
                           className="hover:text-primary hover:underline transition cursor-pointer"
                         >
-                          {place.nearbyLocationName}
+                          {typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")}
                         </a>
                       ) : (
-                        <span>{place.nearbyLocationName}</span>
+                        <span>{typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")}</span>
                       )}
                     </div>
                   ))}

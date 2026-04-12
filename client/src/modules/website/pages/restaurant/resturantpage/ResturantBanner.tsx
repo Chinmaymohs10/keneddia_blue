@@ -170,12 +170,10 @@ function ResturantBanner({
       nearbyPlaces:
         propertyData.nearbyLocations?.length > 0
           ? propertyData.nearbyLocations.map((n: any) => ({
-              nearbyLocationName: n.nearbyLocationName,
+              nearbyLocationName: typeof n.nearbyLocationName === "string" ? n.nearbyLocationName : String(n.nearbyLocationName ?? ""),
               googleMapLink: n.googleMapLink,
             }))
-          : FALLBACK_RESTAURANT.nearbyPlaces?.map((name) => ({
-              nearbyLocationName: name,
-            })),
+          : FALLBACK_RESTAURANT.nearbyPlaces ?? [],
     };
   }, [propertyData]);
 
@@ -467,10 +465,10 @@ function ResturantBanner({
                             rel="noopener noreferrer"
                             className="hover:text-primary hover:underline transition cursor-pointer"
                           >
-                            {place.nearbyLocationName}
+                            {typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")}
                           </a>
                         ) : (
-                          <span>{place.nearbyLocationName}</span>
+                          <span>{typeof place.nearbyLocationName === "string" ? place.nearbyLocationName : String(place.nearbyLocationName ?? "")}</span>
                         )}
                       </div>
                     ))}
