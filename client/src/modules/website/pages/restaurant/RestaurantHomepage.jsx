@@ -68,7 +68,7 @@ export default function RestaurantHomepage() {
           <HeroBanner initialSlides={ssr?.heroSlides} />
         </div>
 
-        <RestaurantQuickBooking initialLocations={ssr?.locations} />
+        <RestaurantQuickBooking />
         <RestaurantOffers initialOffers={ssr?.restaurantOffers} />
         <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
         <RestaurantBestSellers initialItems={ssr?.bestSellers} />

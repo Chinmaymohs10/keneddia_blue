@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { getPropertiesByDineInAndTakeaway } from "@/Api/RestaurantApi";
-import { getAllLocations } from "@/Api/Api";
 import { generateSlug } from "@/lib/slugify";
+import RestaurantReserveDialog from "./RestaurantReserveDialog";
 
 const BOOKING_TYPES = [
   { value: "dineIn", label: "Dine In" },
@@ -82,37 +82,32 @@ function CustomSelect({ options, value, onChange, placeholder, disabled }) {
   );
 }
 
-export default function RestaurantQuickBooking({ initialLocations }) {
+const getLocationOptionsFromProperties = (properties) => {
+  const uniqueLocations = Array.from(
+    new Set(
+      (Array.isArray(properties) ? properties : [])
+        .map((property) => property?.locationName?.trim())
+        .filter(Boolean),
+    ),
+  );
+
+  return uniqueLocations.map((locationName) => ({
+    value: locationName,
+    label: locationName,
+  }));
+};
+
+export default function RestaurantQuickBooking() {
   const navigate = useNavigate();
   const [bookingType, setBookingType] = useState("");
   const [location, setLocation] = useState("");
   const [allProperties, setAllProperties] = useState([]);
-  const [locationOptions, setLocationOptions] = useState(
-    Array.isArray(initialLocations) && initialLocations.length > 0
-      ? initialLocations
-      : [],
-  );
+  const [locationOptions, setLocationOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
   const selectedTypeLabel = BOOKING_TYPES.find((o) => o.value === bookingType)?.label ?? "";
-
-  // Fetch locations only if not provided by SSR
-  useEffect(() => {
-    if (Array.isArray(initialLocations) && initialLocations.length > 0) return;
-    getAllLocations()
-      .then((res) => {
-        const data = res.data ?? [];
-        const opts = data
-          .filter((l) => l.name || l.locationName)
-          .map((l) => ({
-            value: l.name || l.locationName,
-            label: l.name || l.locationName,
-          }));
-        setLocationOptions(opts);
-      })
-      .catch(() => {});
-  }, [initialLocations]);
 
   // Filter by selected location (client-side after search)
   const visibleProperties = useMemo(() => {
@@ -122,11 +117,18 @@ export default function RestaurantQuickBooking({ initialLocations }) {
 
   const canSearch = Boolean(bookingType);
 
-  const handleSearch = async () => {
-    if (!bookingType) return;
+  const fetchPropertiesForBookingType = async (selectedBookingType) => {
+    if (!selectedBookingType) {
+      setAllProperties([]);
+      setLocationOptions([]);
+      setIsOpen(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const params = bookingType === "dineIn" ? { dineIn: true } : { takeaway: true };
+      const params =
+        selectedBookingType === "dineIn" ? { dineIn: true } : { takeaway: true };
       const res = await getPropertiesByDineInAndTakeaway(params);
       const filtered = (res.data ?? []).filter(
         (p) =>
@@ -134,13 +136,20 @@ export default function RestaurantQuickBooking({ initialLocations }) {
           p.propertyTypes?.some((t) => t.toLowerCase() === "restaurant"),
       );
       setAllProperties(filtered);
+      setLocationOptions(getLocationOptionsFromProperties(filtered));
       setIsOpen(true);
     } catch {
       setAllProperties([]);
+      setLocationOptions([]);
       setIsOpen(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    if (!bookingType) return;
+    setIsOpen(true);
   };
 
   const handleReserve = (property) => {
@@ -159,12 +168,22 @@ export default function RestaurantQuickBooking({ initialLocations }) {
     setBookingType("");
     setLocation("");
     setAllProperties([]);
+    setLocationOptions([]);
     setIsOpen(false);
+    setSelectedProperty(null);
     // locationOptions intentionally kept — pre-fetched from API
   };
 
   return (
     <div className="relative z-30 mb-12 -mt-10 container mx-auto px-4">
+      <RestaurantReserveDialog
+        open={Boolean(selectedProperty)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProperty(null);
+        }}
+        property={selectedProperty}
+      />
+
       <motion.div
         layout
         className="overflow-visible rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md"
@@ -195,9 +214,8 @@ export default function RestaurantQuickBooking({ initialLocations }) {
                 value={bookingType}
                 onChange={(value) => {
                   setBookingType(value);
-                  setIsOpen(false);
-                  setAllProperties([]);
                   setLocation("");
+                  fetchPropertiesForBookingType(value);
                 }}
                 placeholder="Choose booking type"
               />
@@ -211,8 +229,12 @@ export default function RestaurantQuickBooking({ initialLocations }) {
               <CustomSelect
                 options={locationOptions}
                 value={location}
-                onChange={setLocation}
-                placeholder="Choose location"
+                onChange={(value) => {
+                  setLocation(value);
+                  setIsOpen(true);
+                }}
+                placeholder={bookingType ? "Choose location" : "Select booking type first"}
+                disabled={!bookingType || loading || locationOptions.length === 0}
               />
             </div>
 
@@ -228,7 +250,7 @@ export default function RestaurantQuickBooking({ initialLocations }) {
                 ) : (
                   <Search className="h-4 w-4" />
                 )}
-                {loading ? "Searching..." : "Search"}
+                {loading ? "Loading..." : "Search"}
               </Button>
             </div>
           </div>
@@ -358,7 +380,15 @@ export default function RestaurantQuickBooking({ initialLocations }) {
                               <p className="text-[10px] text-muted-foreground">Reservation Type</p>
                               <p className="text-lg font-bold text-primary">{selectedTypeLabel}</p>
                             </div>
-                            {property.bookingEngineUrl || bookingType === "dineIn" ? (
+                            {bookingType === "dineIn" ? (
+                              <Button
+                                size="sm"
+                                className="w-full px-6 md:w-auto"
+                                onClick={() => setSelectedProperty(property)}
+                              >
+                                Reserve
+                              </Button>
+                            ) : property.bookingEngineUrl ? (
                               <Button
                                 size="sm"
                                 className="w-full px-6 md:w-auto"
