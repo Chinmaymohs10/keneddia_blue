@@ -11434,7 +11434,7 @@ const getAllMenuThumbnails = () => API.get("api/v1/menu-thumbnails/getAllThumbna
 const getMenuThumbnailById = (id) => API.get(`api/v1/menu-thumbnails/getThumbnailById/${id}`);
 const updateMenuThumbnail = (propertyId, thumbnailId, formData) => API.patch(`api/v1/menu-thumbnails/updateThumbnail/${propertyId}/${thumbnailId}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
 const getPropertiesByDineInAndTakeaway = (params) => API.get("api/v1/properties/getPropertiesByDineInAndTakeaway", { params });
-const EMPTY_FORM$6 = {
+const EMPTY_FORM$7 = {
   name: "",
   phone: "",
   email: "",
@@ -11604,7 +11604,7 @@ function GroupBookingSection$1({
   const [propertyTypeId, setPropertyTypeId] = useState(
     initialPropertyTypeId
   );
-  const [formData, setFormData] = useState(EMPTY_FORM$6);
+  const [formData, setFormData] = useState(EMPTY_FORM$7);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 4;
@@ -11809,7 +11809,7 @@ function GroupBookingSection$1({
                               setSelectedOffer(booking);
                               setStep(1);
                               setDateRange(null);
-                              setFormData(EMPTY_FORM$6);
+                              setFormData(EMPTY_FORM$7);
                             },
                             className: `flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`,
                             children: [
@@ -11864,7 +11864,7 @@ function GroupBookingSection$1({
                 setSelectedOffer(null);
                 setStep(1);
                 setDateRange(null);
-                setFormData(EMPTY_FORM$6);
+                setFormData(EMPTY_FORM$7);
               }
             },
             children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[500px]", children: [
@@ -18093,7 +18093,7 @@ const COLOR_PALETTE = [
   { color: "bg-[#FFF3E0] text-[#E67E22]", border: "border-[#FFE0B2]" },
   { color: "bg-[#E8F5E9] text-[#2E7D32]", border: "border-[#C8E6C9]" }
 ];
-const EMPTY_FORM$5 = {
+const EMPTY_FORM$6 = {
   name: "",
   email: "",
   phone: "",
@@ -18132,7 +18132,7 @@ function ResturantpageEvents({ propertyId }) {
   );
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState(EMPTY_FORM$5);
+  const [formData, setFormData] = useState(EMPTY_FORM$6);
   const nextEvent = () => {
     setCurrentIndex((prev) => {
       const nextIdx = prev + 2;
@@ -18194,7 +18194,7 @@ function ResturantpageEvents({ propertyId }) {
     setBookingType(type);
     setSelectedBookingId(id ?? null);
     setStep(1);
-    setFormData(EMPTY_FORM$5);
+    setFormData(EMPTY_FORM$6);
     setShowModal(true);
   };
   const handleFinalSubmit = async () => {
@@ -20507,7 +20507,7 @@ const FALLBACK$1 = {
   description: "A curated dining experience awaits. Reserve your space in our premier destination.",
   footer: "Guaranteed Response within 24 Hours • Call +91-9211308384"
 };
-const EMPTY_FORM$4 = {
+const EMPTY_FORM$5 = {
   guestName: "",
   contactNumber: "",
   date: "",
@@ -20518,7 +20518,7 @@ function ReservationForm({ propertyId }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM$4);
+  const [formData, setFormData] = useState(EMPTY_FORM$5);
   const containerRef = useRef(null);
   const setField = (k, v) => setFormData((p) => ({ ...p, [k]: v }));
   const [header, setHeader] = useState(FALLBACK$1);
@@ -20574,7 +20574,7 @@ function ReservationForm({ propertyId }) {
     }
   };
   const handleReset = () => {
-    setFormData(EMPTY_FORM$4);
+    setFormData(EMPTY_FORM$5);
     setSubmitError(null);
     setCurrentStep(1);
   };
@@ -24614,7 +24614,7 @@ const FALLBACK = {
   description: "Set your time, confirm the details, and let the cafe experience be ready when you arrive.",
   footer: "Guaranteed Response within 24 Hours • Call +91-9211308384"
 };
-const EMPTY_FORM$3 = {
+const EMPTY_FORM$4 = {
   guestName: "",
   contactNumber: "",
   date: "",
@@ -24625,7 +24625,7 @@ function CafeReservationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM$3);
+  const [formData, setFormData] = useState(EMPTY_FORM$4);
   const containerRef = useRef(null);
   const setField = (key, value) => setFormData((prev) => ({ ...prev, [key]: value }));
   const { scrollYProgress } = useScroll({
@@ -24657,7 +24657,7 @@ function CafeReservationForm() {
     }
   };
   const handleReset = () => {
-    setFormData(EMPTY_FORM$3);
+    setFormData(EMPTY_FORM$4);
     setSubmitError(null);
     setCurrentStep(1);
   };
@@ -25319,6 +25319,172 @@ function HeroBanner({ initialSlides }) {
   ] });
 }
 const generateSlug$1 = (text = "") => text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
+const EMPTY_FORM$3 = {
+  guestName: "",
+  contactNumber: "",
+  emailAddress: "",
+  date: "",
+  time: "",
+  totalGuest: "2"
+};
+function RestaurantReserveDialog({
+  open,
+  onOpenChange,
+  property
+}) {
+  const [formData, setFormData] = useState(EMPTY_FORM$3);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const canSubmit = useMemo(
+    () => Boolean(
+      property?.id && formData.guestName.trim() && formData.contactNumber.trim() && formData.emailAddress.trim() && formData.date && formData.time && formData.totalGuest
+    ),
+    [formData, property?.id]
+  );
+  const setField = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+  const handleClose = (nextOpen) => {
+    if (!nextOpen) {
+      setFormData(EMPTY_FORM$3);
+      setIsSubmitting(false);
+    }
+    onOpenChange(nextOpen);
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canSubmit || !property?.id) return;
+    setIsSubmitting(true);
+    try {
+      await createJoiningUs({
+        guestName: formData.guestName.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        emailAddress: formData.emailAddress.trim(),
+        date: formData.date,
+        time: formData.time,
+        totalGuest: Number(formData.totalGuest),
+        propertyId: property.id,
+        propertyName: property.propertyName,
+        phoneNumber: formData.contactNumber.trim(),
+        name: formData.guestName.trim()
+      });
+      toast$2.success("Reservation request sent.");
+      handleClose(false);
+    } catch (error) {
+      console.error("Failed to submit restaurant reservation", error);
+      toast$2.error("Failed to send reservation request.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  return /* @__PURE__ */ jsx(Dialog, { open, onOpenChange: handleClose, children: /* @__PURE__ */ jsxs(DialogContent, { className: "sm:max-w-[560px]", children: [
+    /* @__PURE__ */ jsxs(DialogHeader, { children: [
+      /* @__PURE__ */ jsx(DialogTitle, { className: "font-serif text-2xl", children: "Reserve a Table" }),
+      /* @__PURE__ */ jsx(DialogDescription, { children: property?.propertyName ? `Submit your dine-in request for ${property.propertyName}.` : "Submit your dine-in reservation request." })
+    ] }),
+    /* @__PURE__ */ jsxs("form", { onSubmit: handleSubmit, className: "space-y-5", children: [
+      /* @__PURE__ */ jsxs("div", { className: "grid gap-4 md:grid-cols-2", children: [
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-name", children: "Name" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-name",
+              value: formData.guestName,
+              onChange: (e) => setField("guestName", e.target.value),
+              placeholder: "Your name",
+              required: true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-number", children: "Number" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-number",
+              type: "tel",
+              value: formData.contactNumber,
+              onChange: (e) => setField("contactNumber", e.target.value),
+              placeholder: "Phone number",
+              required: true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2 md:col-span-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-email", children: "Email" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-email",
+              type: "email",
+              value: formData.emailAddress,
+              onChange: (e) => setField("emailAddress", e.target.value),
+              placeholder: "Email address",
+              required: true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-date", children: "Date" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-date",
+              type: "date",
+              value: formData.date,
+              onChange: (e) => setField("date", e.target.value),
+              required: true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-time", children: "Time" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-time",
+              type: "time",
+              value: formData.time,
+              onChange: (e) => setField("time", e.target.value),
+              required: true
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "space-y-2 md:col-span-2", children: [
+          /* @__PURE__ */ jsx(Label, { htmlFor: "reserve-guests", children: "Number of People" }),
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              id: "reserve-guests",
+              type: "number",
+              min: "1",
+              value: formData.totalGuest,
+              onChange: (e) => setField("totalGuest", e.target.value),
+              placeholder: "2",
+              required: true
+            }
+          )
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex justify-end gap-3", children: [
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            type: "button",
+            variant: "outline",
+            onClick: () => handleClose(false),
+            disabled: isSubmitting,
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ jsx(Button, { type: "submit", disabled: !canSubmit || isSubmitting, children: isSubmitting ? /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+          "Sending..."
+        ] }) : "Reserve" })
+      ] })
+    ] })
+  ] }) });
+}
 const BOOKING_TYPES = [
   { value: "dineIn", label: "Dine In" },
   { value: "takeaway", label: "Takeaway" }
@@ -25380,51 +25546,60 @@ function CustomSelect({ options, value, onChange, placeholder, disabled }) {
     ) })
   ] });
 }
-function RestaurantQuickBooking({ initialLocations }) {
+const getLocationOptionsFromProperties = (properties) => {
+  const uniqueLocations = Array.from(
+    new Set(
+      (Array.isArray(properties) ? properties : []).map((property) => property?.locationName?.trim()).filter(Boolean)
+    )
+  );
+  return uniqueLocations.map((locationName) => ({
+    value: locationName,
+    label: locationName
+  }));
+};
+function RestaurantQuickBooking() {
   const navigate = useNavigate();
   const [bookingType, setBookingType] = useState("");
   const [location, setLocation] = useState("");
   const [allProperties, setAllProperties] = useState([]);
-  const [locationOptions, setLocationOptions] = useState(
-    Array.isArray(initialLocations) && initialLocations.length > 0 ? initialLocations : []
-  );
+  const [locationOptions, setLocationOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState(null);
   const selectedTypeLabel = BOOKING_TYPES.find((o) => o.value === bookingType)?.label ?? "";
-  useEffect(() => {
-    if (Array.isArray(initialLocations) && initialLocations.length > 0) return;
-    getAllLocations().then((res) => {
-      const data = res.data ?? [];
-      const opts = data.filter((l) => l.name || l.locationName).map((l) => ({
-        value: l.name || l.locationName,
-        label: l.name || l.locationName
-      }));
-      setLocationOptions(opts);
-    }).catch(() => {
-    });
-  }, [initialLocations]);
   const visibleProperties = useMemo(() => {
     if (!location) return allProperties;
     return allProperties.filter((p) => p.locationName === location);
   }, [allProperties, location]);
   const canSearch = Boolean(bookingType);
-  const handleSearch = async () => {
-    if (!bookingType) return;
+  const fetchPropertiesForBookingType = async (selectedBookingType) => {
+    if (!selectedBookingType) {
+      setAllProperties([]);
+      setLocationOptions([]);
+      setIsOpen(false);
+      return;
+    }
     setLoading(true);
     try {
-      const params = bookingType === "dineIn" ? { dineIn: true } : { takeaway: true };
+      const params = selectedBookingType === "dineIn" ? { dineIn: true } : { takeaway: true };
       const res = await getPropertiesByDineInAndTakeaway(params);
       const filtered = (res.data ?? []).filter(
         (p) => p.isActive && p.propertyTypes?.some((t) => t.toLowerCase() === "restaurant")
       );
       setAllProperties(filtered);
+      setLocationOptions(getLocationOptionsFromProperties(filtered));
       setIsOpen(true);
     } catch {
       setAllProperties([]);
+      setLocationOptions([]);
       setIsOpen(true);
     } finally {
       setLoading(false);
     }
+  };
+  const handleSearch = () => {
+    if (!bookingType) return;
+    setIsOpen(true);
   };
   const handleReserve = (property) => {
     if (property.bookingEngineUrl) {
@@ -25441,208 +25616,233 @@ function RestaurantQuickBooking({ initialLocations }) {
     setBookingType("");
     setLocation("");
     setAllProperties([]);
+    setLocationOptions([]);
     setIsOpen(false);
+    setSelectedProperty(null);
   };
-  return /* @__PURE__ */ jsx("div", { className: "relative z-30 mb-12 -mt-10 container mx-auto px-4", children: /* @__PURE__ */ jsxs(
-    motion.div,
-    {
-      layout: true,
-      className: "overflow-visible rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md",
-      children: [
-        /* @__PURE__ */ jsx("div", { className: "flex items-center justify-between border-b border-border/10 bg-primary/5 p-6", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
-          /* @__PURE__ */ jsx("div", { className: "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg", children: /* @__PURE__ */ jsx(Search, { className: "h-5 w-5" }) }),
-          /* @__PURE__ */ jsxs("div", { children: [
-            /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-medium text-foreground", children: "Find Your Table" }),
-            /* @__PURE__ */ jsx("p", { className: "text-xs uppercase tracking-wider text-muted-foreground", children: "Quick Restaurant Booking" })
-          ] })
-        ] }) }),
-        /* @__PURE__ */ jsxs("div", { className: "p-8", children: [
-          /* @__PURE__ */ jsxs("div", { className: "mb-8 grid grid-cols-1 gap-6 md:grid-cols-3", children: [
-            /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-              /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Booking Type" }),
-              /* @__PURE__ */ jsx(
-                CustomSelect,
-                {
-                  options: BOOKING_TYPES,
-                  value: bookingType,
-                  onChange: (value) => {
-                    setBookingType(value);
-                    setIsOpen(false);
-                    setAllProperties([]);
-                    setLocation("");
-                  },
-                  placeholder: "Choose booking type"
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
-              /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Location" }),
-              /* @__PURE__ */ jsx(
-                CustomSelect,
-                {
-                  options: locationOptions,
-                  value: location,
-                  onChange: setLocation,
-                  placeholder: "Choose location"
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxs(
-              Button,
-              {
-                onClick: handleSearch,
-                disabled: !canSearch || loading,
-                className: "h-14 w-full gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70",
-                children: [
-                  loading ? /* @__PURE__ */ jsx(Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsx(Search, { className: "h-4 w-4" }),
-                  loading ? "Searching..." : "Search"
-                ]
-              }
-            ) })
-          ] }),
-          (bookingType || location) && /* @__PURE__ */ jsxs(
-            motion.div,
-            {
-              initial: { opacity: 0, y: -10 },
-              animate: { opacity: 1, y: 0 },
-              className: "mb-4 flex flex-wrap items-center gap-2",
-              children: [
-                bookingType && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
-                  /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3" }),
-                  selectedTypeLabel,
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: clearFilters,
-                      className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
-                      children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
-                    }
-                  )
-                ] }),
-                location && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
-                  /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
-                  location,
-                  /* @__PURE__ */ jsx(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: () => setLocation(""),
-                      className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
-                      children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
-                    }
-                  )
-                ] }),
-                isOpen && /* @__PURE__ */ jsxs(
-                  Button,
+  return /* @__PURE__ */ jsxs("div", { className: "relative z-30 mb-12 -mt-10 container mx-auto px-4", children: [
+    /* @__PURE__ */ jsx(
+      RestaurantReserveDialog,
+      {
+        open: Boolean(selectedProperty),
+        onOpenChange: (open) => {
+          if (!open) setSelectedProperty(null);
+        },
+        property: selectedProperty
+      }
+    ),
+    /* @__PURE__ */ jsxs(
+      motion.div,
+      {
+        layout: true,
+        className: "overflow-visible rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md",
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "flex items-center justify-between border-b border-border/10 bg-primary/5 p-6", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
+            /* @__PURE__ */ jsx("div", { className: "flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg", children: /* @__PURE__ */ jsx(Search, { className: "h-5 w-5" }) }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-medium text-foreground", children: "Find Your Table" }),
+              /* @__PURE__ */ jsx("p", { className: "text-xs uppercase tracking-wider text-muted-foreground", children: "Quick Restaurant Booking" })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ jsxs("div", { className: "p-8", children: [
+            /* @__PURE__ */ jsxs("div", { className: "mb-8 grid grid-cols-1 gap-6 md:grid-cols-3", children: [
+              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+                /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Booking Type" }),
+                /* @__PURE__ */ jsx(
+                  CustomSelect,
                   {
-                    variant: "ghost",
-                    onClick: () => setIsOpen(false),
-                    className: "h-auto rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground",
-                    children: [
-                      /* @__PURE__ */ jsx(X, { className: "mr-1 h-3 w-3" }),
-                      "Hide Results"
-                    ]
+                    options: BOOKING_TYPES,
+                    value: bookingType,
+                    onChange: (value) => {
+                      setBookingType(value);
+                      setLocation("");
+                      fetchPropertiesForBookingType(value);
+                    },
+                    placeholder: "Choose booking type"
                   }
                 )
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: isOpen && /* @__PURE__ */ jsxs(
-            motion.div,
-            {
-              initial: { opacity: 0, height: 0 },
-              animate: { opacity: 1, height: "auto" },
-              exit: { opacity: 0, height: 0 },
-              transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
-              style: { overflow: "hidden" },
-              className: "border-t border-border/10 pt-6",
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between", children: [
-                  /* @__PURE__ */ jsxs("div", { children: [
-                    /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold uppercase tracking-wider text-muted-foreground", children: "Available Restaurants" }),
-                    /* @__PURE__ */ jsxs("h3", { className: "mt-1.5 text-xl font-serif text-foreground", children: [
-                      selectedTypeLabel,
-                      " Options",
-                      location ? ` · ${location}` : ""
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "space-y-1.5", children: [
+                /* @__PURE__ */ jsx(Label, { className: "text-[10px] font-bold uppercase tracking-wider text-muted-foreground", children: "Location" }),
+                /* @__PURE__ */ jsx(
+                  CustomSelect,
+                  {
+                    options: locationOptions,
+                    value: location,
+                    onChange: (value) => {
+                      setLocation(value);
+                      setIsOpen(true);
+                    },
+                    placeholder: bookingType ? "Choose location" : "Select booking type first",
+                    disabled: !bookingType || loading || locationOptions.length === 0
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "flex items-end", children: /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  onClick: handleSearch,
+                  disabled: !canSearch || loading,
+                  className: "h-14 w-full gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70",
+                  children: [
+                    loading ? /* @__PURE__ */ jsx(Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsx(Search, { className: "h-4 w-4" }),
+                    loading ? "Loading..." : "Search"
+                  ]
+                }
+              ) })
+            ] }),
+            (bookingType || location) && /* @__PURE__ */ jsxs(
+              motion.div,
+              {
+                initial: { opacity: 0, y: -10 },
+                animate: { opacity: 1, y: 0 },
+                className: "mb-4 flex flex-wrap items-center gap-2",
+                children: [
+                  bookingType && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
+                    /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3" }),
+                    selectedTypeLabel,
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: clearFilters,
+                        className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
+                        children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
+                      }
+                    )
+                  ] }),
+                  location && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary", children: [
+                    /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3" }),
+                    location,
+                    /* @__PURE__ */ jsx(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => setLocation(""),
+                        className: "rounded-full p-0.5 transition-colors hover:bg-primary/20",
+                        children: /* @__PURE__ */ jsx(X, { className: "h-3 w-3" })
+                      }
+                    )
+                  ] }),
+                  isOpen && /* @__PURE__ */ jsxs(
+                    Button,
+                    {
+                      variant: "ghost",
+                      onClick: () => setIsOpen(false),
+                      className: "h-auto rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground",
+                      children: [
+                        /* @__PURE__ */ jsx(X, { className: "mr-1 h-3 w-3" }),
+                        "Hide Results"
+                      ]
+                    }
+                  )
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx(AnimatePresence, { initial: false, children: isOpen && /* @__PURE__ */ jsxs(
+              motion.div,
+              {
+                initial: { opacity: 0, height: 0 },
+                animate: { opacity: 1, height: "auto" },
+                exit: { opacity: 0, height: 0 },
+                transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] },
+                style: { overflow: "hidden" },
+                className: "border-t border-border/10 pt-6",
+                children: [
+                  /* @__PURE__ */ jsxs("div", { className: "mb-5 flex flex-col gap-2 md:flex-row md:items-end md:justify-between", children: [
+                    /* @__PURE__ */ jsxs("div", { children: [
+                      /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold uppercase tracking-wider text-muted-foreground", children: "Available Restaurants" }),
+                      /* @__PURE__ */ jsxs("h3", { className: "mt-1.5 text-xl font-serif text-foreground", children: [
+                        selectedTypeLabel,
+                        " Options",
+                        location ? ` · ${location}` : ""
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsxs("p", { className: "text-sm text-muted-foreground", children: [
+                      visibleProperties.length,
+                      " option",
+                      visibleProperties.length === 1 ? "" : "s",
+                      " available"
                     ] })
                   ] }),
-                  /* @__PURE__ */ jsxs("p", { className: "text-sm text-muted-foreground", children: [
-                    visibleProperties.length,
-                    " option",
-                    visibleProperties.length === 1 ? "" : "s",
-                    " available"
-                  ] })
-                ] }),
-                visibleProperties.length > 0 ? /* @__PURE__ */ jsx("div", { className: "space-y-3", children: visibleProperties.map((property, index) => /* @__PURE__ */ jsx(
-                  motion.div,
-                  {
-                    initial: { opacity: 0, y: 20 },
-                    animate: { opacity: 1, y: 0 },
-                    transition: { delay: index * 0.08, duration: 0.3 },
-                    className: "overflow-hidden rounded-lg border border-border/50 bg-background transition-all hover:border-primary/30 hover:shadow-md",
-                    children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between", children: [
-                      /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "mb-1 flex flex-wrap items-center gap-2", children: [
-                          /* @__PURE__ */ jsx("h4", { className: "font-serif text-lg font-medium text-foreground", children: property.propertyName }),
-                          property.dineIn && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary", children: "Dine In" }),
-                          property.takeaway && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground", children: "Takeaway" })
-                        ] }),
-                        property.propertyCategories?.length > 0 && /* @__PURE__ */ jsx("p", { className: "mb-2 text-xs text-muted-foreground", children: property.propertyCategories.join(", ") }),
-                        /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-3", children: [
-                          property.locationName && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
-                            /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3 text-primary" }),
-                            property.locationName
+                  visibleProperties.length > 0 ? /* @__PURE__ */ jsx("div", { className: "space-y-3", children: visibleProperties.map((property, index) => /* @__PURE__ */ jsx(
+                    motion.div,
+                    {
+                      initial: { opacity: 0, y: 20 },
+                      animate: { opacity: 1, y: 0 },
+                      transition: { delay: index * 0.08, duration: 0.3 },
+                      className: "overflow-hidden rounded-lg border border-border/50 bg-background transition-all hover:border-primary/30 hover:shadow-md",
+                      children: /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between", children: [
+                        /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "mb-1 flex flex-wrap items-center gap-2", children: [
+                            /* @__PURE__ */ jsx("h4", { className: "font-serif text-lg font-medium text-foreground", children: property.propertyName }),
+                            property.dineIn && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary", children: "Dine In" }),
+                            property.takeaway && /* @__PURE__ */ jsx("span", { className: "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground", children: "Takeaway" })
                           ] }),
-                          property.address && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
-                            /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3 text-primary" }),
-                            property.address
+                          property.propertyCategories?.length > 0 && /* @__PURE__ */ jsx("p", { className: "mb-2 text-xs text-muted-foreground", children: property.propertyCategories.join(", ") }),
+                          /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-3", children: [
+                            property.locationName && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
+                              /* @__PURE__ */ jsx(MapPin, { className: "h-3 w-3 text-primary" }),
+                              property.locationName
+                            ] }),
+                            property.address && /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-[10px] text-muted-foreground", children: [
+                              /* @__PURE__ */ jsx(UtensilsCrossed, { className: "h-3 w-3 text-primary" }),
+                              property.address
+                            ] })
                           ] })
-                        ] })
-                      ] }),
-                      /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 border-border/10 md:border-l md:pl-4", children: [
-                        /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
-                          /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Reservation Type" }),
-                          /* @__PURE__ */ jsx("p", { className: "text-lg font-bold text-primary", children: selectedTypeLabel })
                         ] }),
-                        property.bookingEngineUrl || bookingType === "dineIn" ? /* @__PURE__ */ jsx(
-                          Button,
-                          {
-                            size: "sm",
-                            className: "w-full px-6 md:w-auto",
-                            onClick: () => handleReserve(property),
-                            children: "Reserve"
-                          }
-                        ) : /* @__PURE__ */ jsx(
-                          Button,
-                          {
-                            size: "sm",
-                            variant: "outline",
-                            className: "w-full px-6 md:w-auto",
-                            onClick: () => {
-                              const citySlug = generateSlug$1(property.locationName || "");
-                              const propertySlug = `${generateSlug$1(property.propertyName)}-${property.id}`;
-                              navigate(`/${citySlug}/${propertySlug}`);
-                            },
-                            children: "Details"
-                          }
-                        )
+                        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4 border-border/10 md:border-l md:pl-4", children: [
+                          /* @__PURE__ */ jsxs("div", { className: "text-right", children: [
+                            /* @__PURE__ */ jsx("p", { className: "text-[10px] text-muted-foreground", children: "Reservation Type" }),
+                            /* @__PURE__ */ jsx("p", { className: "text-lg font-bold text-primary", children: selectedTypeLabel })
+                          ] }),
+                          bookingType === "dineIn" ? /* @__PURE__ */ jsx(
+                            Button,
+                            {
+                              size: "sm",
+                              className: "w-full px-6 md:w-auto",
+                              onClick: () => setSelectedProperty(property),
+                              children: "Reserve"
+                            }
+                          ) : property.bookingEngineUrl ? /* @__PURE__ */ jsx(
+                            Button,
+                            {
+                              size: "sm",
+                              className: "w-full px-6 md:w-auto",
+                              onClick: () => handleReserve(property),
+                              children: "Reserve"
+                            }
+                          ) : /* @__PURE__ */ jsx(
+                            Button,
+                            {
+                              size: "sm",
+                              variant: "outline",
+                              className: "w-full px-6 md:w-auto",
+                              onClick: () => {
+                                const citySlug = generateSlug$1(property.locationName || "");
+                                const propertySlug = `${generateSlug$1(property.propertyName)}-${property.id}`;
+                                navigate(`/${citySlug}/${propertySlug}`);
+                              },
+                              children: "Details"
+                            }
+                          )
+                        ] })
                       ] })
-                    ] })
-                  },
-                  property.id
-                )) }) : /* @__PURE__ */ jsxs("div", { className: "py-8 text-center text-muted-foreground", children: [
-                  /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No options available." }),
-                  /* @__PURE__ */ jsx("p", { className: "mt-1 text-xs", children: "Try clearing the location filter or selecting a different booking type." })
-                ] })
-              ]
-            },
-            "cards"
-          ) })
-        ] })
-      ]
-    }
-  ) });
+                    },
+                    property.id
+                  )) }) : /* @__PURE__ */ jsxs("div", { className: "py-8 text-center text-muted-foreground", children: [
+                    /* @__PURE__ */ jsx("p", { className: "font-medium", children: "No options available." }),
+                    /* @__PURE__ */ jsx("p", { className: "mt-1 text-xs", children: "Try clearing the location filter or selecting a different booking type." })
+                  ] })
+                ]
+              },
+              "cards"
+            ) })
+          ] })
+        ]
+      }
+    )
+  ] });
 }
 const normalize$8 = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 const getAmenityName$5 = (amenity) => typeof amenity === "string" ? amenity : amenity && typeof amenity === "object" && "name" in amenity && typeof amenity.name === "string" ? amenity.name : null;
@@ -28062,7 +28262,7 @@ function RestaurantHomepage() {
         ),
         /* @__PURE__ */ jsxs("main", { children: [
           /* @__PURE__ */ jsx("div", { id: "home", children: /* @__PURE__ */ jsx(HeroBanner, { initialSlides: ssr?.heroSlides }) }),
-          /* @__PURE__ */ jsx(RestaurantQuickBooking, { initialLocations: ssr?.locations }),
+          /* @__PURE__ */ jsx(RestaurantQuickBooking, {}),
           /* @__PURE__ */ jsx(RestaurantOffers, { initialOffers: ssr?.restaurantOffers }),
           /* @__PURE__ */ jsx(RestaurantProperties, { initialRestaurants: ssr?.restaurantProperties }),
           /* @__PURE__ */ jsx(RestaurantBestSellers, { initialItems: ssr?.bestSellers }),
