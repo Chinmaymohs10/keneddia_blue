@@ -121,10 +121,10 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
     .slice(0, 5);
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10">
+    <div className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center py-4">
       {/* Center Logo */}
-      <div className="relative z-20 mb-16">
-        <div className="w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden">
+      <div className="relative z-20 mb-6">
+        <div className="w-28 h-28 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden">
           {logoIcon?.url ? (
             <img
               src={logoIcon.url}
@@ -144,14 +144,14 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
         </div>
 
         {/* Connector line from logo to horizontal bar */}
-        <div className="absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" />
+        <div className="absolute left-1/2 top-full -translate-x-1/2 h-8 w-px bg-primary/20" />
       </div>
 
       {/* Horizontal connector bar */}
-      <div className="relative w-4/5 h-[1px] bg-primary/20 mb-8" />
+      <div className="relative w-4/5 h-[1px] bg-primary/20 mb-4" />
 
       {/* Branch nodes */}
-      <div className="flex justify-between items-start w-full px-4 relative -mt-8">
+      <div className="flex justify-between items-start w-full px-4 relative -mt-4">
         {sortedDivisions.map((v: any, i: number) => (
           <BranchNode key={v.id} item={v} index={i} />
         ))}

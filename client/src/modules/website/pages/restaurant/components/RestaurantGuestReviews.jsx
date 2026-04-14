@@ -160,9 +160,10 @@ export default function RestaurantGuestReviews({
 
       const filtered = list
         .filter((item) =>
-          resolvedRestaurantTypeId != null
+          item?.isActive !== false &&
+          (resolvedRestaurantTypeId != null
             ? Number(item?.propertyTypeId) === Number(resolvedRestaurantTypeId)
-            : false,
+            : false),
         )
         .sort((a, b) => {
           const dateA = new Date(a?.createdAt || 0).getTime();
@@ -180,7 +181,6 @@ export default function RestaurantGuestReviews({
   };
 
   useEffect(() => {
-    if (ssrLoaded && initialRestaurantTypeId != null) return;
     const init = async () => {
       try {
         setIsLoading(true);

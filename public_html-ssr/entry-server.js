@@ -3280,7 +3280,7 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }) {
         {
           src: logoIcon.url,
           alt: logoIcon.alt || logoText || "Group Logo",
-          className: "w-full h-full object-cover"
+          className: "w-full h-full object-cover dark:brightness-110 dark:contrast-110"
         }
       ) : /* @__PURE__ */ jsxs("div", { className: "text-center px-2", children: [
         /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold text-foreground leading-none", children: logoText }),
@@ -3295,14 +3295,14 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }) {
 function BranchNode({ item, index }) {
   const hasLink = !!item.ctaLink?.trim();
   const iconImageUrl = item.icons?.url;
-  const cardContent = iconImageUrl ? /* @__PURE__ */ jsx("div", { className: "mb-3 flex items-center justify-center", children: /* @__PURE__ */ jsx(
+  const cardContent = iconImageUrl ? /* @__PURE__ */ jsx("div", { className: "mb-3 flex items-center justify-center", children: /* @__PURE__ */ jsx("div", { className: "w-14 h-14 rounded-full bg-foreground/5 dark:bg-white/10 border border-border dark:border-white/15 flex items-center justify-center transition group-hover:bg-primary/10 dark:group-hover:bg-primary/20", children: /* @__PURE__ */ jsx(
     "img",
     {
       src: iconImageUrl,
       alt: item.title,
-      className: "h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition"
+      className: "h-8 w-auto object-contain opacity-80 group-hover:opacity-100 transition dark:brightness-0 dark:invert dark:opacity-90"
     }
-  ) }) : null;
+  ) }) }) : null;
   return /* @__PURE__ */ jsxs(
     motion.div,
     {
@@ -3332,12 +3332,12 @@ function BranchNode({ item, index }) {
 function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }) {
   const safeVerticals = Array.isArray(verticals) ? verticals.slice(0, 5) : [];
   return /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center gap-6 py-4", children: [
-    /* @__PURE__ */ jsx("div", { className: "bg-card shadow-xl border border-primary/20 px-4 py-3 rounded-xl flex items-center justify-center", children: logoIcon?.url ? /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsx("div", { className: "bg-card dark:bg-card shadow-xl border border-primary/20 dark:border-primary/30 px-4 py-3 rounded-xl flex items-center justify-center", children: logoIcon?.url ? /* @__PURE__ */ jsx(
       "img",
       {
         src: logoIcon.url,
         alt: logoIcon.alt || logoText || "Group Logo",
-        className: "max-h-12 w-auto object-contain"
+        className: "max-h-12 w-auto object-contain dark:brightness-110 dark:contrast-110"
       }
     ) : /* @__PURE__ */ jsxs("div", { className: "text-center px-2", children: [
       /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold text-foreground leading-none", children: logoText }),
@@ -3349,12 +3349,12 @@ function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }) {
       const hasLink = !!v.ctaLink?.trim();
       const iconImageUrl = v.icons?.url;
       const cardContent = /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3", children: [
-        /* @__PURE__ */ jsx("div", { className: "w-9 h-9 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0", children: iconImageUrl && /* @__PURE__ */ jsx(
+        /* @__PURE__ */ jsx("div", { className: "w-9 h-9 rounded-full bg-foreground/5 dark:bg-white/10 border border-border dark:border-white/15 overflow-hidden flex items-center justify-center shrink-0", children: iconImageUrl && /* @__PURE__ */ jsx(
           "img",
           {
             src: iconImageUrl,
             alt: v.title,
-            className: "h-6 w-auto object-contain opacity-90"
+            className: "h-5 w-auto object-contain opacity-80 dark:brightness-0 dark:invert dark:opacity-90"
           }
         ) }),
         /* @__PURE__ */ jsx("h3", { className: "text-base font-bold", children: v.title }),
@@ -5100,6 +5100,7 @@ function OurStoryPreview({
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
@@ -5329,14 +5330,8 @@ function OurStoryPreview({
             spaceBetween: 15,
             slidesPerView: 1.2,
             breakpoints: { 768: { slidesPerView: 3 } },
-            autoplay: { delay: 6e3, disableOnInteraction: false },
+            autoplay: { delay: 6e3, disableOnInteraction: false, pauseOnMouseEnter: true },
             onSwiper: (s) => swiperRef.current = s,
-            onMouseEnter: () => {
-              swiperRef.current?.autoplay?.stop();
-            },
-            onMouseLeave: () => {
-              swiperRef.current?.autoplay?.start();
-            },
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
               const allMedia = buildMediaList$4(item);
@@ -5375,15 +5370,22 @@ function OurStoryPreview({
             /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-gray-800 truncate", children: authorName || "Guest User" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(
-          "textarea",
-          {
-            value: feedbackText,
-            onChange: (e) => setFeedbackText(e.target.value),
-            placeholder: "Tell us about your stay...",
-            className: "w-full flex-grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none mb-3"
-          }
-        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative mb-3 flex flex-col grow", children: [
+          /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              value: feedbackText,
+              onChange: (e) => setFeedbackText(e.target.value.slice(0, 50)),
+              placeholder: "Tell us about your stay...",
+              maxLength: 50,
+              className: "w-full grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
+            }
+          ),
+          /* @__PURE__ */ jsxs("span", { className: `self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 50 ? "text-red-500" : "text-muted-foreground"}`, children: [
+            feedbackText.length,
+            "/50"
+          ] })
+        ] }),
         /* @__PURE__ */ jsx("div", { className: "mb-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/20 border border-transparent focus-within:border-primary/40 focus-within:bg-white transition-all", children: [
           /* @__PURE__ */ jsx(
             Youtube,
@@ -5474,15 +5476,21 @@ function OurStoryPreview({
         children: [
           /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
             /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
-            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
+            /* @__PURE__ */ jsx("button", { onClick: () => {
+              setShowPopup(false);
+              setFormError("");
+            }, children: /* @__PURE__ */ jsx(X, { size: 20 }) })
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
             /* @__PURE__ */ jsx(
               "input",
               {
                 value: authorName,
-                onChange: (e) => setAuthorName(e.target.value),
-                placeholder: "Full Name",
+                onChange: (e) => {
+                  setAuthorName(e.target.value);
+                  setFormError("");
+                },
+                placeholder: "Full Name *",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
@@ -5490,8 +5498,12 @@ function OurStoryPreview({
               "input",
               {
                 value: email,
-                onChange: (e) => setEmail(e.target.value),
+                onChange: (e) => {
+                  setEmail(e.target.value);
+                  setFormError("");
+                },
                 placeholder: "Email",
+                type: "email",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
@@ -5499,16 +5511,40 @@ function OurStoryPreview({
               "input",
               {
                 value: phone,
-                onChange: (e) => setPhone(e.target.value),
-                placeholder: "Phone",
+                onChange: (e) => {
+                  setPhone(e.target.value.replace(/\D/g, ""));
+                  setFormError("");
+                },
+                placeholder: "Phone (10 digits)",
                 maxLength: 10,
+                inputMode: "numeric",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
+            formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError }),
             /* @__PURE__ */ jsx(
               "button",
               {
                 onClick: () => {
+                  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                  const phoneValid = /^\d{10}$/.test(phone.trim());
+                  if (!authorName.trim()) {
+                    setFormError("Full name is required.");
+                    return;
+                  }
+                  if (!email.trim() && !phone.trim()) {
+                    setFormError("Please provide email or phone number.");
+                    return;
+                  }
+                  if (email.trim() && !emailValid) {
+                    setFormError("Please enter a valid email address.");
+                    return;
+                  }
+                  if (phone.trim() && !phoneValid) {
+                    setFormError("Phone number must be exactly 10 digits.");
+                    return;
+                  }
+                  setFormError("");
                   setIsVerified(true);
                   setShowPopup(false);
                   handleSubmit();
@@ -11249,6 +11285,7 @@ function HotelReviewsSection({
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
@@ -11511,14 +11548,8 @@ function HotelReviewsSection({
             spaceBetween: 15,
             slidesPerView: 1.2,
             breakpoints: { 768: { slidesPerView: 3 } },
-            autoplay: { delay: 6e3, disableOnInteraction: false },
+            autoplay: { delay: 6e3, disableOnInteraction: false, pauseOnMouseEnter: true },
             onSwiper: (s) => swiperRef.current = s,
-            onMouseEnter: () => {
-              swiperRef.current?.autoplay?.stop();
-            },
-            onMouseLeave: () => {
-              swiperRef.current?.autoplay?.start();
-            },
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
               const allMedia = buildMediaList$3(item);
@@ -11557,15 +11588,22 @@ function HotelReviewsSection({
             /* @__PURE__ */ jsx("p", { className: "text-sm font-bold text-gray-800 truncate", children: authorName || "Guest User" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(
-          "textarea",
-          {
-            value: feedbackText,
-            onChange: (e) => setFeedbackText(e.target.value),
-            placeholder: "Tell us about your stay...",
-            className: "w-full flex-grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none mb-3"
-          }
-        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative mb-3 flex flex-col grow", children: [
+          /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              value: feedbackText,
+              onChange: (e) => setFeedbackText(e.target.value.slice(0, 50)),
+              placeholder: "Tell us about your stay...",
+              maxLength: 50,
+              className: "w-full grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
+            }
+          ),
+          /* @__PURE__ */ jsxs("span", { className: `self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 50 ? "text-red-500" : "text-muted-foreground"}`, children: [
+            feedbackText.length,
+            "/50"
+          ] })
+        ] }),
         /* @__PURE__ */ jsx("div", { className: "mb-3", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/20 border border-transparent focus-within:border-primary/40 focus-within:bg-white transition-all", children: [
           /* @__PURE__ */ jsx(
             Youtube,
@@ -11656,15 +11694,21 @@ function HotelReviewsSection({
         children: [
           /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-6", children: [
             /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
-            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
+            /* @__PURE__ */ jsx("button", { onClick: () => {
+              setShowPopup(false);
+              setFormError("");
+            }, children: /* @__PURE__ */ jsx(X, { size: 20 }) })
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
             /* @__PURE__ */ jsx(
               "input",
               {
                 value: authorName,
-                onChange: (e) => setAuthorName(e.target.value),
-                placeholder: "Full Name",
+                onChange: (e) => {
+                  setAuthorName(e.target.value);
+                  setFormError("");
+                },
+                placeholder: "Full Name *",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
@@ -11672,8 +11716,12 @@ function HotelReviewsSection({
               "input",
               {
                 value: email,
-                onChange: (e) => setEmail(e.target.value),
+                onChange: (e) => {
+                  setEmail(e.target.value);
+                  setFormError("");
+                },
                 placeholder: "Email",
+                type: "email",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
@@ -11681,16 +11729,40 @@ function HotelReviewsSection({
               "input",
               {
                 value: phone,
-                onChange: (e) => setPhone(e.target.value),
-                placeholder: "Phone",
+                onChange: (e) => {
+                  setPhone(e.target.value.replace(/\D/g, ""));
+                  setFormError("");
+                },
+                placeholder: "Phone (10 digits)",
                 maxLength: 10,
+                inputMode: "numeric",
                 className: "w-full p-3 bg-muted rounded-lg outline-none"
               }
             ),
+            formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError }),
             /* @__PURE__ */ jsx(
               "button",
               {
                 onClick: () => {
+                  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                  const phoneValid = /^\d{10}$/.test(phone.trim());
+                  if (!authorName.trim()) {
+                    setFormError("Full name is required.");
+                    return;
+                  }
+                  if (!email.trim() && !phone.trim()) {
+                    setFormError("Please provide email or phone number.");
+                    return;
+                  }
+                  if (email.trim() && !emailValid) {
+                    setFormError("Please enter a valid email address.");
+                    return;
+                  }
+                  if (phone.trim() && !phoneValid) {
+                    setFormError("Phone number must be exactly 10 digits.");
+                    return;
+                  }
+                  setFormError("");
                   setIsVerified(true);
                   setShowPopup(false);
                   handleSubmit();
@@ -11847,12 +11919,12 @@ const formatDate$5 = (dateString) => {
     month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
   };
 };
-const CARD_COLORS$1 = [
-  "bg-pink-50 border-pink-200 hover:border-pink-300 dark:bg-pink-950/25 dark:border-pink-900/60 dark:hover:border-pink-700/70",
-  "bg-blue-50 border-blue-200 hover:border-blue-300 dark:bg-blue-950/25 dark:border-blue-900/60 dark:hover:border-blue-700/70",
-  "bg-orange-50 border-orange-200 hover:border-orange-300 dark:bg-orange-950/25 dark:border-orange-900/60 dark:hover:border-orange-700/70",
-  "bg-purple-50 border-purple-200 hover:border-purple-300 dark:bg-purple-950/25 dark:border-purple-900/60 dark:hover:border-purple-700/70",
-  "bg-green-50 border-green-200 hover:border-green-300 dark:bg-green-950/25 dark:border-green-900/60 dark:hover:border-green-700/70"
+const ICON_COLORS = [
+  "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-950/40 dark:text-pink-400 dark:border-pink-800/60",
+  "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60",
+  "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800/60",
+  "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800/60",
+  "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800/60"
 ];
 function EventCard$3({ event, index }) {
   const navigate = useNavigate();
@@ -12207,8 +12279,8 @@ function GroupBookingSection$1({
                         ] })
                       ] }),
                       groupBookings.length === 0 ? /* @__PURE__ */ jsx("div", { className: "text-center py-8 text-muted-foreground text-sm flex-1", children: "No group booking packages available." }) : /* @__PURE__ */ jsx("div", { className: "space-y-3 flex-1", children: paginatedBookings.map((booking, index) => {
-                        const colorCls = CARD_COLORS$1[index % CARD_COLORS$1.length];
-                        return /* @__PURE__ */ jsxs(
+                        const iconColorCls = ICON_COLORS[index % ICON_COLORS.length];
+                        return /* @__PURE__ */ jsx(
                           "div",
                           {
                             onClick: () => {
@@ -12217,20 +12289,20 @@ function GroupBookingSection$1({
                               setDateRange(null);
                               setFormData(EMPTY_FORM$7);
                             },
-                            className: `flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`,
-                            children: [
-                              /* @__PURE__ */ jsx("div", { className: "w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0", children: booking.media?.[0]?.url ? /* @__PURE__ */ jsx(
+                            className: "group overflow-hidden rounded-xl border border-border bg-background cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-md",
+                            children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 p-3", children: [
+                              /* @__PURE__ */ jsx("div", { className: `w-12 h-12 shrink-0 rounded-full border overflow-hidden flex items-center justify-center shadow-sm ${iconColorCls}`, children: booking.media?.[0]?.url ? /* @__PURE__ */ jsx(
                                 "img",
                                 {
                                   src: booking.media[0].url,
                                   alt: booking.title,
                                   className: "w-full h-full object-cover"
                                 }
-                              ) : /* @__PURE__ */ jsx(Image$1, { className: "w-5 h-5 text-muted-foreground/40 m-auto" }) }),
+                              ) : /* @__PURE__ */ jsx(Image$1, { className: "w-5 h-5 opacity-60" }) }),
                               /* @__PURE__ */ jsxs("div", { className: "flex-1 min-w-0", children: [
-                                /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary", children: booking.title }),
-                                booking.description && /* @__PURE__ */ jsx("p", { className: "mt-0.5 line-clamp-2 text-[11px] text-muted-foreground dark:text-foreground/80", children: booking.description }),
-                                booking.ctaLink && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight", children: [
+                                /* @__PURE__ */ jsx("p", { className: "text-sm font-semibold line-clamp-1 transition-colors group-hover:text-primary", children: booking.title }),
+                                booking.description && /* @__PURE__ */ jsx("p", { className: "mt-0.5 line-clamp-2 text-[11px] text-muted-foreground", children: booking.description }),
+                                booking.ctaLink && /* @__PURE__ */ jsxs("span", { className: "inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight", children: [
                                   booking.ctaText || "Details",
                                   " ",
                                   /* @__PURE__ */ jsx(ExternalLink, { size: 9 })
@@ -12240,10 +12312,10 @@ function GroupBookingSection$1({
                                 ArrowRight$1,
                                 {
                                   size: 14,
-                                  className: "text-muted-foreground/40 group-hover:text-primary transition-colors"
+                                  className: "text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0"
                                 }
                               )
-                            ]
+                            ] })
                           },
                           booking.id
                         );
@@ -12979,7 +13051,7 @@ function HotelHeroSection({ slides, loading }) {
                   "div",
                   {
                     className: "absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center",
-                    style: { top: "64px", bottom: "2.5rem" },
+                    style: { top: "64px", bottom: "6.5rem" },
                     children: [
                       /* @__PURE__ */ jsx(
                         motion.h1,
@@ -13024,7 +13096,7 @@ function HotelHeroSection({ slides, loading }) {
                     ]
                   }
                 ),
-                /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3", children: [
+                /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3", children: [
                   /* @__PURE__ */ jsx(
                     "button",
                     {
@@ -14159,6 +14231,7 @@ function FindYourStay({
   const [guests, setGuests] = useState(
     initialGuests || { adults: 2, children: 0, rooms: 1 }
   );
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const startDate = Array.isArray(date) ? date[0] : date;
@@ -14195,7 +14268,7 @@ function FindYourStay({
         /* @__PURE__ */ jsxs("div", { className: "stay-search-group flex-1 grid grid-cols-2 gap-3", children: [
           /* @__PURE__ */ jsxs("div", { className: "flex flex-col", children: [
             /* @__PURE__ */ jsx("span", { className: "stay-search-label", children: "Check-in" }),
-            /* @__PURE__ */ jsxs(Popover, { children: [
+            /* @__PURE__ */ jsxs(Popover, { open: calendarOpen, onOpenChange: setCalendarOpen, children: [
               /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxs("button", { className: "stay-search-trigger", children: [
                 /* @__PURE__ */ jsx(Calendar$1, { className: "w-4 h-4 text-primary" }),
                 startDate ? format(startDate, "EEE, dd MMM") : "Select"
@@ -14206,17 +14279,29 @@ function FindYourStay({
                   selectRange: true,
                   value: date,
                   minDate: /* @__PURE__ */ new Date(),
-                  onChange: (val) => setDate(val)
+                  onChange: (val) => {
+                    setDate(val);
+                    if (Array.isArray(val) && val[0] && val[1]) {
+                      setCalendarOpen(false);
+                    }
+                  }
                 }
               ) })
             ] })
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "flex flex-col border-l border-border/10 pl-3", children: [
             /* @__PURE__ */ jsx("span", { className: "stay-search-label", children: "Check-out" }),
-            /* @__PURE__ */ jsxs("div", { className: "stay-search-trigger", children: [
-              /* @__PURE__ */ jsx(Calendar$1, { className: "w-4 h-4 text-primary" }),
-              endDate ? format(endDate, "EEE, dd MMM") : "Select"
-            ] })
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                className: "stay-search-trigger",
+                onClick: () => setCalendarOpen(true),
+                children: [
+                  /* @__PURE__ */ jsx(Calendar$1, { className: "w-4 h-4 text-primary" }),
+                  endDate ? format(endDate, "EEE, dd MMM") : "Select"
+                ]
+              }
+            )
           ] })
         ] }),
         /* @__PURE__ */ jsxs("div", { className: "stay-search-group flex-1", children: [
@@ -15234,6 +15319,36 @@ function RightSidebar({
         ]
       }
     ),
+    visibleBookingPartners.length > 0 && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
+      /* @__PURE__ */ jsx("h4", { className: "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center", children: "View on Other Platforms" }),
+      /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center justify-center gap-2", children: visibleBookingPartners.map((partner) => {
+        const fallbackLogo = PARTNER_LOGOS[normalizePartnerName(partner.title)] || genericPartnerLogo;
+        const logoSrc = partner?.icon?.url || fallbackLogo;
+        return /* @__PURE__ */ jsxs(
+          "a",
+          {
+            href: partner.url,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "hotel-partner-link group",
+            title: partner.title || "Booking Partner",
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white", children: /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: logoSrc,
+                  alt: partner.title || "Booking Partner",
+                  className: "h-full w-full object-contain"
+                }
+              ) }),
+              /* @__PURE__ */ jsx("span", { className: "max-w-[120px] truncate text-[11px] font-bold text-foreground", children: partner.title || "Booking Partner" }),
+              /* @__PURE__ */ jsx(ExternalLink, { className: "h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" })
+            ]
+          },
+          partner.id
+        );
+      }) })
+    ] }),
     /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-map-card group", children: [
       /* @__PURE__ */ jsxs("div", { className: "h-44 relative w-full overflow-hidden", children: [
         /* @__PURE__ */ jsx(
@@ -15276,7 +15391,7 @@ function RightSidebar({
         /* @__PURE__ */ jsx(
           "a",
           {
-            href: hotel.coordinates ? `https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`,
+            href: hotel.addressUrl || (hotel.coordinates ? `https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`),
             target: "_blank",
             rel: "noopener noreferrer",
             className: "hotel-sidebar-map-action",
@@ -15386,36 +15501,6 @@ function RightSidebar({
         )
       ] })
     ] }) }),
-    visibleBookingPartners.length > 0 && /* @__PURE__ */ jsxs("div", { className: "hotel-sidebar-card", children: [
-      /* @__PURE__ */ jsx("h4", { className: "text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center", children: "View on Other Platforms" }),
-      /* @__PURE__ */ jsx("div", { className: "flex flex-wrap items-center justify-center gap-2", children: visibleBookingPartners.map((partner) => {
-        const fallbackLogo = PARTNER_LOGOS[normalizePartnerName(partner.title)] || genericPartnerLogo;
-        const logoSrc = partner?.icon?.url || fallbackLogo;
-        return /* @__PURE__ */ jsxs(
-          "a",
-          {
-            href: partner.url,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            className: "hotel-partner-link group",
-            title: partner.title || "Booking Partner",
-            children: [
-              /* @__PURE__ */ jsx("div", { className: "flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white", children: /* @__PURE__ */ jsx(
-                "img",
-                {
-                  src: logoSrc,
-                  alt: partner.title || "Booking Partner",
-                  className: "h-full w-full object-contain"
-                }
-              ) }),
-              /* @__PURE__ */ jsx("span", { className: "max-w-[120px] truncate text-[11px] font-bold text-foreground", children: partner.title || "Booking Partner" }),
-              /* @__PURE__ */ jsx(ExternalLink, { className: "h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" })
-            ]
-          },
-          partner.id
-        );
-      }) })
-    ] }),
     /* @__PURE__ */ jsxs(
       Button,
       {
@@ -15699,14 +15784,35 @@ function StarDisplay({ rating }) {
 }
 function UserInfoModal({ message, rating, onSubmit, onClose }) {
   const [info, setInfo] = useState({ name: "", email: "", phone: "" });
-  const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState("");
+  const setField = (field, value) => {
+    setInfo((prev) => ({ ...prev, [field]: value }));
+    setFormError("");
+  };
   const validate = () => {
-    const e = {};
-    if (!info.name.trim()) e.name = "Name is required";
-    if (!info.email.trim() || !/\S+@\S+\.\S+/.test(info.email)) e.email = "Valid email required";
-    if (!info.phone.trim() || !/^\d{10}$/.test(info.phone)) e.phone = "10-digit phone required";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    const emailValid = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(info.email.trim());
+    const phoneValid = /^\d{10}$/.test(info.phone.trim());
+    if (!info.name.trim()) {
+      setFormError("Full name is required.");
+      return false;
+    }
+    if (!info.email.trim()) {
+      setFormError("Email address is required.");
+      return false;
+    }
+    if (!emailValid) {
+      setFormError("Please enter a valid email address (e.g. name@example.com).");
+      return false;
+    }
+    if (!info.phone.trim()) {
+      setFormError("Phone number is required.");
+      return false;
+    }
+    if (!phoneValid) {
+      setFormError("Phone number must be exactly 10 digits.");
+      return false;
+    }
+    return true;
   };
   return /* @__PURE__ */ jsx("div", { className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm", children: /* @__PURE__ */ jsxs("div", { className: "bg-background border border-border rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 relative animate-in fade-in zoom-in-95 duration-200", children: [
     /* @__PURE__ */ jsx("button", { onClick: onClose, className: "absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors", children: /* @__PURE__ */ jsx(X, { className: "w-4 h-4" }) }),
@@ -15723,18 +15829,35 @@ function UserInfoModal({ message, rating, onSubmit, onClose }) {
       ] })
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "space-y-3", children: [
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx(Input, { placeholder: "Your name *", value: info.name, onChange: (e) => setInfo({ ...info, name: e.target.value }), className: errors.name ? "border-red-400" : "" }),
-        errors.name && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.name })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx(Input, { placeholder: "Email address *", type: "email", value: info.email, onChange: (e) => setInfo({ ...info, email: e.target.value }), className: errors.email ? "border-red-400" : "" }),
-        errors.email && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.email })
-      ] }),
-      /* @__PURE__ */ jsxs("div", { children: [
-        /* @__PURE__ */ jsx(Input, { placeholder: "Phone number *", type: "tel", value: info.phone, onChange: (e) => setInfo({ ...info, phone: e.target.value }), className: errors.phone ? "border-red-400" : "" }),
-        errors.phone && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 mt-1", children: errors.phone })
-      ] })
+      /* @__PURE__ */ jsx(
+        Input,
+        {
+          placeholder: "Full name *",
+          value: info.name,
+          onChange: (e) => setField("name", e.target.value)
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        Input,
+        {
+          placeholder: "Email address *",
+          type: "email",
+          value: info.email,
+          onChange: (e) => setField("email", e.target.value)
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        Input,
+        {
+          placeholder: "Phone number * (10 digits)",
+          type: "tel",
+          inputMode: "numeric",
+          maxLength: 10,
+          value: info.phone,
+          onChange: (e) => setField("phone", e.target.value.replace(/\D/g, ""))
+        }
+      ),
+      formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError })
     ] }),
     /* @__PURE__ */ jsxs(Button, { onClick: () => {
       if (validate()) onSubmit(info);
@@ -17318,13 +17441,13 @@ function HotelDetail() {
                   /* @__PURE__ */ jsx(Info, { className: "w-4 h-4" }),
                   " OTHER POLICIES"
                 ] }),
-                /* @__PURE__ */ jsx("div", { className: "hotel-policy-box", children: /* @__PURE__ */ jsx("ul", { className: "grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2", children: policies?.policies?.map((p) => /* @__PURE__ */ jsxs(
+                /* @__PURE__ */ jsx("div", { className: "hotel-policy-box", children: /* @__PURE__ */ jsx("ul", { className: "grid grid-cols-2 gap-x-4 gap-y-1.5", children: policies?.policies?.map((p) => /* @__PURE__ */ jsxs(
                   "li",
                   {
-                    className: "flex items-start gap-2 text-foreground",
+                    className: "flex items-center gap-1.5",
                     children: [
-                      /* @__PURE__ */ jsx("span", { className: "mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" }),
-                      /* @__PURE__ */ jsx("span", { className: "leading-snug text-foreground dark:text-foreground/85", children: p.name })
+                      /* @__PURE__ */ jsx("span", { className: "h-1 w-1 shrink-0 rounded-full bg-red-500" }),
+                      /* @__PURE__ */ jsx("span", { className: "text-[11px] leading-tight text-foreground dark:text-foreground/85 truncate", title: p.name, children: p.name })
                     ]
                   },
                   p.id
@@ -17425,7 +17548,8 @@ function ResturantBanner({
       rating: propertyData.rating ?? FALLBACK_RESTAURANT.rating,
       price: propertyData.price ?? FALLBACK_RESTAURANT.price,
       media: propertyData.media ?? FALLBACK_RESTAURANT.media,
-      coordinates: propertyData.coordinates ?? (propertyData.latitude && propertyData.longitude ? { lat: propertyData.latitude, lng: propertyData.longitude } : FALLBACK_RESTAURANT.coordinates),
+      coordinates: propertyData.coordinates ?? (propertyData.latitude && propertyData.longitude ? { lat: propertyData.latitude, lng: propertyData.longitude } : null),
+      addressUrl: propertyData.addressUrl ?? null,
       image: {
         src: propertyData.media?.[0]?.url ?? "",
         alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name
@@ -17528,7 +17652,7 @@ function ResturantBanner({
     setInitialGalleryIndex(index);
     setIsGalleryOpen(true);
   };
-  const mapsLink2 = restaurant.coordinates ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}` : "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
+  const mapsLink2 = restaurant.addressUrl || (restaurant.coordinates ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}` : null);
   if (loading)
     return /* @__PURE__ */ jsx("div", { className: "min-h-[60vh] flex items-center justify-center", children: /* @__PURE__ */ jsx(Loader2, { className: "animate-spin w-10 h-10 text-primary" }) });
   if (!restaurant) return null;
@@ -17613,7 +17737,7 @@ function ResturantBanner({
                               restaurant.city && restaurant.location !== restaurant.city ? `, ${restaurant.city}` : ""
                             ] })
                           ] }),
-                          /* @__PURE__ */ jsxs(
+                          mapsLink2 && /* @__PURE__ */ jsxs(
                             "a",
                             {
                               href: mapsLink2,
@@ -18577,6 +18701,7 @@ function ResturantpageEvents({ propertyId }) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(EMPTY_FORM$6);
+  const [formError, setFormError] = useState("");
   const nextEvent = () => {
     setCurrentIndex((prev) => {
       const nextIdx = prev + 2;
@@ -18639,9 +18764,20 @@ function ResturantpageEvents({ propertyId }) {
     setSelectedBookingId(id ?? null);
     setStep(1);
     setFormData(EMPTY_FORM$6);
+    setFormError("");
     setShowModal(true);
   };
   const handleFinalSubmit = async () => {
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.email.trim()) {
+      setFormError("Email address is required.");
+      return;
+    }
+    if (!emailRegex.test(formData.email.trim())) {
+      setFormError("Please enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    setFormError("");
     setIsSubmitting(true);
     try {
       const queriesText = [
@@ -18857,7 +18993,10 @@ function ResturantpageEvents({ propertyId }) {
                 Input,
                 {
                   value: formData.name,
-                  onChange: (e) => setFormData({ ...formData, name: e.target.value }),
+                  onChange: (e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    setFormError("");
+                  },
                   placeholder: "Your Name",
                   className: "h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                 }
@@ -18868,9 +19007,14 @@ function ResturantpageEvents({ propertyId }) {
               /* @__PURE__ */ jsx(
                 Input,
                 {
+                  inputMode: "numeric",
                   value: formData.phone,
-                  onChange: (e) => setFormData({ ...formData, phone: e.target.value }),
-                  placeholder: "+91",
+                  onChange: (e) => {
+                    setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") });
+                    setFormError("");
+                  },
+                  placeholder: "10-digit number",
+                  maxLength: 10,
                   className: "h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                 }
               )
@@ -18889,11 +19033,23 @@ function ResturantpageEvents({ propertyId }) {
                 }
               )
             ] }),
+            formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError }),
             /* @__PURE__ */ jsxs(
               Button,
               {
                 disabled: !formData.name || !formData.phone,
-                onClick: () => setStep(2),
+                onClick: () => {
+                  if (!formData.name.trim()) {
+                    setFormError("Full name is required.");
+                    return;
+                  }
+                  if (!/^\d{10}$/.test(formData.phone.trim())) {
+                    setFormError("Phone number must be exactly 10 digits.");
+                    return;
+                  }
+                  setFormError("");
+                  setStep(2);
+                },
                 className: "w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px]",
                 children: [
                   "Next Step ",
@@ -18908,7 +19064,10 @@ function ResturantpageEvents({ propertyId }) {
                 Input,
                 {
                   value: formData.email,
-                  onChange: (e) => setFormData({ ...formData, email: e.target.value }),
+                  onChange: (e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    setFormError("");
+                  },
                   placeholder: "email@example.com",
                   className: "h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                 }
@@ -18930,12 +19089,16 @@ function ResturantpageEvents({ propertyId }) {
                 }
               )
             ] }),
+            formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError }),
             /* @__PURE__ */ jsxs("div", { className: "flex gap-3", children: [
               /* @__PURE__ */ jsx(
                 Button,
                 {
                   variant: "outline",
-                  onClick: () => setStep(1),
+                  onClick: () => {
+                    setStep(1);
+                    setFormError("");
+                  },
                   className: "h-14 rounded-xl px-8",
                   children: "Back"
                 }
@@ -20121,6 +20284,7 @@ function AutoTestimonials({ propertyId }) {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
+  const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20208,6 +20372,28 @@ function AutoTestimonials({ propertyId }) {
       showError("Property ID is missing. Cannot submit testimonial.");
       return;
     }
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.name.trim()) {
+      setFormError("Full name is required.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setFormError("Email address is required.");
+      return;
+    }
+    if (!emailRegex.test(formData.email.trim())) {
+      setFormError("Please enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    if (!formData.phone.trim()) {
+      setFormError("Phone number is required.");
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      setFormError("Phone number must be exactly 10 digits.");
+      return;
+    }
+    setFormError("");
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -20557,7 +20743,10 @@ function AutoTestimonials({ propertyId }) {
                         Input,
                         {
                           value: formData.name,
-                          onChange: (e) => setFormData({ ...formData, name: e.target.value }),
+                          onChange: (e) => {
+                            setFormData({ ...formData, name: e.target.value });
+                            setFormError("");
+                          },
                           placeholder: "How should we address you?",
                           className: "pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
                         }
@@ -20572,7 +20761,10 @@ function AutoTestimonials({ propertyId }) {
                         {
                           type: "email",
                           value: formData.email,
-                          onChange: (e) => setFormData({ ...formData, email: e.target.value }),
+                          onChange: (e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            setFormError("");
+                          },
                           placeholder: "email@example.com",
                           className: "h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
                         }
@@ -20584,8 +20776,12 @@ function AutoTestimonials({ propertyId }) {
                         Input,
                         {
                           type: "tel",
+                          inputMode: "numeric",
                           value: formData.phone,
-                          onChange: (e) => setFormData({ ...formData, phone: e.target.value }),
+                          onChange: (e) => {
+                            setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") });
+                            setFormError("");
+                          },
                           placeholder: "10-digit number",
                           maxLength: 10,
                           className: "h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
@@ -20593,6 +20789,7 @@ function AutoTestimonials({ propertyId }) {
                       )
                     ] })
                   ] }),
+                  formError && /* @__PURE__ */ jsx("p", { className: "text-xs text-red-500 font-medium", children: formError }),
                   /* @__PURE__ */ jsxs("div", { className: "p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 space-y-2", children: [
                     /* @__PURE__ */ jsx("p", { className: "text-[10px] font-black uppercase text-zinc-400 tracking-widest", children: "Summary" }),
                     /* @__PURE__ */ jsx("p", { className: "text-xs font-mono text-zinc-600 dark:text-zinc-300 break-all", children: buildTitle(formData.rating, formData.text) }),
@@ -28433,6 +28630,7 @@ function RestaurantGuestReviews({
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(/* @__PURE__ */ new Set());
   const [mutedVideos, setMutedVideos] = useState(/* @__PURE__ */ new Set());
@@ -28688,12 +28886,10 @@ function RestaurantGuestReviews({
             spaceBetween: 15,
             slidesPerView: 1.2,
             breakpoints: { 768: { slidesPerView: 3 } },
-            autoplay: { delay: 6e3, disableOnInteraction: false },
+            autoplay: { delay: 6e3, disableOnInteraction: false, pauseOnMouseEnter: true },
             onSwiper: (s) => {
               swiperRef.current = s;
             },
-            onMouseEnter: () => swiperRef.current?.autoplay?.stop(),
-            onMouseLeave: () => swiperRef.current?.autoplay?.start(),
             className: "h-full w-full",
             children: guestExperiences.map((item) => {
               const allMedia = buildMediaList$1(item);
@@ -28732,15 +28928,22 @@ function RestaurantGuestReviews({
             /* @__PURE__ */ jsx("p", { className: "truncate text-sm font-bold text-gray-800", children: authorName || "Guest User" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx(
-          "textarea",
-          {
-            value: feedbackText,
-            onChange: (e) => setFeedbackText(e.target.value),
-            placeholder: "Tell us about your dining experience...",
-            className: "mb-3 w-full flex-grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
-          }
-        ),
+        /* @__PURE__ */ jsxs("div", { className: "relative mb-3 flex flex-col grow", children: [
+          /* @__PURE__ */ jsx(
+            "textarea",
+            {
+              value: feedbackText,
+              onChange: (e) => setFeedbackText(e.target.value.slice(0, 50)),
+              placeholder: "Tell us about your dining experience...",
+              maxLength: 50,
+              className: "w-full grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
+            }
+          ),
+          /* @__PURE__ */ jsxs("span", { className: `self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 50 ? "text-red-500" : "text-muted-foreground"}`, children: [
+            feedbackText.length,
+            "/50"
+          ] })
+        ] }),
         /* @__PURE__ */ jsxs("div", { className: "mb-3", children: [
           /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 rounded-xl border border-transparent bg-secondary/20 px-3 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white", children: [
             /* @__PURE__ */ jsx(
@@ -28854,15 +29057,21 @@ function RestaurantGuestReviews({
         children: [
           /* @__PURE__ */ jsxs("div", { className: "mb-6 flex items-center justify-between", children: [
             /* @__PURE__ */ jsx("h3", { className: "text-xl font-serif font-bold", children: "Guest Information" }),
-            /* @__PURE__ */ jsx("button", { onClick: () => setShowPopup(false), children: /* @__PURE__ */ jsx(X, { size: 20 }) })
+            /* @__PURE__ */ jsx("button", { onClick: () => {
+              setShowPopup(false);
+              setFormError("");
+            }, children: /* @__PURE__ */ jsx(X, { size: 20 }) })
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
             /* @__PURE__ */ jsx(
               "input",
               {
                 value: authorName,
-                onChange: (e) => setAuthorName(e.target.value),
-                placeholder: "Full Name",
+                onChange: (e) => {
+                  setAuthorName(e.target.value);
+                  setFormError("");
+                },
+                placeholder: "Full Name *",
                 className: "w-full rounded-lg bg-muted p-3 outline-none"
               }
             ),
@@ -28870,8 +29079,12 @@ function RestaurantGuestReviews({
               "input",
               {
                 value: email,
-                onChange: (e) => setEmail(e.target.value),
+                onChange: (e) => {
+                  setEmail(e.target.value);
+                  setFormError("");
+                },
                 placeholder: "Email",
+                type: "email",
                 className: "w-full rounded-lg bg-muted p-3 outline-none"
               }
             ),
@@ -28879,16 +29092,40 @@ function RestaurantGuestReviews({
               "input",
               {
                 value: phone,
-                onChange: (e) => setPhone(e.target.value),
-                placeholder: "Phone",
+                onChange: (e) => {
+                  setPhone(e.target.value.replace(/\D/g, ""));
+                  setFormError("");
+                },
+                placeholder: "Phone (10 digits)",
                 maxLength: 10,
+                inputMode: "numeric",
                 className: "w-full rounded-lg bg-muted p-3 outline-none"
               }
             ),
+            formError && /* @__PURE__ */ jsx("p", { className: "text-xs font-medium text-red-500", children: formError }),
             /* @__PURE__ */ jsx(
               "button",
               {
                 onClick: () => {
+                  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                  const phoneValid = /^\d{10}$/.test(phone.trim());
+                  if (!authorName.trim()) {
+                    setFormError("Full name is required.");
+                    return;
+                  }
+                  if (!email.trim() && !phone.trim()) {
+                    setFormError("Please provide email or phone number.");
+                    return;
+                  }
+                  if (email.trim() && !emailValid) {
+                    setFormError("Please enter a valid email address.");
+                    return;
+                  }
+                  if (phone.trim() && !phoneValid) {
+                    setFormError("Phone number must be exactly 10 digits.");
+                    return;
+                  }
+                  setFormError("");
                   setIsVerified(true);
                   setShowPopup(false);
                   handleSubmit();

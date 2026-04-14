@@ -27,8 +27,14 @@ import { toast } from "react-hot-toast";
 import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
+  getPropertyTypes,
 } from "@/Api/Api";
 import { getActiveTestimonialHeaders } from "@/Api/RestaurantApi";
+
+const normalizeType = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isRestaurantType = (value = "") =>
+  ["restaurant", "resturant"].includes(normalizeType(value));
 // ─── YouTube helpers (from OurStoryPreview) ──────────────────────────────────
 const isYoutubeUrl = (url) =>
   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
@@ -336,12 +342,14 @@ export default function AutoTestimonials({ propertyId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [propertyTypeId, setPropertyTypeId] = useState(null);
 
   // ── Form state — new 3-step flow ─────────────────────────────────────────
   // Step 1: Media (files + YouTube)
   // Step 2: Review content (stars + text)
   // Step 3: Personal info (name, email, phone) → submit
   const [step, setStep] = useState(1);
+  const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -423,6 +431,15 @@ export default function AutoTestimonials({ propertyId }) {
   useEffect(() => {
     fetchTestimonialHeader();
     fetchExperiences();
+    getPropertyTypes()
+      .then((res) => {
+        const types = res?.data || res || [];
+        const match = Array.isArray(types)
+          ? types.find((t) => t?.isActive && isRestaurantType(t?.typeName))
+          : null;
+        if (match?.id) setPropertyTypeId(Number(match.id));
+      })
+      .catch(() => {});
   }, [propertyId]);
 
   // ── Media upload ──────────────────────────────────────────────────────────
@@ -453,6 +470,28 @@ export default function AutoTestimonials({ propertyId }) {
       showError("Property ID is missing. Cannot submit testimonial.");
       return;
     }
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.name.trim()) {
+      setFormError("Full name is required.");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setFormError("Email address is required.");
+      return;
+    }
+    if (!emailRegex.test(formData.email.trim())) {
+      setFormError("Please enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    if (!formData.phone.trim()) {
+      setFormError("Phone number is required.");
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      setFormError("Phone number must be exactly 10 digits.");
+      return;
+    }
+    setFormError("");
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -463,6 +502,7 @@ export default function AutoTestimonials({ propertyId }) {
       fd.append("authorPhone", formData.phone);
       fd.append("rating", String(formData.rating));
       if (propertyId != null) fd.append("propertyId", String(propertyId));
+      if (propertyTypeId != null) fd.append("propertyTypeId", String(propertyTypeId));
       if (formData.ytLink.trim()) fd.append("videoUrl", formData.ytLink.trim());
       mediaPreviews.forEach((m) => fd.append("files", m.file));
       fd.append(
@@ -894,9 +934,10 @@ export default function AutoTestimonials({ propertyId }) {
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                         <Input
                           value={formData.name}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
+                          onChange={(e) => {
+                            setFormData({ ...formData, name: e.target.value });
+                            setFormError("");
+                          }}
                           placeholder="How should we address you?"
                           className="pl-12 h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
                         />
@@ -911,9 +952,10 @@ export default function AutoTestimonials({ propertyId }) {
                         <Input
                           type="email"
                           value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
+                          onChange={(e) => {
+                            setFormData({ ...formData, email: e.target.value });
+                            setFormError("");
+                          }}
                           placeholder="email@example.com"
                           className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
                         />
@@ -924,16 +966,22 @@ export default function AutoTestimonials({ propertyId }) {
                         </Label>
                         <Input
                           type="tel"
+                          inputMode="numeric"
                           value={formData.phone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, phone: e.target.value })
-                          }
+                          onChange={(e) => {
+                            setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") });
+                            setFormError("");
+                          }}
                           placeholder="10-digit number"
                           maxLength={10}
                           className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl focus-visible:ring-primary"
                         />
                       </div>
                     </div>
+
+                    {formError && (
+                      <p className="text-xs text-red-500 font-medium">{formError}</p>
+                    )}
 
                     {/* Summary preview */}
                     <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 space-y-2">

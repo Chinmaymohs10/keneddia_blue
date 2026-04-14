@@ -306,9 +306,10 @@ const normalizeGuestExperiences = (res, restaurantTypeId) => {
   const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
   return list
     .filter((item) =>
-      restaurantTypeId != null
+      item?.isActive !== false &&
+      (restaurantTypeId != null
         ? Number(item?.propertyTypeId) === Number(restaurantTypeId)
-        : false,
+        : false),
     )
     .sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
 };
