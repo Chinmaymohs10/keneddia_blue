@@ -40,6 +40,7 @@ export default function FindYourStay({
   const [guests, setGuests] = useState(
     initialGuests || { adults: 2, children: 0, rooms: 1 },
   );
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
@@ -87,7 +88,7 @@ export default function FindYourStay({
             <span className="stay-search-label">
               Check-in
             </span>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <button className="stay-search-trigger">
                   <CalendarIcon className="w-4 h-4 text-primary" />
@@ -99,7 +100,12 @@ export default function FindYourStay({
                   selectRange
                   value={date}
                   minDate={new Date()}
-                  onChange={(val) => setDate(val)}
+                  onChange={(val) => {
+                    setDate(val);
+                    if (Array.isArray(val) && val[0] && val[1]) {
+                      setCalendarOpen(false);
+                    }
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -110,10 +116,13 @@ export default function FindYourStay({
             <span className="stay-search-label">
               Check-out
             </span>
-            <div className="stay-search-trigger">
+            <button
+              className="stay-search-trigger"
+              onClick={() => setCalendarOpen(true)}
+            >
               <CalendarIcon className="w-4 h-4 text-primary" />
               {endDate ? format(endDate, "EEE, dd MMM") : "Select"}
-            </div>
+            </button>
           </div>
         </div>
 

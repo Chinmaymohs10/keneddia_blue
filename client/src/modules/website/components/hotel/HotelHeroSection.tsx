@@ -387,7 +387,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
 
               <div
                 className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center"
-                style={{ top: "64px", bottom: "2.5rem" }}
+                style={{ top: "64px", bottom: "6.5rem" }}
               >
                 <motion.h1
                   key={`m-title-${index}-${activeIndex}`}
@@ -435,7 +435,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                 )}
               </div>
 
-              <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
+              <div className="absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
