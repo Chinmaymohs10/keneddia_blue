@@ -12,7 +12,7 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMenuItemsByTopSold, addItemLike } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 
 const FILTERS = ["Veg", "Non-Veg"];
 
@@ -80,7 +80,7 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function RestaurantBestSellers({ initialItems }) {
+export default function RestaurantBestSellers({ initialItems, restaurantTypeId }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
@@ -97,6 +97,23 @@ export default function RestaurantBestSellers({ initialItems }) {
     mobileNumber: "",
     description: "",
   });
+  const [headerData, setHeaderData] = useState(null);
+
+  useEffect(() => {
+    const typeId = restaurantTypeId || 1;
+    getMenuSectionsByPropertyTypeId(typeId)
+      .then((res) => {
+        const data = res.data?.data || res.data;
+        if (Array.isArray(data)) {
+          const activeHeader = data.find((h) => h.isActive);
+          if (activeHeader) setHeaderData(activeHeader);
+          else if (data.length > 0) setHeaderData(data[0]);
+        } else if (data) {
+          setHeaderData(data);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, [restaurantTypeId]);
 
   useEffect(() => {
     if (ssrLoaded) return;
@@ -221,14 +238,13 @@ export default function RestaurantBestSellers({ initialItems }) {
             </div>
 
             <h2 className="mb-2 text-3xl font-serif text-foreground md:text-4xl">
-              Best Seller <span className="italic text-primary">Dishes</span>
+              {headerData ? headerData.part1 : "Best Seller"}{" "}
+              <span className="italic text-primary">{headerData ? headerData.part2 : "Dishes"}</span>
             </h2>
 
             <div className="max-w-[80%]">
-              <p className="text-sm font-light leading-relaxed text-muted-foreground">
-                Discover our best seller selection, then browse it by veg and
-                non-veg in the same signature menu showcase format as the
-                restaurant detail page.
+              <p className="text-sm font-light leading-relaxed text-muted-foreground whitespace-pre-line">
+                {headerData ? headerData.description : "Discover our best seller selection, then browse it by veg and\nnon-veg in the same signature menu showcase format as the\nrestaurant detail page."}
               </p>
             </div>
           </div>
@@ -239,15 +255,14 @@ export default function RestaurantBestSellers({ initialItems }) {
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
-                  activeFilter === filter
-                    ? filter === "Veg"
-                      ? "border-emerald-500 bg-emerald-500 text-white"
-                      : filter === "Non-Veg"
-                        ? "border-rose-400 bg-background text-rose-500"
-                        : "border-primary bg-primary text-white"
-                    : "border-border bg-card text-foreground hover:border-primary/40 hover:text-primary"
-                }`}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${activeFilter === filter
+                  ? filter === "Veg"
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : filter === "Non-Veg"
+                      ? "border-rose-400 bg-background text-rose-500"
+                      : "border-primary bg-primary text-white"
+                  : "border-border bg-card text-foreground hover:border-primary/40 hover:text-primary"
+                  }`}
               >
                 {filter}
               </button>

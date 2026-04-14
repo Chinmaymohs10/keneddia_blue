@@ -120,6 +120,7 @@ export const toggleChefRemarkStatus = (id, data) =>API.patch(`api/v1/chef-remark
 export const createMenuHeaderSection = (formData) =>API.post("api/v1/menu-sections/createMenu", formData, {headers: { "Content-Type": "multipart/form-data" },});
 export const getMenuHeaders = () =>API.get("api/v1/menu-sections/getMenus");
 export const getMenuHeadersById = (id) =>API.get(`api/v1/menu-sections/getMenuById/${id}`);
+export const getMenuSectionsByPropertyTypeId = (typeId) =>API.get(`api/v1/menu-sections/getMenuSectionsByPropertyTypeId/${typeId}`);
 export const updateMenuHeadersSection = (id, data) =>API.patch(`api/v1/menu-sections/updateMenu/${id}`, data);
 export const toggleMenuHeadersSectionStatus = (id, data) =>API.patch(`api/v1/menu-sections/toggleActive/${id}`, data);
 

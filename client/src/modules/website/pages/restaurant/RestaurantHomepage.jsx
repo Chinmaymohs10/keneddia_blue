@@ -74,7 +74,7 @@ export default function RestaurantHomepage() {
         </div>
         <RestaurantOffers initialOffers={ssr?.restaurantOffers} />
         <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
-        <RestaurantBestSellers initialItems={ssr?.bestSellers} />
+        <RestaurantBestSellers initialItems={ssr?.bestSellers} restaurantTypeId={ssr?.restaurantTypeId} />
         <AboutRestaurant initialSections={ssr?.aboutSections} />
         <EventsSchedule
           initialEvents={ssr?.restaurantEvents}
