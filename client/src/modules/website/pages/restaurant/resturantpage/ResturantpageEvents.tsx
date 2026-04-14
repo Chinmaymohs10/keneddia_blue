@@ -135,6 +135,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const [formError, setFormError] = useState("");
 
   // ── Manual Navigation Logic ──────────────────────────────────────────
   const nextEvent = () => {
@@ -223,10 +224,21 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
     setSelectedBookingId(id ?? null);
     setStep(1);
     setFormData(EMPTY_FORM);
+    setFormError("");
     setShowModal(true);
   };
 
   const handleFinalSubmit = async () => {
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.email.trim()) {
+      setFormError("Email address is required.");
+      return;
+    }
+    if (!emailRegex.test(formData.email.trim())) {
+      setFormError("Please enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+    setFormError("");
     setIsSubmitting(true);
     try {
       const queriesText = [
@@ -488,9 +500,10 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                       </label>
                       <Input
                         value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setFormData({ ...formData, name: e.target.value });
+                          setFormError("");
+                        }}
                         placeholder="Your Name"
                         className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                       />
@@ -500,11 +513,14 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                         Phone Number
                       </label>
                       <Input
+                        inputMode="numeric"
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        placeholder="+91"
+                        onChange={(e) => {
+                          setFormData({ ...formData, phone: e.target.value.replace(/\D/g, "") });
+                          setFormError("");
+                        }}
+                        placeholder="10-digit number"
+                        maxLength={10}
                         className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                       />
                     </div>
@@ -523,9 +539,23 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                         className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                       />
                     </div>
+                    {formError && (
+                      <p className="text-xs text-red-500 font-medium">{formError}</p>
+                    )}
                     <Button
                       disabled={!formData.name || !formData.phone}
-                      onClick={() => setStep(2)}
+                      onClick={() => {
+                        if (!formData.name.trim()) {
+                          setFormError("Full name is required.");
+                          return;
+                        }
+                        if (!/^\d{10}$/.test(formData.phone.trim())) {
+                          setFormError("Phone number must be exactly 10 digits.");
+                          return;
+                        }
+                        setFormError("");
+                        setStep(2);
+                      }}
                       className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl font-bold uppercase text-[10px]"
                     >
                       Next Step <ChevronRight size={14} className="ml-2" />
@@ -539,9 +569,10 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                       </label>
                       <Input
                         value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setFormData({ ...formData, email: e.target.value });
+                          setFormError("");
+                        }}
                         placeholder="email@example.com"
                         className="h-14 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl pl-4"
                       />
@@ -563,10 +594,13 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                         className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-none rounded-xl text-sm outline-none resize-none"
                       />
                     </div>
+                    {formError && (
+                      <p className="text-xs text-red-500 font-medium">{formError}</p>
+                    )}
                     <div className="flex gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => setStep(1)}
+                        onClick={() => { setStep(1); setFormError(""); }}
                         className="h-14 rounded-xl px-8"
                       >
                         Back
