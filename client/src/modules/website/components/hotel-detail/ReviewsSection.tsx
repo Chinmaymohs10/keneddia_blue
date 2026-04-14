@@ -106,15 +106,22 @@ interface UserInfoModalProps {
 
 function UserInfoModal({ message, rating, onSubmit, onClose }: UserInfoModalProps) {
   const [info, setInfo] = useState<UserInfo>({ name: "", email: "", phone: "" });
-  const [errors, setErrors] = useState<Partial<UserInfo>>({});
+  const [formError, setFormError] = useState("");
 
-  const validate = () => {
-    const e: Partial<UserInfo> = {};
-    if (!info.name.trim()) e.name = "Name is required";
-    if (!info.email.trim() || !/\S+@\S+\.\S+/.test(info.email)) e.email = "Valid email required";
-    if (!info.phone.trim() || !/^\d{10}$/.test(info.phone)) e.phone = "10-digit phone required";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  const setField = (field: keyof UserInfo, value: string) => {
+    setInfo((prev) => ({ ...prev, [field]: value }));
+    setFormError("");
+  };
+
+  const validate = (): boolean => {
+    const emailValid = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(info.email.trim());
+    const phoneValid = /^\d{10}$/.test(info.phone.trim());
+    if (!info.name.trim()) { setFormError("Full name is required."); return false; }
+    if (!info.email.trim()) { setFormError("Email address is required."); return false; }
+    if (!emailValid) { setFormError("Please enter a valid email address (e.g. name@example.com)."); return false; }
+    if (!info.phone.trim()) { setFormError("Phone number is required."); return false; }
+    if (!phoneValid) { setFormError("Phone number must be exactly 10 digits."); return false; }
+    return true;
   };
 
   return (
@@ -140,18 +147,26 @@ function UserInfoModal({ message, rating, onSubmit, onClose }: UserInfoModalProp
         </div>
 
         <div className="space-y-3">
-          <div>
-            <Input placeholder="Your name *" value={info.name} onChange={(e) => setInfo({ ...info, name: e.target.value })} className={errors.name ? "border-red-400" : ""} />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-          </div>
-          <div>
-            <Input placeholder="Email address *" type="email" value={info.email} onChange={(e) => setInfo({ ...info, email: e.target.value })} className={errors.email ? "border-red-400" : ""} />
-            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
-          </div>
-          <div>
-            <Input placeholder="Phone number *" type="tel" value={info.phone} onChange={(e) => setInfo({ ...info, phone: e.target.value })} className={errors.phone ? "border-red-400" : ""} />
-            {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
-          </div>
+          <Input
+            placeholder="Full name *"
+            value={info.name}
+            onChange={(e) => setField("name", e.target.value)}
+          />
+          <Input
+            placeholder="Email address *"
+            type="email"
+            value={info.email}
+            onChange={(e) => setField("email", e.target.value)}
+          />
+          <Input
+            placeholder="Phone number * (10 digits)"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            value={info.phone}
+            onChange={(e) => setField("phone", e.target.value.replace(/\D/g, ""))}
+          />
+          {formError && <p className="text-xs text-red-500 font-medium">{formError}</p>}
         </div>
 
         <Button onClick={() => { if (validate()) onSubmit(info); }} className="w-full mt-5 gap-2">

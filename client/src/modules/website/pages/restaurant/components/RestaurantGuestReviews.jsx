@@ -142,6 +142,7 @@ export default function RestaurantGuestReviews({
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(new Set());
   const [mutedVideos, setMutedVideos] = useState(new Set());
@@ -540,12 +541,18 @@ export default function RestaurantGuestReviews({
                 </div>
               </div>
 
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder="Tell us about your dining experience..."
-                className="mb-3 w-full flex-grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
-              />
+              <div className="relative mb-3 flex flex-col grow">
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 50))}
+                  placeholder="Tell us about your dining experience..."
+                  maxLength={50}
+                  className="w-full grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
+                />
+                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 50 ? "text-red-500" : "text-muted-foreground"}`}>
+                  {feedbackText.length}/50
+                </span>
+              </div>
 
               <div className="mb-3">
                 <div className="flex items-center gap-2 rounded-xl border border-transparent bg-secondary/20 px-3 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white">
@@ -689,32 +696,44 @@ export default function RestaurantGuestReviews({
                 <h3 className="text-xl font-serif font-bold">
                   Guest Information
                 </h3>
-                <button onClick={() => setShowPopup(false)}>
+                <button onClick={() => { setShowPopup(false); setFormError(""); }}>
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <input
                   value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Full Name"
+                  onChange={(e) => { setAuthorName(e.target.value); setFormError(""); }}
+                  placeholder="Full Name *"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
                 <input
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setFormError(""); }}
                   placeholder="Email"
+                  type="email"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone"
+                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "")); setFormError(""); }}
+                  placeholder="Phone (10 digits)"
                   maxLength={10}
+                  inputMode="numeric"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
+                {formError && (
+                  <p className="text-xs font-medium text-red-500">{formError}</p>
+                )}
                 <button
                   onClick={() => {
+                    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const phoneValid = /^\d{10}$/.test(phone.trim());
+                    if (!authorName.trim()) { setFormError("Full name is required."); return; }
+                    if (!email.trim() && !phone.trim()) { setFormError("Please provide email or phone number."); return; }
+                    if (email.trim() && !emailValid) { setFormError("Please enter a valid email address."); return; }
+                    if (phone.trim() && !phoneValid) { setFormError("Phone number must be exactly 10 digits."); return; }
+                    setFormError("");
                     setIsVerified(true);
                     setShowPopup(false);
                     handleSubmit();

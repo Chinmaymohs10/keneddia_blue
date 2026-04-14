@@ -1559,14 +1559,14 @@ export default function HotelDetail() {
                         <Info className="w-4 h-4" /> OTHER POLICIES
                       </div>
                       <div className="hotel-policy-box">
-                        <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                        <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                           {policies?.policies?.map((p) => (
                             <li
                               key={p.id}
-                              className="flex items-start gap-2 text-foreground"
+                              className="flex items-center gap-1.5"
                             >
-                              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
-                              <span className="leading-snug text-foreground dark:text-foreground/85">
+                              <span className="h-1 w-1 shrink-0 rounded-full bg-red-500" />
+                              <span className="text-[11px] leading-tight text-foreground dark:text-foreground/85 truncate" title={p.name}>
                                 {p.name}
                               </span>
                             </li>
