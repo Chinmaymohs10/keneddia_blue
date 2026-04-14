@@ -95,12 +95,12 @@ const formatDate = (dateString: string) => {
   };
 };
 
-const CARD_COLORS = [
-  "bg-pink-50 border-pink-200 hover:border-pink-300 dark:bg-pink-950/25 dark:border-pink-900/60 dark:hover:border-pink-700/70",
-  "bg-blue-50 border-blue-200 hover:border-blue-300 dark:bg-blue-950/25 dark:border-blue-900/60 dark:hover:border-blue-700/70",
-  "bg-orange-50 border-orange-200 hover:border-orange-300 dark:bg-orange-950/25 dark:border-orange-900/60 dark:hover:border-orange-700/70",
-  "bg-purple-50 border-purple-200 hover:border-purple-300 dark:bg-purple-950/25 dark:border-purple-900/60 dark:hover:border-purple-700/70",
-  "bg-green-50 border-green-200 hover:border-green-300 dark:bg-green-950/25 dark:border-green-900/60 dark:hover:border-green-700/70",
+const ICON_COLORS = [
+  "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-950/40 dark:text-pink-400 dark:border-pink-800/60",
+  "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/60",
+  "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800/60",
+  "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800/60",
+  "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800/60",
 ];
 
 /* ================= EVENT CARD ================= */
@@ -568,7 +568,7 @@ export default function GroupBookingSection({
               ) : (
                 <div className="space-y-3 flex-1">
                   {paginatedBookings.map((booking, index) => {
-                    const colorCls = CARD_COLORS[index % CARD_COLORS.length];
+                    const iconColorCls = ICON_COLORS[index % ICON_COLORS.length];
 
                     return (
                       <div
@@ -579,45 +579,47 @@ export default function GroupBookingSection({
                           setDateRange(null);
                           setFormData(EMPTY_FORM);
                         }}
-                        className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all group ${colorCls}`}
+                        className="group overflow-hidden rounded-xl border border-border bg-background cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                       >
-                        {/* IMAGE */}
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0">
-                          {booking.media?.[0]?.url ? (
-                            <img
-                              src={booking.media[0].url}
-                              alt={booking.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <ImageIcon className="w-5 h-5 text-muted-foreground/40 m-auto" />
-                          )}
-                        </div>
+                        <div className="flex items-center gap-3 p-3">
+                          {/* IMAGE / ICON */}
+                          <div className={`w-12 h-12 shrink-0 rounded-full border overflow-hidden flex items-center justify-center shadow-sm ${iconColorCls}`}>
+                            {booking.media?.[0]?.url ? (
+                              <img
+                                src={booking.media[0].url}
+                                alt={booking.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <ImageIcon className="w-5 h-5 opacity-60" />
+                            )}
+                          </div>
 
-                        {/* TEXT */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary">
-                            {booking.title}
-                          </p>
-
-                          {booking.description && (
-                            <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground dark:text-foreground/80">
-                              {booking.description}
+                          {/* TEXT */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold line-clamp-1 transition-colors group-hover:text-primary">
+                              {booking.title}
                             </p>
-                          )}
 
-                          {booking.ctaLink && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-2 uppercase tracking-tight">
-                              {booking.ctaText || "Details"}{" "}
-                              <ExternalLink size={9} />
-                            </span>
-                          )}
+                            {booking.description && (
+                              <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">
+                                {booking.description}
+                              </p>
+                            )}
+
+                            {booking.ctaLink && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight">
+                                {booking.ctaText || "Details"}{" "}
+                                <ExternalLink size={9} />
+                              </span>
+                            )}
+                          </div>
+
+                          <ArrowRight
+                            size={14}
+                            className="text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0"
+                          />
                         </div>
-
-                        <ArrowRight
-                          size={14}
-                          className="text-muted-foreground/40 group-hover:text-primary transition-colors"
-                        />
                       </div>
                     );
                   })}

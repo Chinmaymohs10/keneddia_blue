@@ -48,6 +48,7 @@ interface RestaurantData {
   price: string | number;
   media: PropertyMedia[];
   coordinates: { lat: number; lng: number } | null;
+  addressUrl?: string | null;
   image: { src: string; alt: string };
   nearbyPlaces?: {
     nearbyLocationName: string;
@@ -162,7 +163,8 @@ function ResturantBanner({
         propertyData.coordinates ??
         (propertyData.latitude && propertyData.longitude
           ? { lat: propertyData.latitude, lng: propertyData.longitude }
-          : FALLBACK_RESTAURANT.coordinates),
+          : null),
+      addressUrl: propertyData.addressUrl ?? null,
       image: {
         src: propertyData.media?.[0]?.url ?? "",
         alt: propertyData.propertyName ?? FALLBACK_RESTAURANT.name,
@@ -302,10 +304,12 @@ function ResturantBanner({
     setIsGalleryOpen(true);
   };
 
-  // ── Map coordinates link ──────────────────────────────────────────────────
-  const mapsLink = restaurant.coordinates
-    ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}`
-    : "https://google.com/maps/place/kennedia+blu+restaurant+ghaziabad/data=!4m2!3m1!1s0x390cf1005bab4c6f:0xb455a48e012d76e7?sa=X&ved=1t:242&ictx=111";
+  // ── Map link: addressUrl > coordinates > null (no fallback to avoid wrong location) ──
+  const mapsLink: string | null =
+    restaurant.addressUrl ||
+    (restaurant.coordinates
+      ? `https://www.google.com/maps?q=${restaurant.coordinates.lat},${restaurant.coordinates.lng}`
+      : null);
 
   if (loading)
     return (
@@ -436,14 +440,16 @@ function ResturantBanner({
                       : ""}
                   </span>
                 </div>
-                <a
-                  href={mapsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
-                >
-                  <Navigation className="w-4 h-4" /> View Map
-                </a>
+                {mapsLink && (
+                  <a
+                    href={mapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-bold text-destructive hover:underline flex items-center gap-1"
+                  >
+                    <Navigation className="w-4 h-4" /> View Map
+                  </a>
+                )}
               </motion.div>
 
               {restaurant.nearbyPlaces &&

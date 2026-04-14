@@ -44,6 +44,7 @@ interface Hotel {
   checkIn: string;
   checkOut: string;
   coordinates?: { lat: number; lng: number } | null;
+  addressUrl?: string | null;
   [key: string]: any;
 }
 
@@ -278,9 +279,10 @@ export default function RightSidebar({
           {/* Open in Google Maps externally */}
           <a
             href={
-              hotel.coordinates
+              hotel.addressUrl ||
+              (hotel.coordinates
                 ? `https://www.google.com/maps?q=${hotel.coordinates.lat},${hotel.coordinates.lng}`
-                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name} ${hotel.location}`)}`)
             }
             target="_blank"
             rel="noopener noreferrer"

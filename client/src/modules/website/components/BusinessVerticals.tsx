@@ -129,7 +129,7 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }: any) {
             <img
               src={logoIcon.url}
               alt={logoIcon.alt || logoText || "Group Logo"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover dark:brightness-110 dark:contrast-110"
             />
           ) : (
             <div className="text-center px-2">
@@ -166,11 +166,13 @@ function BranchNode({ item, index }: any) {
 
   const cardContent = iconImageUrl ? (
     <div className="mb-3 flex items-center justify-center">
-      <img
-        src={iconImageUrl}
-        alt={item.title}
-        className="h-10 w-auto object-contain opacity-90 group-hover:opacity-100 transition"
-      />
+      <div className="w-14 h-14 rounded-full bg-foreground/5 dark:bg-white/10 border border-border dark:border-white/15 flex items-center justify-center transition group-hover:bg-primary/10 dark:group-hover:bg-primary/20">
+        <img
+          src={iconImageUrl}
+          alt={item.title}
+          className="h-8 w-auto object-contain opacity-80 group-hover:opacity-100 transition dark:brightness-0 dark:invert dark:opacity-90"
+        />
+      </div>
     </div>
   ) : null;
 
@@ -214,12 +216,12 @@ function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }: any) {
   return (
     <div className="flex flex-col items-center gap-6 py-4">
       {/* Logo at top of mobile timeline */}
-      <div className="bg-card shadow-xl border border-primary/20 px-4 py-3 rounded-xl flex items-center justify-center">
+      <div className="bg-card dark:bg-card shadow-xl border border-primary/20 dark:border-primary/30 px-4 py-3 rounded-xl flex items-center justify-center">
         {logoIcon?.url ? (
           <img
             src={logoIcon.url}
             alt={logoIcon.alt || logoText || "Group Logo"}
-            className="max-h-12 w-auto object-contain"
+            className="max-h-12 w-auto object-contain dark:brightness-110 dark:contrast-110"
           />
         ) : (
           <div className="text-center px-2">
@@ -245,12 +247,12 @@ function MobileTimeline({ verticals, logoIcon, logoText, logoSubText }: any) {
 
           const cardContent = (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-foreground/5 dark:bg-white/10 border border-border dark:border-white/15 overflow-hidden flex items-center justify-center shrink-0">
                 {iconImageUrl && (
                   <img
                     src={iconImageUrl}
                     alt={v.title}
-                    className="h-6 w-auto object-contain opacity-90"
+                    className="h-5 w-auto object-contain opacity-80 dark:brightness-0 dark:invert dark:opacity-90"
                   />
                 )}
               </div>

@@ -237,3 +237,91 @@ input:focus, select:focus, textarea:focus {
 .group:hover .marquee-col {
   animation-play-state: paused;
 }
+
+/* ============================================================================
+   REACT-CALENDAR DARK MODE OVERRIDES
+============================================================================ */
+
+.dark .react-calendar {
+  background: transparent;
+  color: hsl(var(--foreground));
+  border: none;
+}
+
+.dark .react-calendar__navigation button {
+  color: hsl(var(--foreground));
+  background: none;
+}
+
+.dark .react-calendar__navigation button:enabled:hover,
+.dark .react-calendar__navigation button:enabled:focus {
+  background-color: hsl(var(--secondary));
+  border-radius: 6px;
+}
+
+.dark .react-calendar__navigation button[disabled] {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.4;
+}
+
+.dark .react-calendar__month-view__weekdays {
+  color: hsl(var(--muted-foreground));
+}
+
+.dark .react-calendar__month-view__weekdays abbr {
+  text-decoration: none;
+}
+
+.dark .react-calendar__month-view__days__day {
+  color: hsl(var(--foreground));
+}
+
+.dark .react-calendar__month-view__days__day--weekend {
+  color: hsl(0 78% 65%);
+}
+
+.dark .react-calendar__month-view__days__day--neighboringMonth {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.4;
+}
+
+.dark .react-calendar__tile {
+  color: hsl(var(--foreground));
+  background: none;
+}
+
+.dark .react-calendar__tile:enabled:hover,
+.dark .react-calendar__tile:enabled:focus {
+  background-color: hsl(var(--secondary));
+  border-radius: 6px;
+}
+
+.dark .react-calendar__tile--now {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+  border-radius: 6px;
+}
+
+.dark .react-calendar__tile--now:enabled:hover,
+.dark .react-calendar__tile--now:enabled:focus {
+  background: hsl(var(--primary) / 0.35);
+}
+
+.dark .react-calendar__tile--active,
+.dark .react-calendar__tile--rangeStart,
+.dark .react-calendar__tile--rangeEnd {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-radius: 6px;
+}
+
+.dark .react-calendar__tile--range {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
+}
+
+.dark .react-calendar__year-view__months__month,
+.dark .react-calendar__decade-view__years__year,
+.dark .react-calendar__century-view__decades__decade {
+  color: hsl(var(--foreground));
+}
