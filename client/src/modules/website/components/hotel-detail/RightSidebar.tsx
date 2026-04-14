@@ -228,6 +228,44 @@ export default function RightSidebar({
           </p>
         </div>
       </div>
+       {visibleBookingPartners.length > 0 && (
+        <div className="hotel-sidebar-card">
+          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
+            View on Other Platforms
+          </h4>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {visibleBookingPartners.map((partner) => {
+              const fallbackLogo =
+                PARTNER_LOGOS[normalizePartnerName(partner.title)] ||
+                genericPartnerLogo;
+              const logoSrc = partner?.icon?.url || fallbackLogo;
+
+              return (
+                <a
+                  key={partner.id}
+                  href={partner.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hotel-partner-link group"
+                  title={partner.title || "Booking Partner"}
+                >
+                  <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
+                    <img
+                      src={logoSrc}
+                      alt={partner.title || "Booking Partner"}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <span className="max-w-[120px] truncate text-[11px] font-bold text-foreground">
+                    {partner.title || "Booking Partner"}
+                  </span>
+                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* MAP PREVIEW CARD */}
       <div className="hotel-sidebar-map-card group">
         {/* MAP IFRAME PREVIEW */}
@@ -407,44 +445,6 @@ export default function RightSidebar({
           </div>
         </div>
       </div>
-      {visibleBookingPartners.length > 0 && (
-        <div className="hotel-sidebar-card">
-          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 text-center">
-            View on Other Platforms
-          </h4>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {visibleBookingPartners.map((partner) => {
-              const fallbackLogo =
-                PARTNER_LOGOS[normalizePartnerName(partner.title)] ||
-                genericPartnerLogo;
-              const logoSrc = partner?.icon?.url || fallbackLogo;
-
-              return (
-                <a
-                  key={partner.id}
-                  href={partner.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hotel-partner-link group"
-                  title={partner.title || "Booking Partner"}
-                >
-                  <div className="flex h-7 w-12 items-center justify-center overflow-hidden rounded bg-white">
-                    <img
-                      src={logoSrc}
-                      alt={partner.title || "Booking Partner"}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                  <span className="max-w-[120px] truncate text-[11px] font-bold text-foreground">
-                    {partner.title || "Booking Partner"}
-                  </span>
-                  <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100" />
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* WhatsApp Button */}
       <Button

@@ -439,14 +439,8 @@ export default function OurStoryPreview({
                     spaceBetween={15}
                     slidesPerView={1.2}
                     breakpoints={{ 768: { slidesPerView: 3 } }}
-                    autoplay={{ delay: 6000, disableOnInteraction: false }}
+                    autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                     onSwiper={(s) => (swiperRef.current = s)}
-                    onMouseEnter={() => {
-                      swiperRef.current?.autoplay?.stop();
-                    }}
-                    onMouseLeave={() => {
-                      swiperRef.current?.autoplay?.start();
-                    }}
                     className="h-full w-full"
                   >
                     {guestExperiences.map((item) => {
