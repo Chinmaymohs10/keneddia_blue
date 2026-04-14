@@ -16,6 +16,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
+import { InstagramEmbed } from "react-social-media-embed";
 import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
@@ -239,9 +240,6 @@ export default function OurStoryPreview({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
-        // Added &muted=1. Browsers are 100% more likely to autoplay if muted.
-        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
-
         return (
           <div
             key={idx}
@@ -249,17 +247,9 @@ export default function OurStoryPreview({
             onClick={() => console.log("Container Tapped for Reel:", id)}
             // style={{ border: "2px solid green" }} // DEBUG: Green border = Container
           >
-            <iframe
-              src={embedUrl}
-              title="Instagram Reel"
-              // We keep pointer-events-auto so the iframe itself gets the click
-              className="absolute w-full h-[145%] pointer-events-auto"
-              style={{
-                // border: "2px solid red", // DEBUG: Red border = The actual Iframe
-                top: "-22.5%",
-              }}
-              allow="autoplay; encrypted-media"
-            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
+              <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
+            </div>
 
             {/* We use a smaller overlay that doesn't cover the whole thing. 
             If this overlay is z-20 and full-screen, the iframe NEVER gets the tap.

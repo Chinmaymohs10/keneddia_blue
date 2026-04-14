@@ -15,6 +15,7 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
+import { InstagramEmbed } from "react-social-media-embed";
 import {
   createGuestExperienceByGuest,
   getGuestExperienceSection,
@@ -303,20 +304,16 @@ export default function RestaurantGuestReviews({
       if (isInstagramUrl(m.url)) {
         const id = getInstagramId(m.url);
         if (!id) return null;
-        const embedUrl = `https://www.instagram.com/reel/${id}/embed/?autoplay=1&muted=1`;
 
         return (
           <div
             key={idx}
             className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black group"
           >
-            <iframe
-              src={embedUrl}
-              title="Instagram Reel"
-              className="absolute h-[145%] w-full pointer-events-auto"
-              style={{ top: "-22.5%" }}
-              allow="autoplay; encrypted-media"
-            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
+              <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
+            </div>
+            
             <a
               href={m.url}
               target="_blank"
@@ -597,14 +594,10 @@ export default function RestaurantGuestReviews({
                       </div>
                     </div>
                   ) : instaId ? (
-                    <div className="relative h-44 w-full overflow-hidden bg-black">
-                      <iframe
-                        src={`https://www.instagram.com/reel/${instaId}/embed/?autoplay=1&muted=1`}
-                        title="Instagram Reel Preview"
-                        className="absolute h-[145%] w-full"
-                        style={{ top: "-22.5%" }}
-                        allow="autoplay; encrypted-media"
-                      />
+                    <div className="relative h-44 w-full overflow-hidden bg-black flex justify-center items-center">
+                      <div className="absolute top-0 scale-[0.45] origin-top min-w-[328px] mt-2">
+                        <InstagramEmbed url={`https://www.instagram.com/p/${instaId}/`} width={328} />
+                      </div>
                     </div>
                   ) : null}
                 </div>
