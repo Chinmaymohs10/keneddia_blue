@@ -505,61 +505,7 @@ export default function AutoTestimonials({ propertyId }) {
   const col1 = experiences.filter((_, i) => i % 2 === 0);
   const col2 = experiences.filter((_, i) => i % 2 === 1);
 
-  // Fallback static data when API returns nothing
-  const FALLBACK = [
-    {
-      id: "f1",
-      author: "Arjun Mehta",
-      description:
-        "The Signature Butter Chicken is easily the best in town. Incredible atmosphere!",
-      rating: 5,
-      mediaList: [],
-      imageUrl:
-        "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=400",
-    },
-    {
-      id: "f2",
-      author: "Sarah Khan",
-      description:
-        "A perfect spot for family gatherings. The staff is exceptionally polite.",
-      rating: 5,
-      mediaList: [],
-      imageUrl:
-        "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=400",
-    },
-    {
-      id: "f3",
-      author: "Priya Das",
-      description:
-        "Love the Dim Sum platter. Flavors are authentic and presentation top-notch.",
-      rating: 4,
-      mediaList: [],
-      imageUrl:
-        "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?q=80&w=400",
-    },
-    {
-      id: "f4",
-      author: "Rohan V.",
-      description:
-        "The live music on weekends pairs perfectly with their Tandoori Jhinga.",
-      rating: 5,
-      mediaList: [],
-      imageUrl:
-        "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=400",
-    },
-    {
-      id: "f5",
-      author: "Elena G.",
-      description:
-        "Sophisticated settings and very clean. Highly recommend for corporate dinners.",
-      rating: 5,
-      mediaList: [],
-      imageUrl:
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=400",
-    },
-  ];
-
-  const displayData = experiences.length > 0 ? experiences : FALLBACK;
+  const displayData = experiences;
   const displayCol1 = displayData.filter((_, i) => i % 2 === 0);
   const displayCol2 = displayData.filter((_, i) => i % 2 === 1);
   const extractRatingFromTitle = (title = "") => {

@@ -33,7 +33,7 @@ export default function RestaurantHomepage() {
   const numericPropertyId = Number(propertyId || slugTail) || null;
   const ssrRestaurantDetail =
     propertyDetail?.propertyType === "restaurant" &&
-    propertyDetail?.propertyId === numericPropertyId
+      propertyDetail?.propertyId === numericPropertyId
       ? propertyDetail.pageData
       : null;
   const ssrSeo =
@@ -125,9 +125,9 @@ export default function RestaurantHomepage() {
           coordinates:
             parent.latitude && parent.longitude
               ? {
-                  lat: Number(parent.latitude),
-                  lng: Number(parent.longitude),
-                }
+                lat: Number(parent.latitude),
+                lng: Number(parent.longitude),
+              }
               : null,
         };
 
@@ -200,7 +200,6 @@ export default function RestaurantHomepage() {
         <div id="gallery">
           <ResturantGallerypage propertyId={numericPropertyId} />
         </div>
-
         <div id="reservation">
           <ReservationForm propertyId={numericPropertyId} />
         </div>
