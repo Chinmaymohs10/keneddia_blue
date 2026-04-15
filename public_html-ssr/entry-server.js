@@ -3273,9 +3273,9 @@ function BusinessVerticals({
 function DesktopTree({ divisions, logoText, logoSubText, logoIcon }) {
   const safeDivisions = Array.isArray(divisions) ? [...divisions] : [];
   const sortedDivisions = safeDivisions.sort((a, b) => a.displayOrder - b.displayOrder).slice(0, 5);
-  return /* @__PURE__ */ jsxs("div", { className: "relative w-full max-w-6xl mx-auto min-h-[500px] flex flex-col items-center justify-center py-10", children: [
-    /* @__PURE__ */ jsxs("div", { className: "relative z-20 mb-16", children: [
-      /* @__PURE__ */ jsx("div", { className: "w-32 h-32 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden", children: logoIcon?.url ? /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs("div", { className: "relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center py-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "relative z-20 mb-6", children: [
+      /* @__PURE__ */ jsx("div", { className: "w-28 h-28 rounded-full bg-card shadow-xl border-4 border-primary/20 flex items-center justify-center relative z-20 overflow-hidden", children: logoIcon?.url ? /* @__PURE__ */ jsx(
         "img",
         {
           src: logoIcon.url,
@@ -3286,10 +3286,10 @@ function DesktopTree({ divisions, logoText, logoSubText, logoIcon }) {
         /* @__PURE__ */ jsx("h2", { className: "text-2xl font-serif font-bold text-foreground leading-none", children: logoText }),
         /* @__PURE__ */ jsx("p", { className: "text-[10px] uppercase tracking-widest text-primary mt-1 font-bold", children: logoSubText })
       ] }) }),
-      /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-full -translate-x-1/2 h-16 w-[1px] bg-primary/20" })
+      /* @__PURE__ */ jsx("div", { className: "absolute left-1/2 top-full -translate-x-1/2 h-8 w-px bg-primary/20" })
     ] }),
-    /* @__PURE__ */ jsx("div", { className: "relative w-4/5 h-[1px] bg-primary/20 mb-8" }),
-    /* @__PURE__ */ jsx("div", { className: "flex justify-between items-start w-full px-4 relative -mt-8", children: sortedDivisions.map((v, i) => /* @__PURE__ */ jsx(BranchNode, { item: v, index: i }, v.id)) })
+    /* @__PURE__ */ jsx("div", { className: "relative w-4/5 h-[1px] bg-primary/20 mb-4" }),
+    /* @__PURE__ */ jsx("div", { className: "flex justify-between items-start w-full px-4 relative -mt-4", children: sortedDivisions.map((v, i) => /* @__PURE__ */ jsx(BranchNode, { item: v, index: i }, v.id)) })
   ] });
 }
 function BranchNode({ item, index }) {
@@ -5033,6 +5033,8 @@ function NewsCard$3({ item }) {
     }
   );
 }
+const normalizeTypeName = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isHotelType$1 = (value = "") => normalizeTypeName(value) === "hotel";
 const isYoutubeUrl$4 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
 const isInstagramUrl$2 = (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
 const getYoutubeId$4 = (url) => {
@@ -5099,6 +5101,7 @@ function OurStoryPreview({
   const [phone, setPhone] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [hotelTypeId, setHotelTypeId] = useState(null);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -5137,6 +5140,12 @@ function OurStoryPreview({
     getGuestExperineceRatingHeader().then(
       (res) => setRatingHeader(Array.isArray(res.data) ? res.data[0] : res.data)
     );
+    getPropertyTypes().then((res) => {
+      const types = res?.data || res || [];
+      const match = Array.isArray(types) ? types.find((t) => t?.isActive && isHotelType$1(t?.typeName)) : null;
+      if (match?.id) setHotelTypeId(Number(match.id));
+    }).catch(() => {
+    });
     fetchExperiences();
   }, []);
   const handleFileUpload = (e) => {
@@ -5163,6 +5172,7 @@ function OurStoryPreview({
       formData.append("author", authorName);
       formData.append("authorPhone", phone);
       formData.append("authorEmail", email);
+      if (hotelTypeId != null) formData.append("propertyTypeId", String(hotelTypeId));
       if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
       mediaPreviews.forEach((m) => formData.append("files", m.file));
       await createGuestExperienceByGuest(formData);
@@ -11381,6 +11391,7 @@ function HotelReviewsSection({
       formData.append("author", authorName);
       formData.append("authorPhone", phone);
       formData.append("authorEmail", email);
+      if (hotelTypeId != null) formData.append("propertyTypeId", String(hotelTypeId));
       if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
       mediaPreviews.forEach((m) => formData.append("files", m.file));
       await createGuestExperienceByGuest(formData);
@@ -20073,6 +20084,8 @@ function EnhancedCulinaryCuration({ propertyId }) {
     ) }) })
   ] });
 }
+const normalizeType = (value = "") => String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isRestaurantType$6 = (value = "") => ["restaurant", "resturant"].includes(normalizeType(value));
 const isYoutubeUrl$2 = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url?.trim() ?? "");
 const getYoutubeId$2 = (url) => {
   if (!url) return null;
@@ -20283,6 +20296,7 @@ function AutoTestimonials({ propertyId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [propertyTypeId, setPropertyTypeId] = useState(null);
   const [step, setStep] = useState(1);
   const [formError, setFormError] = useState("");
   const [formData, setFormData] = useState({
@@ -20347,6 +20361,12 @@ function AutoTestimonials({ propertyId }) {
   useEffect(() => {
     fetchTestimonialHeader();
     fetchExperiences();
+    getPropertyTypes().then((res) => {
+      const types = res?.data || res || [];
+      const match = Array.isArray(types) ? types.find((t) => t?.isActive && isRestaurantType$6(t?.typeName)) : null;
+      if (match?.id) setPropertyTypeId(Number(match.id));
+    }).catch(() => {
+    });
   }, [propertyId]);
   const handleFileUpload = (e) => {
     const files = e.target.files;
@@ -20404,6 +20424,7 @@ function AutoTestimonials({ propertyId }) {
       fd.append("authorPhone", formData.phone);
       fd.append("rating", String(formData.rating));
       if (propertyId != null) fd.append("propertyId", String(propertyId));
+      if (propertyTypeId != null) fd.append("propertyTypeId", String(propertyTypeId));
       if (formData.ytLink.trim()) fd.append("videoUrl", formData.ytLink.trim());
       mediaPreviews.forEach((m) => fd.append("files", m.file));
       fd.append(
@@ -28643,7 +28664,7 @@ function RestaurantGuestReviews({
       const rawData = res?.data?.data || res?.data || res || [];
       const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
       const filtered = list.filter(
-        (item) => resolvedRestaurantTypeId != null ? Number(item?.propertyTypeId) === Number(resolvedRestaurantTypeId) : false
+        (item) => item?.isActive !== false && (resolvedRestaurantTypeId != null ? Number(item?.propertyTypeId) === Number(resolvedRestaurantTypeId) : false)
       ).sort((a, b) => {
         const dateA = new Date(a?.createdAt || 0).getTime();
         const dateB = new Date(b?.createdAt || 0).getTime();
@@ -28658,7 +28679,6 @@ function RestaurantGuestReviews({
     }
   };
   useEffect(() => {
-    if (ssrLoaded && initialRestaurantTypeId != null) return;
     const init = async () => {
       try {
         setIsLoading(true);
@@ -62486,7 +62506,7 @@ const normalizeGuestExperiences = (res, restaurantTypeId) => {
   const rawData = res?.data?.data || res?.data || res || [];
   const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
   return list.filter(
-    (item) => restaurantTypeId != null ? Number(item?.propertyTypeId) === Number(restaurantTypeId) : false
+    (item) => item?.isActive !== false && (restaurantTypeId != null ? Number(item?.propertyTypeId) === Number(restaurantTypeId) : false)
   ).sort((a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0));
 };
 const normalizeLocations = (res) => {

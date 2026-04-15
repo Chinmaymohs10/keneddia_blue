@@ -117,6 +117,7 @@ function UserInfoModal({ message, rating, onSubmit, onClose }: UserInfoModalProp
     const emailValid = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(info.email.trim());
     const phoneValid = /^\d{10}$/.test(info.phone.trim());
     if (!info.name.trim()) { setFormError("Full name is required."); return false; }
+    if (!/^[a-zA-Z\s]+$/.test(info.name.trim())) { setFormError("Name must contain only letters and spaces."); return false; }
     if (!info.email.trim()) { setFormError("Email address is required."); return false; }
     if (!emailValid) { setFormError("Please enter a valid email address (e.g. name@example.com)."); return false; }
     if (!info.phone.trim()) { setFormError("Phone number is required."); return false; }
@@ -150,7 +151,7 @@ function UserInfoModal({ message, rating, onSubmit, onClose }: UserInfoModalProp
           <Input
             placeholder="Full name *"
             value={info.name}
-            onChange={(e) => setField("name", e.target.value)}
+            onChange={(e) => setField("name", e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
           />
           <Input
             placeholder="Email address *"

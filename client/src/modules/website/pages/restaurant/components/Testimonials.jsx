@@ -475,6 +475,10 @@ export default function AutoTestimonials({ propertyId }) {
       setFormError("Full name is required.");
       return;
     }
+    if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
+      setFormError("Name must contain only letters and spaces.");
+      return;
+    }
     if (!formData.email.trim()) {
       setFormError("Email address is required.");
       return;
@@ -935,7 +939,7 @@ export default function AutoTestimonials({ propertyId }) {
                         <Input
                           value={formData.name}
                           onChange={(e) => {
-                            setFormData({ ...formData, name: e.target.value });
+                            setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") });
                             setFormError("");
                           }}
                           placeholder="How should we address you?"

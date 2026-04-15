@@ -270,6 +270,7 @@ export default function HotelReviewsSection({
       formData.append("author", authorName);
       formData.append("authorPhone", phone);
       formData.append("authorEmail", email);
+      if (hotelTypeId != null) formData.append("propertyTypeId", String(hotelTypeId));
       if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
       mediaPreviews.forEach((m) => formData.append("files", m.file));
       await createGuestExperienceByGuest(formData);
@@ -691,7 +692,7 @@ export default function HotelReviewsSection({
               <div className="space-y-4">
                 <input
                   value={authorName}
-                  onChange={(e) => { setAuthorName(e.target.value); setFormError(""); }}
+                  onChange={(e) => { setAuthorName(e.target.value.replace(/[^a-zA-Z\s]/g, "")); setFormError(""); }}
                   placeholder="Full Name *"
                   className="w-full p-3 bg-muted rounded-lg outline-none"
                 />
@@ -718,6 +719,7 @@ export default function HotelReviewsSection({
                     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
                     const phoneValid = /^\d{10}$/.test(phone.trim());
                     if (!authorName.trim()) { setFormError("Full name is required."); return; }
+                    if (!/^[a-zA-Z\s]+$/.test(authorName.trim())) { setFormError("Name must contain only letters and spaces."); return; }
                     if (!email.trim() && !phone.trim()) { setFormError("Please provide email or phone number."); return; }
                     if (email.trim() && !emailValid) { setFormError("Please enter a valid email address."); return; }
                     if (phone.trim() && !phoneValid) { setFormError("Phone number must be exactly 10 digits."); return; }

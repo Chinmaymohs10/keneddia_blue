@@ -501,7 +501,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                       <Input
                         value={formData.name}
                         onChange={(e) => {
-                          setFormData({ ...formData, name: e.target.value });
+                          setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, "") });
                           setFormError("");
                         }}
                         placeholder="Your Name"
@@ -547,6 +547,10 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
                       onClick={() => {
                         if (!formData.name.trim()) {
                           setFormError("Full name is required.");
+                          return;
+                        }
+                        if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
+                          setFormError("Name must contain only letters and spaces.");
                           return;
                         }
                         if (!/^\d{10}$/.test(formData.phone.trim())) {
