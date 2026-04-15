@@ -141,6 +141,9 @@ function PropertyDetailRoute() {
 const WebsiteRoutes = [
   <Route key="home" path="/" element={<Home />} />,
   // <Route key="home" path="/" element={<Hotels />} />,
+  // <Route key="home" path="/" element={withRouteSuspense(<RestaurantHomepage />)} />,
+
+
   // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
   
   <Route key="hotels" path="/hotels" element={<Hotels />} />,
