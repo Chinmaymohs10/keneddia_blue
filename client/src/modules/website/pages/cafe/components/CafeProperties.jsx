@@ -37,8 +37,6 @@ const CAFES = [
     serviceHours: "All Day Service",
     citySlug: "ghaziabad",
     propertySlug: "kennedia-roast-room-cafe",
-    lat: 28.6692,
-    lng: 77.4538,
   },
   {
     id: 2,
@@ -59,8 +57,6 @@ const CAFES = [
     serviceHours: "Brunch to Late Evenings",
     citySlug: "noida",
     propertySlug: "kennedia-garden-terrace-cafe",
-    lat: 28.5355,
-    lng: 77.3910,
   },
   {
     id: 3,
@@ -81,8 +77,6 @@ const CAFES = [
     serviceHours: "Afternoon to Late Night",
     citySlug: "delhi",
     propertySlug: "kennedia-high-tea-lounge-cafe",
-    lat: 28.6139,
-    lng: 77.2090,
   },
 ];
 
@@ -93,10 +87,6 @@ export default function CafeProperties() {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-
-  const [locationStatus, setLocationStatus] = useState("idle");
-  const [locationMessage, setLocationMessage] = useState("");
-  const [nearbyLabel, setNearbyLabel] = useState("");
 
   const cities = useMemo(
     () => ["All Cities", ...new Set(CAFES.map((item) => item.city).filter(Boolean))],
@@ -112,91 +102,6 @@ export default function CafeProperties() {
   );
 
   useEffect(() => setActiveIndex(0), [selectedCity]);
-
-  useEffect(() => {
-    const fetchLocation = async () => {
-      if (!navigator.geolocation) {
-        setLocationStatus("error");
-        setLocationMessage("Geolocation is not supported by your browser");
-        return;
-      }
-
-      setLocationStatus("loading");
-      setLocationMessage("Detecting your location...");
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-
-          try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-            const data = await response.json();
-
-            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.state_district || "Unknown";
-            console.log('Detected City:', city);
-
-            const cityMatch = CAFES.filter(c => c.city.toLowerCase() === city.toLowerCase());
-
-            if (cityMatch.length > 0) {
-              setSelectedCity(cityMatch[0].city);
-              setLocationStatus("success");
-              setLocationMessage("");
-              setNearbyLabel("");
-            } else {
-              const radius = 50;
-              const calculateDistance = (lat1, lon1, lat2, lon2) => {
-                const R = 6371;
-                const dLat = (lat2 - lat1) * Math.PI / 180;
-                const dLon = (lon2 - lon1) * Math.PI / 180;
-                const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-              };
-
-              const nearby = CAFES.filter(c => {
-                if (c.lat && c.lng) {
-                  return calculateDistance(latitude, longitude, c.lat, c.lng) <= radius;
-                }
-                return false;
-              });
-
-              if (nearby.length > 0) {
-                const nearbyCities = [...new Set(nearby.map(c => c.city))];
-                console.log('Nearby Cities:', nearbyCities);
-                console.log('Matched Nearby Properties:', nearby);
-
-                const firstNearbyCity = nearbyCities[0];
-                setSelectedCity(firstNearbyCity);
-                setLocationStatus("success");
-                setNearbyLabel(`Showing properties from nearby city: ${firstNearbyCity}`);
-                setLocationMessage("");
-              } else {
-                console.log('Nearby Cities:', []);
-                console.log('Matched Nearby Properties:', []);
-                setLocationStatus("error");
-                setLocationMessage("No nearby city properties found");
-                setSelectedCity("All Cities");
-              }
-            }
-          } catch (err) {
-            console.error(err);
-            setLocationStatus("error");
-            setLocationMessage("Failed to get location data.");
-            setSelectedCity("All Cities");
-          }
-        },
-        (err) => {
-          console.error(err);
-          setLocationStatus("error");
-          setLocationMessage(
-            err.code === 1 ? "Location permission denied" : "Location unavailable"
-          );
-          setSelectedCity("All Cities");
-        }
-      );
-    };
-
-    fetchLocation();
-  }, []);
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredCafes.length <= 1) {
@@ -351,14 +256,6 @@ export default function CafeProperties() {
               </div>
             </div>
           </div>
-
-          {(locationStatus === "loading" || locationMessage || nearbyLabel) && (
-            <div className="mb-4 rounded-lg bg-secondary/30 p-3 text-sm">
-              {locationStatus === "loading" && <span className="text-muted-foreground animate-pulse block">{locationMessage}</span>}
-              {locationStatus === "error" && <span className="text-destructive font-medium block">{locationMessage}</span>}
-              {nearbyLabel && <span className="text-primary font-medium block">{nearbyLabel}</span>}
-            </div>
-          )}
 
           <AnimatePresence mode="wait">
             {viewMode === "gallery" ? (
