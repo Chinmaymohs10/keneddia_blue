@@ -78,15 +78,37 @@ const CAFES = [
     citySlug: "delhi",
     propertySlug: "kennedia-high-tea-lounge-cafe",
   },
+  {
+    id: 4,
+    propertyId: 4,
+    name: "Kennedia Odisha Brew House",
+    city: "Jamshedpur",
+    location: "Saheed Nagar, Jamshedpur",
+    type: "Cafe",
+    serviceTag: "Artisan Brew",
+    reservationAvailable: true,
+    image: siteContent.images.cafes.minimalist,
+    rating: 4.6,
+    description:
+      "A cozy artisan brew house inspired by Odisha's rich culture, offering specialty coffees and local-inspired snacks.",
+    cuisines: ["Specialty Coffee", "Local Bites", "Cold Brew"],
+    highlightedAmenities: ["Cultural Decor", "Live Pour-Overs", "Cozy Corners"],
+    nearbyLocation: "Saheed Nagar",
+    serviceHours: "Morning to Late Evening",
+    citySlug: "bhubaneswar",
+    propertySlug: "kennedia-odisha-brew-house-cafe",
+  },
 ];
 
-export default function CafeProperties() {
+export default function CafeProperties({ locationMatch }) {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState("gallery");
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  // null = not yet determined, "found" | "not-found"
+  const [locationBanner, setLocationBanner] = useState(null);
 
   const cities = useMemo(
     () => ["All Cities", ...new Set(CAFES.map((item) => item.city).filter(Boolean))],
@@ -102,6 +124,17 @@ export default function CafeProperties() {
   );
 
   useEffect(() => setActiveIndex(0), [selectedCity]);
+
+  // ── React to locationMatch prop from CafeHomepage ────────────────────────
+  useEffect(() => {
+    if (!locationMatch) return;
+    if (locationMatch.found && locationMatch.city) {
+      setSelectedCity(locationMatch.city);
+      setLocationBanner("found");
+    } else {
+      setLocationBanner("not-found");
+    }
+  }, [locationMatch]);
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredCafes.length <= 1) {
@@ -256,6 +289,23 @@ export default function CafeProperties() {
               </div>
             </div>
           </div>
+
+          {/* ── Location detection banner ─────────────────────────────── */}
+          {locationBanner === "found" && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/8 px-4 py-2.5 text-sm">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="font-medium text-primary">Nearby location found —</span>
+              <span className="text-foreground">
+                Showing Kennedia cafe in <strong>{selectedCity}</strong>
+              </span>
+            </div>
+          )}
+          {locationBanner === "not-found" && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-secondary/20 px-4 py-2.5 text-sm text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              No nearby Kennedia cafe location detected — showing all properties.
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             {viewMode === "gallery" ? (
