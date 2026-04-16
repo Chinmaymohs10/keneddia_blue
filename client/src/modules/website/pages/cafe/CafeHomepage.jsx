@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import * as MapboxSearch from '@mapbox/search-js-core';
+const { SearchBoxCore } = MapboxSearch;
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
@@ -21,6 +23,29 @@ const CAFE_NAV_ITEMS = [
 ];
 
 export default function CafeHomepage() {
+  const ACCESS_TOKEN = 'import.meta.env.VITE_MAPBOX_ACCESS_TOKEN';
+  const [places, setPlaces] = useState([]);
+
+  useEffect(() => {
+    const fetchNearby = async () => {
+      try {
+        const search = new SearchBoxCore({ accessToken: ACCESS_TOKEN });
+
+        const result = await search.category('atm', {
+          proximity: [77.23, 28.61], // Delhi coordinates [lng, lat]
+          limit: 10
+        });
+
+        console.log("Found:", result.features);
+        setPlaces(result.features);
+      } catch (error) {
+        console.error("Mapbox search failed:", error);
+      }
+    };
+
+    fetchNearby();
+  }, []);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
