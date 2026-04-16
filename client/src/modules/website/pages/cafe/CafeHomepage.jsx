@@ -26,8 +26,13 @@ const CAFE_NAV_ITEMS = [
 const MAPBOX_ACCESS_TOKEN =
   "import.meta.env.VITE_MAPBOX_ACCESS_TOKEN";
 
+// Cities with Kennedia cafe properties — used for matching against Mapbox nearby results
+const PROPERTY_CITIES = ["Ghaziabad", "Noida", "Delhi", "Jamshedpur"];
+
 export default function CafeHomepage() {
   const [places, setPlaces] = useState([]);
+  // { city: string, found: boolean } — passed down to CafeProperties
+  const [locationMatch, setLocationMatch] = useState(null);
 
   // ── react-geolocated hook ────────────────────────────────────────────────
   const { coords, isGeolocationAvailable, isGeolocationEnabled, positionError } =
@@ -85,7 +90,7 @@ export default function CafeHomepage() {
 
         // Deduplicate city names (context.place.name), sorted by nearest distance
         const seenCities = new Set();
-        const nearbyCities = result.features
+        const nearbyEntries = result.features
           .map((f) => ({
             city: f.properties.context?.place?.name || null,
             distanceKm: (f.properties.distance / 1000).toFixed(2),
@@ -94,11 +99,30 @@ export default function CafeHomepage() {
             if (!entry.city || seenCities.has(entry.city)) return false;
             seenCities.add(entry.city);
             return true;
-          })
-          .map((entry) => `${entry.city} — ${entry.distanceKm}km`)
-          .join(" | ");
+          });
 
-        console.log("Nearby Cities:", nearbyCities);
+        console.log(
+          "Nearby Cities:",
+          nearbyEntries.map((e) => `${e.city} — ${e.distanceKm}km`).join(" | ")
+        );
+
+        // Match against known property cities (case-insensitive)
+        const matched = nearbyEntries.find((entry) =>
+          PROPERTY_CITIES.some(
+            (propCity) => propCity.toLowerCase() === entry.city.toLowerCase()
+          )
+        );
+
+        if (matched) {
+          const canonicalCity = PROPERTY_CITIES.find(
+            (c) => c.toLowerCase() === matched.city.toLowerCase()
+          );
+          console.log(`Location match found: ${canonicalCity} (${matched.distanceKm}km)`);
+          setLocationMatch({ city: canonicalCity, found: true });
+        } else {
+          console.log("No property city matched nearby locations.");
+          setLocationMatch({ city: null, found: false });
+        }
 
         setPlaces(result.features);
       } catch (error) {
@@ -121,7 +145,7 @@ export default function CafeHomepage() {
         </div>
         {/* <CafeQuickBooking /> */}
         <CafeCoffeeStory />
-        <CafeProperties />
+        <CafeProperties locationMatch={locationMatch} />
         <CafeBestSellers />
         <CafeAbout />
         <CafeShowcaseSlider />
