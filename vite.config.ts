@@ -7,17 +7,17 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 import { fileURLToPath } from "url";
- 
+
 // Get __dirname equivalent in ESM
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
- 
+
 export default defineConfig({
 
   // Base path for root deployment
 
   base: "/",
- 
+
   plugins: [
 
     react(),
@@ -25,7 +25,7 @@ export default defineConfig({
     tailwindcss(),
 
   ],
- 
+
   resolve: {
 
     alias: {
@@ -37,7 +37,7 @@ export default defineConfig({
     },
 
   },
- 
+
   css: {
 
     postcss: {
@@ -47,11 +47,11 @@ export default defineConfig({
     },
 
   },
- 
+
   // Root folder for development
 
   root: path.resolve(__dirname, "client"),
- 
+
   build: {
 
     // Output directly to public_html
@@ -64,4 +64,3 @@ export default defineConfig({
 
 });
 
- 
