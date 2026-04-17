@@ -80,8 +80,9 @@ export default function CafeHomepage() {
       try {
         const search = new SearchBoxCore({ accessToken: MAPBOX_ACCESS_TOKEN });
 
-        // Search nearby airports — valid Mapbox category, used to derive nearby city names
-        const result = await search.category("airport", {
+        // Search nearby railway stations — more granular than airports, resolves to the
+        // exact city the user is in rather than a distant major airport city.
+        const result = await search.category("railway_station", {
           proximity: [longitude, latitude],
           limit: 10,
         });
@@ -143,7 +144,9 @@ export default function CafeHomepage() {
         <div id="home">
           <CafeHeroBanner />
         </div>
-        {/* <CafeQuickBooking /> */}
+        <div id="quick-booking">
+          <CafeQuickBooking />
+        </div>
         <CafeCoffeeStory />
         <CafeProperties locationMatch={locationMatch} />
         <CafeBestSellers />
