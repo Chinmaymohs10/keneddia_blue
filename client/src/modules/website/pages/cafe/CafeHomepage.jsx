@@ -262,14 +262,21 @@ export default function CafeHomepage() {
         <div id="quick-booking">
           <CafeQuickBooking />
         </div>
+        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
         <CafeCoffeeStory />
+        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-white dark:hidden" />
         <div id="cafe-properties">
           <CafeProperties locationMatch={locationMatch} />
         </div>
+        <div className="h-12 bg-linear-to-b from-white to-[#E4CDB0] dark:hidden" />
         <CafeBestSellers />
+        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-white dark:hidden" />
         <CafeAbout />
+        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
         <CafeShowcaseSlider />
+        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
         <CafeNewsSection />
+        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B] dark:hidden" />
         <CafeGuestReviews />
       </main>
 

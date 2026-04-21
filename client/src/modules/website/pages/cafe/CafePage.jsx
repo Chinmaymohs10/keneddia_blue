@@ -34,23 +34,29 @@ export default function CafePage() {
 
         <div id="menu">
           <CafeSubCategories />
+          <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
           <CafeSignatureDrinks />
         </div>
 
+        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden" />
         <div id="about">
           <AboutCafePage />
         </div>
 
+        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
         <div id="events">
           <CafepageEvents />
         </div>
 
+        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#E6E2D7] dark:hidden" />
         <CafeTestimonials />
 
+        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#ABBF9B] dark:hidden" />
         <div id="gallery">
           <CafeGalleryPage />
         </div>
 
+        <div className="h-12 bg-linear-to-b from-[#ABBF9B] to-[#E4CDB0] dark:hidden" />
         <CafeReservationForm />
       </main>
 

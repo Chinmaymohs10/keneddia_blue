@@ -253,7 +253,7 @@ export default function CafeCoffeeStory() {
     setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
 
   return (
-    <section className="relative overflow-hidden bg-[#fdfaf6] py-24 dark:bg-[#080808]">
+    <section className="relative overflow-hidden bg-[#E6E2D7] py-24 dark:bg-[#080808]">
       <div className="hidden w-full lg:block">
         <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
           <div className="flex h-full flex-col justify-center">
