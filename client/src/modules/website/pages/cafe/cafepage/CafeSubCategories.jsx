@@ -255,7 +255,7 @@ export default function CafeSubCategories() {
 
   return (
     <section
-      className="relative overflow-hidden py-24 bg-[#f6f6f4] dark:bg-[#0f0f0f]"
+      className="relative overflow-hidden py-10 bg-[#E6E2D7] dark:bg-[#0f0f0f]"
     >
       {/* ── Sparkle background animation ─────────────────────────────────── */}
       <style>{`

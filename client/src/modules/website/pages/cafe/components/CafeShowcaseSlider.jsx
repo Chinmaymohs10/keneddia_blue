@@ -306,7 +306,7 @@ function GroupBookingColumn() {
 
 export default function CafeShowcaseSlider() {
   return (
-    <section id="showcase" className="bg-muted py-10">
+    <section id="showcase" className="bg-[#E6E2D7] py-10 dark:bg-muted">
       <div className="mx-auto w-[92%] max-w-7xl">
         {/* Section heading */}
         <div className="mb-8">

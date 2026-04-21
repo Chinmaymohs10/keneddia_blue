@@ -475,8 +475,8 @@ function InfiniteColumn({ items, pattern, scrollYProgress }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-linear-to-t from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#E6E2D7] via-[#E6E2D7]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-linear-to-t from-[#E6E2D7] via-[#E6E2D7]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
 
       <motion.div
         initial={pattern.initial}
@@ -557,7 +557,7 @@ export default function CafeTestimonials() {
     <section
       id="reviews"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#F7F0E9] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]"
+      className="relative overflow-hidden bg-[#E6E2D7] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]"
     >
       <motion.div
         style={{ x: glowX, y: glowY }}

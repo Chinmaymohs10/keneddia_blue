@@ -297,7 +297,7 @@ function GroupBookingColumn() {
 
 export default function CafepageEvents() {
   return (
-    <section id="events" className="bg-muted py-10">
+    <section id="events" className="bg-[#E4CDB0] py-10 dark:bg-muted">
       <div className="mx-auto w-[92%] max-w-7xl">
         <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">Offers, Events & Group Booking</h2>
