@@ -64,7 +64,7 @@ export default function CafeBanner() {
   return (
     /* ── Root: light = warm off-white | dark = deep espresso ── */
     <div
-      className="h-screen overflow-hidden flex flex-col bg-[#f5ede0] dark:bg-[#14100b] transition-colors duration-300"
+      className="h-screen overflow-hidden flex flex-col bg-white dark:bg-[#14100b] transition-colors duration-300"
       style={{ paddingTop: "var(--navbar-height,72px)" }}
     >
       <GalleryModal
@@ -94,11 +94,18 @@ export default function CafeBanner() {
               transition={{ duration: 0.4 }}
               className="flex items-center gap-1.5 text-xs font-semibold mb-4"
             >
-              <Link
+            <Link
                 to="/"
                 className="text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
               >
                 Home
+              </Link>
+              <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
+              <Link
+                to="/cafe-homepage"
+                className="text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
+              >
+                Cafes
               </Link>
               <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
               <span className="text-[#3d1f00] dark:text-[#f0dfc0] font-black">{CAFE_DATA.name}</span>
@@ -196,10 +203,7 @@ export default function CafeBanner() {
             >
               <button
                 onClick={() => setIsGalleryOpen(true)}
-                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] transition-all active:scale-95 hover:opacity-90 shadow-lg"
-                style={{ background: "var(--cta-bg, #1e0d00)" }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "#3d1f00"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "#1e0d00"}
+                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-[#1e0d00] dark:bg-[#f0dfc0] transition-all active:scale-95 hover:opacity-90 shadow-lg"
               >
                 Explore Now
               </button>
@@ -267,27 +271,6 @@ export default function CafeBanner() {
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="hidden lg:flex lg:w-[36%] shrink-0 flex-col gap-3"
         >
-          {/* Breadcrumb + count pills */}
-          <div className="flex items-center justify-between shrink-0 px-1 mt-2">
-            <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#3d1f00] dark:text-[#e8d0b0]"
-              style={{
-                background: "rgba(245,237,224,0.7)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255,255,255,0.5)",
-              }}
-            >
-              <Link to="/" className="hover:underline">Home</Link>
-              <ChevronRight className="w-2.5 h-2.5 opacity-50" />
-              <span className="font-black">{CAFE_DATA.name}</span>
-            </div>
-            <div
-              className="px-3 py-1.5 rounded-full text-[10px] font-black text-[#f0dfc0]"
-              style={{ background: "rgba(30,13,0,0.65)", backdropFilter: "blur(10px)" }}
-            >
-              {totalImages} Photos
-            </div>
-          </div>
 
           {/* Floating multi-image grid */}
           <div className="relative flex-1 min-h-0">

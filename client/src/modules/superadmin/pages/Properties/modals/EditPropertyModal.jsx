@@ -189,9 +189,10 @@ function EditPropertyModal({
     return String(matchedType?.typeName || "").toLowerCase() === "hotel";
   });
 
-  const isRestaurantType = form.propertyTypeIds.some((id) => {
+  const isRestaurantOrCafeType = form.propertyTypeIds.some((id) => {
     const matchedType = propertyTypes?.find((type) => type.id === id);
-    return String(matchedType?.typeName || "").toLowerCase() === "restaurant";
+    const name = String(matchedType?.typeName || "").toLowerCase();
+    return name === "restaurant" || name === "cafe";
   });
 
   const [saving, setSaving] = useState(false);
@@ -543,8 +544,8 @@ function EditPropertyModal({
                 />
               </Field>
 
-              {isRestaurantType && (
-                <Field label="Restaurant Type" icon={Tag} span={2}>
+              {isRestaurantOrCafeType && (
+                <Field label="Service Type" icon={Tag} span={2}>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { key: "dineIn", label: "Dine In" },

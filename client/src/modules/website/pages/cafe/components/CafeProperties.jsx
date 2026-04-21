@@ -6,11 +6,15 @@ import {
   CalendarClock,
   ChevronLeft,
   ChevronRight,
+  Coffee,
   Grid3x3,
   Map,
   MapPin,
+  PlaneTakeoff,
   Search,
   Star,
+  Train,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -98,6 +102,26 @@ const CAFES = [
     citySlug: "bhubaneswar",
     propertySlug: "kennedia-odisha-brew-house-cafe",
   },
+  {
+    id: 5,
+    propertyId: 5,
+    name: "Kennedia Bangalore Bean Co.",
+    city: "Bangalore",
+    location: "Indiranagar, Bangalore",
+    type: "Cafe",
+    serviceTag: "Specialty Roasts",
+    reservationAvailable: true,
+    image: siteContent.images.cafes.garden,
+    rating: 4.8,
+    description:
+      "A premium specialty roast cafe in the heart of Indiranagar — curated single-origins, slow brews, and a vibrant co-working atmosphere.",
+    cuisines: ["Single Origin", "Pour-Over Bar", "Work-Friendly"],
+    highlightedAmenities: ["Cupping Sessions", "Roastery Counter", "High-Speed Wi-Fi"],
+    nearbyLocation: "Indiranagar",
+    serviceHours: "All Day Service",
+    citySlug: "bangalore",
+    propertySlug: "kennedia-bangalore-bean-co-cafe",
+  },
 ];
 
 export default function CafeProperties({ locationMatch }) {
@@ -107,7 +131,7 @@ export default function CafeProperties({ locationMatch }) {
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  // null = not yet determined, "found" | "not-found"
+  const [nearbyTab, setNearbyTab] = useState("stations");
   const [locationBanner, setLocationBanner] = useState(null);
 
   const cities = useMemo(
@@ -170,20 +194,20 @@ export default function CafeProperties({ locationMatch }) {
       prev === filteredCafes.length - 1 ? 0 : prev + 1,
     );
 
-  const visibleCards =
-    filteredCafes.length <= 1
-      ? [{ index: 0, position: "center" }]
-      : [
-        {
-          index: (activeIndex - 1 + filteredCafes.length) % filteredCafes.length,
-          position: "left",
-        },
-        { index: activeIndex, position: "center" },
-        {
-          index: (activeIndex + 1) % filteredCafes.length,
-          position: "right",
-        },
-      ];
+  // Always show 3 cards in the background — left/right always use the full CAFES
+  // list so the container never looks empty when a city filter is active.
+  const activeCafeIndexInAll = CAFES.findIndex((c) => c.id === activeCafe.id);
+  const visibleCards = [
+    {
+      cafe: CAFES[(activeCafeIndexInAll - 1 + CAFES.length) % CAFES.length],
+      position: "left",
+    },
+    { cafe: activeCafe, position: "center" },
+    {
+      cafe: CAFES[(activeCafeIndexInAll + 1) % CAFES.length],
+      position: "right",
+    },
+  ];
 
   if (!activeCafe) {
     return (
@@ -215,6 +239,29 @@ export default function CafeProperties({ locationMatch }) {
               </p>
             </div>
           </div>
+
+          {locationBanner === "found" && locationMatch && (
+            <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <div className="hidden sm:block">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary leading-none">
+                  Near You
+                </p>
+                <p className="text-[11px] font-medium text-foreground leading-tight truncate max-w-[160px]">
+                  {locationMatch.currentLocation?.city || locationMatch.city}
+                </p>
+              </div>
+              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                {locationMatch.city}
+              </span>
+            </div>
+          )}
+          {locationBanner === "not-found" && (
+            <div className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/20 px-3 py-1.5 text-[11px] text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="hidden sm:inline">No nearby property</span>
+            </div>
+          )}
         </div>
 
         <div className="p-8">
@@ -278,6 +325,16 @@ export default function CafeProperties({ locationMatch }) {
                   )}
                 </div>
 
+                {selectedCity !== "All Cities" && (
+                  <button
+                    onClick={() => setSelectedCity("All Cities")}
+                    className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                  >
+                    <X className="h-3 w-3" />
+                    Clear
+                  </button>
+                )}
+
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
                   <Building2 className="h-3 w-3" />
                   Cafe
@@ -289,23 +346,6 @@ export default function CafeProperties({ locationMatch }) {
               </div>
             </div>
           </div>
-
-          {/* ── Location detection banner ─────────────────────────────── */}
-          {locationBanner === "found" && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/8 px-4 py-2.5 text-sm">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-              <span className="font-medium text-primary">Nearby location found —</span>
-              <span className="text-foreground">
-                Showing Kennedia cafe in <strong>{selectedCity}</strong>
-              </span>
-            </div>
-          )}
-          {locationBanner === "not-found" && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-secondary/20 px-4 py-2.5 text-sm text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              No nearby Kennedia cafe location detected — showing all properties.
-            </div>
-          )}
 
           <AnimatePresence mode="wait">
             {viewMode === "gallery" ? (
@@ -323,8 +363,7 @@ export default function CafeProperties({ locationMatch }) {
                     onMouseLeave={() => setIsPaused(false)}
                   >
                     <div className="absolute inset-0 flex items-center justify-center perspective-[1200px]">
-                      {visibleCards.map(({ index, position }) => {
-                        const cafe = filteredCafes[index];
+                      {visibleCards.map(({ cafe, position }) => {
                         const isCenter = position === "center";
                         const isLeft = position === "left";
 

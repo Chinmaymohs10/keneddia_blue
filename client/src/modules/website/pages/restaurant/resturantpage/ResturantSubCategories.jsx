@@ -182,8 +182,8 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
 
   const citySlug = createCitySlug(
     propertyData?.city ||
-      propertyData?.locationName ||
-      propertyData?.propertyName,
+    propertyData?.locationName ||
+    propertyData?.propertyName,
   );
   const propertySlug = createHotelSlug(
     propertyData?.propertyName || propertyData?.name || "restaurant",

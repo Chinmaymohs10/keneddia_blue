@@ -38,6 +38,11 @@ export default function CafeAbout() {
   return (
     <section id="about" className="bg-white px-6 py-8 transition-colors duration-500 dark:bg-[#050505]">
       <div className="container mx-auto max-w-7xl">
+        <div className="mb-8">
+          <h2 className="font-serif text-2xl md:text-3xl">About Us</h2>
+          <div className="mt-3 h-0.5 w-16 bg-primary" />
+        </div>
+
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[45%_55%]">
           <motion.div
             key={`about-image-${currentIndex}`}

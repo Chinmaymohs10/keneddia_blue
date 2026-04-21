@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Star,
   X,
@@ -13,7 +13,7 @@ import {
   Send,
   Play,
 } from "lucide-react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useAnimation, useScroll, useTransform } from "framer-motion";
 
 const sectionHeader = {
   sectionTag: "The Daily Grind & Glory",
@@ -28,6 +28,7 @@ const ratingHeader = {
 const guestReviews = [
   {
     id: 1,
+    format: "multi",
     author: "Priya Mehta",
     description:
       "Kennedia Cafe is my go-to morning spot. The cold brew is exceptional and the sourdough toast is something I look forward to every weekend.",
@@ -49,23 +50,16 @@ const guestReviews = [
   },
   {
     id: 2,
+    format: "content-only",
     author: "Arjun Kapoor",
     description:
-      "The Bean-to-Cup Journey event completely changed how I think about coffee. The baristas are knowledgeable and passionate.",
+      "The Bean-to-Cup Journey event completely changed how I think about coffee. The baristas are knowledgeable and passionate — I've never experienced anything like it at a cafe.",
     date: "1 week ago",
-    media: [
-      {
-        type: "video",
-        url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
+    media: [],
   },
   {
     id: 3,
+    format: "multi",
     author: "Simran Gill",
     description:
       "The Belgian waffles and High Tea Sunday experience were absolutely stunning. The garden terrace is a hidden gem.",
@@ -91,6 +85,7 @@ const guestReviews = [
   },
   {
     id: 4,
+    format: "image-only",
     author: "Rahul Verma",
     description:
       "Fast WiFi, great power sockets, and the best matcha latte I've had. The library corner is quiet enough to work.",
@@ -99,6 +94,57 @@ const guestReviews = [
       {
         type: "image",
         url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+  },
+  {
+    id: 5,
+    format: "split",
+    author: "Neha Sharma",
+    description:
+      "The garden terrace at golden hour is something else entirely. We stayed for three hours and still didn't want to leave. A truly special place.",
+    date: "5 days ago",
+    media: [
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+  },
+  {
+    id: 6,
+    format: "content-only",
+    author: "Vikram Singh",
+    description:
+      "Every weekend feels like a ritual now. The pour over, the warm sourdough, the corner table by the window — this place has become part of my week.",
+    date: "2 weeks ago",
+    media: [],
+  },
+  {
+    id: 7,
+    format: "split",
+    author: "Kavita Rao",
+    description:
+      "Brought my whole team here for a Saturday brunch. The group platter and cold brew tower were a huge hit. Definitely coming back.",
+    date: "4 days ago",
+    media: [
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+  },
+  {
+    id: 8,
+    format: "image-only",
+    author: "Rohan Das",
+    description:
+      "The latte art here is unreal. Captured this before my first sip — couldn't help it.",
+    date: "6 days ago",
+    media: [
+      {
+        type: "image",
+        url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80",
       },
     ],
   },
@@ -221,7 +267,156 @@ function MediaGrid({ items }) {
   );
 }
 
+function AuthorRow({ item, light = false }) {
+  return (
+    <div className={`flex items-center gap-3 border-t pt-4 ${light ? "border-white/20" : "border-[#F0E6DE] dark:border-white/10"}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${light ? "bg-[#D4A373]/80" : "bg-[#D4A373] dark:bg-[#8D5C42]"}`}>
+        {item.author[0]}
+      </div>
+      <div>
+        <p className={`text-sm font-bold uppercase tracking-[0.18em] ${light ? "text-white" : "text-[#3E2723] dark:text-[#F7EEE8]"}`}>
+          {item.author}
+        </p>
+        <p className={`mt-0.5 text-[11px] uppercase tracking-[0.22em] ${light ? "text-white/60" : "text-[#927668] dark:text-[#BEA18F]"}`}>
+          Guest Highlight
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function HeartsRow({ light = false }) {
+  return (
+    <div className="flex gap-1">
+      {[...Array(5)].map((_, i) => (
+        <Heart
+          key={i}
+          size={12}
+          className={light ? "fill-[#D08A6A] text-[#D08A6A]" : "fill-[#D08A6A] text-[#D08A6A] dark:fill-[#E5A07B] dark:text-[#E5A07B]"}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DateBadge({ date, light = false }) {
+  return (
+    <div className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] backdrop-blur-md ${light ? "border-white/20 bg-black/35 text-white" : "border-[#E8D6C9] bg-[#F6F0EA] text-[#8B6756] dark:border-white/10 dark:bg-white/5 dark:text-[#D7B7A2]"}`}>
+      {date}
+    </div>
+  );
+}
+
 function TestimonialCard({ item }) {
+  const format = item.format ?? "multi";
+
+  // ── IMAGE ONLY ──────────────────────────────────────────────────────────
+  if (format === "image-only") {
+    const img = item.media?.[0];
+    return (
+      <motion.article
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative h-64 overflow-hidden rounded-[2rem] shadow-[0_18px_45px_rgba(72,41,26,0.18)]"
+      >
+        {img ? (
+          <img
+            src={img.url}
+            alt={item.author}
+            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+          />
+        ) : (
+          <div className="h-full w-full bg-linear-to-br from-[#5F4338] to-[#A27B62]" />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
+
+        <div className="absolute left-4 top-4 flex items-center justify-between right-4">
+          <HeartsRow light />
+          <DateBadge date={item.date} light />
+        </div>
+
+        <div className="absolute inset-x-4 bottom-4">
+          <AuthorRow item={item} light />
+        </div>
+      </motion.article>
+    );
+  }
+
+  // ── CONTENT ONLY ────────────────────────────────────────────────────────
+  if (format === "content-only") {
+    return (
+      <motion.article
+        whileHover={{ y: -8, rotateX: -2, rotateY: 2 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-[2rem] border border-[#EADFD4] bg-white/90 p-6 shadow-[0_18px_45px_rgba(72,41,26,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1A1210]/88"
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <div className="absolute inset-x-6 top-0 h-20 rounded-b-full bg-linear-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" />
+
+        <div className="relative z-10 flex items-center justify-between gap-4">
+          <HeartsRow />
+          <DateBadge date={item.date} />
+        </div>
+
+        <div className="relative z-10 mt-4">
+          <p className="font-serif text-6xl leading-none text-[#D4A373]/25 select-none dark:text-[#A06F54]/25">&ldquo;</p>
+          <p className="mt-1 font-serif text-base italic leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
+            {item.description}
+          </p>
+          <p className="mt-2 font-serif text-6xl leading-none text-[#D4A373]/25 select-none text-right dark:text-[#A06F54]/25">&rdquo;</p>
+        </div>
+
+        <div className="relative z-10 mt-3">
+          <AuthorRow item={item} />
+        </div>
+      </motion.article>
+    );
+  }
+
+  // ── SPLIT (image-top + content-bottom) ──────────────────────────────────
+  if (format === "split") {
+    const img = item.media?.[0];
+    return (
+      <motion.article
+        whileHover={{ y: -8 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="overflow-hidden rounded-[2rem] border border-[#EADFD4] bg-white/90 shadow-[0_18px_45px_rgba(72,41,26,0.12)] dark:border-white/10 dark:bg-[#1A1210]/88"
+      >
+        <div className="relative h-44 overflow-hidden">
+          {img ? (
+            <img
+              src={img.url}
+              alt={item.author}
+              className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+            />
+          ) : (
+            <div className="h-full w-full bg-linear-to-br from-[#5F4338] to-[#A27B62]" />
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute left-3 top-3 flex items-center justify-between right-3">
+            <HeartsRow light />
+            <DateBadge date={item.date} light />
+          </div>
+          {img && (
+            <div className="absolute bottom-3 left-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md">
+              {getMediaBadge(img.type)}
+            </div>
+          )}
+        </div>
+
+        <div className="p-5">
+          <p className="line-clamp-3 text-sm leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
+            &ldquo;{item.description}&rdquo;
+          </p>
+          <div className="mt-4">
+            <AuthorRow item={item} />
+          </div>
+        </div>
+      </motion.article>
+    );
+  }
+
+  // ── MULTI (default) ─────────────────────────────────────────────────────
   return (
     <motion.article
       whileHover={{ y: -8, rotateX: -2, rotateY: 2 }}
@@ -229,17 +424,11 @@ function TestimonialCard({ item }) {
       className="relative overflow-hidden rounded-[2rem] border border-[#EADFD4] bg-white/90 p-5 shadow-[0_18px_45px_rgba(72,41,26,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1A1210]/88 dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
       style={{ transformStyle: "preserve-3d" }}
     >
-      <div className="absolute inset-x-6 top-0 h-24 rounded-b-full bg-gradient-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" />
+      <div className="absolute inset-x-6 top-0 h-24 rounded-b-full bg-linear-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" />
 
       <div className="relative z-10 flex items-center justify-between gap-4">
-        <div className="flex gap-1">
-          {[...Array(5)].map((_, i) => (
-            <Heart key={i} size={12} className="fill-[#D08A6A] text-[#D08A6A] dark:fill-[#E5A07B] dark:text-[#E5A07B]" />
-          ))}
-        </div>
-        <div className="rounded-full border border-[#E8D6C9] bg-[#F6F0EA] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#8B6756] dark:border-white/10 dark:bg-white/5 dark:text-[#D7B7A2]">
-          {item.date}
-        </div>
+        <HeartsRow />
+        <DateBadge date={item.date} />
       </div>
 
       <div className="relative z-10 mt-4">
@@ -248,22 +437,12 @@ function TestimonialCard({ item }) {
 
       <div className="relative z-10 mt-5">
         <p className="line-clamp-4 text-sm leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
-          "{item.description}"
+          &ldquo;{item.description}&rdquo;
         </p>
       </div>
 
-      <div className="relative z-10 mt-5 flex items-center gap-3 border-t border-[#F0E6DE] pt-4 dark:border-white/10">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D4A373] text-sm font-bold text-white dark:bg-[#8D5C42]">
-          {item.author[0]}
-        </div>
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#3E2723] dark:text-[#F7EEE8]">
-            {item.author}
-          </p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-[#927668] dark:text-[#BEA18F]">
-            Guest Highlight
-          </p>
-        </div>
+      <div className="relative z-10 mt-5">
+        <AuthorRow item={item} />
       </div>
     </motion.article>
   );
@@ -271,17 +450,37 @@ function TestimonialCard({ item }) {
 
 function InfiniteColumn({ items, pattern, scrollYProgress }) {
   const parallaxY = useTransform(scrollYProgress, [0, 1], pattern.parallax);
+  const controls = useAnimation();
   const loopItems = [...items, ...items];
 
+  useEffect(() => {
+    controls.start({
+      ...pattern.animate,
+      transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleMouseEnter = () => controls.stop();
+  const handleMouseLeave = () =>
+    controls.start({
+      ...pattern.animate,
+      transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
+    });
+
   return (
-    <motion.div style={{ y: parallaxY }} className="relative h-[34rem] overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+    <motion.div
+      style={{ y: parallaxY }}
+      className="relative h-[34rem] overflow-hidden"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-linear-to-t from-[#F7F0E9] via-[#F7F0E9]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
 
       <motion.div
         initial={pattern.initial}
-        animate={pattern.animate}
-        transition={{ duration: pattern.duration, repeat: Infinity, ease: "linear" }}
+        animate={controls}
         className="flex flex-col gap-5"
       >
         {loopItems.map((item, index) => (

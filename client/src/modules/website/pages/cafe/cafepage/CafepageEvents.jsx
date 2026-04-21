@@ -138,7 +138,7 @@ function ShowcaseCard({ item }) {
           alt={item.title}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
       </div>
 
       <div className="absolute left-3 top-3 z-10 rounded bg-black/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
@@ -265,12 +265,12 @@ function GroupBookingColumn() {
       </div>
 
       {/* Glassmorphism CTA */}
-      <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
+      <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-linear-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
+        <div className="absolute inset-0 bg-linear-to-br from-white/35 via-white/10 to-slate-900/5" />
         <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
         <div className="absolute -left-10 top-6 h-28 w-28 rounded-full bg-rose-200/40 blur-3xl" />
         <div className="absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-slate-400/20 blur-3xl" />
-        <div className="absolute bottom-[-16px] right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" />
+        <div className="absolute -bottom-4 right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" />
         <div className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-sky-200/30 blur-3xl" />
         <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
@@ -299,9 +299,9 @@ export default function CafepageEvents() {
   return (
     <section id="events" className="bg-muted py-10">
       <div className="mx-auto w-[92%] max-w-7xl">
-        <div className="mb-8 text-center">
+        <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">Offers, Events & Group Booking</h2>
-          <div className="mx-auto mt-3 h-0.5 w-16 bg-primary" />
+          <div className="mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

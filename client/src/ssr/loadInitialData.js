@@ -1,6 +1,7 @@
 import { fetchHomePageData } from "@/ssr/homepageData";
 import { fetchHotelsPageData } from "@/ssr/hotelsPageData";
 import { fetchRestaurantHomepageData } from "@/ssr/restaurantHomepageData";
+import { fetchCafeHomepageData } from "@/ssr/cafeHomepageData";
 import {
   fetchEventDetailPageData,
   fetchEventsListingData,
@@ -35,6 +36,10 @@ export async function loadInitialDataForUrl(url) {
     pathname === "/resturant-homepage/"
   ) {
     initialData.restaurantHomepage = await fetchRestaurantHomepageData();
+  }
+
+  if (pathname === "/cafe-homepage" || pathname === "/cafe-homepage/") {
+    initialData.cafeHomepage = await fetchCafeHomepageData();
   }
 
   if (pathname === "/offers" || pathname === "/offers/") {

@@ -106,24 +106,32 @@ function DesktopStoryCard({ card, onHoverChange }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className="relative h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900"
     >
+      {/* Blurred glass background to fill any letterbox space */}
+      <img
+        src={card.image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75"
+      />
       <motion.img
         src={card.image}
         alt={card.title}
-        animate={{ scale: isHovered ? 1.05 : 1.1 }}
+        animate={{ scale: isHovered ? 1.02 : 1 }}
         transition={{ duration: 1 }}
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="absolute inset-0 h-full w-full object-contain object-left"
       />
-      <div className="absolute inset-0 bg-gradient-to-tr from-black/45 via-black/10 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-tr from-black/45 via-black/10 to-transparent" />
       <div className="absolute left-6 top-6 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md">
         <Icon className="h-3 w-3" /> {card.eyebrow}
       </div>
 
+      {/* Overlay panel — always open at ~30% (320px), expands to 456px on hover */}
       <motion.div
         animate={{ width: isHovered ? "456px" : "320px" }}
         transition={{ type: "spring", stiffness: 70, damping: 20 }}
         className="absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#fffaf4]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92"
       >
-        <div className="flex h-full w-full flex-col justify-between overflow-hidden p-8 xl:p-10">
+        <div className="flex h-full w-full flex-col justify-center gap-6 overflow-hidden p-8 xl:p-10">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60">
               {card.accent}
@@ -178,10 +186,16 @@ function MobileStoryCard({ card }) {
       transition={{ duration: 0.35 }}
       className="w-full overflow-hidden rounded-[2rem] border border-zinc-100 bg-white shadow-xl dark:border-white/5 dark:bg-zinc-900"
     >
-      <div className="aspect-video w-full overflow-hidden">
+      <div className="relative aspect-video w-full overflow-hidden">
         <img
           src={card.image}
-          className="h-full w-full object-cover"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75"
+        />
+        <img
+          src={card.image}
+          className="relative h-full w-full object-contain object-left"
           alt={card.title}
         />
       </div>
@@ -240,10 +254,61 @@ export default function CafeSubCategories() {
     setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
 
   return (
-    <section className="relative overflow-hidden bg-[#fdfaf6] py-24 dark:bg-[#080808]">
+    <section
+      className="relative overflow-hidden py-24 bg-[#f6f6f4] dark:bg-[#0f0f0f]"
+    >
+      {/* ── Sparkle background animation ─────────────────────────────────── */}
+      <style>{`
+        @keyframes floatSparkle {
+          0%   { transform: translateY(0px) scale(1);   opacity: 0.18; }
+          50%  { transform: translateY(-22px) scale(1.3); opacity: 0.55; }
+          100% { transform: translateY(0px) scale(1);   opacity: 0.18; }
+        }
+        .sparkle-dot { animation: floatSparkle var(--dur, 4s) ease-in-out infinite; }
+      `}</style>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {[
+          { size: 6, top: "8%", left: "6%", dur: "3.8s", delay: "0s" },
+          { size: 10, top: "18%", left: "22%", dur: "5.2s", delay: "0.7s" },
+          { size: 5, top: "55%", left: "10%", dur: "4.4s", delay: "1.2s" },
+          { size: 8, top: "72%", left: "30%", dur: "6.0s", delay: "0.3s" },
+          { size: 7, top: "12%", left: "75%", dur: "4.9s", delay: "1.8s" },
+          { size: 11, top: "38%", left: "88%", dur: "5.6s", delay: "0.9s" },
+          { size: 5, top: "80%", left: "68%", dur: "3.5s", delay: "2.1s" },
+          { size: 9, top: "62%", left: "50%", dur: "4.2s", delay: "0.5s" },
+        ].map((s, i) => (
+          <div
+            key={i}
+            className="sparkle-dot absolute rounded-full bg-amber-400"
+            style={{
+              width: s.size,
+              height: s.size,
+              top: s.top,
+              left: s.left,
+              "--dur": s.dur,
+              animationDelay: s.delay,
+              boxShadow: `0 0 ${s.size * 2}px ${s.size}px rgba(251,191,36,0.35)`,
+            }}
+          />
+        ))}
+      </div>
       <div className="hidden w-full lg:block">
-        <div className="grid w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
-          <div className="flex flex-col justify-center">
+        <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[1.3fr_0.7fr] gap-16 px-12 xl:px-24">
+          {/* Story card — now on the LEFT */}
+          <div className="relative flex items-center justify-center self-center h-[70%]">
+            <div className="relative h-full w-full">
+              <AnimatePresence mode="wait">
+                <DesktopStoryCard
+                  key={activeCard.id}
+                  card={activeCard}
+                  onHoverChange={setIsPaused}
+                />
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Nav / controls — now on the RIGHT */}
+          <div className="flex h-full flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
               <Coffee className="h-3.5 w-3.5" /> Our Story
             </div>
@@ -265,16 +330,14 @@ export default function CafeSubCategories() {
                   className="group flex items-center gap-4 text-left"
                 >
                   <span
-                    className={`h-px w-8 transition-all ${
-                      activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
-                    }`}
+                    className={`h-px w-8 transition-all ${activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
+                      }`}
                   />
                   <span
-                    className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${
-                      activeIndex === index
-                        ? "text-zinc-900 dark:text-white"
-                        : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
-                    }`}
+                    className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeIndex === index
+                      ? "text-zinc-900 dark:text-white"
+                      : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
+                      }`}
                   >
                     {card.eyebrow}
                   </span>
@@ -301,18 +364,6 @@ export default function CafeSubCategories() {
                 {String(activeIndex + 1).padStart(2, "0")} /{" "}
                 {String(STORY_CARDS.length).padStart(2, "0")}
               </span>
-            </div>
-          </div>
-
-          <div className="relative flex items-center justify-center">
-            <div className="relative h-[65vh] w-full">
-              <AnimatePresence mode="wait">
-                <DesktopStoryCard
-                  key={activeCard.id}
-                  card={activeCard}
-                  onHoverChange={setIsPaused}
-                />
-              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -350,11 +401,10 @@ export default function CafeSubCategories() {
                 key={card.id}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all ${
-                  activeIndex === index
-                    ? "w-8 bg-amber-800"
-                    : "w-2 bg-zinc-300 dark:bg-white/20"
-                }`}
+                className={`h-2 rounded-full transition-all ${activeIndex === index
+                  ? "w-8 bg-amber-800"
+                  : "w-2 bg-zinc-300 dark:bg-white/20"
+                  }`}
                 aria-label={`Go to ${card.title}`}
               />
             ))}

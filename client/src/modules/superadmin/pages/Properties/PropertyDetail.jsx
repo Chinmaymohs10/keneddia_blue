@@ -203,7 +203,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "policies",
       "comment reviews",
     ],
-    Cafe: ["overview", "menu", "tables", "gallery", "comment reviews"],
+    Cafe: ["overview", "menu", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
     Restaurant: [
       "overview",
       "gallery",

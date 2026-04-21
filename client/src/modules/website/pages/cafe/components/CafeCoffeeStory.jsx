@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { siteContent } from "@/data/siteContent";
+import cafeImg from "@/assets/cafe_images/image.png";
+import cafeImg1 from "@/assets/cafe_images/image1.png";
+import cafeImg2 from "@/assets/cafe_images/image2.png";
 
 const STORY_CARDS = [
   {
@@ -21,7 +23,7 @@ const STORY_CARDS = [
       "Dark cacao depth and dense crema create a sharper wake-up profile for early cafe regulars.",
     benefit: "High aroma & bold body",
     accent: "Fast starts",
-    image: siteContent.images.cafes.minimalist.src,
+    image: cafeImg,
     icon: Coffee,
     stats: ["18g dose", "25s pull"],
   },
@@ -33,7 +35,7 @@ const STORY_CARDS = [
       "Hand brewing opens cleaner acidity and floral lift designed for longer sipping.",
     benefit: "Nuanced tasting notes",
     accent: "Calm moments",
-    image: siteContent.images.cafes.library.src,
+    image: cafeImg1,
     icon: Leaf,
     stats: ["92C water", "3m bloom"],
   },
@@ -45,7 +47,7 @@ const STORY_CARDS = [
       "A tighter milk texture keeps espresso structure intact, making the cup creamy without losing roast identity.",
     benefit: "Silky mouthfeel",
     accent: "Mid-day focus",
-    image: siteContent.images.cafes.parisian.src,
+    image: cafeImg2,
     icon: SunMedium,
     stats: ["Double shot", "Velvet foam"],
   },
@@ -57,7 +59,7 @@ const STORY_CARDS = [
       "Overnight steeping lowers bitterness and builds a smoother, chocolate-toned drink.",
     benefit: "Lower acidity",
     accent: "Long conversations",
-    image: siteContent.images.cafes.garden.src,
+    image: cafeImg,
     icon: Waves,
     stats: ["14hr steep", "Clean chill"],
   },
@@ -69,7 +71,7 @@ const STORY_CARDS = [
       "Buttery bakes and roasted coffee are paired to stretch aroma across the entire experience.",
     benefit: "Fuller flavor contrast",
     accent: "Relaxed brunches",
-    image: siteContent.images.cafes.bakery.src,
+    image: cafeImg1,
     icon: Sparkles,
     stats: ["Warm pastry", "Soft sweet"],
   },
@@ -81,7 +83,7 @@ const STORY_CARDS = [
       "Cocoa bitterness and espresso warmth turn the last coffee of the day into a slower indulgence.",
     benefit: "Dessert-like depth",
     accent: "Late hours",
-    image: siteContent.images.cafes.highTea.src,
+    image: cafeImg2,
     icon: MoonStar,
     stats: ["Cocoa layer", "Night sip"],
   },
@@ -106,12 +108,19 @@ function DesktopStoryCard({ card, onHoverChange }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className="relative h-full w-full overflow-hidden rounded-[2.5rem] border border-white/60 bg-white shadow-2xl dark:border-white/10 dark:bg-zinc-900"
     >
+      {/* Blurred glass background to fill any letterbox space */}
+      <img
+        src={card.image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75"
+      />
       <motion.img
         src={card.image}
         alt={card.title}
-        animate={{ scale: isHovered ? 1.05 : 1.1 }}
+        animate={{ scale: isHovered ? 1.02 : 1 }}
         transition={{ duration: 1 }}
-        className="absolute inset-0 h-full w-full object-cover object-center"
+        className="absolute inset-0 h-full w-full object-contain object-left"
       />
       <div className="absolute inset-0 bg-gradient-to-tr from-black/45 via-black/10 to-transparent" />
       <div className="absolute left-6 top-6 z-20 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur-md">
@@ -123,7 +132,7 @@ function DesktopStoryCard({ card, onHoverChange }) {
         transition={{ type: "spring", stiffness: 70, damping: 20 }}
         className="absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#fffaf4]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92"
       >
-        <div className="flex h-full w-full flex-col justify-between overflow-hidden p-8 xl:p-10">
+        <div className="flex h-full w-full flex-col justify-center gap-6 overflow-hidden p-8 xl:p-10">
           <div className="space-y-4">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60">
               {card.accent}
@@ -176,10 +185,16 @@ function MobileStoryCard({ card }) {
       transition={{ duration: 0.35 }}
       className="w-full overflow-hidden rounded-[2rem] border border-zinc-100 bg-white shadow-xl dark:border-white/5 dark:bg-zinc-900"
     >
-      <div className="aspect-square w-full overflow-hidden">
+      <div className="aspect-square w-full overflow-hidden relative">
         <img
           src={card.image}
-          className="h-full w-full object-cover"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-75"
+        />
+        <img
+          src={card.image}
+          className="relative h-full w-full object-contain"
           alt={card.title}
         />
       </div>
@@ -240,8 +255,8 @@ export default function CafeCoffeeStory() {
   return (
     <section className="relative overflow-hidden bg-[#fdfaf6] py-24 dark:bg-[#080808]">
       <div className="hidden w-full lg:block">
-        <div className="grid w-full grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
-          <div className="flex flex-col justify-center">
+        <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
+          <div className="flex h-full flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
               <Coffee className="h-3.5 w-3.5" /> Discovery
             </div>
@@ -302,8 +317,8 @@ export default function CafeCoffeeStory() {
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center">
-            <div className="relative h-[65vh] w-full">
+          <div className="relative flex items-center justify-center self-center h-[70%]">
+            <div className="relative h-full w-full">
               <AnimatePresence mode="wait">
                 <DesktopStoryCard
                   key={activeCard.id}

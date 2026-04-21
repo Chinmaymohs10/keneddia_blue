@@ -309,12 +309,9 @@ export default function CafeShowcaseSlider() {
     <section id="showcase" className="bg-muted py-10">
       <div className="mx-auto w-[92%] max-w-7xl">
         {/* Section heading */}
-        <div className="mb-8 text-center">
-          {/* <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.35em] text-primary">
-            Offers · Events · Group Booking
-          </p> */}
+        <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">Cafe Showcase</h2>
-          <div className="mx-auto mt-3 h-0.5 w-16 bg-primary" />
+          <div className="mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
         {/* 3-column grid */}

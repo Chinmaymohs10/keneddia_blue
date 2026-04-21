@@ -75,3 +75,7 @@ coverage/
 # ===============================
 *.lock
 *.zip
+.env
+public_html-ssr/
+dist/
+build/
