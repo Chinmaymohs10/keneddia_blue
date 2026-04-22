@@ -202,7 +202,7 @@ const transformApiDataToMobileSlides = (
   });
 };
 
-export default function Hero({ initialSlides = [] }: { initialSlides?: HeroSlide[] }) {
+export default function Hero({ initialSlides = [], onReady }: { initialSlides?: HeroSlide[]; onReady?: () => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [mobileSwiperInstance, setMobileSwiperInstance] = useState<SwiperType | null>(null);
@@ -216,6 +216,14 @@ export default function Hero({ initialSlides = [] }: { initialSlides?: HeroSlide
   const isFetchingRef = useRef(false);
   const currentHashRef = useRef<string>("");
   const apiDataRef = useRef<ApiHeroItem[]>([]);
+  const onReadyCalled = useRef(false);
+
+  useEffect(() => {
+    if (slides.length > 0 && !onReadyCalled.current) {
+      onReadyCalled.current = true;
+      onReady?.();
+    }
+  }, [slides.length, onReady]);
 
   const fetchHeroSection = useCallback(
     async (forceRefresh = false) => {
@@ -531,7 +539,7 @@ export default function Hero({ initialSlides = [] }: { initialSlides?: HeroSlide
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.7, duration: 0.8 }}
                       disabled={!slide.ctaLink}
-                      onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                      onClick={() => { if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
                       className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border
                         ${!slide.ctaLink
                           ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
@@ -612,7 +620,7 @@ export default function Hero({ initialSlides = [] }: { initialSlides?: HeroSlide
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.6, duration: 0.6 }}
                       disabled={!slide.ctaLink}
-                      onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                      onClick={() => { if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
                       className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border
                         ${!slide.ctaLink
                           ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"

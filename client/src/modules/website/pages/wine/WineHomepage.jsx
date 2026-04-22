@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGeolocated } from "react-geolocated";
 import * as MapboxSearch from "@mapbox/search-js-core";
 const { SearchBoxCore } = MapboxSearch;
@@ -9,6 +9,7 @@ import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
+import PageLoader from "@/modules/website/components/PageLoader";
 import WineProperties from "./components/WineProperties";
 import WineAbout from "./components/WineAbout";
 import WineCoffeeStory from "./components/WineCoffeeStory";
@@ -36,6 +37,10 @@ const NEARBY_RADIUS_KM = 70;
 
 export default function WineHomepage() {
   const { wineHomepage: ssr } = useSsrData();
+  const [isPageReady, setIsPageReady] = useState(
+    (ssr?.heroSlides?.length ?? 0) > 0,
+  );
+  const handleReady = useCallback(() => setIsPageReady(true), []);
   const [places, setPlaces] = useState([]);
   // { city: string, found: boolean } — passed down to WineProperties
   const [locationMatch, setLocationMatch] = useState(null);
@@ -194,6 +199,8 @@ export default function WineHomepage() {
 
   return (
     <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
+      <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
+
       <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
 
       {/* ── Location match popup ─────────────────────────────────────────── */}
@@ -257,7 +264,7 @@ export default function WineHomepage() {
 
       <main>
         <div id="home">
-          <WineHeroBanner initialSlides={ssr?.heroSlides} />
+          <WineHeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>
         <div id="quick-booking">
           <WineQuickBooking />

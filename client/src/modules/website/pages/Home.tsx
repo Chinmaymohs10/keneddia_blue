@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import PageLoader from "@/modules/website/components/PageLoader";
 import { ChevronDown } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Hero from "@/modules/website/components/Hero";
@@ -18,6 +20,10 @@ import { useSsrData } from "@/ssr/SsrDataContext";
 
 export default function Home() {
   const { home } = useSsrData();
+  const [isPageReady, setIsPageReady] = useState(
+    (home?.heroData?.length ?? 0) > 0,
+  );
+  const handleReady = useCallback(() => setIsPageReady(true), []);
   const debug = {
     hero: home?.heroData?.length ?? 0,
     dailyOffers: home?.dailyOffers?.length ?? 0,
@@ -64,6 +70,8 @@ export default function Home() {
         data-global-locations-count={debug.globalLocations}
         data-global-section-count={debug.globalSection}
       />
+      <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
+
       <Navbar />
       <main>
         <section
@@ -71,7 +79,7 @@ export default function Home() {
           data-ssr-section="hero"
           data-ssr-count={debug.hero}
         >
-          <Hero initialSlides={home?.heroData} />
+          <Hero initialSlides={home?.heroData} onReady={handleReady} />
         </section>
         <section
           id="daily-offers"

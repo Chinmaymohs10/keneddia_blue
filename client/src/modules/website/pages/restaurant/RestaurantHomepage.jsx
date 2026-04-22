@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import Navbar from "@/modules/website/components/Navbar";
+import PageLoader from "@/modules/website/components/PageLoader";
 import Footer from "@/modules/website/components/Footer";
 import HeroBanner from "./components/HeroBanner";
 import RestaurantQuickBooking from "./components/RestaurantQuickBooking";
@@ -38,8 +40,11 @@ const RESTAURANT_NAV_ITEMS = [
 
 export default function RestaurantHomepage() {
   const { restaurantHomepage: ssr } = useSsrData();
+  const [isPageReady, setIsPageReady] = useState(
+    (ssr?.heroSlides?.length ?? 0) > 0,
+  );
+  const handleReady = useCallback(() => setIsPageReady(true), []);
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -55,6 +60,8 @@ export default function RestaurantHomepage() {
       data-ssr-events={ssr?.restaurantEvents?.length ?? 0}
       data-ssr-reviews={ssr?.guestExperiences?.length ?? 0}
     >
+      <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
+
       {/* Main Navbar with Restaurant-specific items */}
       <Navbar
         navItems={RESTAURANT_NAV_ITEMS}
@@ -66,7 +73,7 @@ export default function RestaurantHomepage() {
       <main>
         {/* Hero Section */}
         <div id="home">
-          <HeroBanner initialSlides={ssr?.heroSlides} />
+          <HeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>
 
         <div id="quick-booking">

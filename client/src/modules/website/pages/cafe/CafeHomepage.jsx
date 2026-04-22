@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGeolocated } from "react-geolocated";
 import * as MapboxSearch from "@mapbox/search-js-core";
 const { SearchBoxCore } = MapboxSearch;
@@ -9,6 +9,7 @@ import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import CafeHeroBanner from "./components/CafeHeroBanner";
+import PageLoader from "@/modules/website/components/PageLoader";
 import CafeProperties from "./components/CafeProperties";
 import CafeAbout from "./components/CafeAbout";
 import CafeCoffeeStory from "./components/CafeCoffeeStory";
@@ -36,6 +37,10 @@ const NEARBY_RADIUS_KM = 70;
 
 export default function CafeHomepage() {
   const { cafeHomepage: ssr } = useSsrData();
+  const [isPageReady, setIsPageReady] = useState(
+    (ssr?.heroSlides?.length ?? 0) > 0,
+  );
+  const handleReady = useCallback(() => setIsPageReady(true), []);
   const [places, setPlaces] = useState([]);
   // { city: string, found: boolean } — passed down to CafeProperties
   const [locationMatch, setLocationMatch] = useState(null);
@@ -198,6 +203,8 @@ export default function CafeHomepage() {
       data-ssr-hero={ssr?.heroSlides?.length ?? 0}
       data-ssr-properties={ssr?.cafeProperties?.length ?? 0}
     >
+      <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
+
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       {/* ── Location match popup ─────────────────────────────────────────── */}
@@ -261,7 +268,7 @@ export default function CafeHomepage() {
 
       <main>
         <div id="home">
-          <CafeHeroBanner initialSlides={ssr?.heroSlides} />
+          <CafeHeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>
         <div id="quick-booking">
           <CafeQuickBooking />
