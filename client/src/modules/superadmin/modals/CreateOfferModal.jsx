@@ -20,7 +20,7 @@ import {
   getAllProperties,
   getPropertyTypes,
 } from "@/Api/Api";
-import { showSuccess, showError } from "@/lib/toasters/toastUtils";
+import { showSuccess, showError, showWarning } from "@/lib/toasters/toastUtils";
 
 const inputStyles = `
   input::placeholder, textarea::placeholder {
@@ -33,21 +33,28 @@ const inputStyles = `
   }
 `;
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const HOMEPAGE_CARD_RECOMMENDATION = {
+  width: 1080,
+  height: 1350,
+  label: "Recommended: 1080 x 1350 (4:5 portrait). Reel 1080 x 1920 also works.",
+};
+
 const MEDIA_DETECTION_RULES = {
   instagramBannerReel: {
-    label: "Instagram Banner / Reel",
-    aspectRatio: "9:16",
+    label: "Homepage Portrait Card",
+    aspectRatio: "4:5",
     allowedDimensions: [
+      { width: 1080, height: 1350 },
+      { width: 1200, height: 1500 },
+      { width: 800, height: 1000 },
       { width: 1080, height: 1920 },
-      { width: 900, height: 1600 },
-      { width: 720, height: 1280 },
-      { width: 450, height: 800 },
     ],
-    minHeight: 800,
-    ratioTolerance: 0.01,
+    minHeight: 1000,
+    ratioTolerance: 0.08,
     detectBy: ["exactDimensionMatch", "aspectRatioMatch"],
     uiState: {
-      badge: "Banner detected",
+      badge: "Portrait fit",
       color: "success",
       icon: "instagram",
     },
@@ -260,6 +267,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     return Math.abs(width / height - targetW / targetH) <= tolerance;
   };
 
+  const hasRecommendedHomepageCardRatio = (dimensions) => {
+    if (!dimensions?.width || !dimensions?.height) return false;
+    return dimensions.width / dimensions.height <= 0.85;
+  };
+
   const detectBannerType = (dimensions) => {
     if (!dimensions?.width || !dimensions?.height) {
       setIsBannerDetected(false);
@@ -352,6 +364,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const isVideo = file.type.startsWith("video/");
+    if (!isVideo && file.size > MAX_IMAGE_SIZE_BYTES) {
+      showWarning("Image size must not exceed 5 MB.");
+      e.target.value = "";
+      return;
+    }
     setMediaType(isVideo ? "VIDEO" : "IMAGE");
     setImagePreview(URL.createObjectURL(file));
     setTouchedFields((prev) => ({ ...prev, image: true }));
@@ -363,6 +380,11 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         const dims = { width: img.naturalWidth, height: img.naturalHeight };
         setImageDimensions(dims);
         const bannerType = detectBannerType(dims);
+        if (!hasRecommendedHomepageCardRatio(dims)) {
+          showWarning(
+            `Offer image should ideally be ${HOMEPAGE_CARD_RECOMMENDATION.width} x ${HOMEPAGE_CARD_RECOMMENDATION.height} or another portrait ratio.`,
+          );
+        }
         uploadMediaFile(file, "IMAGE", dims, bannerType);
       };
     } else {
@@ -704,9 +726,23 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                     <Upload className="mx-auto text-gray-300" size={32} />
                   )}
                   <p className="mt-2 text-xs font-medium text-gray-500">
-                    Square Banner or Reel Recommended
+                    {HOMEPAGE_CARD_RECOMMENDATION.label}
                   </p>
                 </div>
+                {imageDimensions && (
+                  <div
+                    className={`mt-3 rounded-lg border px-3 py-2 text-xs ${
+                      hasRecommendedHomepageCardRatio(imageDimensions)
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-amber-200 bg-amber-50 text-amber-700"
+                    }`}
+                  >
+                    <p className="font-semibold">
+                      Current upload: {imageDimensions.width} x {imageDimensions.height}
+                    </p>
+                    <p className="mt-1">{HOMEPAGE_CARD_RECOMMENDATION.label}</p>
+                  </div>
+                )}
                 {imagePreview && (
                   <div className="mt-4 relative group rounded-xl overflow-hidden border shadow-lg">
                     {mediaType === "VIDEO" ? (

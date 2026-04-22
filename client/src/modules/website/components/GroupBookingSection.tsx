@@ -31,7 +31,10 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { getEventsUpdated, getGroupBookings, getPropertyTypes } from "@/Api/Api";
-import { createGroupBookingEnquiry } from "@/Api/RestaurantApi";
+import {
+  createGroupBookingEnquiry,
+  getGroupBookingHeaderByPropertyType,
+} from "@/Api/RestaurantApi";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { toast } from "react-hot-toast";
 import { validateGroupBookingForm } from "@/lib/validation/reservationValidation";
@@ -102,6 +105,11 @@ const ICON_COLORS = [
   "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-800/60",
   "bg-green-50 text-green-600 border-green-200 dark:bg-green-950/40 dark:text-green-400 dark:border-green-800/60",
 ];
+
+const normalizeHeaderRecords = (payload: any) => {
+  const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+};
 
 /* ================= EVENT CARD ================= */
 function EventCard({ event, index }: { event: Event; index: number }) {
@@ -284,6 +292,12 @@ export default function GroupBookingSection({
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [groupBookingHeader, setGroupBookingHeader] = useState<any>(null);
+
+  const setField = (key: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: null }));
+  };
 
   const setField = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -385,6 +399,21 @@ export default function GroupBookingSection({
     fetchData();
   }, [propertyTypeId]);
 
+  useEffect(() => {
+    if (!propertyTypeId) return;
+
+    getGroupBookingHeaderByPropertyType(propertyTypeId)
+      .then((res) => {
+        const latestActiveRecord =
+          normalizeHeaderRecords(res?.data).find((item) => item?.active === true) ||
+          null;
+        setGroupBookingHeader(latestActiveRecord);
+      })
+      .catch(() => {
+        setGroupBookingHeader(null);
+      });
+  }, [propertyTypeId]);
+
   const handleFinalSubmit = async () => {
     if (!propertyTypeId) {
       toast.error("Hotel type is not available. Please try again.");
@@ -447,6 +476,9 @@ export default function GroupBookingSection({
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage,
   );
+  const showcaseBookings = groupBookings.slice(0, 3);
+  const visibleBookings =
+    variant === "showcase" ? showcaseBookings : paginatedBookings;
 
   return (
     <section
@@ -537,11 +569,23 @@ export default function GroupBookingSection({
           {/* RIGHT: GROUP BOOKINGS */}
           <div className={variant === "showcase" ? "min-w-0" : "lg:col-span-4"}>
             <div className="bg-card border rounded-2xl p-5 h-full min-w-0 flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-serif font-semibold flex gap-2">
+              <div
+                className={
+                  variant === "showcase"
+                    ? "mb-5 flex items-center gap-2"
+                    : "flex justify-between items-center mb-4"
+                }
+              >
+                <h3
+                  className={
+                    variant === "showcase"
+                      ? "flex items-center gap-2 font-serif text-lg font-semibold"
+                      : "text-xl font-serif font-semibold flex gap-2"
+                  }
+                >
                   <Users className="w-5 h-5 text-primary" /> Group Booking
                 </h3>
-                {totalPages > 1 && (
+                {variant !== "showcase" && totalPages > 1 && (
                   <div className="flex gap-1">
                     <button
                       disabled={currentPage === 0}
@@ -566,11 +610,68 @@ export default function GroupBookingSection({
                   No group booking packages available.
                 </div>
               ) : (
-                <div className="space-y-3 flex-1">
-                  {paginatedBookings.map((booking, index) => {
+                <div
+                  className={
+                    variant === "showcase" ? "space-y-3" : "space-y-3 flex-1"
+                  }
+                >
+                  {visibleBookings.map((booking, index) => {
                     const iconColorCls = ICON_COLORS[index % ICON_COLORS.length];
 
-                    return (
+                    return variant === "showcase" ? (
+                      <motion.div
+                        key={booking.id}
+                        initial={{ opacity: 0, y: 14 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.07 }}
+                        onClick={() => {
+                          setSelectedOffer(booking);
+                          setStep(1);
+                          setDateRange(null);
+                          setFormData(EMPTY_FORM);
+                        }}
+                        className="group overflow-hidden rounded-xl border border-border bg-background cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                      >
+                        <div className="flex items-center gap-3 p-3">
+                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/30 bg-muted shadow-sm">
+                            {booking.media?.[0]?.url ? (
+                              <img
+                                src={booking.media[0].url}
+                                alt={booking.title}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div
+                                className={`flex h-full w-full items-center justify-center ${iconColorCls}`}
+                              >
+                                <ImageIcon className="h-5 w-5 opacity-60" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary">
+                              {booking.title}
+                            </p>
+
+                            {booking.description && (
+                              <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
+                                {booking.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <Button
+                            type="button"
+                            size="icon"
+                            className="h-9 w-9 shrink-0 rounded-full"
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ) : (
                       <div
                         key={booking.id}
                         onClick={() => {
@@ -582,8 +683,9 @@ export default function GroupBookingSection({
                         className="group overflow-hidden rounded-xl border border-border bg-background cursor-pointer transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                       >
                         <div className="flex items-center gap-3 p-3">
-                          {/* IMAGE / ICON */}
-                          <div className={`w-12 h-12 shrink-0 rounded-full border overflow-hidden flex items-center justify-center shadow-sm ${iconColorCls}`}>
+                          <div
+                            className={`w-12 h-12 shrink-0 rounded-full border overflow-hidden flex items-center justify-center shadow-sm ${iconColorCls}`}
+                          >
                             {booking.media?.[0]?.url ? (
                               <img
                                 src={booking.media[0].url}
@@ -595,7 +697,6 @@ export default function GroupBookingSection({
                             )}
                           </div>
 
-                          {/* TEXT */}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold line-clamp-1 transition-colors group-hover:text-primary">
                               {booking.title}
@@ -625,7 +726,41 @@ export default function GroupBookingSection({
                   })}
                 </div>
               )}
-              {totalPages > 1 && (
+              {variant === "showcase" && groupBookings.length > 0 && (
+                <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/35 via-white/10 to-slate-900/5" />
+                  <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
+                  <div className="absolute -left-10 top-6 h-28 w-28 rounded-full bg-rose-200/40 blur-3xl" />
+                  <div className="absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-slate-400/20 blur-3xl" />
+                  <div className="absolute bottom-[-16px] right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" />
+                  <div className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-sky-200/30 blur-3xl" />
+                  <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
+
+                  <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                    <Users className="h-8 w-8 text-primary/60" />
+                    <p className="font-serif text-sm font-semibold text-foreground/80">
+                      {groupBookingHeader?.header || "Planning something bigger?"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {groupBookingHeader?.description ||
+                        "Reach out for tailored celebrations, corporate stays, and exclusive hotel gathering packages."}
+                    </p>
+                    <Button
+                      type="button"
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      onClick={() => {
+                        setSelectedOffer(showcaseBookings[0] ?? groupBookings[0] ?? null);
+                        setStep(1);
+                        setDateRange(null);
+                        setFormData(EMPTY_FORM);
+                      }}
+                    >
+                      {groupBookingHeader?.ctaText || "Enquire Now"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {variant !== "showcase" && totalPages > 1 && (
                 <p className="text-[10px] text-center text-muted-foreground mt-4 uppercase">
                   Page {currentPage + 1} of {totalPages}
                 </p>

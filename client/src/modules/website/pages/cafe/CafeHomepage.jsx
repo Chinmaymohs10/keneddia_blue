@@ -193,7 +193,11 @@ export default function CafeHomepage() {
   };
 
   return (
-    <div className="min-h-screen bg-background [scrollbar-gutter:stable]">
+    <div
+      className="min-h-screen bg-background [scrollbar-gutter:stable]"
+      data-ssr-hero={ssr?.heroSlides?.length ?? 0}
+      data-ssr-properties={ssr?.cafeProperties?.length ?? 0}
+    >
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       {/* ── Location match popup ─────────────────────────────────────────── */}
@@ -262,21 +266,45 @@ export default function CafeHomepage() {
         <div id="quick-booking">
           <CafeQuickBooking />
         </div>
-        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
-        <CafeCoffeeStory />
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-white dark:hidden" />
-        <div id="cafe-properties">
-          <CafeProperties locationMatch={locationMatch} />
+        <div className="dark:hidden">
+          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-white to-[#E6E2D7]" />
         </div>
-        <div className="h-12 bg-linear-to-b from-white to-[#E4CDB0] dark:hidden" />
+        <CafeCoffeeStory />
+        <div className="dark:hidden">
+          <div className="h-4 bg-linear-to-b from-[#E6E2D7] to-white" />
+          <div className="h-px bg-[#A2663C]/20" />
+        </div>
+        <div id="cafe-properties">
+          <CafeProperties
+            locationMatch={locationMatch}
+            initialCafes={ssr?.cafeProperties}
+          />
+        </div>
+        <div className="dark:hidden">
+          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-white to-[#E4CDB0]" />
+        </div>
         <CafeBestSellers />
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-white dark:hidden" />
+        <div className="dark:hidden">
+          <div className="h-4 bg-linear-to-b from-[#E4CDB0] to-white" />
+          <div className="h-px bg-[#A2663C]/20" />
+        </div>
         <CafeAbout />
-        <div className="h-12 bg-linear-to-b from-white to-[#E6E2D7] dark:hidden" />
+        <div className="dark:hidden">
+          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-white to-[#E6E2D7]" />
+        </div>
         <CafeShowcaseSlider />
-        <div className="h-12 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0] dark:hidden" />
+        <div className="dark:hidden">
+          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0]" />
+        </div>
         <CafeNewsSection />
-        <div className="h-12 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B] dark:hidden" />
+        <div className="dark:hidden">
+          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B]" />
+        </div>
         <CafeGuestReviews />
       </main>
 

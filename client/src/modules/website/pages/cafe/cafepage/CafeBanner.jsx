@@ -64,7 +64,7 @@ export default function CafeBanner() {
   return (
     /* ── Root: light = warm off-white | dark = deep espresso ── */
     <div
-      className="h-screen overflow-hidden flex flex-col bg-[#E6E2D7] dark:bg-[#14100b] transition-colors duration-300"
+      className="h-screen overflow-hidden flex flex-col bg-[#ABBF9B] dark:bg-[#14100b] transition-colors duration-300"
       style={{ paddingTop: "var(--navbar-height,72px)" }}
     >
       <GalleryModal

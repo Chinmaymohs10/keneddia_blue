@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -17,8 +17,15 @@ import { Autoplay, Navigation } from "swiper/modules";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/data/siteContent";
+import { getPropertyTypes } from "@/Api/Api";
+import { getGroupBookingHeaderByPropertyType } from "@/Api/RestaurantApi";
 
 import "swiper/css";
+
+const normalizeHeaderRecords = (payload) => {
+  const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
+  return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
+};
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -221,6 +228,48 @@ function CarouselColumn({ title, icon: Icon, items }) {
 // ── Group Booking Column ───────────────────────────────────────────────────────
 
 function GroupBookingColumn() {
+  const [groupBookingHeader, setGroupBookingHeader] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchGroupBookingHeader = async () => {
+      try {
+        const typesResponse = await getPropertyTypes();
+        const propertyTypes = typesResponse?.data || typesResponse || [];
+        const cafeType = Array.isArray(propertyTypes)
+          ? propertyTypes.find(
+              (type) => type?.isActive && type?.typeName?.toLowerCase() === "cafe",
+            )
+          : null;
+
+        if (!cafeType?.id) return;
+
+        const headerResponse = await getGroupBookingHeaderByPropertyType(
+          Number(cafeType.id),
+        );
+        const latestActiveRecord =
+          normalizeHeaderRecords(headerResponse?.data).find(
+            (item) => item?.active === true,
+          ) || null;
+
+        if (isMounted) {
+          setGroupBookingHeader(latestActiveRecord);
+        }
+      } catch {
+        if (isMounted) {
+          setGroupBookingHeader(null);
+        }
+      }
+    };
+
+    fetchGroupBookingHeader();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="flex h-full flex-col rounded-2xl border bg-card p-5">
       <div className="mb-5 flex items-center gap-2">
@@ -276,16 +325,17 @@ function GroupBookingColumn() {
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <Users className="h-8 w-8 text-primary/60" />
           <p className="font-serif text-sm font-semibold text-foreground/80">
-            Planning something bigger?
+            {groupBookingHeader?.header || "Planning something bigger?"}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers.
+            {groupBookingHeader?.description ||
+              "Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers."}
           </p>
           <Button
             onClick={() => document.getElementById("reservation")?.scrollIntoView({ behavior: "smooth" })}
             className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
           >
-            Enquire Now
+            {groupBookingHeader?.ctaText || "Enquire Now"}
           </Button>
         </div>
       </div>

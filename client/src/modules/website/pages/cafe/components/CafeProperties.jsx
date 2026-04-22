@@ -6,158 +6,156 @@ import {
   CalendarClock,
   ChevronLeft,
   ChevronRight,
-  Coffee,
+  ExternalLink,
   Grid3x3,
   Map,
   MapPin,
-  PlaneTakeoff,
   Search,
   Star,
-  Train,
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { siteContent } from "@/data/siteContent";
+import { GetAllPropertyDetails } from "@/Api/Api";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
-const CAFES = [
-  {
-    id: 1,
-    propertyId: 1,
-    name: "Kennedia Roast Room",
-    city: "Ghaziabad",
-    location: "Raj Nagar Extension, Ghaziabad",
-    type: "Cafe",
-    serviceTag: "Espresso Bar",
-    reservationAvailable: true,
-    image: siteContent.images.cafes.minimalist,
-    rating: 4.7,
-    description:
-      "A modern espresso room with mellow interiors, pastry displays, and long-stay seating.",
-    cuisines: ["Espresso Bar", "Work-Friendly", "Dessert Counter"],
-    highlightedAmenities: ["Coffee Tastings", "Private Corners", "Daily Bakes"],
-    nearbyLocation: "Raj Nagar Extension",
-    serviceHours: "All Day Service",
-    citySlug: "ghaziabad",
-    propertySlug: "kennedia-roast-room-cafe",
-  },
-  {
-    id: 2,
-    propertyId: 2,
-    name: "Kennedia Garden Terrace Cafe",
-    city: "Noida",
-    location: "Sector 62, Noida",
-    type: "Cafe",
-    serviceTag: "Brunch Terrace",
-    reservationAvailable: true,
-    image: siteContent.images.cafes.garden,
-    rating: 4.8,
-    description:
-      "An open-air cafe setup designed for daytime brunches, relaxed meetings, and sunset coffee.",
-    cuisines: ["Outdoor Seating", "Brunch Menu", "Cold Brew"],
-    highlightedAmenities: ["Sunset Deck", "Brunch Seating", "Garden Service"],
-    nearbyLocation: "Sector 62",
-    serviceHours: "Brunch to Late Evenings",
-    citySlug: "noida",
-    propertySlug: "kennedia-garden-terrace-cafe",
-  },
-  {
-    id: 3,
-    propertyId: 3,
-    name: "Kennedia High Tea Lounge",
-    city: "Delhi",
-    location: "Connaught Place, New Delhi",
-    type: "Cafe",
-    serviceTag: "High Tea",
-    reservationAvailable: true,
-    image: siteContent.images.cafes.highTea,
-    rating: 4.9,
-    description:
-      "An elevated tea-and-dessert lounge with plated sweets, polished service, and soft evening ambience.",
-    cuisines: ["High Tea", "Patisserie", "Lounge Seating"],
-    highlightedAmenities: ["Tea Pairings", "Dessert Service", "Premium Lounge"],
-    nearbyLocation: "Connaught Place",
-    serviceHours: "Afternoon to Late Night",
-    citySlug: "delhi",
-    propertySlug: "kennedia-high-tea-lounge-cafe",
-  },
-  {
-    id: 4,
-    propertyId: 4,
-    name: "Kennedia Odisha Brew House",
-    city: "Bhubaneswar",
-    location: "Saheed Nagar, Bhubaneswar",
-    type: "Cafe",
-    serviceTag: "Artisan Brew",
-    reservationAvailable: true,
-    image: siteContent.images.cafes.minimalist,
-    rating: 4.6,
-    description:
-      "A cozy artisan brew house inspired by Odisha's rich culture, offering specialty coffees and local-inspired snacks.",
-    cuisines: ["Specialty Coffee", "Local Bites", "Cold Brew"],
-    highlightedAmenities: ["Cultural Decor", "Live Pour-Overs", "Cozy Corners"],
-    nearbyLocation: "Saheed Nagar",
-    serviceHours: "Morning to Late Evening",
-    citySlug: "bhubaneswar",
-    propertySlug: "kennedia-odisha-brew-house-cafe",
-  },
-  {
-    id: 5,
-    propertyId: 5,
-    name: "Kennedia Bangalore Bean Co.",
-    city: "Bangalore",
-    location: "Indiranagar, Bangalore",
-    type: "Cafe",
-    serviceTag: "Specialty Roasts",
-    reservationAvailable: true,
-    image: siteContent.images.cafes.garden,
-    rating: 4.8,
-    description:
-      "A premium specialty roast cafe in the heart of Indiranagar — curated single-origins, slow brews, and a vibrant co-working atmosphere.",
-    cuisines: ["Single Origin", "Pour-Over Bar", "Work-Friendly"],
-    highlightedAmenities: ["Cupping Sessions", "Roastery Counter", "High-Speed Wi-Fi"],
-    nearbyLocation: "Indiranagar",
-    serviceHours: "All Day Service",
-    citySlug: "bangalore",
-    propertySlug: "kennedia-bangalore-bean-co-cafe",
-  },
-];
+const normalize = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
 
-export default function CafeProperties({ locationMatch }) {
+const getAmenityName = (amenity) =>
+  typeof amenity === "string"
+    ? amenity
+    : amenity && typeof amenity === "object" && "name" in amenity
+      ? amenity.name
+      : null;
+
+const isCafeType = (value) => normalize(value) === "cafe";
+
+const isEmbedUrl = (url) =>
+  String(url || "").startsWith("https://www.google.com/maps/embed");
+
+const mapApiToCafeUI = (item) => {
+  const parent = item?.propertyResponseDTO;
+  const listing = item?.propertyListingResponseDTOS?.find((entry) => entry?.isActive);
+  const amenities = Array.isArray(listing?.amenities)
+    ? listing.amenities.map(getAmenityName).filter(Boolean)
+    : [];
+  const reservationAvailable = Boolean(
+    parent?.dineIn || parent?.takeaway || parent?.bookingEngineUrl,
+  );
+  const highlightedAmenities = [];
+
+  if (parent?.dineIn) highlightedAmenities.push("Dine In");
+  if (parent?.takeaway) highlightedAmenities.push("Takeaway");
+  highlightedAmenities.push(
+    reservationAvailable ? "Reservation Available" : "Walk-in Only",
+  );
+  highlightedAmenities.push(...amenities.slice(0, 3));
+
+  return {
+    id: listing?.id ? `${parent?.id}-${listing.id}` : `property-${parent?.id}`,
+    propertyId: parent?.id,
+    name: parent?.propertyName || "Unnamed Cafe",
+    dineIn: Boolean(parent?.dineIn),
+    takeaway: Boolean(parent?.takeaway),
+    city: parent?.locationName || listing?.city || "Unknown",
+    location: listing?.fullAddress || parent?.address || "N/A",
+    type: listing?.propertyType || parent?.propertyTypes?.[0] || "Cafe",
+    serviceTag: parent?.dineIn
+      ? "Dine In"
+      : parent?.takeaway
+        ? "Takeaway"
+        : listing?.propertyCategoryName || "Cafe",
+    reservationAvailable,
+    image: {
+      src: listing?.media?.[0]?.url || listing?.media?.[0] || "",
+      alt: parent?.propertyName || "Cafe",
+    },
+    rating: listing?.rating || 0,
+    description:
+      listing?.mainHeading ||
+      listing?.tagline ||
+      listing?.subTitle ||
+      "Cafe experience with signature beverages and relaxed hospitality.",
+    cuisines: amenities.slice(0, 6),
+    highlightedAmenities: highlightedAmenities.filter(Boolean),
+    nearbyLocation:
+      parent?.nearbyLocations?.[0]?.nearbyLocationName ||
+      listing?.landmark ||
+      parent?.locationName ||
+      "Prime location",
+    area: parent?.area || null,
+    serviceHours: "Open Daily",
+    googleMapLink: parent?.nearbyLocations?.[0]?.googleMapLink || parent?.addressUrl || "",
+    isActive: parent?.isActive && (listing ? listing?.isActive : true),
+  };
+};
+
+export default function CafeProperties({ locationMatch, initialCafes }) {
   const navigate = useNavigate();
+  const ssrLoaded = Array.isArray(initialCafes) && initialCafes.length > 0;
+  const [cafes, setCafes] = useState(ssrLoaded ? initialCafes : []);
+  const [loading, setLoading] = useState(!ssrLoaded);
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewMode, setViewMode] = useState("gallery");
   const [selectedCity, setSelectedCity] = useState("All Cities");
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [nearbyTab, setNearbyTab] = useState("stations");
   const [locationBanner, setLocationBanner] = useState(null);
 
+  useEffect(() => {
+    if (ssrLoaded) return;
+
+    const fetchCafes = async () => {
+      try {
+        setLoading(true);
+        const response = await GetAllPropertyDetails();
+        const rawData = response?.data?.data || response?.data || [];
+        const mapped = Array.isArray(rawData)
+          ? rawData
+              .map((item) => mapApiToCafeUI(item))
+              .filter((cafe) => cafe.isActive && isCafeType(cafe.type))
+          : [];
+        setCafes([...mapped].reverse());
+      } catch (error) {
+        console.error("Failed to load cafe properties", error);
+        setCafes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCafes();
+  }, [ssrLoaded]);
+
   const cities = useMemo(
-    () => ["All Cities", ...new Set(CAFES.map((item) => item.city).filter(Boolean))],
-    [],
+    () => ["All Cities", ...new Set(cafes.map((item) => item.city).filter(Boolean))],
+    [cafes],
   );
 
   const filteredCafes = useMemo(
     () =>
       selectedCity === "All Cities"
-        ? CAFES
-        : CAFES.filter((item) => item.city === selectedCity),
-    [selectedCity],
+        ? cafes
+        : cafes.filter((item) => item.city === selectedCity),
+    [cafes, selectedCity],
   );
 
-  useEffect(() => setActiveIndex(0), [selectedCity]);
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [selectedCity]);
 
-  // ── React to locationMatch prop from CafeHomepage ────────────────────────
   useEffect(() => {
     if (!locationMatch) return;
+
     if (locationMatch.found && locationMatch.city) {
       setSelectedCity(locationMatch.city);
       setLocationBanner("found");
-    } else {
-      setLocationBanner("not-found");
+      return;
     }
+
+    setLocationBanner("not-found");
   }, [locationMatch]);
 
   useEffect(() => {
@@ -175,14 +173,15 @@ export default function CafeProperties({ locationMatch }) {
   }, [filteredCafes.length, isPaused, viewMode]);
 
   const activeCafe = filteredCafes[activeIndex] || filteredCafes[0];
+  const activeMapIsEmbeddable = isEmbedUrl(activeCafe?.googleMapLink);
 
-  const goToCafeDetails = (cafe) =>
-    navigate(`/${cafe.citySlug}/${cafe.propertySlug}`);
+  const getCafeDetailUrl = (cafe) =>
+    `/${createCitySlug(cafe.city || cafe.name)}/${createHotelSlug(
+      cafe.name || cafe.city || "property",
+      cafe.propertyId,
+    )}`;
 
-  const scrollToReservation = () =>
-    document
-      .getElementById("reservation")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const goToCafeDetails = (cafe) => navigate(getCafeDetailUrl(cafe));
 
   const handlePrev = () =>
     setActiveIndex((prev) =>
@@ -194,20 +193,30 @@ export default function CafeProperties({ locationMatch }) {
       prev === filteredCafes.length - 1 ? 0 : prev + 1,
     );
 
-  // Always show 3 cards in the background — left/right always use the full CAFES
-  // list so the container never looks empty when a city filter is active.
-  const activeCafeIndexInAll = CAFES.findIndex((c) => c.id === activeCafe.id);
-  const visibleCards = [
-    {
-      cafe: CAFES[(activeCafeIndexInAll - 1 + CAFES.length) % CAFES.length],
-      position: "left",
-    },
-    { cafe: activeCafe, position: "center" },
-    {
-      cafe: CAFES[(activeCafeIndexInAll + 1) % CAFES.length],
-      position: "right",
-    },
-  ];
+  const visibleCards =
+    filteredCafes.length <= 1
+      ? [{ index: 0, position: "center" }]
+      : [
+          {
+            index: (activeIndex - 1 + filteredCafes.length) % filteredCafes.length,
+            position: "left",
+          },
+          { index: activeIndex, position: "center" },
+          {
+            index: (activeIndex + 1) % filteredCafes.length,
+            position: "right",
+          },
+        ];
+
+  if (loading) {
+    return (
+      <div className="container mx-auto mb-12 px-4">
+        <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+          Loading cafes...
+        </div>
+      </div>
+    );
+  }
 
   if (!activeCafe) {
     return (
@@ -244,10 +253,10 @@ export default function CafeProperties({ locationMatch }) {
             <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5">
               <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
               <div className="hidden sm:block">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-primary leading-none">
+                <p className="text-[10px] font-bold uppercase leading-none tracking-wider text-primary">
                   Near You
                 </p>
-                <p className="text-[11px] font-medium text-foreground leading-tight truncate max-w-[160px]">
+                <p className="max-w-[160px] truncate text-[11px] leading-tight font-medium text-foreground">
                   {locationMatch.currentLocation?.city || locationMatch.city}
                 </p>
               </div>
@@ -256,6 +265,7 @@ export default function CafeProperties({ locationMatch }) {
               </span>
             </div>
           )}
+
           {locationBanner === "not-found" && (
             <div className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/20 px-3 py-1.5 text-[11px] text-muted-foreground">
               <MapPin className="h-3 w-3 shrink-0" />
@@ -267,29 +277,6 @@ export default function CafeProperties({ locationMatch }) {
         <div className="p-8">
           <div className="mb-8 flex flex-col gap-4 border-b border-border/10 pb-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
-                <button
-                  onClick={() => setViewMode("gallery")}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <Grid3x3 className="h-3 w-3" />
-                  <span className="hidden sm:inline">Gallery</span>
-                </button>
-                <button
-                  onClick={() => setViewMode("map")}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  <Map className="h-3 w-3" />
-                  <span className="hidden sm:inline">Map</span>
-                </button>
-              </div>
-
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <button
@@ -299,8 +286,9 @@ export default function CafeProperties({ locationMatch }) {
                     <MapPin className="h-3 w-3 text-primary" />
                     <span className="font-medium">{selectedCity}</span>
                     <ArrowRight
-                      className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${showCityDropdown ? "rotate-90" : ""
-                        }`}
+                      className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${
+                        showCityDropdown ? "rotate-90" : ""
+                      }`}
                     />
                   </button>
 
@@ -313,10 +301,9 @@ export default function CafeProperties({ locationMatch }) {
                             setSelectedCity(city);
                             setShowCityDropdown(false);
                           }}
-                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city
-                            ? "bg-secondary/30 font-semibold"
-                            : ""
-                            }`}
+                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${
+                            selectedCity === city ? "bg-secondary/30 font-semibold" : ""
+                          }`}
                         >
                           {city}
                         </button>
@@ -339,10 +326,37 @@ export default function CafeProperties({ locationMatch }) {
                   <Building2 className="h-3 w-3" />
                   Cafe
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
-                  <Star className="h-3 w-3 fill-current" />
-                  {filteredCafes.length} Cafes
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs">
+                  <Star className="h-3 w-3 fill-current text-primary" />
+                  <span className="font-semibold text-foreground">
+                    {filteredCafes.length} Cafes
+                  </span>
                 </span>
+              </div>
+
+              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
+                <button
+                  onClick={() => setViewMode("gallery")}
+                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    viewMode === "gallery"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Grid3x3 className="h-3 w-3" />
+                  <span className="hidden sm:inline">Gallery</span>
+                </button>
+                <button
+                  onClick={() => setViewMode("map")}
+                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    viewMode === "map"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Map className="h-3 w-3" />
+                  <span className="hidden sm:inline">Map</span>
+                </button>
               </div>
             </div>
           </div>
@@ -363,7 +377,8 @@ export default function CafeProperties({ locationMatch }) {
                     onMouseLeave={() => setIsPaused(false)}
                   >
                     <div className="absolute inset-0 flex items-center justify-center perspective-[1200px]">
-                      {visibleCards.map(({ cafe, position }) => {
+                      {visibleCards.map(({ index, position }) => {
+                        const cafe = filteredCafes[index];
                         const isCenter = position === "center";
                         const isLeft = position === "left";
 
@@ -400,7 +415,6 @@ export default function CafeProperties({ locationMatch }) {
                                         </span>
                                       </div>
                                     </div>
-
                                     <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                                       <div className="mb-1.5 inline-block rounded border border-white/30 bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
                                         {cafe.type}
@@ -481,10 +495,10 @@ export default function CafeProperties({ locationMatch }) {
                           </p>
                         </div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
-                          <Building2 className="mx-auto mb-1 h-4 w-4 text-primary" />
-                          <p className="text-[10px] text-muted-foreground">Type</p>
+                          <Map className="mx-auto mb-1 h-4 w-4 text-primary" />
+                          <p className="text-[10px] text-muted-foreground">Area</p>
                           <p className="text-xs font-bold text-foreground">
-                            {activeCafe.type}
+                            {activeCafe.area || "N/A"}
                           </p>
                         </div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
@@ -501,15 +515,23 @@ export default function CafeProperties({ locationMatch }) {
                           Available Highlights
                         </h4>
                         <div className="mb-3 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                            <Building2 className="h-3 w-3" />
-                            {activeCafe.serviceTag || "Cafe"}
-                          </span>
+                          {activeCafe.dineIn && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                              <Building2 className="h-3 w-3" />
+                              Dine In
+                            </span>
+                          )}
+                          {activeCafe.takeaway && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-700">
+                              Takeaway
+                            </span>
+                          )}
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${activeCafe.reservationAvailable
-                              ? "border-sky-200 bg-sky-50 text-sky-700"
-                              : "border-zinc-200 bg-zinc-100 text-zinc-500"
-                              }`}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                              activeCafe.reservationAvailable
+                                ? "border-sky-200 bg-sky-50 text-sky-700"
+                                : "border-zinc-200 bg-zinc-100 text-zinc-500"
+                            }`}
                           >
                             {activeCafe.reservationAvailable
                               ? "Reservation Available"
@@ -520,7 +542,7 @@ export default function CafeProperties({ locationMatch }) {
                         <div className="grid grid-cols-2 gap-2">
                           {(activeCafe.cuisines.length > 0
                             ? activeCafe.cuisines
-                            : ["Signature Hospitality", "Prime Location"]
+                            : ["Specialty Beverages", "Prime Location"]
                           ).map((item) => (
                             <div
                               key={item}
@@ -536,10 +558,10 @@ export default function CafeProperties({ locationMatch }) {
 
                     <div className="mt-4 space-y-2.5">
                       <Button
-                        onClick={scrollToReservation}
+                        onClick={() => goToCafeDetails(activeCafe)}
                         className="w-full gap-2 py-3 text-sm font-bold uppercase"
                       >
-                        Reserve Table <ArrowRight className="h-4 w-4" />
+                        Explore Cafe <ArrowRight className="h-4 w-4" />
                       </Button>
                       <button
                         onClick={() => goToCafeDetails(activeCafe)}
@@ -618,10 +640,10 @@ export default function CafeProperties({ locationMatch }) {
                           </p>
                         </div>
                         <div className="text-center">
-                          <Building2 className="mx-auto mb-0.5 h-4 w-4 text-primary" />
-                          <p className="text-[10px] text-muted-foreground">Type</p>
+                          <Map className="mx-auto mb-0.5 h-4 w-4 text-primary" />
+                          <p className="text-[10px] text-muted-foreground">Area</p>
                           <p className="text-xs font-bold text-foreground">
-                            {activeCafe.type}
+                            {activeCafe.area || "N/A"}
                           </p>
                         </div>
                         <div className="text-center">
@@ -670,10 +692,10 @@ export default function CafeProperties({ locationMatch }) {
 
                       <div className="space-y-2">
                         <Button
-                          onClick={scrollToReservation}
+                          onClick={() => goToCafeDetails(activeCafe)}
                           className="w-full gap-1.5 text-sm font-bold"
                         >
-                          Reserve Now <ArrowRight className="h-3.5 w-3.5" />
+                          Explore Now <ArrowRight className="h-3.5 w-3.5" />
                         </Button>
                         <button
                           onClick={() => goToCafeDetails(activeCafe)}
@@ -686,26 +708,52 @@ export default function CafeProperties({ locationMatch }) {
                   </div>
 
                   <div className="lg:sticky lg:top-6">
-                    <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border-2 border-border bg-card p-6 text-center shadow-2xl">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-primary shadow-lg">
-                        <MapPin className="h-6 w-6" />
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-lg font-serif font-semibold text-foreground">
-                          {activeCafe.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {activeCafe.location}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Interactive map preview can be connected here when cafe
-                          map embed links are available.
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
-                        <Map className="h-3.5 w-3.5" />
-                        Map View
-                      </span>
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl">
+                      {activeMapIsEmbeddable ? (
+                        <iframe
+                          key={activeCafe.googleMapLink}
+                          src={activeCafe.googleMapLink}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          className="h-full w-full"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-slate-100 p-6 text-center">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-primary shadow-lg">
+                            <MapPin className="h-6 w-6" />
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-lg font-serif font-semibold text-foreground">
+                              {activeCafe.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {activeCafe.location}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Map preview is available only for Google embed links.
+                            </p>
+                          </div>
+                          {activeCafe.googleMapLink ? (
+                            <a
+                              href={activeCafe.googleMapLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                            >
+                              Open in Google Maps
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </a>
+                          ) : (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Google map link not available
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

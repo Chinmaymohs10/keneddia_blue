@@ -29,6 +29,8 @@ const normalize = (str) => {
   return str.toLowerCase().trim();
 };
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
 function AddUpdateAboutModal({
   isOpen,
   onClose,
@@ -190,6 +192,10 @@ function AddUpdateAboutModal({
 
   const handleFileSelect = (id, file) => {
     if (!file) return;
+    if (file.type.startsWith("image/") && file.size > MAX_IMAGE_SIZE_BYTES) {
+      showWarning("Image size must not exceed 5 MB.");
+      return;
+    }
     const previewUrl = URL.createObjectURL(file);
     setMediaItems((prev) =>
       prev.map((item) =>

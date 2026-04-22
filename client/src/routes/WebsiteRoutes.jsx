@@ -26,8 +26,6 @@ import ResturantCategoryPageTemplate from "@/modules/website/pages/restaurant/Re
 import CafePage from "@/modules/website/pages/cafe/CafePage";
 import RestaurantHomepage from "@/modules/website/pages/restaurant/RestaurantHomepage";
 import CafeHomepage from "@/modules/website/pages/cafe/CafeHomepage";
-import WineHomepage from "@/modules/website/pages/wine/WineHomepage";
-import WinePage from "@/modules/website/pages/wine/WinePage";
 import Italian from "@/modules/website/pages/restaurant/pages/verticals/Italian";
 import LuxuryLounge from "@/modules/website/pages/restaurant/pages/verticals/LuxuryLounge";
 import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/SpicyDarbar";
@@ -173,8 +171,6 @@ const WebsiteRoutes = [
   />,
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
-  <Route key="wine-homepage" path="/wine-homepage" element={withRouteSuspense(<WineHomepage />)} />,
-  <Route key="wine-page-preview" path="/wine-page" element={<WinePage />} />,
 
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 

@@ -41,9 +41,11 @@ export const OptimizedImage = ({
         loading={priority ? "eager" : "lazy"}
         decoding={priority ? "sync" : "async"}
         onLoad={() => setIsLoaded(true)}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-          isLoaded ? "opacity-100" : "opacity-0"
-        } ${className || ""}`}
+        className={cn(
+          "absolute inset-0 w-full h-full transition-opacity duration-700",
+          isLoaded ? "opacity-100" : "opacity-0",
+          className,
+        )}
         {...props}
       />
     </div>

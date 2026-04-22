@@ -249,13 +249,16 @@ function NewsCard({ item }: { item: NewsItem }) {
 
   return (
     <div className="group flex flex-col h-full bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
-      <div
-        className={`relative aspect-[${STYLE_CONFIG.aspectRatio}] overflow-hidden`}
-      >
-        <OptimizedImage
+      <div className="relative w-full bg-black overflow-hidden">
+        <img
           src={item.imageUrl}
           alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-auto object-contain block transition-transform duration-700 group-hover:scale-105"
+          style={{ maxHeight: "280px", minHeight: "140px" }}
+          onError={(e) => {
+            // hide broken images gracefully
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
         />
         <div className="absolute top-3 left-3">
           <span className="px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] uppercase font-bold tracking-wider rounded">
