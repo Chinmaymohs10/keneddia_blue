@@ -24,6 +24,8 @@ import {
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
 function CreateNewsModal({ isOpen, onClose, editingNews }) {
   console.log(editingNews);
   const [formData, setFormData] = useState({
@@ -175,6 +177,11 @@ function CreateNewsModal({ isOpen, onClose, editingNews }) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       toast.error("Please select a valid image file");
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      toast.error("Image size must not exceed 5 MB.");
+      e.target.value = "";
       return;
     }
     setSelectedFile(file);

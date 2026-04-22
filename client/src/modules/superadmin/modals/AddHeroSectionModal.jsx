@@ -14,6 +14,68 @@ import {
   getPropertyTypes,
 } from "@/Api/Api";
 
+const HERO_BACKGROUND_RECOMMENDATION = {
+  label: "Recommended: 1920 x 1080 (16:9 landscape)",
+  width: 1920,
+  height: 1080,
+  aspectRatio: 16 / 9,
+};
+
+const HERO_SUBMEDIA_RECOMMENDATION = {
+  label: "Recommended: 1080 x 1350 (4:5 portrait)",
+  width: 1080,
+  height: 1350,
+  aspectRatio: 1080 / 1350,
+};
+
+const aspectRatioWithinTolerance = (width, height, targetRatio, tolerance = 0.12) => {
+  if (!width || !height) return false;
+  return Math.abs(width / height - targetRatio) <= tolerance;
+};
+
+const readMediaDimensions = (file) =>
+  new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+
+    if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        resolve({
+          width: video.videoWidth || null,
+          height: video.videoHeight || null,
+        });
+        URL.revokeObjectURL(objectUrl);
+      };
+      video.onerror = () => {
+        resolve(null);
+        URL.revokeObjectURL(objectUrl);
+      };
+      video.src = objectUrl;
+      return;
+    }
+
+    if (file.type.startsWith("image/")) {
+      const image = new Image();
+      image.onload = () => {
+        resolve({
+          width: image.naturalWidth || null,
+          height: image.naturalHeight || null,
+        });
+        URL.revokeObjectURL(objectUrl);
+      };
+      image.onerror = () => {
+        resolve(null);
+        URL.revokeObjectURL(objectUrl);
+      };
+      image.src = objectUrl;
+      return;
+    }
+
+    resolve(null);
+    URL.revokeObjectURL(objectUrl);
+  });
+
 function AddHeroSectionModal({
   isOpen,
   onClose,
@@ -39,17 +101,20 @@ function AddHeroSectionModal({
     theme: "ALL",
     allFiles: [],
     allPreviews: [],
-    allMediaTypes: [],
-    allMediaIds: [],
-    lightFiles: [],
-    lightPreviews: [],
-    lightMediaTypes: [],
-    lightMediaIds: [],
-    darkFiles: [],
-    darkPreviews: [],
-    darkMediaTypes: [],
-    darkMediaIds: [],
-  });
+      allMediaTypes: [],
+      allMediaIds: [],
+      allDimensions: [],
+      lightFiles: [],
+      lightPreviews: [],
+      lightMediaTypes: [],
+      lightMediaIds: [],
+      lightDimensions: [],
+      darkFiles: [],
+      darkPreviews: [],
+      darkMediaTypes: [],
+      darkMediaIds: [],
+      darkDimensions: [],
+    });
 
   const [subMedia, setSubMedia] = useState({
     theme: "ALL",
@@ -57,14 +122,17 @@ function AddHeroSectionModal({
     allPreviews: [],
     allMediaTypes: [],
     allMediaIds: [],
+    allDimensions: [],
     lightFiles: [],
     lightPreviews: [],
     lightMediaTypes: [],
     lightMediaIds: [],
+    lightDimensions: [],
     darkFiles: [],
     darkPreviews: [],
     darkMediaTypes: [],
     darkMediaIds: [],
+    darkDimensions: [],
   });
 
   const [previewTheme, setPreviewTheme] = useState("LIGHT");
@@ -119,14 +187,17 @@ function AddHeroSectionModal({
         allPreviews: [],
         allMediaTypes: [],
         allMediaIds: [],
+        allDimensions: [],
         lightFiles: [],
         lightPreviews: [],
         lightMediaTypes: [],
         lightMediaIds: [],
+        lightDimensions: [],
         darkFiles: [],
         darkPreviews: [],
         darkMediaTypes: [],
         darkMediaIds: [],
+        darkDimensions: [],
       };
       setBackgroundMedia(resetMedia);
       setSubMedia(resetMedia);
@@ -171,6 +242,10 @@ function AddHeroSectionModal({
           allPreviews: editData.backgroundMediaAll.map((m) => m.url),
           allMediaTypes: editData.backgroundMediaAll.map((m) => m.type),
           allMediaIds: editData.backgroundMediaAll.map((m) => m.mediaId),
+          allDimensions: editData.backgroundMediaAll.map((m) => ({
+            width: m.width ?? null,
+            height: m.height ?? null,
+          })),
         }));
       } else if (editData.backgroundAll?.length > 0) {
         setBackgroundMedia((prev) => ({
@@ -179,6 +254,10 @@ function AddHeroSectionModal({
           allPreviews: editData.backgroundAll.map((m) => m.url),
           allMediaTypes: editData.backgroundAll.map((m) => m.type),
           allMediaIds: editData.backgroundAll.map((m) => m.mediaId),
+          allDimensions: editData.backgroundAll.map((m) => ({
+            width: m.width ?? null,
+            height: m.height ?? null,
+          })),
         }));
       } else {
         setBackgroundMedia((prev) => ({
@@ -196,6 +275,16 @@ function AddHeroSectionModal({
             editData.backgroundMediaLight?.map((m) => m.mediaId) ||
             editData.backgroundLight?.map((m) => m.mediaId) ||
             [],
+          lightDimensions:
+            editData.backgroundMediaLight?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            editData.backgroundLight?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            [],
           darkPreviews:
             editData.backgroundMediaDark?.map((m) => m.url) ||
             editData.backgroundDark?.map((m) => m.url) ||
@@ -208,6 +297,16 @@ function AddHeroSectionModal({
             editData.backgroundMediaDark?.map((m) => m.mediaId) ||
             editData.backgroundDark?.map((m) => m.mediaId) ||
             [],
+          darkDimensions:
+            editData.backgroundMediaDark?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            editData.backgroundDark?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            [],
         }));
       }
 
@@ -219,6 +318,10 @@ function AddHeroSectionModal({
           allPreviews: editData.subMediaAll.map((m) => m.url),
           allMediaTypes: editData.subMediaAll.map((m) => m.type),
           allMediaIds: editData.subMediaAll.map((m) => m.mediaId),
+          allDimensions: editData.subMediaAll.map((m) => ({
+            width: m.width ?? null,
+            height: m.height ?? null,
+          })),
         }));
       } else if (editData.subAll?.length > 0) {
         setSubMedia((prev) => ({
@@ -227,6 +330,10 @@ function AddHeroSectionModal({
           allPreviews: editData.subAll.map((m) => m.url),
           allMediaTypes: editData.subAll.map((m) => m.type),
           allMediaIds: editData.subAll.map((m) => m.mediaId),
+          allDimensions: editData.subAll.map((m) => ({
+            width: m.width ?? null,
+            height: m.height ?? null,
+          })),
         }));
       } else {
         setSubMedia((prev) => ({
@@ -244,6 +351,16 @@ function AddHeroSectionModal({
             editData.subMediaLight?.map((m) => m.mediaId) ||
             editData.subLight?.map((m) => m.mediaId) ||
             [],
+          lightDimensions:
+            editData.subMediaLight?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            editData.subLight?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            [],
           darkPreviews:
             editData.subMediaDark?.map((m) => m.url) ||
             editData.subDark?.map((m) => m.url) ||
@@ -255,6 +372,16 @@ function AddHeroSectionModal({
           darkMediaIds:
             editData.subMediaDark?.map((m) => m.mediaId) ||
             editData.subDark?.map((m) => m.mediaId) ||
+            [],
+          darkDimensions:
+            editData.subMediaDark?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
+            editData.subDark?.map((m) => ({
+              width: m.width ?? null,
+              height: m.height ?? null,
+            })) ||
             [],
         }));
       }
@@ -302,7 +429,7 @@ function AddHeroSectionModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleMultipleFilesChange = (
+  const handleMultipleFilesChange = async (
     mediaType,
     theme,
     files,
@@ -312,14 +439,32 @@ function AddHeroSectionModal({
     const filesArray = Array.from(files);
     const newPreviews = [],
       newMediaTypes = [],
-      newFiles = [];
+      newFiles = [],
+      newDimensions = [];
 
-    filesArray.forEach((file) => {
+    for (const file of filesArray) {
       const type = file.type.startsWith("image/") ? "IMAGE" : "VIDEO";
       newFiles.push(file);
       newPreviews.push(URL.createObjectURL(file));
       newMediaTypes.push(type);
-    });
+      const dimensions = await readMediaDimensions(file);
+      newDimensions.push(dimensions);
+
+      if (
+        isBackground &&
+        file.type.startsWith("image/") &&
+        dimensions &&
+        !aspectRatioWithinTolerance(
+          dimensions.width,
+          dimensions.height,
+          HERO_BACKGROUND_RECOMMENDATION.aspectRatio,
+        )
+      ) {
+        showWarning(
+          `${file.name}: hero background works best at ${HERO_BACKGROUND_RECOMMENDATION.width} x ${HERO_BACKGROUND_RECOMMENDATION.height} (16:9).`,
+        );
+      }
+    }
 
     const setter = isBackground ? setBackgroundMedia : setSubMedia;
     const key = theme === "LIGHT" ? "light" : theme === "DARK" ? "dark" : "all";
@@ -329,6 +474,7 @@ function AddHeroSectionModal({
       [`${key}Files`]: [...prev[`${key}Files`], ...newFiles],
       [`${key}Previews`]: [...prev[`${key}Previews`], ...newPreviews],
       [`${key}MediaTypes`]: [...prev[`${key}MediaTypes`], ...newMediaTypes],
+      [`${key}Dimensions`]: [...prev[`${key}Dimensions`], ...newDimensions],
     }));
   };
 
@@ -343,6 +489,7 @@ function AddHeroSectionModal({
         (_, i) => i !== index,
       ),
       [`${key}MediaIds`]: prev[`${key}MediaIds`].filter((_, i) => i !== index),
+      [`${key}Dimensions`]: prev[`${key}Dimensions`].filter((_, i) => i !== index),
     }));
   };
 
@@ -713,6 +860,8 @@ function AddHeroSectionModal({
                     label="All Themes"
                     previews={backgroundMedia.allPreviews}
                     types={backgroundMedia.allMediaTypes}
+                    dimensions={backgroundMedia.allDimensions}
+                    recommendation={HERO_BACKGROUND_RECOMMENDATION}
                     onUpload={(f) =>
                       handleMultipleFilesChange("bg", "ALL", f, true)
                     }
@@ -724,6 +873,8 @@ function AddHeroSectionModal({
                       label="Light Theme"
                       previews={backgroundMedia.lightPreviews}
                       types={backgroundMedia.lightMediaTypes}
+                      dimensions={backgroundMedia.lightDimensions}
+                      recommendation={HERO_BACKGROUND_RECOMMENDATION}
                       onUpload={(f) =>
                         handleMultipleFilesChange("bg", "LIGHT", f, true)
                       }
@@ -733,6 +884,8 @@ function AddHeroSectionModal({
                       label="Dark Theme"
                       previews={backgroundMedia.darkPreviews}
                       types={backgroundMedia.darkMediaTypes}
+                      dimensions={backgroundMedia.darkDimensions}
+                      recommendation={HERO_BACKGROUND_RECOMMENDATION}
                       onUpload={(f) =>
                         handleMultipleFilesChange("bg", "DARK", f, true)
                       }
@@ -761,6 +914,8 @@ function AddHeroSectionModal({
                     label="All Themes"
                     previews={subMedia.allPreviews}
                     types={subMedia.allMediaTypes}
+                    dimensions={subMedia.allDimensions}
+                    recommendation={HERO_SUBMEDIA_RECOMMENDATION}
                     onUpload={(f) =>
                       handleMultipleFilesChange("sub", "ALL", f, false)
                     }
@@ -772,6 +927,8 @@ function AddHeroSectionModal({
                       label="Light Theme"
                       previews={subMedia.lightPreviews}
                       types={subMedia.lightMediaTypes}
+                      dimensions={subMedia.lightDimensions}
+                      recommendation={HERO_SUBMEDIA_RECOMMENDATION}
                       onUpload={(f) =>
                         handleMultipleFilesChange("sub", "LIGHT", f, false)
                       }
@@ -781,6 +938,8 @@ function AddHeroSectionModal({
                       label="Dark Theme"
                       previews={subMedia.darkPreviews}
                       types={subMedia.darkMediaTypes}
+                      dimensions={subMedia.darkDimensions}
+                      recommendation={HERO_SUBMEDIA_RECOMMENDATION}
                       onUpload={(f) =>
                         handleMultipleFilesChange("sub", "DARK", f, false)
                       }
@@ -976,13 +1135,26 @@ function AddHeroSectionModal({
 }
 
 // Media Uploader helper
-function MediaUploader({ label, previews, types, onUpload, onRemove }) {
+function MediaUploader({
+  label,
+  previews,
+  types,
+  dimensions = [],
+  recommendation,
+  onUpload,
+  onRemove,
+}) {
   const inputId = React.useId();
   return (
     <div className="space-y-3">
-      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-        {label}
-      </p>
+      <div>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+          {label}
+        </p>
+        {recommendation?.label && (
+          <p className="mt-1 text-[10px] text-amber-600">{recommendation.label}</p>
+        )}
+      </div>
       <div className="flex flex-wrap gap-3">
         {previews.map((p, i) => (
           <div
@@ -1000,6 +1172,11 @@ function MediaUploader({ label, previews, types, onUpload, onRemove }) {
             >
               <X size={10} />
             </button>
+            {dimensions[i]?.width && dimensions[i]?.height ? (
+              <div className="absolute inset-x-0 bottom-0 bg-black/65 px-1 py-0.5 text-[8px] font-medium text-white">
+                {dimensions[i].width} x {dimensions[i].height}
+              </div>
+            ) : null}
           </div>
         ))}
         <label

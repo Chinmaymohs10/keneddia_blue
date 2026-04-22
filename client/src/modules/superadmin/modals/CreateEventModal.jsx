@@ -20,7 +20,14 @@ import {
   getPropertyTypes,
   GetAllPropertyDetails,
 } from "@/Api/Api";
-import { showSuccess, showError } from "@/lib/toasters/toastUtils";
+import { showSuccess, showError, showWarning } from "@/lib/toasters/toastUtils";
+
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const HOMEPAGE_EVENT_RECOMMENDATION = {
+  width: 1080,
+  height: 1350,
+  label: "Recommended: 1080 x 1350 (4:5 portrait). Taller reel-style images also fit.",
+};
 
 function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [formData, setFormData] = useState({
@@ -48,6 +55,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [mediaType, setMediaType] = useState(null);
+  const [imageDimensions, setImageDimensions] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -80,6 +88,12 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
         setImagePreview(editingEvent.image.url);
         setUploadMethod("upload"); // Default to upload view to show existing image
         setMediaType(editingEvent.image.type);
+        if (editingEvent.image.width && editingEvent.image.height) {
+          setImageDimensions({
+            width: editingEvent.image.width,
+            height: editingEvent.image.height,
+          });
+        }
       }
     } else if (isOpen) {
       clearForm();
@@ -153,6 +167,11 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     return data;
   };
 
+  const hasRecommendedEventRatio = (dimensions) => {
+    if (!dimensions?.width || !dimensions?.height) return false;
+    return dimensions.width / dimensions.height <= 0.85;
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -191,6 +210,7 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
     setImagePreview(null);
     setSelectedFile(null);
     setImageUrl("");
+    setImageDimensions(null);
   };
 
   if (!isOpen) return null;
@@ -506,9 +526,41 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
+                      if (
+                        file.type.startsWith("image/") &&
+                        file.size > MAX_IMAGE_SIZE_BYTES
+                      ) {
+                        showWarning("Image size must not exceed 5 MB.");
+                        e.target.value = "";
+                        return;
+                      }
                       setSelectedFile(file);
                       setFormData((p) => ({ ...p, mediaId: "" }));
                       setImagePreview(URL.createObjectURL(file));
+                      if (file.type.startsWith("image/")) {
+                        const image = new Image();
+                        const objectUrl = URL.createObjectURL(file);
+                        image.onload = () => {
+                          const dims = {
+                            width: image.naturalWidth,
+                            height: image.naturalHeight,
+                          };
+                          setImageDimensions(dims);
+                          if (!hasRecommendedEventRatio(dims)) {
+                            showWarning(
+                              `Event image should ideally be ${HOMEPAGE_EVENT_RECOMMENDATION.width} x ${HOMEPAGE_EVENT_RECOMMENDATION.height} or another portrait ratio.`,
+                            );
+                          }
+                          URL.revokeObjectURL(objectUrl);
+                        };
+                        image.onerror = () => {
+                          setImageDimensions(null);
+                          URL.revokeObjectURL(objectUrl);
+                        };
+                        image.src = objectUrl;
+                      } else {
+                        setImageDimensions(null);
+                      }
                     }
                   }}
                 />
@@ -518,9 +570,24 @@ function CreateEventModal({ isOpen, onClose, editingEvent }) {
                 <p className="text-xs text-gray-500">
                   {selectedFile
                     ? selectedFile.name
-                    : "Choose or drag image/video"}
+                    : HOMEPAGE_EVENT_RECOMMENDATION.label}
                 </p>
               </div>
+
+              {imageDimensions && (
+                <div
+                  className={`mt-4 rounded-lg border px-3 py-2 text-xs ${
+                    hasRecommendedEventRatio(imageDimensions)
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-amber-200 bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  <p className="font-semibold">
+                    Current upload: {imageDimensions.width} x {imageDimensions.height}
+                  </p>
+                  <p className="mt-1">{HOMEPAGE_EVENT_RECOMMENDATION.label}</p>
+                </div>
+              )}
 
               {imagePreview && (
                 <div className="mt-6 relative group">
