@@ -41,6 +41,33 @@ interface HotelHeroSectionProps {
   loading: boolean;
 }
 
+const EmptyHeroState = ({
+  title = "No Slides Available",
+  subtitle = "Hero section has no active slides configured.",
+}: {
+  title?: string;
+  subtitle?: string;
+}) => (
+  <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
+    <div className="absolute inset-0 backdrop-blur-sm" />
+    <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+      <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
+        {title}
+      </div>
+      <p className="text-sm text-white/25">{subtitle}</p>
+    </div>
+    <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
+      <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
+        <path
+          className="fill-background"
+          d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+        />
+      </svg>
+    </div>
+  </section>
+);
+
 const getCurrentTheme = (): "light" | "dark" => {
   if (typeof window === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
@@ -299,6 +326,10 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     },
     [getThumbnailMedia, imageErrors, logMediaError],
   );
+
+  if (!loading && slides.length === 0) {
+    return <EmptyHeroState />;
+  }
 
   return (
     <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">

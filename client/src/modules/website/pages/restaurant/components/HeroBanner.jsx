@@ -168,7 +168,7 @@ export default function HeroBanner({ initialSlides, onReady }) {
         <div className="absolute inset-0 backdrop-blur-sm" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
           <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
-            No Content Available
+            No Slides Available
           </div>
           <p className="text-sm text-white/25">Hero section has no active slides configured.</p>
         </div>

@@ -146,6 +146,7 @@ export default function RestaurantGuestReviews({
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaErrors, setMediaErrors] = useState(new Set());
   const [mutedVideos, setMutedVideos] = useState(new Set());
+  const [isClient, setIsClient] = useState(false);
 
   const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
   const ytThumb =
@@ -179,6 +180,8 @@ export default function RestaurantGuestReviews({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => { setIsClient(true); }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -306,6 +309,16 @@ export default function RestaurantGuestReviews({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
+        if (!isClient) {
+          return (
+            <div key={idx} className="relative flex h-full w-full items-center justify-center bg-black">
+              <a href={m.url} target="_blank" rel="noreferrer" className="text-white text-xs font-bold underline">
+                View on Instagram
+              </a>
+            </div>
+          );
+        }
+
         return (
           <div
             key={idx}
@@ -314,7 +327,7 @@ export default function RestaurantGuestReviews({
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
               <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
             </div>
-            
+
             <a
               href={m.url}
               target="_blank"
@@ -598,7 +611,7 @@ export default function RestaurantGuestReviews({
                         <PlayCircle className="h-8 w-8 text-white drop-shadow" />
                       </div>
                     </div>
-                  ) : instaId ? (
+                  ) : instaId && isClient ? (
                     <div className="relative h-44 w-full overflow-hidden bg-black flex justify-center items-center">
                       <div className="absolute top-0 scale-[0.45] origin-top min-w-[328px] mt-2">
                         <InstagramEmbed url={`https://www.instagram.com/p/${instaId}/`} width={328} />
