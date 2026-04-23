@@ -264,15 +264,26 @@ export default function DailyOffers({ initialOffers = [] }: { initialOffers?: an
                     {offer.image ? (
                       offer.image.type === "VIDEO" ? (
                         <OfferVideo src={offer.image.src} />
+                      ) : showFullImage ? (
+                        <div className="relative w-full h-full overflow-hidden">
+                          {/* Blurred backdrop — fills empty space without bars */}
+                          <img
+                            src={offer.image.src}
+                            aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl brightness-50 pointer-events-none"
+                          />
+                          {/* Actual image — fully visible, no crop, no distortion */}
+                          <img
+                            src={offer.image.src}
+                            alt={offer.image.alt}
+                            className="relative w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
                       ) : (
                         <img
                           src={offer.image.src}
                           alt={offer.image.alt}
-                          className={`w-full h-full ${
-                            showFullImage
-                              ? "object-contain bg-black"
-                              : "object-cover"
-                          } object-center transition-transform duration-500 group-hover:scale-105`}
+                          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                         />
                       )
                     ) : (

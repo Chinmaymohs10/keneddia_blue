@@ -544,13 +544,13 @@ export default function RestaurantGuestReviews({
               <div className="relative mb-3 flex flex-col grow">
                 <textarea
                   value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 50))}
+                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 100))}
                   placeholder="Tell us about your dining experience..."
-                  maxLength={50}
+                  maxLength={100}
                   className="w-full grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
                 />
-                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 50 ? "text-red-500" : "text-muted-foreground"}`}>
-                  {feedbackText.length}/50
+                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 100 ? "text-red-500" : "text-muted-foreground"}`}>
+                  {feedbackText.length}/100
                 </span>
               </div>
 

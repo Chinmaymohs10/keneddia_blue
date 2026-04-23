@@ -219,11 +219,11 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
   const onReadyCalled = useRef(false);
 
   useEffect(() => {
-    if (slides.length > 0 && !onReadyCalled.current) {
+    if (!onReadyCalled.current && (slides.length > 0 || !isFetching)) {
       onReadyCalled.current = true;
       onReady?.();
     }
-  }, [slides.length, onReady]);
+  }, [slides.length, isFetching, onReady]);
 
   const fetchHeroSection = useCallback(
     async (forceRefresh = false) => {
@@ -246,8 +246,13 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
         const response = await getHeroSectionsPaginated({ page: 0, size: 100 });
         const pageData = response.data?.data || response.data || response;
 
-        if (pageData?.content && Array.isArray(pageData.content)) {
-          const apiContent: ApiHeroItem[] = pageData.content;
+        const apiContent: ApiHeroItem[] = Array.isArray(pageData?.content)
+          ? pageData.content
+          : Array.isArray(pageData)
+            ? pageData
+            : [];
+
+        if (apiContent.length >= 0) {
           apiDataRef.current = apiContent;
           const newHash = generateDataHash(apiContent);
 
@@ -482,6 +487,29 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
     [imageErrors, logMediaError],
   );
 
+  if (!isFetching && slides.length === 0) {
+    return (
+      <section className="relative w-full h-screen overflow-hidden bg-neutral-900">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
+        <div className="absolute inset-0 backdrop-blur-sm" />
+        <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
+          <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
+            No Content Available
+          </div>
+          <p className="text-sm text-white/25">Hero section has no active slides configured.</p>
+        </div>
+        <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-48">
+          <svg viewBox="0 0 1440 320" className="w-full h-full drop-shadow-lg" preserveAspectRatio="none">
+            <path
+              className="fill-background"
+              d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,128C1248,117,1344,107,1392,101.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+            />
+          </svg>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
       {isFetching && (
@@ -664,7 +692,18 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
               </SwiperSlide>
             ))}
           </Swiper>
-        ) : null}
+        ) : (
+          <div
+            className="relative flex w-full overflow-hidden bg-neutral-900 items-center justify-center"
+            style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
+          >
+            <div className="text-center px-6">
+              <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/40 inline-block">
+                Not Available on Mobile
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ══════════════ DESKTOP thumbnails + nav (unchanged) ══════════════ */}

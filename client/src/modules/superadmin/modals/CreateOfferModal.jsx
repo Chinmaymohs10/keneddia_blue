@@ -36,8 +36,8 @@ const inputStyles = `
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const HOMEPAGE_CARD_RECOMMENDATION = {
   width: 1080,
-  height: 1350,
-  label: "Recommended: 1080 x 1350 (4:5 portrait). Reel 1080 x 1920 also works.",
+  height: 1920,
+  label: "Recommended: 1080 x 1920 (9:16 portrait) — matches card frame on homepage.",
 };
 
 const MEDIA_DETECTION_RULES = {
@@ -269,7 +269,7 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
 
   const hasRecommendedHomepageCardRatio = (dimensions) => {
     if (!dimensions?.width || !dimensions?.height) return false;
-    return dimensions.width / dimensions.height <= 0.85;
+    return dimensions.width / dimensions.height <= 0.65;
   };
 
   const detectBannerType = (dimensions) => {
@@ -388,7 +388,20 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
         uploadMediaFile(file, "IMAGE", dims, bannerType);
       };
     } else {
-      uploadMediaFile(file, "VIDEO");
+      const videoEl = document.createElement("video");
+      const objectUrl = URL.createObjectURL(file);
+      videoEl.src = objectUrl;
+      videoEl.onloadedmetadata = () => {
+        const dims = { width: videoEl.videoWidth, height: videoEl.videoHeight };
+        setImageDimensions(dims);
+        detectBannerType(dims);
+        URL.revokeObjectURL(objectUrl);
+        uploadMediaFile(file, "VIDEO", dims);
+      };
+      videoEl.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        uploadMediaFile(file, "VIDEO");
+      };
     }
   };
 
@@ -737,8 +750,14 @@ function CreateOfferModal({ isOpen, onClose, editingOffer }) {
                         : "border-amber-200 bg-amber-50 text-amber-700"
                     }`}
                   >
-                    <p className="font-semibold">
-                      Current upload: {imageDimensions.width} x {imageDimensions.height}
+                    <p className="font-semibold flex items-center gap-2">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-black/10">
+                        {mediaType === "VIDEO" ? "Video" : "Image"}
+                      </span>
+                      Current upload: {imageDimensions.width} × {imageDimensions.height}
+                      <span className="font-normal opacity-70">
+                        ({(imageDimensions.width / imageDimensions.height).toFixed(2)} ratio)
+                      </span>
                     </p>
                     <p className="mt-1">{HOMEPAGE_CARD_RECOMMENDATION.label}</p>
                   </div>
