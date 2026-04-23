@@ -78,6 +78,7 @@ export const updatePropertyTypeStatus = (id, isActive) =>
   API.patch(`api/v1/property-types/${id}/status`, null, {
     params: { isActive },
   });
+  
 export const addPropertyCategory = (data) =>API.post("api/v1/property-categories/add", data);
 export const updatePropertyCategory = (id,data) =>API.put(`api/v1/property-categories/update/${id}`, data);
 export const getAllPropertyCategories = () =>API.get("api/v1/property-categories/all");
