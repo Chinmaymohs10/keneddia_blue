@@ -519,11 +519,11 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
 
   return (
     <div className="bg-white dark:bg-[#050505] transition-colors duration-500 pb-10">
-      <section className="pt-20 pb-12 border-b border-zinc-100 dark:border-white/5">
+      <section className="pt-6 pb-12 border-b border-zinc-100 dark:border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
           <div className="flex flex-col lg:flex-row gap-10 items-stretch">
-            <div className="lg:w-[60%] flex flex-col pt-8">
-              <div className="mb-6 h-[100px]">
+            <div className="lg:w-[60%] flex flex-col">
+              <div className="mb-6">
                 <h2 className="text-3xl md:text-4xl font-serif dark:text-white mb-2">
                   {buffetHeader.headlinePart1}{" "}
                   <span className="italic text-primary">
@@ -560,9 +560,9 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
         </div>
       </section>
 
-      <section className="pt-16 pb-2">
+      <section className="pt-6 pb-2">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 text-left">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-20">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-10">
             <div className="flex-1 min-w-0 lg:max-w-[80%]">
               {menuLoading ? (
                 <div className="flex items-center gap-2 text-zinc-400 text-sm">

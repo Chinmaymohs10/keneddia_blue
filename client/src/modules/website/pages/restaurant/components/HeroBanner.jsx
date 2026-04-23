@@ -282,17 +282,6 @@ export default function HeroBanner({ initialSlides, onReady }) {
             </div>
             <div className="absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
             <div className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-5 text-center" style={{ top: "64px", bottom: "2.5rem" }}>
-              {activeMobileSlide.tag && (
-                <motion.span
-                  key={`m-tag-${activeMobileSlide.id}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="mb-2 inline-flex rounded-full bg-white/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
-                >
-                  {activeMobileSlide.tag}
-                </motion.span>
-              )}
               {activeMobileSlide.title && (
                 <motion.h1
                   key={`m-title-${activeMobileSlide.id}`}

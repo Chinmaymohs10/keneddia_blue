@@ -89,21 +89,21 @@ export default function RestaurantProperties({ initialRestaurants }) {
       />
 
       <motion.div layout className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md">
-        <div className="flex items-center justify-between border-b border-border/10 bg-primary/5 p-6"><div className="flex items-center gap-4"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"><Search className="h-5 w-5" /></div><div><h3 className="text-xl font-serif font-medium text-foreground">Explore Our Restaurants</h3><p className="text-xs uppercase tracking-wider text-muted-foreground">Collection Showcase</p></div></div></div>
-        <div className="p-8">
+        <div className="border-b border-border/10 bg-primary/5 p-3 min-[380px]:p-4 sm:p-6"><div className="flex items-start gap-2.5 min-[380px]:gap-3 sm:items-center sm:gap-4"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg min-[380px]:h-10 min-[380px]:w-10"><Search className="h-4 w-4 min-[380px]:h-5 min-[380px]:w-5" /></div><div className="min-w-0"><h3 className="text-base font-serif font-medium text-foreground min-[380px]:text-lg sm:text-xl">Explore Our Restaurants</h3><p className="text-[9px] uppercase tracking-wider text-muted-foreground min-[380px]:text-[10px] sm:text-xs">Collection Showcase</p></div></div></div>
+        <div className="p-3 min-[380px]:p-4 sm:p-6 lg:p-8">
           <div className="mb-8 flex flex-col gap-4 border-b border-border/10 pb-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <button onClick={() => setShowCityDropdown((prev) => !prev)} className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50"><MapPin className="h-3 w-3 text-primary" /><span className="font-medium">{selectedCity}</span><ArrowRight className={`h-2.5 w-2.5 text-muted-foreground transition-transform ${showCityDropdown ? "rotate-90" : ""}`} /></button>
-                  {showCityDropdown && <div className="absolute left-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-lg border border-border bg-card shadow-xl">{cities.map((city) => <button key={city} onClick={() => { setSelectedCity(city); setShowCityDropdown(false); }} className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""}`}>{city}</button>)}</div>}
+                  {showCityDropdown && <div className="absolute left-0 top-full z-50 mt-1 w-44 max-w-[calc(100vw-3rem)] overflow-hidden rounded-lg border border-border bg-card shadow-xl sm:w-48">{cities.map((city) => <button key={city} onClick={() => { setSelectedCity(city); setShowCityDropdown(false); }} className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""}`}>{city}</button>)}</div>}
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"><Building2 className="h-3 w-3" />Restaurant</span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs"><Star className="h-3 w-3 fill-current text-primary" /><span className="font-semibold text-foreground">{filteredRestaurants.length} Restaurants</span></span>
               </div>
-              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
-                <button onClick={() => setViewMode("gallery")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Grid3x3 className="h-3 w-3" /><span className="hidden sm:inline">Gallery</span></button>
-                <button onClick={() => setViewMode("map")} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Map className="h-3 w-3" /><span className="hidden sm:inline">Map</span></button>
+              <div className="inline-flex w-full items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm sm:w-fit">
+                <button onClick={() => setViewMode("gallery")} className={`flex flex-1 items-center justify-center gap-1 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all min-[380px]:gap-1.5 min-[380px]:px-4 sm:flex-none ${viewMode === "gallery" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Grid3x3 className="h-3 w-3" /><span>Gallery</span></button>
+                <button onClick={() => setViewMode("map")} className={`flex flex-1 items-center justify-center gap-1 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-all min-[380px]:gap-1.5 min-[380px]:px-4 sm:flex-none ${viewMode === "map" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}><Map className="h-3 w-3" /><span>Map</span></button>
               </div>
             </div>
           </div>
@@ -111,41 +111,41 @@ export default function RestaurantProperties({ initialRestaurants }) {
             {viewMode === "gallery" ? (
               <motion.div key="gallery" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[60%_40%]">
-                  <div className="relative h-[500px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+                  <div className="relative h-[300px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl min-[380px]:h-[340px] sm:h-[420px] lg:h-[500px]" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
                     <div className="absolute inset-0 flex items-center justify-center perspective-[1200px]">
                       {visibleCards.map(({ index, position }) => {
                         const restaurant = filteredRestaurants[index];
                         const isCenter = position === "center";
                         const isLeft = position === "left";
-                        return <div key={restaurant.id} className="absolute transition-all duration-700 ease-out" style={{ zIndex: isCenter ? 30 : 20, opacity: isCenter ? 1 : 0.55, transform: isCenter ? "translateX(0) rotateY(0deg)" : isLeft ? "translateX(-90%) rotateY(30deg)" : "translateX(90%) rotateY(-30deg)", transformStyle: "preserve-3d" }}>
-                          <div className="h-[380px] w-[340px] max-w-[80vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl">
+                        return <div key={restaurant.id} className={`absolute transition-all duration-700 ease-out ${isCenter ? "" : "hidden sm:block"}`} style={{ zIndex: isCenter ? 30 : 20, opacity: isCenter ? 1 : 0.55, transform: isCenter ? "translateX(0) rotateY(0deg)" : isLeft ? "translateX(-90%) rotateY(30deg)" : "translateX(90%) rotateY(-30deg)", transformStyle: "preserve-3d" }}>
+                          <div className="h-[250px] w-[220px] max-w-[78vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl min-[380px]:h-[290px] min-[380px]:w-[250px] min-[430px]:w-[270px] sm:h-[340px] sm:w-[300px] lg:h-[380px] lg:w-[340px]">
                             <div className="relative h-full">
                               <OptimizedImage {...restaurant.image} className="h-full w-full object-cover" />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                              {isCenter && <><div className="absolute left-4 top-4"><div className="flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-sm"><Star className="h-3.5 w-3.5 fill-current text-yellow-500" /><span className="text-xs font-bold text-gray-900">{restaurant.rating || "N/A"}</span></div></div><div className="absolute bottom-0 left-0 right-0 p-5 text-white"><div className="mb-1.5 inline-block rounded border border-white/30 bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">{restaurant.type}</div><h3 className="mb-1 text-lg font-serif font-semibold">{restaurant.name}</h3><div className="mb-1.5 flex items-center text-xs opacity-90"><MapPin className="mr-1 h-3 w-3" />{restaurant.location}</div><p className="line-clamp-2 text-[11px] leading-relaxed opacity-80">{restaurant.description}</p></div></>}
+                              {isCenter && <><div className="absolute left-2.5 top-2.5 min-[380px]:left-3 min-[380px]:top-3 sm:left-4 sm:top-4"><div className="flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm min-[380px]:gap-1.5 min-[380px]:px-2.5 sm:px-3 sm:py-1.5"><Star className="h-3 w-3 fill-current text-yellow-500 min-[380px]:h-3.5 min-[380px]:w-3.5" /><span className="text-[11px] font-bold text-gray-900 min-[380px]:text-xs">{restaurant.rating || "N/A"}</span></div></div><div className="absolute bottom-0 left-0 right-0 p-3 text-white min-[380px]:p-4 sm:p-5"><div className="mb-1 inline-block rounded border border-white/30 bg-white/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm min-[380px]:mb-1.5 min-[380px]:px-2.5 min-[380px]:text-[10px]">{restaurant.type}</div><h3 className="mb-1 line-clamp-2 text-sm font-serif font-semibold min-[380px]:text-base sm:text-lg">{restaurant.name}</h3><div className="mb-1 flex items-center text-[11px] opacity-90 min-[380px]:mb-1.5 min-[380px]:text-xs"><MapPin className="mr-1 h-3 w-3 shrink-0" /><span className="line-clamp-1">{restaurant.location}</span></div><p className="line-clamp-2 text-[10px] leading-relaxed opacity-80 min-[380px]:text-[11px]">{restaurant.description}</p></div></>}
                             </div>
                           </div>
                         </div>;
                       })}
                     </div>
-                    <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3">
-                      <button onClick={handlePrev} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"><ChevronLeft className="h-4 w-4" /></button>
-                      <div className="rounded-full border border-border bg-background/90 px-3 py-1 backdrop-blur-sm"><span className="text-xs font-semibold text-foreground">{activeIndex + 1} / {filteredRestaurants.length}</span></div>
-                      <button onClick={handleNext} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"><ChevronRight className="h-4 w-4" /></button>
+                    <div className="absolute bottom-3 left-1/2 z-40 flex w-[calc(100%-1rem)] max-w-[240px] -translate-x-1/2 items-center justify-center gap-1.5 min-[380px]:bottom-4 min-[380px]:max-w-[280px] min-[380px]:gap-2 sm:w-[calc(100%-2rem)] sm:max-w-fit sm:gap-3">
+                      <button onClick={handlePrev} className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 min-[380px]:h-9 min-[380px]:w-9 sm:h-10 sm:w-10"><ChevronLeft className="h-3.5 w-3.5 min-[380px]:h-4 min-[380px]:w-4" /></button>
+                      <div className="rounded-full border border-border bg-background/90 px-2.5 py-1 backdrop-blur-sm min-[380px]:px-3"><span className="text-[11px] font-semibold text-foreground min-[380px]:text-xs">{activeIndex + 1} / {filteredRestaurants.length}</span></div>
+                      <button onClick={handleNext} className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 min-[380px]:h-9 min-[380px]:w-9 sm:h-10 sm:w-10"><ChevronRight className="h-3.5 w-3.5 min-[380px]:h-4 min-[380px]:w-4" /></button>
                     </div>
                   </div>
-                  <div className="flex h-[500px] flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xl">
-                    <div className="space-y-3.5 overflow-y-auto">
+                  <div className="flex min-h-0 flex-col justify-between rounded-2xl border border-border bg-card p-4 shadow-xl sm:p-5 lg:h-[500px]">
+                    <div className="space-y-3.5 lg:overflow-y-auto">
                       <div>
-                        <div className="mb-2 flex items-center justify-between">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                           <span className="inline-block rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">{activeRestaurant.type}</span>
                           <div className="flex items-center gap-1.5 rounded-full border border-yellow-200 bg-yellow-50 px-2.5 py-1"><Star className="h-3.5 w-3.5 fill-current text-yellow-500" /><span className="text-xs font-bold text-yellow-900">{activeRestaurant.rating || "N/A"}</span></div>
                         </div>
-                        <h3 className="mb-1.5 line-clamp-2 text-xl font-serif font-semibold text-foreground">{activeRestaurant.name}</h3>
-                        <div className="mb-2.5 flex items-center text-sm text-muted-foreground"><MapPin className="mr-1.5 h-3.5 w-3.5" /><span className="line-clamp-1">{activeRestaurant.location}</span></div>
+                        <h3 className="mb-1.5 line-clamp-2 text-lg font-serif font-semibold text-foreground min-[380px]:text-xl">{activeRestaurant.name}</h3>
+                        <div className="mb-2.5 flex items-start text-sm text-muted-foreground"><MapPin className="mr-1.5 mt-0.5 h-3.5 w-3.5 shrink-0" /><span className="line-clamp-2">{activeRestaurant.location}</span></div>
                         <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{activeRestaurant.description}</p>
                       </div>
-                      <div className="grid grid-cols-3 gap-3 pb-1">
+                      <div className="grid grid-cols-1 gap-3 pb-1 sm:grid-cols-3">
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><MapPin className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">City</p><p className="text-xs font-bold text-foreground">{activeRestaurant.city}</p></div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><Map className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Area</p><p className="text-xs font-bold text-foreground">{activeRestaurant.area || "N/A"}</p></div>
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center"><CalendarClock className="mx-auto mb-1 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Rating</p><p className="text-xs font-bold text-foreground">{activeRestaurant.rating || "N/A"}</p></div>
@@ -161,7 +161,7 @@ export default function RestaurantProperties({ initialRestaurants }) {
                           )}
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${activeRestaurant.reservationAvailable ? "border-sky-200 bg-sky-50 text-sky-700" : "border-zinc-200 bg-zinc-100 text-zinc-500"}`}>{activeRestaurant.reservationAvailable ? "Reservation Available" : "Walk-in Only"}</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">{(activeRestaurant.cuisines.length > 0 ? activeRestaurant.cuisines : ["Signature Hospitality", "Prime Location"]).map((item) => <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground"><div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" /><span className="line-clamp-1">{item}</span></div>)}</div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{(activeRestaurant.cuisines.length > 0 ? activeRestaurant.cuisines : ["Signature Hospitality", "Prime Location"]).map((item) => <div key={item} className="flex items-center gap-2 text-xs text-muted-foreground"><div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" /><span className="line-clamp-1">{item}</span></div>)}</div>
                       </div>
                     </div>
                     <div className="mt-4 space-y-2.5">
@@ -184,13 +184,13 @@ export default function RestaurantProperties({ initialRestaurants }) {
                       <button onClick={handleNext} className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white"><ChevronRight className="h-4 w-4" /></button>
                     </div>
                     <div className="p-4">
-                      <div className="mb-4 grid grid-cols-3 gap-3 border-b border-border pb-4">
+                      <div className="mb-4 grid grid-cols-1 gap-3 border-b border-border pb-4 sm:grid-cols-3">
                         <div className="text-center"><MapPin className="mx-auto mb-0.5 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">City</p><p className="text-xs font-bold text-foreground">{activeRestaurant.city}</p></div>
                         <div className="text-center"><Map className="mx-auto mb-0.5 h-4 w-4 text-primary" /><p className="text-[10px] text-muted-foreground">Area</p><p className="text-xs font-bold text-foreground">{activeRestaurant.area || "N/A"}</p></div>
                         <div className="text-center"><Star className="mx-auto mb-0.5 h-4 w-4 fill-current text-primary" /><p className="text-[10px] text-muted-foreground">Rating</p><p className="text-xs font-bold text-foreground">{activeRestaurant.rating || "N/A"}</p></div>
                       </div>
                       <div className="mb-4"><h4 className="mb-2 text-xs font-bold text-foreground">Top Highlights</h4><div className="flex flex-wrap gap-1.5">{(activeRestaurant.highlightedAmenities?.length > 0 ? activeRestaurant.highlightedAmenities : ["Dining", "Walk-in Only"]).map((item) => <span key={item} className="rounded-full bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-foreground">{item}</span>)}</div></div>
-                      <div className="mb-3 rounded-lg border-b border-border bg-muted/20 p-2.5 pb-3"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold text-foreground">Nearby Landmark</p><p className="text-[8px] text-muted-foreground">Restaurant response detail</p></div><p className="text-sm font-bold text-primary">{activeRestaurant.nearbyLocation}</p></div></div>
+                      <div className="mb-3 rounded-lg border-b border-border bg-muted/20 p-2.5 pb-3"><div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-[10px] font-bold text-foreground">Nearby Landmark</p><p className="text-[8px] text-muted-foreground">Restaurant response detail</p></div><p className="text-sm font-bold text-primary">{activeRestaurant.nearbyLocation}</p></div></div>
                       <div className="space-y-2"><Button onClick={() => setSelectedRestaurant(activeRestaurant)} className="w-full gap-1.5 text-sm font-bold">Reserve Now <ArrowRight className="h-3.5 w-3.5" /></Button><button onClick={() => goToRestaurantDetails(activeRestaurant)} className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">View Details -&gt;</button></div>
                     </div>
                   </div>

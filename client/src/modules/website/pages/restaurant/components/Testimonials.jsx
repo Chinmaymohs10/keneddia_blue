@@ -112,42 +112,36 @@ const FeedbackCard = ({ item }) => {
       if (isYoutubeUrl(m.url)) {
         const videoId = getYoutubeId(m.url);
         if (!videoId) return null;
+        const thumbnail = getYoutubeThumbnail(m.url);
         return (
-          <div key={idx} className="w-full h-full relative group">
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&modestbranding=1`}
-              className="w-full h-full"
-              style={{ border: "none" }}
-              allow="autoplay; encrypted-media"
-              allowFullScreen
+          <a
+            key={idx}
+            href={`https://www.youtube.com/watch?v=${videoId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative block h-full w-full overflow-hidden bg-black"
+          >
+            <img
+              src={thumbnail}
+              alt=""
+              className="h-full w-full object-contain object-center"
+              loading="lazy"
+              onError={() => setMediaErrors((prev) => new Set(prev).add(m.url))}
             />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setMutedVideos((prev) => {
-                  const next = new Set(prev);
-                  next.has(videoKey)
-                    ? next.delete(videoKey)
-                    : next.add(videoKey);
-                  return next;
-                });
-              }}
-              className="absolute bottom-2 right-2 z-20 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              {isMuted ? (
-                <VolumeX className="w-3 h-3" />
-              ) : (
-                <Volume2 className="w-3 h-3" />
-              )}
-            </button>
-          </div>
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-full bg-black/65 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white">
+                Play
+              </div>
+            </div>
+          </a>
         );
       }
       return (
         <div key={idx} className="relative group w-full h-full">
           <video
             src={m.url}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-contain object-center"
             autoPlay
             muted={isMuted}
             loop
@@ -179,7 +173,7 @@ const FeedbackCard = ({ item }) => {
         key={idx}
         src={m.url}
         alt=""
-        className="w-full h-full object-cover"
+        className="h-full w-full object-contain object-center bg-black/5"
         loading="lazy"
         onError={() => setMediaErrors((prev) => new Set(prev).add(m.url))}
       />
@@ -281,7 +275,7 @@ const FeedbackCard = ({ item }) => {
   })();
 
   return (
-    <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-zinc-100 dark:border-white/5 shadow-lg mb-6 flex flex-col gap-4 p-4 group transition-all hover:scale-[1.02] cursor-pointer">
+    <div className="group mb-4 flex cursor-pointer flex-col gap-3 rounded-2xl border border-zinc-100 bg-white/80 p-3 shadow-lg backdrop-blur-md transition-all hover:scale-[1.02] dark:border-white/5 dark:bg-zinc-900/80 min-[380px]:mb-6 min-[380px]:gap-4 min-[380px]:p-4">
       {/* ⭐ RATING */}
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
@@ -302,24 +296,24 @@ const FeedbackCard = ({ item }) => {
 
       {/* ✍️ DESCRIPTION */}
       {item.description && (
-        <p className="text-zinc-600 dark:text-zinc-400 text-[12px] italic leading-relaxed">
+        <p className="text-[11px] italic leading-relaxed text-zinc-600 dark:text-zinc-400 min-[380px]:text-[12px]">
           "{item.description}"
         </p>
       )}
 
       {/* 🖼 MEDIA */}
       {allMedia.length > 0 && (
-        <div className="relative h-32 w-full overflow-hidden rounded-xl">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-black/5">
           {renderMediaGrid()}
         </div>
       )}
 
       {/* 👤 USER */}
       <div className="flex items-center gap-2 pt-2">
-        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-[10px] shrink-0">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-[10px]">
           {item.author?.charAt(0)?.toUpperCase() ?? "G"}
         </div>
-        <span className="text-[11px] font-bold dark:text-zinc-300 uppercase tracking-tight truncate">
+        <span className="truncate text-[10px] font-bold uppercase tracking-tight dark:text-zinc-300 min-[380px]:text-[11px]">
           {item.author}
         </span>
       </div>
@@ -576,49 +570,49 @@ export default function AutoTestimonials({ propertyId }) {
   return (
     <section
       ref={containerRef}
-      className="relative py-24 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[750px] flex items-center"
+      className="relative flex min-h-[680px] items-center overflow-hidden bg-white py-14 transition-colors duration-500 dark:bg-[#050505] min-[380px]:py-16 sm:min-h-[750px] sm:py-20 lg:py-24"
     >
       {/* Background decor */}
       <motion.div
         style={{ x: bgTextX }}
-        className="absolute top-1/2 left-0 -translate-y-1/2 whitespace-nowrap text-[12rem] lg:text-[18rem] font-black text-zinc-900/[0.03] dark:text-white/[0.01] pointer-events-none select-none italic uppercase z-0"
+        className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2 select-none whitespace-nowrap text-[4.5rem] font-black italic uppercase text-zinc-900/[0.03] dark:text-white/[0.01] min-[380px]:text-[5.5rem] min-[430px]:text-[6.5rem] md:text-[12rem] lg:text-[18rem]"
       >
         Guest Stories Feedback
       </motion.div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
+      <div className="container relative z-10 mx-auto px-4 min-[380px]:px-5 sm:px-6">
+        <div className="grid items-start gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
           {/* LEFT: Content */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-                <span className="text-primary text-[10px] font-black uppercase tracking-[0.4em]">
+          <div className="space-y-6 lg:col-span-5 lg:space-y-8">
+            <div className="space-y-3 min-[380px]:space-y-4">
+              <div className="flex items-center gap-2.5 min-[380px]:gap-3">
+                <Sparkles className="h-4 w-4 animate-pulse text-primary min-[380px]:h-5 min-[380px]:w-5" />
+                <span className="text-[9px] font-black uppercase tracking-[0.32em] text-primary min-[380px]:text-[10px] min-[380px]:tracking-[0.4em]">
                   Testimonials
                 </span>
               </div>
-              <h2 className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-white leading-[1.1]">
+              <h2 className="text-3xl font-serif leading-[1.08] text-zinc-900 dark:text-white min-[380px]:text-4xl md:text-6xl">
                 {testimonialHeader.testimonialName1 || ""} <br />
                 <span className="italic text-zinc-400 dark:text-white/30 decoration-primary/20 underline decoration-1 underline-offset-8">
                   {testimonialHeader.testimonialName2 || " "}
                 </span>
               </h2>
-              <p className="text-zinc-500 dark:text-white/40 text-lg font-light leading-relaxed max-w-sm pt-4">
+              <p className="max-w-md pt-2 text-sm font-light leading-relaxed text-zinc-500 dark:text-white/40 min-[380px]:pt-3 min-[380px]:text-base sm:pt-4 sm:text-lg">
                 {testimonialHeader.description || " "}
               </p>
 
               <Button
                 onClick={() => setShowReviewModal(true)}
-                className="rounded-full px-8 py-6 bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 group"
+                className="group h-12 rounded-full bg-primary px-5 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-xl shadow-primary/20 hover:bg-primary/90 min-[380px]:h-auto min-[380px]:px-8 min-[380px]:py-6 min-[380px]:text-sm min-[380px]:normal-case min-[380px]:tracking-normal"
               >
                 Share Your Story{" "}
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
 
-            <div className="pt-8 border-t border-zinc-100 dark:border-white/10 flex items-center gap-6">
+            <div className="flex items-center gap-4 border-t border-zinc-100 pt-6 dark:border-white/10 min-[380px]:gap-6 min-[380px]:pt-8">
               <div className="text-center">
-                <p className="text-4xl font-serif dark:text-white leading-none">
+                <p className="text-3xl font-serif leading-none dark:text-white min-[380px]:text-4xl">
                   {avgRating ?? "—"}
                 </p>
                 <div className="flex gap-0.5 mt-2 justify-center">
@@ -634,7 +628,7 @@ export default function AutoTestimonials({ propertyId }) {
                   ))}
                 </div>
               </div>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-tight">
+              <p className="text-[9px] uppercase leading-tight tracking-[0.2em] text-zinc-400 dark:text-zinc-500 min-[380px]:text-[10px] min-[380px]:tracking-widest">
                 Trusted by <br />
                 <span className="text-zinc-700 dark:text-zinc-300 font-light text-sm">
                   {totalGuests.toLocaleString()}+
@@ -645,7 +639,7 @@ export default function AutoTestimonials({ propertyId }) {
           </div>
 
           {/* RIGHT: Marquee carousel / static grid */}
-          <div className="lg:col-span-7 h-[650px] relative rounded-[2.5rem] overflow-hidden border border-zinc-100 dark:border-white/10 bg-zinc-50/50 dark:bg-white/[0.02] backdrop-blur-2xl">
+          <div className="relative h-[520px] overflow-hidden rounded-[2rem] border border-zinc-100 bg-zinc-50/50 backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.02] min-[380px]:h-[560px] min-[430px]:h-[600px] sm:h-[650px] sm:rounded-[2.5rem] lg:col-span-7">
             {loading ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="animate-spin text-primary" size={28} />
@@ -658,32 +652,32 @@ export default function AutoTestimonials({ propertyId }) {
 
               if (useMarquee) {
                 return (
-                  <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-hidden relative group">
-                    <div className="flex flex-col gap-6 animate-marquee-up marquee-col">
+                  <div className="group relative grid h-full grid-cols-1 gap-4 overflow-hidden p-3 min-[380px]:gap-5 min-[380px]:p-4 min-[430px]:p-5 sm:grid-cols-2 sm:gap-6 sm:p-6">
+                    <div className="marquee-col animate-marquee-up flex flex-col gap-4 min-[380px]:gap-5 sm:gap-6">
                       {[...displayCol1, ...displayCol1].map((item, i) => (
                         <FeedbackCard key={`up-${item.id}-${i}`} item={item} />
                       ))}
                     </div>
-                    <div className="flex flex-col gap-6 animate-marquee-down marquee-col">
+                    <div className="marquee-col hidden flex-col gap-4 min-[380px]:gap-5 sm:flex sm:gap-6 sm:animate-marquee-down">
                       {[...displayCol2, ...displayCol2].map((item, i) => (
                         <FeedbackCard key={`dn-${item.id}-${i}`} item={item} />
                       ))}
                     </div>
-                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-zinc-50/80 dark:from-[#050505]/80 to-transparent z-10 pointer-events-none" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-zinc-50/80 to-transparent dark:from-[#050505]/80 min-[380px]:h-24 sm:h-32" />
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-gradient-to-t from-zinc-50/80 to-transparent dark:from-[#050505]/80 min-[380px]:h-24 sm:h-32" />
                   </div>
                 );
               }
 
               // Static grid — no animation, no duplication
               return (
-                <div className="grid grid-cols-2 gap-6 h-full p-6 overflow-y-auto relative">
-                  <div className="flex flex-col gap-6">
+                <div className="relative grid h-full grid-cols-1 gap-4 overflow-y-auto p-3 min-[380px]:gap-5 min-[380px]:p-4 min-[430px]:p-5 sm:grid-cols-2 sm:gap-6 sm:p-6">
+                  <div className="flex flex-col gap-4 min-[380px]:gap-5 sm:gap-6">
                     {displayCol1.map((item) => (
                       <FeedbackCard key={`s1-${item.id}`} item={item} />
                     ))}
                   </div>
-                  <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4 min-[380px]:gap-5 sm:gap-6">
                     {displayCol2.map((item) => (
                       <FeedbackCard key={`s2-${item.id}`} item={item} />
                     ))}
@@ -698,25 +692,25 @@ export default function AutoTestimonials({ propertyId }) {
       {/* ── REVIEW SUBMISSION MODAL (3 steps) ───────────────────────────────── */}
       <AnimatePresence>
         {showReviewModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm min-[380px]:p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-xl rounded-[2rem] overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
+              className="relative max-h-[92vh] w-full max-w-xl overflow-hidden rounded-[1.5rem] border border-zinc-100 bg-white shadow-2xl dark:border-white/5 dark:bg-zinc-900 min-[380px]:rounded-[2rem]"
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/50 p-4 dark:border-white/5 dark:bg-zinc-800/50 min-[380px]:p-5 sm:p-6">
+                <div className="flex min-w-0 items-center gap-2.5 min-[380px]:gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg text-primary">
                     <Edit2 size={18} />
                   </div>
-                  <div>
-                    <h3 className="font-serif text-xl dark:text-white">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-lg dark:text-white min-[380px]:text-xl">
                       Submit Your Story
                     </h3>
                     {/* Step progress dots */}
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="mt-1 flex items-center gap-1.5 min-[380px]:gap-2">
                       {[1, 2].map((s) => (
                         <div
                           key={s}
@@ -729,7 +723,7 @@ export default function AutoTestimonials({ propertyId }) {
                           }`}
                         />
                       ))}
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-widest ml-1">
+                      <span className="ml-1 truncate text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-400 min-[380px]:text-[10px] min-[380px]:tracking-widest">
                         {STEP_LABELS[step]}
                       </span>
                     </div>
@@ -746,7 +740,7 @@ export default function AutoTestimonials({ propertyId }) {
                 </button>
               </div>
 
-              <div className="p-8 max-h-[72vh] overflow-y-auto custom-scrollbar">
+              <div className="custom-scrollbar max-h-[78vh] overflow-y-auto p-4 min-[380px]:p-5 sm:p-8">
                 {/* ── STEP 1: Story (Media + Review) — all optional ─────── */}
                 {step === 1 && (
                   <div className="space-y-5">
@@ -755,7 +749,7 @@ export default function AutoTestimonials({ propertyId }) {
                       <p className="text-[10px] font-black uppercase text-zinc-400">
                         Rate your experience (optional)
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap justify-center gap-1.5 min-[380px]:gap-2">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
@@ -808,7 +802,7 @@ export default function AutoTestimonials({ propertyId }) {
                           </span>
                         )}
                       </div>
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-3 gap-2 min-[430px]:grid-cols-4">
                         {mediaPreviews.map((m, i) => (
                           <div
                             key={i}
@@ -948,7 +942,7 @@ export default function AutoTestimonials({ propertyId }) {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2">
                       <div className="space-y-2">
                         <Label className="text-[10px] uppercase font-black tracking-widest text-primary">
                           Email
@@ -1004,18 +998,18 @@ export default function AutoTestimonials({ propertyId }) {
                       </div>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-col gap-3 pt-2 min-[430px]:flex-row">
                       <Button
                         variant="outline"
                         onClick={() => setStep(1)}
-                        className="h-14 rounded-xl px-8 dark:text-white"
+                        className="h-12 rounded-xl px-6 dark:text-white min-[380px]:h-14 min-[380px]:px-8"
                       >
                         Back
                       </Button>
                       <Button
                         disabled={isSubmitting}
                         onClick={handleFinalSubmit}
-                        className="flex-1 h-14 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
+                        className="h-12 flex-1 rounded-xl bg-primary text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-lg shadow-primary/20 min-[380px]:h-14 min-[380px]:tracking-[0.2em]"
                       >
                         {isSubmitting ? (
                           <Loader2 className="animate-spin" size={18} />
