@@ -8,9 +8,17 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Ban,
+  CheckCircle2,
 } from "lucide-react";
 import AddUserModal from "../../modals/AddUserModal";
-import { getUsersPaginated } from "@/Api/Api";
+import {
+  activateUser,
+  deleteUser,
+  disableUser,
+  getUsersPaginated,
+} from "@/Api/Api";
+import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 
 function ManageUsers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +28,8 @@ function ManageUsers() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [actionLoading, setActionLoading] = useState({});
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,12 +151,55 @@ function ManageUsers() {
     if (newPage >= 1) setCurrentPage(newPage);
   };
 
-  const handleDeleteUser = (userId) => {
-    // TODO: Implement delete API call
-    console.log("Delete user:", userId);
-    setShowDeleteConfirm(null);
-    // After successful delete, refresh the list
-    // fetchUsers();
+  const setUserActionLoading = (userId, action, value) => {
+    setActionLoading((prev) => ({
+      ...prev,
+      [userId]: {
+        ...(prev[userId] || {}),
+        [action]: value,
+      },
+    }));
+  };
+
+  const isUserActionLoading = (userId, action) =>
+    Boolean(actionLoading[userId]?.[action]);
+
+  const handleToggleUserStatus = async (user) => {
+    const action = user.isActive ? "disable" : "activate";
+    setUserActionLoading(user.id, action, true);
+
+    try {
+      if (user.isActive) {
+        await disableUser(user.id);
+        showSuccess("User deactivated successfully");
+      } else {
+        await activateUser(user.id);
+        showSuccess("User activated successfully");
+      }
+
+      await fetchUsers();
+    } catch (error) {
+      showError(
+        error?.response?.data?.message || "Failed to update user status",
+      );
+    } finally {
+      setUserActionLoading(user.id, action, false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    setUserActionLoading(userId, "delete", true);
+
+    try {
+      await deleteUser(userId);
+      showSuccess("User deleted successfully");
+      setShowDeleteConfirm(null);
+      await fetchUsers();
+    } catch (error) {
+      showError(error?.response?.data?.message || "Failed to delete user");
+    } finally {
+      setUserActionLoading(userId, "delete", false);
+    }
   };
 
   return (
@@ -428,13 +481,34 @@ function ManageUsers() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                            title="Edit user"
+                          >
                             <Edit2 size={16} style={{ color: colors.primary }} />
                           </button>
                           <button
+                            onClick={() => handleToggleUserStatus(user)}
+                            disabled={
+                              isUserActionLoading(user.id, "activate") ||
+                              isUserActionLoading(user.id, "disable")
+                            }
+                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={user.isActive ? "Deactivate user" : "Activate user"}
+                          >
+                            {user.isActive ? (
+                              <Ban size={16} style={{ color: "#f59e0b" }} />
+                            ) : (
+                              <CheckCircle2 size={16} style={{ color: "#10b981" }} />
+                            )}
+                          </button>
+                          <button
                             onClick={() => setShowDeleteConfirm(user.id)}
-                            className="p-2 rounded-lg hover:bg-red-50 transition-colors"
+                            disabled={isUserActionLoading(user.id, "delete")}
+                            className="p-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Delete user"
                           >
                             <Trash2 size={16} style={{ color: "#ef4444" }} />
                           </button>
@@ -510,10 +584,13 @@ function ManageUsers() {
               </button>
               <button
                 onClick={() => handleDeleteUser(showDeleteConfirm)}
+                disabled={isUserActionLoading(showDeleteConfirm, "delete")}
                 className="px-4 py-2 rounded-lg text-white text-sm font-medium hover:opacity-90"
                 style={{ backgroundColor: "#ef4444" }}
               >
-                Delete
+                {isUserActionLoading(showDeleteConfirm, "delete")
+                  ? "Deleting..."
+                  : "Delete"}
               </button>
             </div>
           </div>
@@ -526,6 +603,17 @@ function ManageUsers() {
           onSuccess={() => {
             fetchUsers();
             setShowAddModal(false);
+          }}
+        />
+      )}
+
+      {editingUser && (
+        <AddUserModal
+          editUser={editingUser}
+          onClose={() => setEditingUser(null)}
+          onSuccess={() => {
+            fetchUsers();
+            setEditingUser(null);
           }}
         />
       )}

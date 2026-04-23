@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { X, User, Eye, EyeOff } from 'lucide-react';
-import { createUser, getAllRoles } from '@/Api/Api';
+import { createUser, getAllRoles, updateUser } from '@/Api/Api';
+import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 
-function AddUserModal({ onClose, onSuccess }) {
+function AddUserModal({ onClose, onSuccess, editUser = null }) {
+  const isEditMode = Boolean(editUser);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,17 +40,43 @@ function AddUserModal({ onClose, onSuccess }) {
         });
         
         setAvailableRoles(validRoles);
-        
-        if (validRoles.length > 0) {
-          setFormData(prev => ({ ...prev, roleId: validRoles[0].id }));
-        }
+
+        setFormData((prev) => ({
+          ...prev,
+          roleId:
+            editUser?.roleId?.toString() ||
+            editUser?.role?.id?.toString() ||
+            prev.roleId ||
+            validRoles[0]?.id?.toString() ||
+            "",
+        }));
       } catch (error) {
-        console.error('Error fetching roles:', error);
+      console.error('Error fetching roles:', error);
         setAvailableRoles([]); // Fallback to empty array on error
       }
     };
     fetchRoles();
-  }, []);
+  }, [editUser]);
+
+  useEffect(() => {
+    if (!editUser) return;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: editUser.name || '',
+      email: editUser.email || '',
+      password: '',
+      confirmPassword: '',
+      roleId:
+        editUser.roleId?.toString() ||
+        editUser.role?.id?.toString() ||
+        prev.roleId ||
+        '',
+      userName: editUser.userName || '',
+      contact: editUser.contact || '',
+      status: editUser.isActive ? 'active' : 'inactive',
+    }));
+  }, [editUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,12 +98,15 @@ function AddUserModal({ onClose, onSuccess }) {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Invalid email format';
     }
-    if (!formData.password) {
+    if (!isEditMode && !formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
+    } else if (formData.password && formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      (!isEditMode || formData.password || formData.confirmPassword) &&
+      formData.password !== formData.confirmPassword
+    ) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     if (!formData.contact.trim() || !/^\d{10}$/.test(formData.contact)) {
@@ -97,16 +128,30 @@ function AddUserModal({ onClose, onSuccess }) {
         email: formData.email,
         contact: formData.contact,
         userName: formData.userName,
-        password: formData.password,
-        roleId: parseInt(formData.roleId)
+        roleId: parseInt(formData.roleId),
+        isActive: formData.status === "active",
       };
 
-      const result = await createUser(payload);
+      if (!isEditMode) {
+        payload.password = formData.password;
+      }
+
+      const result = isEditMode
+        ? await updateUser(editUser.id, payload)
+        : await createUser(payload);
+
+      showSuccess(isEditMode ? "User updated successfully" : "User added successfully");
       onSuccess(result);
       onClose();
     } catch (error) {
       console.error('Error adding user:', error);
-      setErrors({ submit: 'Failed to add user. Please try again.' });
+      const message =
+        error?.response?.data?.message ||
+        (isEditMode
+          ? 'Failed to update user. Please try again.'
+          : 'Failed to add user. Please try again.');
+      setErrors({ submit: message });
+      showError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,10 +188,10 @@ function AddUserModal({ onClose, onSuccess }) {
             </div>
             <div>
               <h2 className="text-xl font-semibold" style={{ color: colors.textPrimary }}>
-                Add New User
+                {isEditMode ? "Edit User" : "Add New User"}
               </h2>
               <p className="text-sm" style={{ color: colors.textSecondary }}>
-                Enter user details below
+                {isEditMode ? "Update user details below" : "Enter user details below"}
               </p>
             </div>
           </div>
@@ -251,7 +296,7 @@ function AddUserModal({ onClose, onSuccess }) {
 
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
-                  Password <span className="text-red-500">*</span>
+                  Password {!isEditMode && <span className="text-red-500">*</span>}
                 </label>
                 <div className="relative">
                   <input
@@ -259,7 +304,7 @@ function AddUserModal({ onClose, onSuccess }) {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Enter password"
+                    placeholder={isEditMode ? "Leave blank to keep current password" : "Enter password"}
                     className="w-full px-4 py-2.5 pr-10 rounded-lg border text-sm focus:outline-none focus:ring-2"
                     style={{ 
                       borderColor: errors.password ? '#ef4444' : colors.border,
@@ -280,7 +325,7 @@ function AddUserModal({ onClose, onSuccess }) {
 
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: colors.textPrimary }}>
-                  Confirm Password <span className="text-red-500">*</span>
+                  Confirm Password {!isEditMode && <span className="text-red-500">*</span>}
                 </label>
                 <div className="relative">
                   <input
@@ -288,7 +333,7 @@ function AddUserModal({ onClose, onSuccess }) {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="Confirm password"
+                    placeholder={isEditMode ? "Confirm new password" : "Confirm password"}
                     className="w-full px-4 py-2.5 pr-10 rounded-lg border text-sm focus:outline-none focus:ring-2"
                     style={{ 
                       borderColor: errors.confirmPassword ? '#ef4444' : colors.border,
@@ -371,7 +416,13 @@ function AddUserModal({ onClose, onSuccess }) {
               className="px-5 py-2.5 rounded-lg text-white text-sm font-medium disabled:opacity-50"
               style={{ backgroundColor: colors.primary }}
             >
-              {isSubmitting ? 'Adding...' : 'Add User'}
+              {isSubmitting
+                ? isEditMode
+                  ? 'Updating...'
+                  : 'Adding...'
+                : isEditMode
+                  ? 'Update User'
+                  : 'Add User'}
             </button>
           </div>
         </form>

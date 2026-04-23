@@ -352,7 +352,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                       transition={{ delay: 0.7, duration: 0.8 }}
                       disabled={!slide.ctaLink}
                       onClick={() => {
-                        if (slide.ctaLink) window.location.href = slide.ctaLink;
+                        if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); }
                       }}
                       className={`group relative px-6 py-2.5 font-semibold text-sm rounded-full overflow-hidden transition-all duration-500 ease-out flex items-center gap-2 border ${
                         !slide.ctaLink
@@ -445,7 +445,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.6, duration: 0.6 }}
                       disabled={!slide.ctaLink}
-                      onClick={() => { if (slide.ctaLink) window.location.href = slide.ctaLink; }}
+                      onClick={() => { if (slide.ctaLink) { const url = /^https?:\/\//i.test(slide.ctaLink) ? slide.ctaLink : `https://${slide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
                       className={`group relative px-5 py-2 font-semibold text-xs rounded-full overflow-hidden transition-all duration-500 ease-out inline-flex items-center gap-2 border ${
                         !slide.ctaLink
                           ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"

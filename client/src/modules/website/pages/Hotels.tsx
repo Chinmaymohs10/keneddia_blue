@@ -6,6 +6,7 @@ import {
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PageLoader from "@/modules/website/components/PageLoader";
 import { Loader2 } from "lucide-react";
 
 import Navbar from "@/modules/website/components/Navbar";
@@ -162,6 +163,7 @@ export default function Hotels() {
     typeof ssrHotels?.hotelTypeId === "number" ? ssrHotels.hotelTypeId : null;
 
   const [isClient, setIsClient] = useState(false);
+  const [isPageReady, setIsPageReady] = useState(initialHeroSlides.length > 0);
   const [currentAboutIndex, setCurrentAboutIndex] = useState(0);
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(initialHeroSlides);
   const [aboutSections, setAboutSections] =
@@ -177,6 +179,10 @@ export default function Hotels() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (!loading) setIsPageReady(true);
+  }, [loading]);
 
   useEffect(() => {
     setCurrentRecognitionIndex(0);
@@ -308,6 +314,8 @@ export default function Hotels() {
         data-collection-count={ssrHotels?.hotelCollection?.length ?? 0}
         data-locations-count={ssrHotels?.hotelLocations?.length ?? 0}
       />
+
+      <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
 
       <Navbar navItems={HOTEL_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
       <SpecialOfferPopup />
