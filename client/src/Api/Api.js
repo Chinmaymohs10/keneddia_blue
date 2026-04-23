@@ -51,7 +51,14 @@ export const PropertyEdiMedia = (listingId, formData) =>
   API.put(`api/v1/property-listings/${listingId}/edit-media`, formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);
 export const createUser = (data) => API.post("api/v1/users/create", data);
-export const getUsersPaginated = () => API.get("api/v1/users/auth/paginated");
+export const getUsersPaginated = ({ page = 1, size = 10 } = {}) =>
+  API.get("api/v1/users/auth/paginated", {
+    params: { page, size },
+  });
+export const updateUser = (id, data) => API.put(`api/v1/users/${id}`, data);
+export const activateUser = (id) => API.put(`api/v1/users/activate/${id}`);
+export const disableUser = (id) => API.put(`api/v1/users/disable/${id}`);
+export const deleteUser = (id) => API.delete(`api/v1/users/delete/${id}`);
 export const addLocation = (data) => API.post("api/v1/locations/create", data);
 export const getLocationsByType = (type) =>
   API.get("/api/v1/locations", {
