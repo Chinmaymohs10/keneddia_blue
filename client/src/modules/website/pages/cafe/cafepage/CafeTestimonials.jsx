@@ -475,8 +475,8 @@ function InfiniteColumn({ items, pattern, scrollYProgress }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#E6E2D7] via-[#E6E2D7]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-linear-to-t from-[#E6E2D7] via-[#E6E2D7]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#F7F7F5] via-[#F7F7F5]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-linear-to-t from-[#F7F7F5] via-[#F7F7F5]/85 to-transparent dark:from-[#120D0C] dark:via-[#120D0C]/85" />
 
       <motion.div
         initial={pattern.initial}
@@ -557,15 +557,15 @@ export default function CafeTestimonials() {
     <section
       id="reviews"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#E6E2D7] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]"
+      className="relative overflow-hidden bg-[#F7F7F5] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]"
     >
       <motion.div
         style={{ x: glowX, y: glowY }}
-        className="pointer-events-none absolute left-[-8%] top-20 h-72 w-72 rounded-full bg-[#D9AA82]/20 blur-3xl dark:bg-[#8D5C42]/18"
+        className="pointer-events-none absolute left-[-8%] top-20 h-72 w-72 rounded-full bg-[#E1E1DD]/70 blur-3xl dark:bg-[#8D5C42]/18"
       />
       <motion.div
         style={{ x: useTransform(scrollYProgress, [0, 1], [25, -25]), y: useTransform(scrollYProgress, [0, 1], [35, -20]) }}
-        className="pointer-events-none absolute right-[-6%] top-1/3 h-80 w-80 rounded-full bg-[#B66A46]/12 blur-3xl dark:bg-[#5A3426]/25"
+        className="pointer-events-none absolute right-[-6%] top-1/3 h-80 w-80 rounded-full bg-[#ECECE8]/70 blur-3xl dark:bg-[#5A3426]/25"
       />
 
       <div className="container mx-auto max-w-7xl px-4">

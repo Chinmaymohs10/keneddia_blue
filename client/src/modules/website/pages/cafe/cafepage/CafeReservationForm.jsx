@@ -84,7 +84,7 @@ export default function CafeReservationForm() {
     <section
       ref={containerRef}
       id="reservation"
-      className="relative py-4 bg-[#E4CDB0] dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[400px]"
+      className="relative py-4 bg-[#EFEFEB] dark:bg-[#050505] transition-colors duration-500 overflow-hidden min-h-[400px]"
     >
       <motion.div
         style={{ x: bgTextX }}

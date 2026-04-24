@@ -51,7 +51,7 @@ export default function AboutCafePage() {
   const section = ABOUT_SECTIONS[currentIndex];
 
   return (
-    <section className="bg-[#E6E2D7] px-6 py-8 lg:py-10 transition-colors duration-500 dark:bg-[#050505]">
+    <section className="bg-[#F5F5F3] px-6 py-8 lg:py-10 transition-colors duration-500 dark:bg-[#050505]">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">About Us</h2>

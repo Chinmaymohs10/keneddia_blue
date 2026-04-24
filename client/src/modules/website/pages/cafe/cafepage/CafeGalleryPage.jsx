@@ -40,7 +40,7 @@ export default function CafeGalleryPage() {
     setLightboxIndex((current) => (current + 1) % filtered.length);
 
   return (
-    <section className="py-16 lg:py-28 bg-[#ABBF9B] dark:bg-zinc-900/40">
+    <section className="py-16 lg:py-28 bg-[#F8F8F6] dark:bg-zinc-900/40">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
           <motion.div

@@ -275,7 +275,7 @@ export default function CafeSignatureDrinks() {
   return (
     <section
       id="menu"
-      className="py-8 bg-[#E4CDB0] dark:bg-[#050505] transition-colors duration-500"
+      className="py-8 bg-[#EFEFEB] dark:bg-[#050505] transition-colors duration-500"
     >
       <div className="container mx-auto px-6 max-w-[1200px]">
         {/* ── HEADER ──────────────────────────────────────────────────────── */}

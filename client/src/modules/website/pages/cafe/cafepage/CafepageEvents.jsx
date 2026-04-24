@@ -314,13 +314,13 @@ function GroupBookingColumn() {
       </div>
 
       {/* Glassmorphism CTA */}
-      <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-200/80 bg-linear-to-br from-slate-900/10 via-white/55 to-amber-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-2xl">
-        <div className="absolute inset-0 bg-linear-to-br from-white/35 via-white/10 to-slate-900/5" />
+      <div className="relative mt-4 flex-1 overflow-hidden rounded-2xl border border-[#DCDCD8] bg-linear-to-br from-[#ECECE8] via-white to-[#F7F7F5] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl">
+        <div className="absolute inset-0 bg-linear-to-br from-white/55 via-white/20 to-[#E8E8E4]/55" />
         <div className="absolute inset-x-0 top-0 h-px bg-white/70" />
-        <div className="absolute -left-10 top-6 h-28 w-28 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-slate-400/20 blur-3xl" />
-        <div className="absolute -bottom-4 right-8 h-32 w-32 rounded-full bg-amber-200/35 blur-3xl" />
-        <div className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-sky-200/30 blur-3xl" />
+        <div className="absolute -left-10 top-6 h-28 w-28 rounded-full bg-[#E1E1DD]/70 blur-3xl" />
+        <div className="absolute right-[-18px] top-8 h-32 w-32 rounded-full bg-[#D8D8D4]/35 blur-3xl" />
+        <div className="absolute -bottom-4 right-8 h-32 w-32 rounded-full bg-[#E8E8E4]/70 blur-3xl" />
+        <div className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-[#F5F5F3]/85 blur-3xl" />
         <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <Users className="h-8 w-8 text-primary/60" />
@@ -347,7 +347,7 @@ function GroupBookingColumn() {
 
 export default function CafepageEvents() {
   return (
-    <section id="events" className="bg-[#E4CDB0] py-10 dark:bg-muted">
+    <section id="events" className="bg-[#ECECE8] py-10 dark:bg-muted">
       <div className="mx-auto w-[92%] max-w-7xl">
         <div className="mb-8">
           <h2 className="font-serif text-2xl md:text-3xl">Offers, Events & Group Booking</h2>
