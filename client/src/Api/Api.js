@@ -476,6 +476,10 @@ export const replaceEventGalleryMedia = (galleryUploadId, mediaId, payload) =>
     `api/v1/event-gallery-upload/replaceMedia/${galleryUploadId}/${mediaId}`,
     payload
   );
+export const deleteEventGalleryMedia = (galleryUploadId, mediaId) =>
+  API.delete(
+    `api/v1/event-gallery-upload/deleteMedia/${galleryUploadId}/${mediaId}`
+  );
 // ─────────────────────────────
 // EVENT DETAIL CARD INFO
 // ─────────────────────────────

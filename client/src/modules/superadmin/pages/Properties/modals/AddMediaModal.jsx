@@ -281,6 +281,7 @@ const AddMediaModal = ({
   const [editDisplayOrder, setEditDisplayOrder] = useState("");
   const [editFile, setEditFile] = useState(null);
   const [editPreview, setEditPreview] = useState("");
+  const [editPreviewObjectUrl, setEditPreviewObjectUrl] = useState("");
 
   // ── shared ────────────────────────────────────────────────────────────────
   const [categoryId, setCategoryId] = useState("");
@@ -358,11 +359,18 @@ const AddMediaModal = ({
       setDisplayOrders([]);
       setEditFile(null);
       setEditPreview("");
+      setEditPreviewObjectUrl("");
       setEditDisplayOrder("");
       setShowCategoryManager(false);
       setVerticalId("");
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (editPreviewObjectUrl) URL.revokeObjectURL(editPreviewObjectUrl);
+    };
+  }, [editPreviewObjectUrl]);
 
   // Preview URLs for create mode
   useEffect(() => {
@@ -420,7 +428,7 @@ const AddMediaModal = ({
   const handleEditFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     const heicMimes = [
       "image/heic",
       "image/heif",
@@ -428,8 +436,8 @@ const AddMediaModal = ({
       "image/heif-sequence",
     ];
     const isImage =
-      f.type.startsWith("image/") ||
-      heicMimes.includes(f.type) ||
+      file.type.startsWith("image/") ||
+      heicMimes.includes(file.type) ||
       ext === "heic" ||
       ext === "heif";
 
@@ -439,8 +447,11 @@ const AddMediaModal = ({
       showError("Only images and videos are allowed.");
       return;
     }
+    if (editPreviewObjectUrl) URL.revokeObjectURL(editPreviewObjectUrl);
+    const nextPreviewUrl = URL.createObjectURL(file);
     setEditFile(file);
-    setEditPreview(URL.createObjectURL(file));
+    setEditPreview(nextPreviewUrl);
+    setEditPreviewObjectUrl(nextPreviewUrl);
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -665,7 +676,10 @@ const AddMediaModal = ({
                           <button
                             type="button"
                             onClick={() => {
+                              if (editPreviewObjectUrl)
+                                URL.revokeObjectURL(editPreviewObjectUrl);
                               setEditFile(null);
+                              setEditPreviewObjectUrl("");
                               setEditPreview(editingItem?.media?.url ?? "");
                             }}
                             disabled={uploading}

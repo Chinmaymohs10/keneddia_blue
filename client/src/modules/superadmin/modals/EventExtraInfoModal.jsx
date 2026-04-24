@@ -17,6 +17,7 @@ import {
   uploadEventGallery,
   getEventFilesByUploadedId,
   replaceEventGalleryMedia,
+  deleteEventGalleryMedia,
   addEventDetailInfo,
   getEventDetailInfoById,
   updateEventDetailInfo,
@@ -74,6 +75,7 @@ function GalleryTab({ eventId }) {
   const replaceInputRef = useRef(null);
   const replacingRef = useRef(null);
   const [replacingId, setReplacingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const openReplaceFilePicker = (groupId, mediaId) => {
     replacingRef.current = { groupId, mediaId };
@@ -107,6 +109,30 @@ function GalleryTab({ eventId }) {
     } finally {
       setReplacingId(null);
       replacingRef.current = null;
+    }
+  };
+
+  const handleDeleteMedia = async (groupId, mediaId) => {
+    if (!groupId || !mediaId) {
+      setUploadStatus("error");
+      setUploadMsg("Unable to delete this media. Missing gallery media id.");
+      return;
+    }
+
+    if (!window.confirm("Delete this event media?")) return;
+
+    try {
+      setDeletingId(mediaId);
+      setUploadStatus("loading");
+      await deleteEventGalleryMedia(groupId, mediaId);
+      setExisting((prev) => prev.filter((m) => m.mediaId !== mediaId));
+      setUploadStatus("success");
+      setUploadMsg("Media deleted successfully.");
+    } catch {
+      setUploadStatus("error");
+      setUploadMsg("Delete failed. Please try again.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -165,6 +191,7 @@ function GalleryTab({ eventId }) {
       const uploaded = (data.medias || []).map((m) => ({
         ...m,
         category: selectedCategory,
+        groupId: data.id,
       }));
       setExisting((prev) => [...prev, ...uploaded]);
       setStagedFiles([]);
@@ -396,13 +423,35 @@ function GalleryTab({ eventId }) {
                             onClick={() =>
                               openReplaceFilePicker(m.groupId, m.mediaId)
                             }
-                            disabled={replacingId === m.mediaId}
+                            disabled={
+                              replacingId === m.mediaId ||
+                              deletingId === m.mediaId
+                            }
                             className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Replace media"
                           >
                             {replacingId === m.mediaId ? (
                               <Loader2 className="w-5 h-5 text-white animate-spin" />
                             ) : (
                               <Pencil className="w-5 h-5 text-white" />
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMedia(m.groupId, m.mediaId);
+                            }}
+                            disabled={
+                              deletingId === m.mediaId ||
+                              replacingId === m.mediaId
+                            }
+                            className="absolute top-1.5 right-1.5 z-10 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 disabled:opacity-70"
+                            title="Delete media"
+                          >
+                            {deletingId === m.mediaId ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
                             )}
                           </button>
                         </div>
