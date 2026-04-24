@@ -110,7 +110,7 @@ export default function CafeNewsSection() {
   const swiperRef = useRef(null);
 
   return (
-    <section id="news" className="relative overflow-hidden bg-[#E4CDB0] py-12 md:py-16 dark:bg-background">
+    <section id="news" className="relative overflow-hidden bg-[#ECECE8] py-12 md:py-16 dark:bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="mb-8 flex items-center justify-between">
           <div>

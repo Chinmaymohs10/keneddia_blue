@@ -291,7 +291,7 @@ export default function CafeBestSellers() {
   );
 
   return (
-    <section className="bg-[#E4CDB0] pb-2 pt-16 dark:bg-[#050505]">
+    <section className="bg-[#EFEFEB] pb-2 pt-16 dark:bg-[#050505]">
       <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
         <div className="mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row">
           <div className="min-w-0 flex-1 lg:max-w-[80%]">

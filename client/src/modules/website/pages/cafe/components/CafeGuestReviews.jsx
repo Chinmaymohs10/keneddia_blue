@@ -108,7 +108,7 @@ export default function CafeGuestReviews() {
   };
 
   return (
-    <section id="reviews" className="bg-[#ABBF9B] py-12 dark:bg-background">
+    <section id="reviews" className="bg-[#F8F8F6] py-12 dark:bg-background">
       <div className="container mx-auto px-4">
         <div className="flex min-w-0 flex-col items-stretch gap-6 lg:flex-row">
           <div className="flex w-full min-w-0 flex-col rounded-2xl border bg-card p-6 shadow-sm lg:w-3/4">

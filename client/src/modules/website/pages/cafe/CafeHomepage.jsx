@@ -274,13 +274,13 @@ export default function CafeHomepage() {
           <CafeQuickBooking />
         </div>
         <div className="dark:hidden">
-          <div className="h-px bg-[#A2663C]/20" />
-          <div className="h-4 bg-linear-to-b from-white to-[#E6E2D7]" />
+          <div className="h-px bg-[#E5E5E2]" />
+          <div className="h-4 bg-linear-to-b from-white to-[#F7F7F5]" />
         </div>
         <CafeCoffeeStory />
         <div className="dark:hidden">
-          <div className="h-4 bg-linear-to-b from-[#E6E2D7] to-white" />
-          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-white" />
+          <div className="h-px bg-[#E5E5E2]" />
         </div>
         <div id="cafe-properties">
           <CafeProperties
@@ -289,28 +289,28 @@ export default function CafeHomepage() {
           />
         </div>
         <div className="dark:hidden">
-          <div className="h-px bg-[#A2663C]/20" />
-          <div className="h-4 bg-linear-to-b from-white to-[#E4CDB0]" />
+          <div className="h-px bg-[#E3E3DF]" />
+          <div className="h-4 bg-linear-to-b from-white to-[#EFEFEB]" />
         </div>
         <CafeBestSellers />
         <div className="dark:hidden">
-          <div className="h-4 bg-linear-to-b from-[#E4CDB0] to-white" />
-          <div className="h-px bg-[#A2663C]/20" />
+          <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-white" />
+          <div className="h-px bg-[#E3E3DF]" />
         </div>
         <CafeAbout />
         <div className="dark:hidden">
-          <div className="h-px bg-[#A2663C]/20" />
-          <div className="h-4 bg-linear-to-b from-white to-[#E6E2D7]" />
+          <div className="h-px bg-[#E5E5E2]" />
+          <div className="h-4 bg-linear-to-b from-white to-[#F5F5F3]" />
         </div>
         <CafeShowcaseSlider />
         <div className="dark:hidden">
-          <div className="h-px bg-[#A2663C]/20" />
-          <div className="h-4 bg-linear-to-b from-[#E6E2D7] to-[#E4CDB0]" />
+          <div className="h-px bg-[#E1E1DD]" />
+          <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#ECECE8]" />
         </div>
         <CafeNewsSection />
         <div className="dark:hidden">
-          <div className="h-px bg-[#A2663C]/20" />
-          <div className="h-4 bg-linear-to-b from-[#E4CDB0] to-[#ABBF9B]" />
+          <div className="h-px bg-[#E1E1DD]" />
+          <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F8F8F6]" />
         </div>
         <CafeGuestReviews />
       </main>

@@ -130,7 +130,7 @@ function DesktopStoryCard({ card, onHoverChange }) {
       <motion.div
         animate={{ width: isHovered ? "456px" : "320px" }}
         transition={{ type: "spring", stiffness: 70, damping: 20 }}
-        className="absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#fffaf4]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92"
+        className="absolute inset-y-0 right-0 z-20 flex h-full flex-col border-l border-white/10 bg-[#F8F8F6]/96 backdrop-blur-md dark:border-white/5 dark:bg-zinc-950/92"
       >
         <div className="flex h-full w-full flex-col justify-center gap-6 overflow-hidden p-8 xl:p-10">
           <div className="space-y-4">
@@ -253,7 +253,7 @@ export default function CafeCoffeeStory() {
     setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
 
   return (
-    <section className="relative overflow-hidden bg-[#E6E2D7] py-24 dark:bg-[#080808]">
+    <section className="relative overflow-hidden bg-[#F7F7F5] py-24 dark:bg-[#080808]">
       <div className="hidden w-full lg:block">
         <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
           <div className="flex h-full flex-col justify-center">
