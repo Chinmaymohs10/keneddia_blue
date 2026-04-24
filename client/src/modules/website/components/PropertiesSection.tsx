@@ -183,10 +183,13 @@ const CarouselItem = ({
             </div>
           )}
 
-          <div className="flex items-center gap-4 mt-4 mb-5">
-            <div className="flex items-center text-sm font-medium text-white/80">
-              <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary" />
-              {property.city || "N/A"}
+          <div className="flex min-w-0 items-center gap-3 mt-4 mb-5">
+            <div
+              className="flex min-w-0 max-w-[70%] items-center text-sm font-medium text-white/80"
+              title={property.city || "N/A"}
+            >
+              <MapPin className="w-3.5 h-3.5 mr-1.5 text-primary shrink-0" />
+              <span className="truncate">{property.city || "N/A"}</span>
             </div>
             {property.rating && property.rating > 0 ? (
               <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full backdrop-blur-sm">
@@ -380,11 +383,11 @@ export default function PropertiesSection({
             </h2>
             <div className="w-24 h-1 bg-primary rounded-full" />
           </div>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:gap-4">
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
+              className="min-w-0 flex-1 bg-card border border-border rounded-full py-2.5 px-4 text-sm font-semibold outline-none cursor-pointer md:flex-none md:px-6"
             >
               <option value="All Types">All Types</option>
               {Array.from(
@@ -398,7 +401,7 @@ export default function PropertiesSection({
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="bg-card border border-border rounded-full py-2.5 px-6 text-sm font-semibold outline-none cursor-pointer"
+              className="min-w-0 flex-1 bg-card border border-border rounded-full py-2.5 px-4 text-sm font-semibold outline-none cursor-pointer md:flex-none md:px-6"
             >
               <option value="All Cities">All Cities</option>
               {Array.from(new Set(apiProperties.map((p) => p.city))).map(
@@ -476,7 +479,7 @@ export default function PropertiesSection({
                 {/* Scrollable on desktop only; natural flow on mobile */}
                 <div className="px-4 md:px-6 py-3 md:py-5 flex flex-col flex-1 gap-3 md:gap-5 lg:overflow-y-auto">
                   {/* Top info row */}
-                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:gap-4">
                     {/* Capacity */}
                     <div>
                       <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
@@ -500,7 +503,7 @@ export default function PropertiesSection({
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                           Location
                         </p>
-                        <p className="text-base md:text-lg font-bold text-foreground leading-tight">
+                        <p className="truncate text-base md:text-lg font-bold text-foreground leading-tight">
                           {active.city || "—"}
                         </p>
                       </div>
@@ -510,7 +513,7 @@ export default function PropertiesSection({
                           Starting From
                         </p>
                         {basePrice > 0 ? (
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-xl md:text-2xl font-black text-primary leading-none">
                               ₹
                               {Math.round(
@@ -539,7 +542,7 @@ export default function PropertiesSection({
 
                   {/* Restaurant extra row: type + rating */}
                   {isRestaurant && (
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:gap-4">
                       <div>
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                           Type
@@ -609,7 +612,10 @@ export default function PropertiesSection({
                             <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
                               City
                             </p>
-                            <p className="text-xs md:text-sm font-semibold text-foreground">
+                            <p
+                              className="truncate text-xs md:text-sm font-semibold text-foreground"
+                              title={active.city}
+                            >
                               {active.city}
                             </p>
                           </div>

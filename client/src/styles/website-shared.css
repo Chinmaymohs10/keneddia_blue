@@ -19,6 +19,28 @@
     @apply fixed bottom-8 right-8 z-50 flex cursor-pointer items-center gap-4 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 px-6 py-3 shadow-[0_4px_20px_rgba(251,191,36,0.4)] ring-1 ring-amber-500/30 backdrop-blur-md transition-all duration-300 hover:scale-105 hover:shadow-[0_6px_28px_rgba(251,191,36,0.6)] hover:ring-amber-500/50;
   }
 
+  @media (max-width: 767px) {
+    .website-floating-cta {
+      @apply bottom-4 left-1/2 right-auto z-[60] -translate-x-1/2 gap-2 px-4 py-2 shadow-[0_4px_18px_rgba(251,191,36,0.45)];
+    }
+
+    .website-floating-cta-copy {
+      @apply items-start;
+    }
+
+    .website-floating-cta-badge {
+      @apply mb-0 text-[8px];
+    }
+
+    .website-floating-cta-title {
+      @apply text-xs;
+    }
+
+    .website-floating-cta-icon {
+      @apply h-7 w-7 shrink-0;
+    }
+  }
+
   .website-floating-cta-copy {
     @apply flex flex-col items-start bg-transparent;
   }
