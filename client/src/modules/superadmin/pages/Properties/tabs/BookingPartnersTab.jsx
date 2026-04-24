@@ -11,7 +11,7 @@ import {
 import { colors } from "@/lib/colors/colors";
 import {
   createBookingChannelPartner,
-  getAllBookingChannelPartners,
+  getBookingChannelPartnersByPropertyId,
   updateBookingChannelPartner,
   updateBookingChannelPartnerStatus,
   uploadMedia,
@@ -78,23 +78,16 @@ const BookingPartnersTab = ({ propertyData }) => {
     if (!propertyId) return;
     setLoading(true);
     try {
-      const res = await getAllBookingChannelPartners();
-      const data = res?.data || res || [];
-      const list = Array.isArray(data) ? data : data?.content || [];
-      setItems(
-        list.filter(
-          (item) =>
-            String(item?.propertyId || "") === String(propertyId) ||
-            String(item?.propertyTypeId || "") === String(propertyTypeId || ""),
-        ),
-      );
+      const res = await getBookingChannelPartnersByPropertyId(propertyId);
+      const data = res?.data?.data || res?.data || res || [];
+      setItems(Array.isArray(data) ? data : data?.content || []);
     } catch (error) {
       console.error("Booking partner fetch error:", error);
       showError("Failed to load booking partners");
     } finally {
       setLoading(false);
     }
-  }, [propertyId, propertyTypeId]);
+  }, [propertyId]);
 
   useEffect(() => {
     fetchPropertyTypes();

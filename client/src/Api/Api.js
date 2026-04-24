@@ -514,6 +514,8 @@ export const updateDining = (id, formData) =>API.put(`api/v1/dining/updateDining
 export const createBookingChannelPartner = (data) =>API.post("api/v1/booking-channel-partners", data);
 // GET ALL
 export const getAllBookingChannelPartners = () =>API.get("api/v1/booking-channel-partners");
+// GET BY PROPERTY
+export const getBookingChannelPartnersByPropertyId = (propertyId) =>API.get(`api/v1/booking-channel-partners/property/${propertyId}`);
 // UPDATE
 export const updateBookingChannelPartner = (id, data) =>API.put(`api/v1/booking-channel-partners/${id}`, data);
 // TOGGLE STATUS (Active / Inactive)

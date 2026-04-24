@@ -1,6 +1,6 @@
 import {
   GetAllPropertyDetails,
-  getAllBookingChannelPartners,
+  getBookingChannelPartnersByPropertyId,
   getAllDiningByPropertyId,
   getAllGoogleTags,
   getAllMetaData,
@@ -310,15 +310,11 @@ const mapPolicies = (response, propertyId) => {
     : data || null;
 };
 
-const mapBookingPartners = (response, propertyId) => {
-  const raw = response?.data || response || [];
+const mapBookingPartners = (response) => {
+  const raw = response?.data?.data || response?.data || response || [];
   const list = Array.isArray(raw) ? raw : raw?.content || [];
 
-  return list.filter(
-    (item) =>
-      String(item?.propertyId || "") === String(propertyId) &&
-      item?.isActive !== false,
-  );
+  return list.filter((item) => item?.isActive !== false);
 };
 
 const mapRestaurantPageData = async (parent, listing) => {
@@ -372,14 +368,14 @@ const mapHotelPageData = async (parent, listing, rawData) => {
       getRoomsByPropertyId(parent.id).catch(() => null),
       getGalleryByPropertyId(parent.id).catch(() => null),
       getAllDiningByPropertyId(parent.id).catch(() => null),
-      getAllBookingChannelPartners().catch(() => null),
+      getBookingChannelPartnersByPropertyId(parent.id).catch(() => null),
       getAllPropertyPolicies(parent.id).catch(() => null),
     ]);
 
   const policies = mapPolicies(policiesRes, parent.id);
   const rooms = mapRooms(roomsRes);
   const galleryData = mapHotelGallery(galleryRes);
-  const bookingPartners = mapBookingPartners(bookingPartnersRes, parent.id);
+  const bookingPartners = mapBookingPartners(bookingPartnersRes);
   const restaurantPaths = buildRestaurantPathMap(rawData);
 
   const diningItems = await Promise.all(

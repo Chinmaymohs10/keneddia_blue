@@ -38,7 +38,7 @@ import {
   getAllPropertyPolicies,
   getGalleryByPropertyId,
   getAllDiningByPropertyId,
-  getAllBookingChannelPartners,
+  getBookingChannelPartnersByPropertyId,
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
@@ -795,16 +795,10 @@ export default function HotelDetail() {
 
   const fetchBookingPartners = async (propId: number) => {
     try {
-      const res = await getAllBookingChannelPartners();
-      const raw = res?.data || res || [];
+      const res = await getBookingChannelPartnersByPropertyId(propId);
+      const raw = res?.data?.data || res?.data || res || [];
       const list = Array.isArray(raw) ? raw : raw?.content || [];
-      setBookingPartners(
-        list.filter(
-          (item: any) =>
-            String(item?.propertyId || "") === String(propId) &&
-            item?.isActive !== false,
-        ),
-      );
+      setBookingPartners(list.filter((item: any) => item?.isActive !== false));
     } catch (error) {
       console.error("Booking channel partners fetch error:", error);
       setBookingPartners([]);
