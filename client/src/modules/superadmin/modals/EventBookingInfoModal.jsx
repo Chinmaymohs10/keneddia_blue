@@ -13,6 +13,7 @@ import {
   UserCheck,
   BookOpen,
   RefreshCw,
+  Calendar,
 } from "lucide-react";
 import { getEventInterestByEventId } from "@/Api/Api";
 import { colors } from "@/lib/colors/colors";
@@ -45,9 +46,34 @@ function avatarColor(name) {
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
 
+function getRecordDate(record) {
+  return (
+    record?.bookingDate ||
+    record?.selectedDate ||
+    record?.date ||
+    record?.eventDate ||
+    record?.createdAt ||
+    record?.createdDate ||
+    null
+  );
+}
+
+function formatRecordDate(value) {
+  if (!value) return "N/A";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function RecordRow({ record, index, type }) {
   const bg = avatarColor(record.name);
   const initials = getInitials(record.name);
+  const selectedDate = formatRecordDate(getRecordDate(record));
 
   return (
     <motion.div
@@ -77,6 +103,13 @@ function RecordRow({ record, index, type }) {
         <Phone size={11} style={{ color: colors.textSecondary }} />
         <span className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
           {record.phoneNumber}
+        </span>
+      </div>
+
+      <div className="hidden md:flex items-center gap-1.5 shrink-0 min-w-[90px]">
+        <Calendar size={11} style={{ color: colors.textSecondary }} />
+        <span className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
+          {selectedDate}
         </span>
       </div>
 
@@ -332,6 +365,12 @@ function EventBookingInfoModal({ isOpen, onClose, eventId }) {
                 style={{ color: colors.textSecondary }}
               >
                 Phone
+              </span>
+              <span
+                className="hidden md:block min-w-[90px] text-[10px] font-black uppercase tracking-widest"
+                style={{ color: colors.textSecondary }}
+              >
+                Date
               </span>
               <span
                 className="text-[10px] font-black uppercase tracking-widest"

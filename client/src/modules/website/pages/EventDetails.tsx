@@ -132,6 +132,10 @@ interface InterestEntry {
   phoneNumber: number;
   emailId: string;
   guestNumber: number | null;
+  bookingDate?: string | null;
+  date?: string | null;
+  selectedDate?: string | null;
+  createdAt?: string | null;
 }
 
 type ModalMode = "book" | "interest";
@@ -329,6 +333,7 @@ function BookingModal({
     phone: "",
     email: "",
     totalGuest: "2",
+    bookingDate: event.eventDate?.slice(0, 10) || "",
   });
   const [formErrors, setFormErrors] = useState({
     name: "",
@@ -340,11 +345,17 @@ function BookingModal({
   // Reset form whenever modal opens or mode changes
   useEffect(() => {
     if (isOpen) {
-      setForm({ name: "", phone: "", email: "", totalGuest: "2" });
+      setForm({
+        name: "",
+        phone: "",
+        email: "",
+        totalGuest: "2",
+        bookingDate: event.eventDate?.slice(0, 10) || "",
+      });
       setFormErrors({ name: "", phone: "" });
       setSubmitted(false);
     }
-  }, [isOpen, mode]);
+  }, [event.eventDate, isOpen, mode]);
 
   const handleNameChange = (value: string) => {
     const sanitized = value.replace(/[0-9]/g, "");
@@ -409,6 +420,7 @@ function BookingModal({
         name: form.name.trim(),
         phoneNumber: Number(form.phone),
         emailId: form.email || undefined,
+        bookingDate: form.bookingDate || undefined,
       };
 
       if (mode === "interest") {
@@ -514,6 +526,20 @@ function BookingModal({
               />
 
               {/* Guest count — only for booking */}
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
+                  Preferred Date
+                </label>
+                <Input
+                  type="date"
+                  value={form.bookingDate}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, bookingDate: e.target.value }))
+                  }
+                  className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                />
+              </div>
+
               {isBook && (
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase font-bold text-[#E33E33] px-1">
