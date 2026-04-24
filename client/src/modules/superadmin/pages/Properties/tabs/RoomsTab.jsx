@@ -19,6 +19,19 @@ import {
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import AddRoomModal from "../modals/AddRoomModal";
 
+const sortRoomsByDisplayOrder = (roomList) =>
+  [...roomList].sort((a, b) => {
+    const orderA = Number.isFinite(Number(a.displayOrder))
+      ? Number(a.displayOrder)
+      : Number.MAX_SAFE_INTEGER;
+    const orderB = Number.isFinite(Number(b.displayOrder))
+      ? Number(b.displayOrder)
+      : Number.MAX_SAFE_INTEGER;
+
+    if (orderA !== orderB) return orderA - orderB;
+    return Number(a.roomId || 0) - Number(b.roomId || 0);
+  });
+
 const RoomsTab = ({ propertyData }) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -42,7 +55,7 @@ const RoomsTab = ({ propertyData }) => {
       const response = await getRoomsByPropertyId(propId);
       // Accessing response.data based on your shared snippet
       const data = response?.data || response;
-      setRooms(Array.isArray(data) ? data : []);
+      setRooms(Array.isArray(data) ? sortRoomsByDisplayOrder(data) : []);
     } catch (error) {
       console.error("Rooms Fetch Error:", error);
       showError("Failed to load rooms");
@@ -136,7 +149,9 @@ const RoomsTab = ({ propertyData }) => {
   };
 
   // Filter logic: Only show active rooms unless showDeleted is true
-  const filteredRooms = rooms.filter(room => showDeleted || room.active);
+  const filteredRooms = sortRoomsByDisplayOrder(
+    rooms.filter(room => showDeleted || room.active),
+  );
   const getRoomPreviewImage = (room) =>
     room?.media?.find((item) => item?.type === "IMAGE" && item?.url)?.url ||
     room?.media?.find((item) => item?.url)?.url ||
@@ -235,7 +250,7 @@ const RoomsTab = ({ propertyData }) => {
                         Room ID: {room.roomId} | Property ID: {room.propertyId}
                       </div>
                       <div className="text-[10px] text-gray-400 font-medium">
-                        #{room.roomNumber} | Floor {room.floorNumber} | {room.roomSize ?? "N/A"} {room.roomSizeUnit || "SQ_FT"}
+                        #{room.roomNumber} | Floor {room.floorNumber} | Order {room.displayOrder ?? "Not set"} | {room.roomSize ?? "N/A"} {room.roomSizeUnit || "SQ_FT"}
                       </div>
 
                       {room.description && (

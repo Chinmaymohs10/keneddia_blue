@@ -679,12 +679,6 @@ export default function HotelDetail() {
         console.log("LISTING:", listing);
         console.log("TAGLINE:", listing?.tagline);
 
-        // Secondary Data Fetches
-        fetchRooms(parent.id);
-        fetchGallery(parent.id);
-        fetchDining(parent.id);
-        fetchBookingPartners(parent.id);
-        fetchPolicies(parent.id);
       } catch (err) {
         console.error("Property Fetch Error:", err);
         setError("Error loading data");
@@ -700,7 +694,19 @@ export default function HotelDetail() {
       setRoomsLoading(true);
       const res = await getRoomsByPropertyId(propId);
       const mappedRooms = Array.isArray(res?.data)
-        ? res.data.map((r: any) => {
+        ? [...res.data]
+            .sort((a: any, b: any) => {
+              const orderA = Number.isFinite(Number(a.displayOrder))
+                ? Number(a.displayOrder)
+                : Number.MAX_SAFE_INTEGER;
+              const orderB = Number.isFinite(Number(b.displayOrder))
+                ? Number(b.displayOrder)
+                : Number.MAX_SAFE_INTEGER;
+
+              if (orderA !== orderB) return orderA - orderB;
+              return Number(a.roomId || 0) - Number(b.roomId || 0);
+            })
+            .map((r: any) => {
             const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
             const discountPercentage = Number(r.discount ?? 0);
             const discountedPrice =
@@ -730,6 +736,7 @@ export default function HotelDetail() {
               maxOccupancy: r.maxOccupancy || 1,
               roomSize: r.roomSize ?? null,
               roomSizeUnit: r.roomSizeUnit || "SQ_FT",
+              displayOrder: r.displayOrder ?? null,
               isAvailable: r.status === "AVAILABLE",
               amenities: r.amenitiesAndFeatures || [],
               highlightedAmenities:
@@ -887,6 +894,16 @@ export default function HotelDetail() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    if (!propertyIdFromUrl) return;
+
+    fetchRooms(propertyIdFromUrl);
+    fetchGallery(propertyIdFromUrl);
+    fetchDining(propertyIdFromUrl);
+    fetchBookingPartners(propertyIdFromUrl);
+    fetchPolicies(propertyIdFromUrl);
+  }, [propertyIdFromUrl]);
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);

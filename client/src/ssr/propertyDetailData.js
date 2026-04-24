@@ -230,7 +230,19 @@ const mapRooms = (response) => {
   const rawRooms = response?.data || response || [];
 
   return Array.isArray(rawRooms)
-    ? rawRooms.map((room) => {
+    ? [...rawRooms]
+        .sort((a, b) => {
+          const orderA = Number.isFinite(Number(a.displayOrder))
+            ? Number(a.displayOrder)
+            : Number.MAX_SAFE_INTEGER;
+          const orderB = Number.isFinite(Number(b.displayOrder))
+            ? Number(b.displayOrder)
+            : Number.MAX_SAFE_INTEGER;
+
+          if (orderA !== orderB) return orderA - orderB;
+          return Number(a.roomId || 0) - Number(b.roomId || 0);
+        })
+        .map((room) => {
         const originalBasePrice = Number(room.basePrice ?? room.price ?? 0);
         const discountPercentage = Number(room.discount ?? 0);
         const discountedPrice =
@@ -260,6 +272,7 @@ const mapRooms = (response) => {
           maxOccupancy: room.maxOccupancy || 1,
           roomSize: room.roomSize ?? null,
           roomSizeUnit: room.roomSizeUnit || "SQ_FT",
+          displayOrder: room.displayOrder ?? null,
           isAvailable: room.status === "AVAILABLE",
           amenities: room.amenitiesAndFeatures || [],
           highlightedAmenities:

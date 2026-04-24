@@ -43,6 +43,7 @@ const AddRoomModal = ({
     status: "AVAILABLE",
     bookable: true,
     active: true,
+    displayOrder: "",
     amenitiesAndFeaturesIds: [],
     mediaIds: [],
   });
@@ -125,6 +126,7 @@ const AddRoomModal = ({
           status: initialData.status || "AVAILABLE",
           bookable: initialData.bookable ?? true,
           active: initialData.active ?? true,
+          displayOrder: initialData.displayOrder ?? "",
           amenitiesAndFeaturesIds: existingAmenityIds,
           mediaIds: existingMediaIds,
         });
@@ -158,6 +160,7 @@ const AddRoomModal = ({
           status: "AVAILABLE",
           bookable: true,
           active: true,
+          displayOrder: "",
           amenitiesAndFeaturesIds: [],
           mediaIds: [],
         });
@@ -533,6 +536,8 @@ const AddRoomModal = ({
         roomSize: formData.roomSize ? parseFloat(formData.roomSize) : null,
         floorNumber: parseInt(formData.floorNumber),
         roomTypeId: parseInt(formData.roomTypeId),
+        displayOrder:
+          formData.displayOrder === "" ? null : parseInt(formData.displayOrder),
         amenities: amenitiesPayload,
         mediaIds: formData.mediaIds,
       };
@@ -654,6 +659,20 @@ const AddRoomModal = ({
                     rows={2}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none resize-none"
                     placeholder="Briefly describe the room features..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
+                    Display Order
+                  </label>
+                  <input
+                    type="number"
+                    name="displayOrder"
+                    value={formData.displayOrder}
+                    onChange={handleNumberChange}
+                    min="1"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    placeholder="Blank means no order"
                   />
                 </div>
               </div>

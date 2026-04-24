@@ -529,13 +529,13 @@ export default function OurStoryPreview({
               <div className="relative mb-3 flex flex-col grow">
                 <textarea
                   value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 100))}
+                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 300))}
                   placeholder="Tell us about your stay..."
-                  maxLength={100}
+                  maxLength={300}
                   className="w-full grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
                 />
-                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 100 ? "text-red-500" : "text-muted-foreground"}`}>
-                  {feedbackText.length}/100
+                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 300 ? "text-red-500" : "text-muted-foreground"}`}>
+                  {feedbackText.length}/300
                 </span>
               </div>
 

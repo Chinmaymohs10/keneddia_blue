@@ -17,6 +17,7 @@ export interface Room {
   type?: string;
   roomSize?: number | null;
   roomSizeUnit?: string | null;
+  displayOrder?: number | null;
   isAvailable?: boolean;
   highlightedAmenities?: Array<string | { id?: number; name?: string; showHighlight?: boolean | null }>;
   gallery?: ImageAsset[];
