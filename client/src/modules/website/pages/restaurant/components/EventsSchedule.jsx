@@ -33,8 +33,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import UiCalendar from "@/components/ui/calendar";
-import { getEventsUpdated, getGroupBookings, getPropertyTypes } from "@/Api/Api";
-import { createGroupBookingEnquiry, getGroupBookingHeaderByPropertyType } from "@/Api/RestaurantApi";
+import {
+  getEventsUpdated,
+  getGroupBookings,
+  getPropertyTypes,
+} from "@/Api/Api";
+import {
+  createGroupBookingEnquiry,
+  getGroupBookingHeaderByPropertyType,
+} from "@/Api/RestaurantApi";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { toast } from "react-hot-toast";
 import { validateGroupBookingForm } from "@/lib/validation/reservationValidation";
@@ -76,11 +83,7 @@ function getGroupBookingIcon(index) {
 }
 
 function normalizeHeaderRecords(payload) {
-  const list = Array.isArray(payload)
-    ? payload
-    : payload
-      ? [payload]
-      : [];
+  const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
 
   return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
 }
@@ -122,7 +125,8 @@ function EventCard({ event, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.08 }}
-      className="group relative flex h-[520px] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
+      className="group relative flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] 
+aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
     >
       {showFullMedia ? (
         <div className="relative h-full w-full">
@@ -294,16 +298,23 @@ function EventCard({ event, index }) {
   );
 }
 
-export default function EventsSchedule({ initialEvents, initialGroupBookings, initialRestaurantTypeId }) {
+export default function EventsSchedule({
+  initialEvents,
+  initialGroupBookings,
+  initialRestaurantTypeId,
+}) {
   const ssrEvents = Array.isArray(initialEvents) && initialEvents.length > 0;
-  const ssrBookings = Array.isArray(initialGroupBookings) && initialGroupBookings.length > 0;
+  const ssrBookings =
+    Array.isArray(initialGroupBookings) && initialGroupBookings.length > 0;
   const [swiper, setSwiper] = useState(null);
   const [events, setEvents] = useState(ssrEvents ? initialEvents : []);
   const [groupBookingItems, setGroupBookingItems] = useState(
     ssrBookings ? initialGroupBookings : [],
   );
   const [loading, setLoading] = useState(!(ssrEvents || ssrBookings));
-  const [restaurantTypeId, setRestaurantTypeId] = useState(initialRestaurantTypeId ?? null);
+  const [restaurantTypeId, setRestaurantTypeId] = useState(
+    initialRestaurantTypeId ?? null,
+  );
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [step, setStep] = useState(1);
   const [dateRange, setDateRange] = useState(null);
@@ -368,7 +379,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
             );
           })
           .sort(
-            (a, b) => new Date(a?.eventDate).getTime() - new Date(b?.eventDate).getTime(),
+            (a, b) =>
+              new Date(a?.eventDate).getTime() -
+              new Date(b?.eventDate).getTime(),
           )
           .slice(0, 8)
           .map((item) => {
@@ -440,8 +453,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
     getGroupBookingHeaderByPropertyType(restaurantTypeId)
       .then((res) => {
         const latestActiveRecord =
-          normalizeHeaderRecords(res?.data).find((item) => item?.active === true) ||
-          null;
+          normalizeHeaderRecords(res?.data).find(
+            (item) => item?.active === true,
+          ) || null;
         setGroupBookingHeader(latestActiveRecord);
       })
       .catch(() => {
@@ -492,7 +506,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
       const formattedDates =
         Array.isArray(dateRange) && dateRange[0]
           ? `${dateRange[0].toLocaleDateString("en-IN")}${
-              dateRange[1] ? ` to ${dateRange[1].toLocaleDateString("en-IN")}` : ""
+              dateRange[1]
+                ? ` to ${dateRange[1].toLocaleDateString("en-IN")}`
+                : ""
             }`
           : null;
 
@@ -503,7 +519,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
         selectedOffer?.title ? `Booking Package: ${selectedOffer.title}` : null,
         formattedDates ? `Preferred Dates: ${formattedDates}` : null,
         formData.persons ? `No. of Persons: ${formData.persons}` : null,
-        formData.customQuery ? `Additional Info: ${formData.customQuery}` : null,
+        formData.customQuery
+          ? `Additional Info: ${formData.customQuery}`
+          : null,
       ]
         .filter(Boolean)
         .join(" | ");
@@ -516,7 +534,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
         enquiryDate: new Date().toISOString().split("T")[0],
         propertyTypeId: Number(restaurantTypeId),
         ...(selectedOffer?.id ? { groupBookingId: selectedOffer.id } : {}),
-        ...(selectedOffer?.propertyId ? { propertyId: Number(selectedOffer.propertyId) } : {}),
+        ...(selectedOffer?.propertyId
+          ? { propertyId: Number(selectedOffer.propertyId) }
+          : {}),
       });
 
       setStep(3);
@@ -565,36 +585,35 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
               <div className="flex h-[420px] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
+            ) : events.length > 0 ? (
+              <Swiper
+                modules={[Navigation, Autoplay]}
+                slidesPerView={1.2}
+                spaceBetween={20}
+                breakpoints={{
+                  640: { slidesPerView: 1.6 },
+                  768: { slidesPerView: 2.2 },
+                  1024: { slidesPerView: 2.4 },
+                  1200: { slidesPerView: 2.5 }, // 👈 key line
+                }}
+                autoplay={{
+                  delay: 5000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                onSwiper={setSwiper}
+                className="!pb-2"
+              >
+                {events.map((event, index) => (
+                  <SwiperSlide key={event.id || `${event.title}-${index}`}>
+                    <EventCard event={event} index={index} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             ) : (
-              events.length > 0 ? (
-                <Swiper
-                  modules={[Navigation, Autoplay]}
-                  slidesPerView={1}
-                  spaceBetween={16}
-                  breakpoints={{
-                    640: { slidesPerView: 2 },
-                    768: { slidesPerView: 3 },
-                    1200: { slidesPerView: 4 },
-                  }}
-                  autoplay={{
-                    delay: 5000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                  }}
-                  onSwiper={setSwiper}
-                  className="!pb-2"
-                >
-                  {events.map((event, index) => (
-                    <SwiperSlide key={event.id || `${event.title}-${index}`}>
-                      <EventCard event={event} index={index} />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              ) : (
-                <div className="flex h-[420px] items-center justify-center rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground">
-                  No upcoming restaurant events available.
-                </div>
-              )
+              <div className="flex h-[420px] items-center justify-center rounded-xl border border-dashed border-border bg-background text-sm text-muted-foreground">
+                No upcoming restaurant events available.
+              </div>
             )}
           </div>
 
@@ -618,7 +637,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                       viewport={{ once: true }}
                       className="group overflow-hidden rounded-xl border border-border bg-background transition-all duration-300 hover:border-primary/30 hover:shadow-md"
                     >
-                      <div className={`flex gap-3 p-3 ${item.description ? "items-start" : "items-center"}`}>
+                      <div
+                        className={`flex gap-3 p-3 ${item.description ? "items-start" : "items-center"}`}
+                      >
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm overflow-hidden">
                           {item.imageUrl ? (
                             <img
@@ -720,7 +741,11 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
           </DialogHeader>
           {step === 1 ? (
             <div className="space-y-4">
-              <UiCalendar selectRange value={dateRange} onChange={setDateRange} />
+              <UiCalendar
+                selectRange
+                value={dateRange}
+                onChange={setDateRange}
+              />
               <Button
                 className="w-full"
                 onClick={() => setStep(2)}
@@ -733,42 +758,66 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
             <div className="space-y-3">
               {selectedOffer?.propertyName && (
                 <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Restaurant</span>
-                  <span className="text-xs font-semibold text-foreground">{selectedOffer.propertyName}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Restaurant
+                  </span>
+                  <span className="text-xs font-semibold text-foreground">
+                    {selectedOffer.propertyName}
+                  </span>
                 </div>
               )}
               <p className="text-[11px] text-muted-foreground">
-                Fields marked <span className="text-red-500 font-semibold">*</span> are required.
+                Fields marked{" "}
+                <span className="text-red-500 font-semibold">*</span> are
+                required.
               </p>
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold">
                   Full Name <span className="text-red-500">*</span>
-                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(letters only)</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">
+                    (letters only)
+                  </span>
                 </label>
                 <Input
                   placeholder="Your full name"
                   value={formData.name}
                   onChange={(e) => setField("name", e.target.value)}
-                  className={formErrors.name ? "border-red-500 focus-visible:ring-red-400" : ""}
+                  className={
+                    formErrors.name
+                      ? "border-red-500 focus-visible:ring-red-400"
+                      : ""
+                  }
                 />
-                {formErrors.name && <p className="text-xs text-red-500">{formErrors.name}</p>}
+                {formErrors.name && (
+                  <p className="text-xs text-red-500">{formErrors.name}</p>
+                )}
               </div>
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold">
                   Phone Number <span className="text-red-500">*</span>
-                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(10 digits)</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">
+                    (10 digits)
+                  </span>
                 </label>
                 <Input
                   placeholder="10-digit mobile number"
                   type="tel"
                   maxLength={10}
                   value={formData.phone}
-                  onChange={(e) => setField("phone", e.target.value.replace(/\D/g, ""))}
-                  className={formErrors.phone ? "border-red-500 focus-visible:ring-red-400" : ""}
+                  onChange={(e) =>
+                    setField("phone", e.target.value.replace(/\D/g, ""))
+                  }
+                  className={
+                    formErrors.phone
+                      ? "border-red-500 focus-visible:ring-red-400"
+                      : ""
+                  }
                 />
-                {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
+                {formErrors.phone && (
+                  <p className="text-xs text-red-500">{formErrors.phone}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -780,15 +829,23 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   type="email"
                   value={formData.email}
                   onChange={(e) => setField("email", e.target.value)}
-                  className={formErrors.email ? "border-red-500 focus-visible:ring-red-400" : ""}
+                  className={
+                    formErrors.email
+                      ? "border-red-500 focus-visible:ring-red-400"
+                      : ""
+                  }
                 />
-                {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
+                {formErrors.email && (
+                  <p className="text-xs text-red-500">{formErrors.email}</p>
+                )}
               </div>
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold">
                   No. of Persons
-                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <Input
                   placeholder="e.g. 50"
@@ -796,15 +853,23 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   min="1"
                   value={formData.persons}
                   onChange={(e) => setField("persons", e.target.value)}
-                  className={formErrors.persons ? "border-red-500 focus-visible:ring-red-400" : ""}
+                  className={
+                    formErrors.persons
+                      ? "border-red-500 focus-visible:ring-red-400"
+                      : ""
+                  }
                 />
-                {formErrors.persons && <p className="text-xs text-red-500">{formErrors.persons}</p>}
+                {formErrors.persons && (
+                  <p className="text-xs text-red-500">{formErrors.persons}</p>
+                )}
               </div>
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold">
                   Additional Requirements
-                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">(optional)</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <Textarea
                   placeholder="Any special requirements or notes..."
@@ -824,7 +889,9 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
             </div>
           ) : (
             <div className="space-y-2 py-8 text-center">
-              <p className="text-lg font-semibold text-green-600">Enquiry Sent!</p>
+              <p className="text-lg font-semibold text-green-600">
+                Enquiry Sent!
+              </p>
               <p className="text-sm text-muted-foreground">
                 We&apos;ll get back to you shortly.
               </p>
