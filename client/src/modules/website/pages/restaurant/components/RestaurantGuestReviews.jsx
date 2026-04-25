@@ -401,21 +401,46 @@ export default function RestaurantGuestReviews({
     const hasMediaErrors = allMedia.some((m) => mediaErrors.has(m.url));
     const total = allMedia.length;
 
-    if (total === 0 || hasMediaErrors) {
+     if (total === 0 || hasMediaErrors) {
+      const isLongText = (item.description || "").length > 150;
+
       return (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8">
-          <div className="max-w-[90%] space-y-3 text-center">
-            {item.description?.trim() ? (
-              <p className="line-clamp-4 text-base italic leading-relaxed text-white md:text-lg">
-                "{item.description}"
-              </p>
-            ) : (
-              <p className="text-sm italic text-white/60">No description provided</p>
-            )}
-            {item.author?.trim() && (
-              <p className="text-lg font-bold text-white/90 md:text-xl">- {item.author}</p>
+        <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col justify-between overflow-hidden p-6">
+          {/* SCROLLING TEXT AREA */}
+          <div className="relative flex-1 overflow-hidden">
+            <div
+              className={`absolute top-0 left-0 w-full text-center px-2 ${
+                isLongText ? "animate-vertical-scroll" : ""
+              }`}
+            >
+              {item.description?.trim() ? (
+                <p className="text-white text-sm md:text-base italic leading-relaxed">
+                  “{item.description}”
+                </p>
+              ) : (
+                <p className="text-white/50 text-sm italic">
+                  No description provided
+                </p>
+              )}
+            </div>
+
+            {/* FADE EFFECT (top & bottom) */}
+            {isLongText && (
+              <div
+                className="pointer-events-none absolute inset-0 
+        "
+              />
             )}
           </div>
+
+          {/* FIXED AUTHOR (always visible) */}
+          {item.author?.trim() && (
+            <div className="text-center pt-4">
+              <p className="text-white/80 font-semibold text-sm">
+                — {item.author}
+              </p>
+            </div>
+          )}
         </div>
       );
     }

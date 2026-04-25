@@ -166,7 +166,9 @@ export default function OurStoryPreview({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence & Effects
-  useEffect(() => { setIsClient(true); }, []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 1024);
@@ -231,7 +233,8 @@ export default function OurStoryPreview({
       formData.append("author", authorName);
       formData.append("authorPhone", phone);
       formData.append("authorEmail", email);
-      if (hotelTypeId != null) formData.append("propertyTypeId", String(hotelTypeId));
+      if (hotelTypeId != null)
+        formData.append("propertyTypeId", String(hotelTypeId));
       if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
       mediaPreviews.forEach((m) => formData.append("files", m.file));
       await createGuestExperienceByGuest(formData);
@@ -262,8 +265,16 @@ export default function OurStoryPreview({
 
         if (!isClient) {
           return (
-            <div key={idx} className="relative flex h-full w-full items-center justify-center bg-black">
-              <a href={m.url} target="_blank" rel="noreferrer" className="text-white text-xs font-bold underline">
+            <div
+              key={idx}
+              className="relative flex h-full w-full items-center justify-center bg-black"
+            >
+              <a
+                href={m.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-white text-xs font-bold underline"
+              >
                 View on Instagram
               </a>
             </div>
@@ -276,7 +287,10 @@ export default function OurStoryPreview({
             className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center group"
           >
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
-              <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
+              <InstagramEmbed
+                url={`https://www.instagram.com/p/${id}/`}
+                width={328}
+              />
             </div>
 
             <div className="absolute inset-0 z-0 pointer-events-none" />
@@ -315,10 +329,7 @@ export default function OurStoryPreview({
 
       // --- LOCAL VIDEO ---
       return (
-        <div
-          key={idx}
-          className="relative group w-full h-full"
-        >
+        <div key={idx} className="relative group w-full h-full">
           <video
             src={m.url}
             className="w-full h-full object-cover"
@@ -362,25 +373,45 @@ export default function OurStoryPreview({
     const hasMediaErrors = allMedia.some((m) => mediaErrors.has(m.url));
     const total = allMedia.length;
     if (total === 0 || hasMediaErrors) {
-      return (
-        <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-8">
-          <div className="text-center space-y-3 max-w-[90%]">
-            {item.description?.trim() ? (
-              <p className="text-white text-base md:text-lg italic leading-relaxed line-clamp-4">
-                "{item.description}"
-              </p>
-            ) : (
-              <p className="text-white/60 text-sm italic">
-                No description provided
-              </p>
-            )}
+      const isLongText = (item.description || "").length > 150;
 
-            {item.author?.trim() && (
-              <p className="text-white/90 font-bold text-lg md:text-xl">
-                — {item.author}
-              </p>
+      return (
+        <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col justify-between overflow-hidden p-6">
+          {/* SCROLLING TEXT AREA */}
+          <div className="relative flex-1 overflow-hidden">
+            <div
+              className={`absolute top-0 left-0 w-full text-center px-2 ${
+                isLongText ? "animate-vertical-scroll" : ""
+              }`}
+            >
+              {item.description?.trim() ? (
+                <p className="text-white text-sm md:text-base italic leading-relaxed">
+                  “{item.description}”
+                </p>
+              ) : (
+                <p className="text-white/50 text-sm italic">
+                  No description provided
+                </p>
+              )}
+            </div>
+
+            {/* FADE EFFECT (top & bottom) */}
+            {isLongText && (
+              <div
+                className="pointer-events-none absolute inset-0 
+        "
+              />
             )}
           </div>
+
+          {/* FIXED AUTHOR (always visible) */}
+          {item.author?.trim() && (
+            <div className="text-center pt-4">
+              <p className="text-white/80 font-semibold text-sm">
+                — {item.author}
+              </p>
+            </div>
+          )}
         </div>
       );
     }
@@ -463,7 +494,11 @@ export default function OurStoryPreview({
                     spaceBetween={15}
                     slidesPerView={1.2}
                     breakpoints={{ 768: { slidesPerView: 3 } }}
-                    autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                    autoplay={{
+                      delay: 6000,
+                      disableOnInteraction: false,
+                      pauseOnMouseEnter: true,
+                    }}
                     onSwiper={(s) => (swiperRef.current = s)}
                     className="h-full w-full"
                   >
@@ -529,12 +564,16 @@ export default function OurStoryPreview({
               <div className="relative mb-3 flex flex-col grow">
                 <textarea
                   value={feedbackText}
-                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 300))}
+                  onChange={(e) =>
+                    setFeedbackText(e.target.value.slice(0, 300))
+                  }
                   placeholder="Tell us about your stay..."
                   maxLength={300}
                   className="w-full grow bg-secondary/20 border-none rounded-xl p-4 text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
                 />
-                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 300 ? "text-red-500" : "text-muted-foreground"}`}>
+                <span
+                  className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 300 ? "text-red-500" : "text-muted-foreground"}`}
+                >
                   {feedbackText.length}/300
                 </span>
               </div>
@@ -650,44 +689,79 @@ export default function OurStoryPreview({
                 <h3 className="text-xl font-serif font-bold">
                   Guest Information
                 </h3>
-                <button onClick={() => { setShowPopup(false); setFormError(""); }}>
+                <button
+                  onClick={() => {
+                    setShowPopup(false);
+                    setFormError("");
+                  }}
+                >
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <input
                   value={authorName}
-                  onChange={(e) => { setAuthorName(e.target.value.replace(/[^a-zA-Z\s]/g, "")); setFormError(""); }}
+                  onChange={(e) => {
+                    setAuthorName(e.target.value.replace(/[^a-zA-Z\s]/g, ""));
+                    setFormError("");
+                  }}
                   placeholder="Full Name *"
                   className="w-full p-3 bg-muted rounded-lg outline-none"
                 />
                 <input
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setFormError(""); }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setFormError("");
+                  }}
                   placeholder="Email"
                   type="email"
                   className="w-full p-3 bg-muted rounded-lg outline-none"
                 />
                 <input
                   value={phone}
-                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "")); setFormError(""); }}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/\D/g, ""));
+                    setFormError("");
+                  }}
                   placeholder="Phone (10 digits)"
                   maxLength={10}
                   inputMode="numeric"
                   className="w-full p-3 bg-muted rounded-lg outline-none"
                 />
                 {formError && (
-                  <p className="text-xs text-red-500 font-medium">{formError}</p>
+                  <p className="text-xs text-red-500 font-medium">
+                    {formError}
+                  </p>
                 )}
                 <button
                   onClick={() => {
-                    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                      email.trim(),
+                    );
                     const phoneValid = /^\d{10}$/.test(phone.trim());
-                    if (!authorName.trim()) { setFormError("Full name is required."); return; }
-                    if (!/^[a-zA-Z\s]+$/.test(authorName.trim())) { setFormError("Name must contain only letters and spaces."); return; }
-                    if (!email.trim() && !phone.trim()) { setFormError("Please provide email or phone number."); return; }
-                    if (email.trim() && !emailValid) { setFormError("Please enter a valid email address."); return; }
-                    if (phone.trim() && !phoneValid) { setFormError("Phone number must be exactly 10 digits."); return; }
+                    if (!authorName.trim()) {
+                      setFormError("Full name is required.");
+                      return;
+                    }
+                    if (!/^[a-zA-Z\s]+$/.test(authorName.trim())) {
+                      setFormError(
+                        "Name must contain only letters and spaces.",
+                      );
+                      return;
+                    }
+                    if (!email.trim() && !phone.trim()) {
+                      setFormError("Please provide email or phone number.");
+                      return;
+                    }
+                    if (email.trim() && !emailValid) {
+                      setFormError("Please enter a valid email address.");
+                      return;
+                    }
+                    if (phone.trim() && !phoneValid) {
+                      setFormError("Phone number must be exactly 10 digits.");
+                      return;
+                    }
                     setFormError("");
                     setIsVerified(true);
                     setShowPopup(false);
