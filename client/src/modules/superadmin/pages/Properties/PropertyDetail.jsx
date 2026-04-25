@@ -25,6 +25,7 @@ import PricingTab from "./tabs/PricingTab";
 import PoliciesTab from "./tabs/PoliciesTab";
 import FoodDiningTab from "./tabs/FoodDiningTab";
 import BookingPartnersTab from "./tabs/BookingPartnersTab";
+import ConfigTab from "./tabs/ConfigTab";
 
 import ResturantVerticals from "./tabs/resturant/ResturantVerticals";
 import EventsTab from "./tabs/resturant/EventsTab";
@@ -195,6 +196,7 @@ const PropertyDetail = ({ property, onBack }) => {
   const tabsByPropertyType = {
     Hotel: [
       "overview",
+      "config",
       "rooms",
       "amenities",
       "food&dining",
@@ -203,9 +205,10 @@ const PropertyDetail = ({ property, onBack }) => {
       "policies",
       "comment reviews",
     ],
-    Cafe: ["overview", "menu", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
+    Cafe: ["overview", "config", "menu", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
     Restaurant: [
       "overview",
+      "config",
       "gallery",
       "verticals",
       "buffet section",
@@ -257,6 +260,13 @@ const PropertyDetail = ({ property, onBack }) => {
             data={currentPropertyInfo}
             propertyData={currentPropertyInfo}
             onEdit={() => toggleModal("overview", true, currentPropertyInfo)}
+          />
+        );
+      case "config":
+        return (
+          <ConfigTab
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
           />
         );
       case "rooms":
