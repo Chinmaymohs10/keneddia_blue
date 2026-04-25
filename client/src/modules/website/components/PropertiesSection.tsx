@@ -99,6 +99,8 @@ const CarouselItem = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
+  const [tagExpanded, setTagExpanded] = useState(false);
+  const isTagLong = (property.tagline || "").length > 80;
 
   const imageUrl = property.media?.[0]?.url || property.media?.[0] || "";
   const nextImageUrl =
@@ -143,14 +145,55 @@ const CarouselItem = ({
       {/* Three-zone layout */}
       <div className="absolute inset-0 flex flex-col justify-between px-8 lg:px-10 py-8">
         {/* TOP — tagline */}
-        <div className="min-h-[28px]">
-          {property.tagline ? (
-            <p className="text-white/75 text-xs font-light italic tracking-wide max-w-xs leading-relaxed">
-              {property.tagline}
-            </p>
-          ) : null}
-        </div>
+        <div className="relative z-20 w-full max-w-xs">
+          {/* Fixed height container */}
+          <div className="h-[40px] overflow-hidden">
+            {/* Clickable text area */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isTagLong) setTagExpanded(true);
+              }}
+              className={`h-full pr-1 cursor-pointer ${
+                tagExpanded ? "overflow-y-auto" : "overflow-hidden"
+              }`}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <p
+                className={`text-white/75 text-xs font-light italic tracking-wide leading-[20px] ${
+                  !tagExpanded ? "truncate" : ""
+                }`}
+              >
+                {property.tagline}
+              </p>
+            </div>
+          </div>
 
+          {/* Hide scrollbar (Chrome) */}
+          <style>
+            {`
+      div::-webkit-scrollbar {
+        display: none;
+      }
+    `}
+          </style>
+
+          {/* Show LESS only when expanded */}
+          {tagExpanded && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setTagExpanded(false);
+              }}
+              className="mt-1 text-[10px] text-white/70 hover:text-white underline underline-offset-2"
+            >
+              Show less
+            </button>
+          )}
+        </div>
         {/* MIDDLE — numbered nav + heading + subtitle + city/rating + CTA */}
         <div className="text-white max-w-lg">
           {total > 1 && (
@@ -709,15 +752,20 @@ transition-all cursor-pointer"
                               `${createCitySlug(
                                 active.city || active.propertyName,
                               )}/${createHotelSlug(
-                                active.propertyName || active.city || "property",
+                                active.propertyName ||
+                                  active.city ||
+                                  "property",
                                 active.propertyId,
                               )}`;
 
                             const isRestaurant =
                               activePropertyUrls?.isRestaurant ??
-                              (active.propertyType?.toLowerCase() ===
-                                "restaurant");
-                            navigate(activePropertyUrls?.localPath || `/${propertyPath}`);
+                              active.propertyType?.toLowerCase() ===
+                                "restaurant";
+                            navigate(
+                              activePropertyUrls?.localPath ||
+                                `/${propertyPath}`,
+                            );
 
                             // const finalUrl = isRestaurant
                             //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`

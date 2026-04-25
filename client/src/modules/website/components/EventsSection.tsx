@@ -197,7 +197,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer"
+      className="group relative w-full aspect-[9/16] max-h-[520px] flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
     >
       {isFullFrame ? (
         /* ── FULL-FRAME MODE ─────────────────────────────────────────────── */

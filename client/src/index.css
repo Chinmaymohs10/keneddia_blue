@@ -355,3 +355,21 @@ input:focus, select:focus, textarea:focus {
   width: 100%;
   max-width: 100%;
 }
+@keyframes verticalScroll {
+  0% {
+    transform: translateY(100%);
+  }
+  10% {
+    transform: translateY(0%);
+  }
+  90% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(-120%);
+  }
+}
+
+.animate-vertical-scroll {
+  animation: verticalScroll 12s linear infinite;
+}
