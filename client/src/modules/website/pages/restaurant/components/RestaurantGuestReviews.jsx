@@ -657,7 +657,7 @@ export default function RestaurantGuestReviews({
               <div className="mb-4 flex gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60"
+                  className="flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60 cursor-pointer"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {mediaUploading ? (
@@ -684,7 +684,7 @@ export default function RestaurantGuestReviews({
                   (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())
                 }
                 onClick={handleSubmit}
-                className="w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50"
+                className="w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="mx-auto animate-spin" size={20} />

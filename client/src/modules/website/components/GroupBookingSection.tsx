@@ -704,7 +704,7 @@ export default function GroupBookingSection({
                             )}
 
                             {booking.ctaLink && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary mt-1.5 uppercase tracking-tight cursor-pointer">
                                 {booking.ctaText || "Details"}{" "}
                                 <ExternalLink size={9} />
                               </span>
@@ -742,7 +742,7 @@ export default function GroupBookingSection({
                     </p>
                     <Button
                       type="button"
-                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold cursor-pointer"
                       onClick={() => {
                         setSelectedOffer(showcaseBookings[0] ?? groupBookings[0] ?? null);
                         setStep(1);

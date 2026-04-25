@@ -255,7 +255,7 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${activeFilter === filter
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${activeFilter === filter
                   ? filter === "Veg"
                     ? "border-emerald-500 bg-emerald-500 text-white"
                     : filter === "Non-Veg"
@@ -290,7 +290,7 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
               <button
                 type="button"
                 onClick={() => setExpanded((current) => !current)}
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:text-primary cursor-pointer"
               >
                 {expanded ? "Show Less" : `Show More (${extraItems.length})`}
                 {expanded ? (

@@ -199,7 +199,7 @@ function EventCard({ event, index }) {
               ) : null}
             </div>
             <Link to={event.detailPath}>
-              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90">
+              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90 cursor-pointer">
                 View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -682,7 +682,7 @@ export default function EventsSchedule({ initialEvents, initialGroupBookings, in
                   )}
                   {groupBookingHeader.ctaText && (
                     <Button
-                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold"
+                      className="mt-1 h-auto rounded-full px-5 py-2 text-xs font-bold cursor-pointer"
                       onClick={() =>
                         openGroupBookingForm({
                           id: null,

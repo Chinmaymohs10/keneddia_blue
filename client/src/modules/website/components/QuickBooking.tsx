@@ -764,7 +764,7 @@ export default function QuickBooking() {
               <Button
                 onClick={handleSearch}
                 disabled={isSearching}
-                className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-base shadow-lg hover:shadow-xl transition-all disabled:opacity-70"
+                className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-bold uppercase tracking-wide text-base shadow-lg hover:shadow-xl transition-all disabled:opacity-70 cursor-pointer"
               >
                 {isSearching ? (
                   <>
@@ -773,7 +773,7 @@ export default function QuickBooking() {
                   </>
                 ) : (
                   <>
-                    <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4 cursor-pointer" />
                     Book
                   </>
                 )}

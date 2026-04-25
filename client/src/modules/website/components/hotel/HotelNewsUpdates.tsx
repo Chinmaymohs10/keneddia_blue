@@ -284,7 +284,7 @@ function NewsCard({ item }: { item: NewsItem }) {
           <Link
             to={`/news/${item.id}`}
             // to={`#`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-foreground hover:text-primary transition-colors group/link pt-3 cursor-pointer"
           >
             {item.ctaText || "Read Story"}
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />

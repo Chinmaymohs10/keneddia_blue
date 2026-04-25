@@ -239,16 +239,16 @@ export default function RestaurantQuickBooking() {
             </div>
 
             {/* Search */}
-            <div className="flex items-end">
+            <div className="flex items-end cursor-pointer">
               <Button
                 onClick={handleSearch}
                 disabled={!canSearch || loading}
-                className="h-14 w-full gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70"
+                className="h-14 w-full gap-2 bg-primary text-base font-bold uppercase tracking-wide text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-70 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Search className="h-4 w-4" />
+                  <Search className="h-4 w-4 cursor-pointer" />
                 )}
                 {loading ? "Loading..." : "Search"}
               </Button>

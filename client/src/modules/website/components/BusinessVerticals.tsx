@@ -173,7 +173,7 @@ flex items-center justify-center
 transition-all duration-300 ease-out
 group-hover:bg-primary/10 dark:group-hover:bg-primary/20
 group-hover:-translate-y-1 group-hover:scale-105
-group-hover:shadow-lg"
+group-hover:shadow-lg cursor-pointer"
       >
         <img
           src={iconImageUrl}

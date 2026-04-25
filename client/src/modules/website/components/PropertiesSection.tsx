@@ -60,6 +60,28 @@ const SUBTITLE_LIMIT = 120;
 const HOTEL_BASE_URL = "https://hotels.kennediablu.com";
 const RESTAURANT_BASE_URL = "https://restaurants.kennediablu.com/";
 
+const getPropertyUrls = (
+  propertyType: string | undefined,
+  city: string | undefined,
+  propertyName: string | undefined,
+  propertyId: number,
+) => {
+  const propertyPath = `${createCitySlug(
+    city || propertyName,
+  )}/${createHotelSlug(propertyName || city || "", propertyId)}`;
+  const isRestaurant = propertyType?.toLowerCase() === "restaurant";
+  const finalUrl = isRestaurant
+    ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
+    : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+
+  return {
+    isRestaurant,
+    propertyPath,
+    localPath: `/${propertyPath}`,
+    finalUrl,
+  };
+};
+
 const CarouselItem = ({
   property,
   isActive,
@@ -82,12 +104,12 @@ const CarouselItem = ({
   const nextImageUrl =
     nextProperty?.media?.[0]?.url || nextProperty?.media?.[0] || "";
 
-  const propertyPath = `${createCitySlug(
-    property.city || property.propertyName,
-  )}/${createHotelSlug(
-    property.propertyName || property.city || "",
+  const { propertyPath, localPath, finalUrl } = getPropertyUrls(
+    property.propertyType,
+    property.city,
+    property.propertyName,
     property.propertyId,
-  )}`;
+  );
 
   const propertyName = property.propertyName || "";
   const subTitle = property.subTitle || "";
@@ -201,13 +223,15 @@ const CarouselItem = ({
             ) : null}
           </div>
 
-          <button
+          <a
+            href={finalUrl}
             onClick={(e) => {
               e.stopPropagation();
+              e.preventDefault();
 
               const isRestaurant =
                 property.propertyType?.toLowerCase() === "restaurant";
-              navigate(`/${propertyPath}`);
+              navigate(localPath);
 
               // const finalUrl = isRestaurant
               //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
@@ -221,7 +245,7 @@ const CarouselItem = ({
             <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
               <ArrowRight size={14} />
             </div>
-          </button>
+          </a>
         </div>
 
         {/* BOTTOM — dot pagination left + next thumbnail right */}
@@ -363,6 +387,14 @@ export default function PropertiesSection({
   const nextProperty =
     filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
   const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
+  const activePropertyUrls = active
+    ? getPropertyUrls(
+        active.propertyType,
+        active.city,
+        active.propertyName,
+        active.propertyId,
+      )
+    : null;
   const basePrice = active?.price ?? 0;
   const discount = active?.discountAmount ?? 0;
   const gst = active?.gstPercentage ?? 0;
@@ -660,7 +692,8 @@ transition-all cursor-pointer"
                           <ArrowRight size={15} />
                         </button>
                       ) : (
-                        <button
+                        <a
+                          href={activePropertyUrls?.finalUrl || "#"}
                           // onClick={() => {
                           // const path = `/${createCitySlug(active.city || active.propertyName)}/${createHotelSlug(
                           //   active.propertyName || active.city || "property",
@@ -668,18 +701,23 @@ transition-all cursor-pointer"
                           // )}`;
                           // navigate(path);
                           // }}
-                          onClick={() => {
-                            const propertyPath = `${createCitySlug(
-                              active.city || active.propertyName,
-                            )}/${createHotelSlug(
-                              active.propertyName || active.city || "property",
-                              active.propertyId,
-                            )}`;
+                          onClick={(e) => {
+                            e.preventDefault();
+
+                            const propertyPath =
+                              activePropertyUrls?.propertyPath ||
+                              `${createCitySlug(
+                                active.city || active.propertyName,
+                              )}/${createHotelSlug(
+                                active.propertyName || active.city || "property",
+                                active.propertyId,
+                              )}`;
 
                             const isRestaurant =
-                              active.propertyType?.toLowerCase() ===
-                              "restaurant";
-                            navigate(`/${propertyPath}`);
+                              activePropertyUrls?.isRestaurant ??
+                              (active.propertyType?.toLowerCase() ===
+                                "restaurant");
+                            navigate(activePropertyUrls?.localPath || `/${propertyPath}`);
 
                             // const finalUrl = isRestaurant
                             //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
@@ -694,7 +732,7 @@ transition-all cursor-pointer"
                           className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                         >
                           View Details <ArrowRight size={15} />
-                        </button>
+                        </a>
                       )}
                       <div className="grid grid-cols-2 gap-2 md:gap-3">
                         <button

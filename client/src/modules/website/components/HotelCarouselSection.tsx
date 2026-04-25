@@ -486,7 +486,7 @@ export default function HotelCarouselSection({
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1 block cursor-pointer">
                   {viewMode === "gallery" ? "Premium Selection" : "Discover"}
                 </span>
                 <h2 className="text-xl md:text-2xl font-serif text-foreground">
@@ -497,7 +497,7 @@ export default function HotelCarouselSection({
               <div className="inline-flex items-center gap-0.5 bg-background border border-border rounded-full p-0.5 shadow-sm">
                 <button
                   onClick={() => setViewMode("gallery")}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer cursor-pointer ${
                     viewMode === "gallery"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -508,7 +508,7 @@ export default function HotelCarouselSection({
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     viewMode === "map"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -528,7 +528,7 @@ export default function HotelCarouselSection({
               <div className="relative">
                 <button
                   onClick={() => setShowCityDropdown(!showCityDropdown)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-full outline-none hover:border-primary/50 transition-colors text-xs shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-border rounded-full outline-none hover:border-primary/50 transition-colors text-xs shadow-sm cursor-pointer"
                 >
                   <MapPin className="w-3 h-3 text-primary" />
                   <span className="font-medium">{selectedCity}</span>
@@ -537,7 +537,7 @@ export default function HotelCarouselSection({
                   />
                 </button>
                 {showCityDropdown && (
-                  <div className="absolute top-full mt-1 left-0 w-48 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50">
+                  <div className="absolute top-full mt-1 left-0 w-48 bg-card rounded-lg shadow-xl border border-border overflow-hidden z-50 cursor-pointer">
                     {cities.map((city) => (
                       <button
                         key={city}
@@ -545,7 +545,7 @@ export default function HotelCarouselSection({
                           setSelectedCity(city);
                           setShowCityDropdown(false);
                         }}
-                        className={`w-full px-3 py-2 text-left text-xs hover:bg-secondary/50 transition-colors ${
+                        className={`w-full px-3 py-2 text-left text-xs hover:bg-secondary/50 transition-colors cursor-pointer ${
                           selectedCity === city
                             ? "bg-secondary/30 font-semibold"
                             : ""
@@ -657,7 +657,7 @@ export default function HotelCarouselSection({
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-40">
                     <button
                       onClick={handlePrev}
-                      className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95"
+                      className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95 cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -668,7 +668,7 @@ export default function HotelCarouselSection({
                     </div>
                     <button
                       onClick={handleNext}
-                      className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95"
+                      className="w-10 h-10 rounded-full bg-background border-2 border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-lg hover:scale-110 active:scale-95 cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -731,13 +731,13 @@ export default function HotelCarouselSection({
                   <div className="space-y-2.5 mt-4">
                     <button
                       onClick={() => handleBookNow(activeHotel)}
-                      className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase rounded-lg shadow-md flex items-center justify-center gap-2 text-sm"
+                      className="w-full py-3 bg-primary text-primary-foreground font-bold uppercase rounded-lg shadow-md flex items-center justify-center gap-2 text-sm cursor-pointer"
                     >
                       Book Room <ArrowRight className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => goToHotelDetails(activeHotel)}
-                      className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
+                      className="w-full py-2 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors cursor-pointer"
                     >
                       View Full Details →
                     </button>
