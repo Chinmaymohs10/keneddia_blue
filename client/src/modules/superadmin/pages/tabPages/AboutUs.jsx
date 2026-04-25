@@ -17,9 +17,8 @@ import {
   getAboutUsByPropertyType,
   getPropertyTypes,
 } from "@/Api/Api";
-import {
-  showError,
-} from "@/lib/toasters/toastUtils";
+import { enableAboutUs, disableAboutUs } from "@/Api/Api";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 import AddUpdateAboutModal from "../../modals/AddUpdateAboutModal";
 import AddUpdateVenturesModal from "../../modals/AddUpdateVenturesModal";
 import AddUpdateRecognitionModal from "../../modals/AddUpdateRecognitionModal";
@@ -119,6 +118,27 @@ function AboutUs() {
       setFetching(false);
     }
   }, [activeTab]);
+  const handleToggleStatus = async (about) => {
+    try {
+      setLoading(true);
+
+      if (about.isActive) {
+        await disableAboutUs(about.id);
+        showSuccess("Disabled successfully");
+      } else {
+        await enableAboutUs(about.id);
+        showSuccess("Enabled successfully");
+      }
+
+      // refresh list
+      fetchAboutList();
+    } catch (error) {
+      console.error("Toggle status error:", error);
+      showError("Failed to update status");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchTabData = useCallback(async () => {
     if (!selectedAboutUsId) return;
@@ -188,7 +208,8 @@ function AboutUs() {
   const isRestaurantTab =
     activeTab !== "homepage" &&
     propertyTypes.some(
-      (pt) => String(pt.id) === activeTab && normalize(pt.typeName) === "restaurant",
+      (pt) =>
+        String(pt.id) === activeTab && normalize(pt.typeName) === "restaurant",
     );
 
   const propertyTypeTabs = useMemo(
@@ -258,7 +279,11 @@ function AboutUs() {
         {[
           { id: "about", label: "About Sections", icon: Info },
           { id: "ventures", label: "Ventures", icon: Briefcase },
-          { id: "recognitions", label: isRestaurantTab ? "Section 3" : "Recognitions", icon: Award },
+          {
+            id: "recognitions",
+            label: isRestaurantTab ? "Section 3" : "Recognitions",
+            icon: Award,
+          },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -335,70 +360,89 @@ function AboutUs() {
                         Number(selectedAboutUsId) === Number(about.id);
 
                       return (
-                      <tr
-                        key={about.id}
-                        onClick={() => setSelectedAboutUsId(about.id)}
-                        className={`cursor-pointer transition-colors ${
-                          isSelected
-                            ? "bg-primary/10"
-                            : index === 0
-                              ? "bg-primary/5"
-                              : "hover:bg-muted/40"
-                        }`}
-                      >
-                        <td className="p-4 font-mono text-xs">
-                          <span className="mr-2 text-primary">●</span>
-                          #{about.id}
-                        </td>
-                        <td className="p-4 text-sm font-medium">
-                          <div className="flex items-center gap-2">
-                            <span>{about.sectionTitle}</span>
-                            {isSelected && (
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
-                                Selected
+                        <tr
+                          key={about.id}
+                          onClick={() => setSelectedAboutUsId(about.id)}
+                          className={`cursor-pointer transition-colors ${
+                            isSelected
+                              ? "bg-primary/10"
+                              : index === 0
+                                ? "bg-primary/5"
+                                : "hover:bg-muted/40"
+                          }`}
+                        >
+                          <td className="p-4 font-mono text-xs">
+                            <span className="mr-2 text-primary">●</span>#
+                            {about.id}
+                          </td>
+                          <td className="p-4 text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <span>{about.sectionTitle}</span>
+                              {isSelected && (
+                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            {about.propertyTypeId ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
+                                <Building2 size={10} />
+                                {propertyTypes.find(
+                                  (pt) => pt.id === about.propertyTypeId,
+                                )?.typeName || "Unknown"}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
+                                <Home size={10} />
+                                General
                               </span>
                             )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          {about.propertyTypeId ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
-                              <Building2 size={10} />
-                              {propertyTypes.find(
-                                (pt) => pt.id === about.propertyTypeId,
-                              )?.typeName || "Unknown"}
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                                about.isActive
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {about.isActive ? "Active" : "Disabled"}
                             </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-gray-100 text-gray-600">
-                              <Home size={10} />
-                              General
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                              about.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {about.isActive ? "Active" : "Disabled"}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right flex justify-end gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEdit("about", about);
-                            }}
-                            className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="p-4 text-right flex justify-end items-center gap-3">
+                            {/* Toggle Switch */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleStatus(about);
+                              }}
+                              disabled={loading}
+                              className={`relative w-10 h-5 rounded-full transition-all duration-300 ${
+                                about.isActive ? "bg-green-500" : "bg-gray-300"
+                              }`}
+                            >
+                              <span
+                                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ${
+                                  about.isActive ? "translate-x-5" : ""
+                                }`}
+                              />
+                            </button>
+
+                            {/* Edit Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEdit("about", about);
+                              }}
+                              className="p-1.5 hover:bg-muted rounded-md text-primary transition-colors"
+                              title="Edit"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
