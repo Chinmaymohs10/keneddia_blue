@@ -565,10 +565,158 @@ function AddHeroSectionModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
-    setLoading(true);
+  if (!validateForm()) return;
+  setLoading(true);
 
-    try {
+  try {
+    // ── Helper: did any non-toggle field change? ──────────────────────────
+    const hasNonToggleChanges = () => {
+      if (!editData) return true; // always POST for new sections
+
+      const textChanged =
+        (formData.mainTitle || null) !== (editData.mainTitle || null) ||
+        (formData.subTitle || null) !== (editData.subTitle || null) ||
+        (formData.ctaText || null) !== (editData.ctaText || null) ||
+        (formData.ctaLink || null) !== (editData.ctaLink || null) ||
+        (formData.propertyTypeId || null) !== (editData.propertyTypeId || null);
+
+      if (textChanged) return true;
+
+      // New files were picked → media will change
+      const hasNewFiles =
+        backgroundMedia.allFiles.length > 0 ||
+        backgroundMedia.lightFiles.length > 0 ||
+        backgroundMedia.darkFiles.length > 0 ||
+        subMedia.allFiles.length > 0 ||
+        subMedia.lightFiles.length > 0 ||
+        subMedia.darkFiles.length > 0;
+
+      if (hasNewFiles) return true;
+
+      // Existing media was removed (id arrays differ in length)
+      const originalBgAllLen   = (editData.backgroundMediaAll ?? editData.backgroundAll ?? []).length;
+      const originalBgLightLen = (editData.backgroundMediaLight ?? editData.backgroundLight ?? []).length;
+      const originalBgDarkLen  = (editData.backgroundMediaDark ?? editData.backgroundDark ?? []).length;
+      const originalSubAllLen  = (editData.subMediaAll ?? editData.subAll ?? []).length;
+      const originalSubLightLen= (editData.subMediaLight ?? editData.subLight ?? []).length;
+      const originalSubDarkLen = (editData.subMediaDark ?? editData.subDark ?? []).length;
+
+      if (
+        backgroundMedia.allMediaIds.length   !== originalBgAllLen   ||
+        backgroundMedia.lightMediaIds.length !== originalBgLightLen ||
+        backgroundMedia.darkMediaIds.length  !== originalBgDarkLen  ||
+        subMedia.allMediaIds.length          !== originalSubAllLen  ||
+        subMedia.lightMediaIds.length        !== originalSubLightLen||
+        subMedia.darkMediaIds.length         !== originalSubDarkLen
+      ) return true;
+
+      return false;
+    };
+
+    const syncHeroStatusFlags = async (heroId) => {
+      const originalFlags = editData
+        ? {
+            active: editData.active ?? false,
+            showOnHomepage: editData.showOnHomepage ?? false,
+            showOnMobilePage: editData.showOnMobilePage ?? false,
+          }
+        : { active: false, showOnHomepage: false, showOnMobilePage: false };
+
+      const toggleTasks = [];
+
+      if (originalFlags.active !== formData.active) {
+        toggleTasks.push({
+          label: "Active status",
+          task: toggleHeroSectionActive(heroId, formData.active),
+        });
+      }
+      if (originalFlags.showOnHomepage !== formData.showOnHomepage) {
+        toggleTasks.push({
+          label: "Desktop view",
+          task: toggleHeroSectionHomepage(heroId, formData.showOnHomepage),
+        });
+      }
+      if (originalFlags.showOnMobilePage !== formData.showOnMobilePage) {
+        toggleTasks.push({
+          label: "Mobile view",
+          task: toggleHeroSectionMobile(heroId, formData.showOnMobilePage),
+        });
+      }
+
+      if (!toggleTasks.length) return [];
+
+      const results = await Promise.allSettled(toggleTasks.map((t) => t.task));
+      return results
+        .map((result, i) => ({ ...result, label: toggleTasks[i].label }))
+        .filter((r) => r.status === "rejected");
+    };
+
+    // ── EDIT path ─────────────────────────────────────────────────────────
+    if (editData?.id) {
+      const toggleFailures = await syncHeroStatusFlags(editData.id);
+
+      if (toggleFailures.length > 0) {
+        showWarning(
+          `${toggleFailures.map((f) => f.label).join(", ")} could not be updated.`
+        );
+      }
+
+      // Only call updateHeroSectionById when something beyond toggles changed
+      if (hasNonToggleChanges()) {
+        const uploadResults = await Promise.all([
+          processUpload(backgroundMedia.allFiles),
+          processUpload(backgroundMedia.lightFiles),
+          processUpload(backgroundMedia.darkFiles),
+          processUpload(subMedia.allFiles),
+          processUpload(subMedia.lightFiles),
+          processUpload(subMedia.darkFiles),
+        ]);
+        const [bgAll, bgLight, bgDark, subAll, subLight, subDark] = uploadResults;
+
+        const payload = {
+          mainTitle: formData.mainTitle || null,
+          subTitle: formData.subTitle || null,
+          ctaText: formData.ctaText || null,
+          ctaLink: formData.ctaLink || null,
+          active: editData.active ?? false,
+          showOnHomepage: editData.showOnHomepage ?? false,
+          showOnMobilePage: editData.showOnMobilePage ?? false,
+          propertyTypeId: formData.propertyTypeId,
+          backgroundAll:
+            backgroundMedia.theme === "ALL"
+              ? [...backgroundMedia.allMediaIds, ...bgAll]
+              : [],
+          backgroundLight:
+            backgroundMedia.theme === "SPLIT"
+              ? [...backgroundMedia.lightMediaIds, ...bgLight]
+              : [],
+          backgroundDark:
+            backgroundMedia.theme === "SPLIT"
+              ? [...backgroundMedia.darkMediaIds, ...bgDark]
+              : [],
+          subAll:
+            subMedia.theme === "ALL" ? [...subMedia.allMediaIds, ...subAll] : [],
+          subLight:
+            subMedia.theme === "SPLIT"
+              ? [...subMedia.lightMediaIds, ...subLight]
+              : [],
+          subDark:
+            subMedia.theme === "SPLIT"
+              ? [...subMedia.darkMediaIds, ...subDark]
+              : [],
+        };
+
+        await updateHeroSectionById(editData.id, payload);
+      }
+
+      showSuccess("Hero Section updated successfully!");
+      setTimeout(() => {
+        onClose();
+        if (onSuccess) onSuccess();
+      }, 1500);
+
+    // ── CREATE path ───────────────────────────────────────────────────────
+    } else {
       const uploadResults = await Promise.all([
         processUpload(backgroundMedia.allFiles),
         processUpload(backgroundMedia.lightFiles),
@@ -577,28 +725,16 @@ function AddHeroSectionModal({
         processUpload(subMedia.lightFiles),
         processUpload(subMedia.darkFiles),
       ]);
-
       const [bgAll, bgLight, bgDark, subAll, subLight, subDark] = uploadResults;
-      const originalFlags = editData
-        ? {
-            active: editData.active ?? false,
-            showOnHomepage: editData.showOnHomepage ?? false,
-            showOnMobilePage: editData.showOnMobilePage ?? false,
-          }
-        : {
-            active: false,
-            showOnHomepage: false,
-            showOnMobilePage: false,
-          };
 
       const payload = {
         mainTitle: formData.mainTitle || null,
         subTitle: formData.subTitle || null,
         ctaText: formData.ctaText || null,
         ctaLink: formData.ctaLink || null,
-        active: originalFlags.active,
-        showOnHomepage: originalFlags.showOnHomepage,
-        showOnMobilePage: originalFlags.showOnMobilePage,
+        active: false,
+        showOnHomepage: false,
+        showOnMobilePage: false,
         propertyTypeId: formData.propertyTypeId,
         backgroundAll:
           backgroundMedia.theme === "ALL"
@@ -624,83 +760,35 @@ function AddHeroSectionModal({
             : [],
       };
 
-      const syncHeroStatusFlags = async (heroId) => {
-        const toggleTasks = [];
+      const response = await createHeroSection(payload);
+      const createdHeroId = response?.data?.id || response?.id;
 
-        if (originalFlags.active !== formData.active) {
-          toggleTasks.push({
-            label: "Active status",
-            task: toggleHeroSectionActive(heroId, formData.active),
-          });
-        }
-        if (originalFlags.showOnHomepage !== formData.showOnHomepage) {
-          toggleTasks.push({
-            label: "Desktop view",
-            task: toggleHeroSectionHomepage(heroId, formData.showOnHomepage),
-          });
-        }
-        if (originalFlags.showOnMobilePage !== formData.showOnMobilePage) {
-          toggleTasks.push({
-            label: "Mobile view",
-            task: toggleHeroSectionMobile(heroId, formData.showOnMobilePage),
-          });
-        }
-
-        if (!toggleTasks.length) {
-          return [];
-        }
-
-        const results = await Promise.allSettled(
-          toggleTasks.map((toggleTask) => toggleTask.task),
-        );
-
-        return results
-          .map((result, index) => ({ ...result, label: toggleTasks[index].label }))
-          .filter((result) => result.status === "rejected");
-      };
-
-      if (editData?.id) {
-        const toggleFailures = await syncHeroStatusFlags(editData.id);
-        await updateHeroSectionById(editData.id, payload);
-        if (toggleFailures.length > 0) {
-          showWarning(
-            `${toggleFailures.map((failure) => failure.label).join(", ")} could not be updated.`,
-          );
-        }
-        showSuccess("Hero Section updated successfully!");
-        setTimeout(() => {
-          onClose();
-          if (onSuccess) onSuccess();
-        }, 1500);
-      } else {
-        const response = await createHeroSection(payload);
-        const createdHeroId = response?.data?.id || response?.id;
-
-        if (!createdHeroId) {
-          throw new Error("Hero section created, but no ID was returned.");
-        }
-
-        const toggleFailures = await syncHeroStatusFlags(createdHeroId);
-        if (toggleFailures.length > 0) {
-          showWarning(
-            `${toggleFailures.map((failure) => failure.label).join(", ")} could not be updated.`,
-          );
-        }
-        showSuccess("Hero Section created successfully!");
-        setTimeout(() => {
-          onClose();
-          if (onSuccess) onSuccess();
-        }, 1500);
+      if (!createdHeroId) {
+        throw new Error("Hero section created, but no ID was returned.");
       }
-    } catch (error) {
-      console.error("Error saving hero section:", error);
-      setLoading(false);
-      showError(
-        error.response?.data?.message ||
-          "Failed to save hero section. Please try again.",
-      );
+
+      const toggleFailures = await syncHeroStatusFlags(createdHeroId);
+      if (toggleFailures.length > 0) {
+        showWarning(
+          `${toggleFailures.map((f) => f.label).join(", ")} could not be updated.`
+        );
+      }
+
+      showSuccess("Hero Section created successfully!");
+      setTimeout(() => {
+        onClose();
+        if (onSuccess) onSuccess();
+      }, 1500);
     }
-  };
+  } catch (error) {
+    console.error("Error saving hero section:", error);
+    setLoading(false);
+    showError(
+      error.response?.data?.message ||
+        "Failed to save hero section. Please try again."
+    );
+  }
+};
 
   if (!isOpen) return null;
 
