@@ -76,7 +76,7 @@ const normalizeHero = (response) => {
   const content = Array.isArray(pageData?.content) ? pageData.content : [];
 
   return [...content]
-    .filter((item) => item.active === true && item.showOnHomepage === true)
+    .filter((item) => item.active === true)
     .sort((a, b) => b.id - a.id)
     .map((item) => {
       const backgroundMedia =
@@ -112,6 +112,8 @@ const normalizeHero = (response) => {
         subtitle: item.subTitle || "",
         cta: item.ctaText ?? undefined,
         ctaLink: item.ctaLink ?? null,
+        showOnHomepage: item.showOnHomepage,
+        showOnMobilePage: item.showOnMobilePage ?? null,
       };
     });
 };

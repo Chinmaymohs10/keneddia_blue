@@ -30,6 +30,7 @@ const transformApiDataToSlides = (content) =>
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
+        showOnHomepage: item.showOnHomepage === true,
         showOnMobilePage: item.showOnMobilePage ?? null,
       };
     })
@@ -69,20 +70,29 @@ export default function HeroBanner({ initialSlides, onReady }) {
     () => slides.filter((s) => s.showOnMobilePage === true),
     [slides],
   );
+  const desktopSlides = useMemo(
+    () => slides.filter((s) => s.showOnHomepage === true),
+    [slides],
+  );
 
   useEffect(() => {
-    if (slides.length > 0 && !onReadyCalled.current) {
+    if ((desktopSlides.length > 0 || mobileSlides.length > 0) && !onReadyCalled.current) {
       onReadyCalled.current = true;
       onReady?.();
     }
-  }, [slides.length, onReady]);
+  }, [desktopSlides.length, mobileSlides.length, onReady]);
 
   useEffect(() => {
-    if (!isFetchingHero && slides.length === 0 && !onReadyCalled.current) {
+    if (
+      !isFetchingHero &&
+      desktopSlides.length === 0 &&
+      mobileSlides.length === 0 &&
+      !onReadyCalled.current
+    ) {
       onReadyCalled.current = true;
       onReady?.();
     }
-  }, [isFetchingHero, slides.length, onReady]);
+  }, [desktopSlides.length, isFetchingHero, mobileSlides.length, onReady]);
 
   useEffect(() => {
     // Skip client fetch if SSR already provided slides
@@ -131,14 +141,14 @@ export default function HeroBanner({ initialSlides, onReady }) {
   }, [initialSlides]);
 
   useEffect(() => {
-    if (slides.length <= 1) return undefined;
+    if (desktopSlides.length <= 1) return undefined;
 
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % slides.length);
+      setActiveIndex((current) => (current + 1) % desktopSlides.length);
     }, 6000);
 
     return () => window.clearInterval(timer);
-  }, [slides.length]);
+  }, [desktopSlides.length]);
 
   useEffect(() => {
     if (mobileSlides.length <= 1) return undefined;
@@ -151,17 +161,39 @@ export default function HeroBanner({ initialSlides, onReady }) {
   }, [mobileSlides.length]);
 
   const goToSlide = (index) => {
-    setActiveIndex((index + slides.length) % slides.length);
+    if (desktopSlides.length === 0) return;
+    setActiveIndex((index + desktopSlides.length) % desktopSlides.length);
   };
 
   const goToMobileSlide = (index) => {
     setMobileActiveIndex((index + mobileSlides.length) % mobileSlides.length);
   };
 
-  const activeSlide = useMemo(() => slides[activeIndex] || null, [activeIndex, slides]);
+  const activeSlide = useMemo(
+    () => desktopSlides[activeIndex] || null,
+    [activeIndex, desktopSlides],
+  );
   const activeMobileSlide = useMemo(() => mobileSlides[mobileActiveIndex] || null, [mobileActiveIndex, mobileSlides]);
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (desktopSlides.length === 0) return [];
+    if (desktopSlides.length === 1) {
+      return [{ slide: desktopSlides[0], index: 0 }];
+    }
 
-  if (!activeSlide) {
+    return Array.from({ length: desktopSlides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % desktopSlides.length;
+      const slide = desktopSlides[index];
+
+      if (!slide) return null;
+
+      return {
+        slide,
+        index,
+      };
+    }).filter(Boolean);
+  }, [activeIndex, desktopSlides]);
+
+  if (!activeSlide && !activeMobileSlide) {
     return (
       <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
@@ -185,29 +217,38 @@ export default function HeroBanner({ initialSlides, onReady }) {
   }
 
   return (
-    <section className="relative h-auto md:h-[90vh] w-full overflow-hidden bg-background">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSlide.id}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="absolute inset-0 hidden md:block"
-        >
-          <HeroMedia slide={activeSlide} />
-        </motion.div>
-      </AnimatePresence>
+    <section
+      className={`relative w-full overflow-hidden bg-background ${
+        activeSlide ? "h-auto md:h-[90vh]" : "h-auto"
+      }`}
+    >
+      {activeSlide && (
+        <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide.id}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="absolute inset-0 hidden md:block"
+            >
+              <HeroMedia slide={activeSlide} />
+            </motion.div>
+          </AnimatePresence>
 
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
+          <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
 
-      <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
-        {activeSlide.bgTitle}
-      </div>
+          <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
+            {activeSlide.bgTitle}
+          </div>
+        </>
+      )}
 
-      <div className="relative z-10 hidden h-full items-center md:flex">
+      {activeSlide && (
+        <div className="relative z-10 hidden h-full items-center md:flex">
         <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
-          <div className="w-full md:w-[70%] xl:w-[60%]">
+          <div className="w-full md:w-[70%] xl:w-[75%]">
             {activeSlide.title && (
               <motion.h1
                 key={`title-${activeSlide.id}`}
@@ -260,7 +301,8 @@ export default function HeroBanner({ initialSlides, onReady }) {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {mobileSlides.length === 0 ? (
         <div
@@ -381,7 +423,7 @@ export default function HeroBanner({ initialSlides, onReady }) {
       <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
         <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
-            {slides.map((_, index) => (
+            {desktopSlides.map((_, index) => (
               <div
                 key={`indicator-${index}`}
                 onClick={() => goToSlide(index)}
@@ -411,18 +453,14 @@ export default function HeroBanner({ initialSlides, onReady }) {
         </div>
 
         <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
-          {slides.map((slide, index) => (
+          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
             <motion.div
               key={`thumbnail-${slide.id}`}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.12 + 0.35 }}
+              transition={{ delay: thumbOrder * 0.12 + 0.35 }}
               onClick={() => goToSlide(index)}
-              className={`group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 ${
-                activeIndex === index
-                  ? "z-10 scale-105 ring-2 ring-[#FDFBF7] shadow-2xl"
-                  : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
-              }`}
+              className="group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
             >
               {slide.isVideo ? (
                 <video

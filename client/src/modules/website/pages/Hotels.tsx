@@ -58,6 +58,7 @@ interface ApiHeroItem {
   subLight: MediaItem[];
   subDark: MediaItem[];
   active: boolean;
+  showOnHomepage: boolean;
   showOnMobilePage: boolean | null;
 }
 
@@ -69,6 +70,7 @@ interface HeroSlide {
   subtitle: string;
   ctaText?: string | null;
   ctaLink?: string | null;
+  showOnHomepage?: boolean;
   showOnMobilePage?: boolean | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
@@ -134,6 +136,7 @@ const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
       subtitle: item.subTitle || "",
       ctaText: item.ctaText || null,
       ctaLink: item.ctaLink || null,
+      showOnHomepage: item.showOnHomepage,
       showOnMobilePage: item.showOnMobilePage ?? null,
       backgroundAll: item.backgroundAll || [],
       backgroundLight: item.backgroundLight || [],

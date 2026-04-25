@@ -145,6 +145,7 @@ const normalizeHeroSlides = (data) =>
         subtitle: item.subTitle || "",
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
+        showOnHomepage: item.showOnHomepage,
         showOnMobilePage: item.showOnMobilePage ?? null,
         backgroundAll: item.backgroundAll || [],
         backgroundLight: item.backgroundLight || [],

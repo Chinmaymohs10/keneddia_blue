@@ -30,6 +30,7 @@ const transformApiDataToSlides = (content) =>
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
+        showOnHomepage: item.showOnHomepage === true,
         showOnMobilePage: item.showOnMobilePage ?? null,
       };
     })
@@ -67,20 +68,29 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
     () => slides.filter((s) => s.showOnMobilePage === true),
     [slides],
   );
+  const desktopSlides = useMemo(
+    () => slides.filter((s) => s.showOnHomepage === true),
+    [slides],
+  );
 
   useEffect(() => {
-    if (slides.length > 0 && !onReadyCalled.current) {
+    if ((desktopSlides.length > 0 || mobileSlides.length > 0) && !onReadyCalled.current) {
       onReadyCalled.current = true;
       onReady?.();
     }
-  }, [slides.length, onReady]);
+  }, [desktopSlides.length, mobileSlides.length, onReady]);
 
   useEffect(() => {
-    if (!isFetchingHero && slides.length === 0 && !onReadyCalled.current) {
+    if (
+      !isFetchingHero &&
+      desktopSlides.length === 0 &&
+      mobileSlides.length === 0 &&
+      !onReadyCalled.current
+    ) {
       onReadyCalled.current = true;
       onReady?.();
     }
-  }, [isFetchingHero, slides.length, onReady]);
+  }, [desktopSlides.length, isFetchingHero, mobileSlides.length, onReady]);
 
   useEffect(() => {
     if (Array.isArray(initialSlides) && initialSlides.length > 0) {
@@ -126,14 +136,14 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   }, [initialSlides]);
 
   useEffect(() => {
-    if (slides.length <= 1) return undefined;
+    if (desktopSlides.length <= 1) return undefined;
 
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % slides.length);
+      setActiveIndex((current) => (current + 1) % desktopSlides.length);
     }, 6000);
 
     return () => window.clearInterval(timer);
-  }, [slides.length]);
+  }, [desktopSlides.length]);
 
   useEffect(() => {
     if (mobileSlides.length <= 1) return undefined;
@@ -146,17 +156,39 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   }, [mobileSlides.length]);
 
   const goToSlide = (index) => {
-    setActiveIndex((index + slides.length) % slides.length);
+    if (desktopSlides.length === 0) return;
+    setActiveIndex((index + desktopSlides.length) % desktopSlides.length);
   };
 
   const goToMobileSlide = (index) => {
     setMobileActiveIndex((index + mobileSlides.length) % mobileSlides.length);
   };
 
-  const activeSlide = useMemo(() => slides[activeIndex] || null, [activeIndex, slides]);
+  const activeSlide = useMemo(
+    () => desktopSlides[activeIndex] || null,
+    [activeIndex, desktopSlides],
+  );
   const activeMobileSlide = useMemo(() => mobileSlides[mobileActiveIndex] || null, [mobileActiveIndex, mobileSlides]);
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (desktopSlides.length === 0) return [];
+    if (desktopSlides.length === 1) {
+      return [{ slide: desktopSlides[0], index: 0 }];
+    }
 
-  if (!activeSlide) {
+    return Array.from({ length: desktopSlides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % desktopSlides.length;
+      const slide = desktopSlides[index];
+
+      if (!slide) return null;
+
+      return {
+        slide,
+        index,
+      };
+    }).filter(Boolean);
+  }, [activeIndex, desktopSlides]);
+
+  if (!activeSlide && !activeMobileSlide) {
     return (
       <section className="relative h-[90vh] w-full overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
@@ -180,83 +212,93 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   }
 
   return (
-    <section className="relative h-[90vh] w-full overflow-hidden bg-background">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSlide.id}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="absolute inset-0"
-        >
-          <HeroMedia slide={activeSlide} />
-        </motion.div>
-      </AnimatePresence>
+    <section
+      className={`relative w-full overflow-hidden bg-background ${
+        activeSlide ? "h-[90vh]" : "h-auto"
+      }`}
+    >
+      {activeSlide && (
+        <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide.id}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="absolute inset-0"
+            >
+              <HeroMedia slide={activeSlide} />
+            </motion.div>
+          </AnimatePresence>
 
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" />
+          <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" />
 
-      <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
-        {activeSlide.bgTitle}
-      </div>
+          <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
+            {activeSlide.bgTitle}
+          </div>
+        </>
+      )}
 
-      <div className="relative z-10 hidden h-full items-center md:flex">
-        <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
-          <div className="w-full md:w-[70%] xl:w-[60%]">
-            {activeSlide.title && (
-              <motion.h1
-                key={`title-${activeSlide.id}`}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-                className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
-              >
-                {activeSlide.title}
-              </motion.h1>
-            )}
-
-            {activeSlide.desc && (
-              <motion.p
-                key={`desc-${activeSlide.id}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35, duration: 0.8 }}
-                className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
-              >
-                {activeSlide.desc}
-              </motion.p>
-            )}
-
-            {activeSlide.ctaText && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.94 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, duration: 0.7 }}
-                className="flex flex-wrap items-center gap-3"
-              >
-                <button
-                  disabled={!activeSlide.ctaLink}
-                  onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                  className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${
-                    !activeSlide.ctaLink
-                      ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                      : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
-                  }`}
+      {activeSlide && (
+        <div className="relative z-10 hidden h-full items-center md:flex">
+          <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
+            <div className="w-full md:w-[70%] xl:w-[75%]">
+              {activeSlide.title && (
+                <motion.h1
+                  key={`title-${activeSlide.id}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                  className="mb-3 text-3xl font-serif font-medium leading-[1.06] tracking-tight text-white drop-shadow-lg md:text-4xl lg:text-5xl"
                 >
-                  {activeSlide.ctaLink && (
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {activeSlide.ctaText}
-                  </span>
-                </button>
-              </motion.div>
-            )}
+                  {activeSlide.title}
+                </motion.h1>
+              )}
+
+              {activeSlide.desc && (
+                <motion.p
+                  key={`desc-${activeSlide.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35, duration: 0.8 }}
+                  className="mb-6 max-w-2xl text-sm font-light capitalize tracking-normal text-white/90 drop-shadow-md md:text-base"
+                >
+                  {activeSlide.desc}
+                </motion.p>
+              )}
+
+              {activeSlide.ctaText && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.7 }}
+                  className="flex flex-wrap items-center gap-3"
+                >
+                  <button
+                    disabled={!activeSlide.ctaLink}
+                    onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
+                    className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${
+                      !activeSlide.ctaLink
+                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
+                    }`}
+                  >
+                    {activeSlide.ctaLink && (
+                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {activeSlide.ctaText}
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {mobileSlides.length === 0 ? (
         <div
@@ -385,10 +427,11 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
         </div>
       )}
 
-      <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
+      {activeSlide && (
+        <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
         <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
           <div className="flex items-center gap-1.5 md:gap-2">
-            {slides.map((_, index) => (
+            {desktopSlides.map((_, index) => (
               <div
                 key={`indicator-${index}`}
                 onClick={() => goToSlide(index)}
@@ -418,18 +461,14 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
         </div>
 
         <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
-          {slides.map((slide, index) => (
+          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
             <motion.div
               key={`thumbnail-${slide.id}`}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.12 + 0.35 }}
+              transition={{ delay: thumbOrder * 0.12 + 0.35 }}
               onClick={() => goToSlide(index)}
-              className={`group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 ${
-                activeIndex === index
-                  ? "z-10 scale-105 ring-2 ring-[#FDFBF7] shadow-2xl"
-                  : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
-              }`}
+              className="group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
             >
               {slide.isVideo ? (
                 <video
@@ -455,9 +494,11 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             </motion.div>
           ))}
         </div>
-      </div>
+        </div>
+      )}
 
-      <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
+      {activeSlide && (
+        <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
         <svg
           viewBox="0 0 1440 320"
           className="h-full w-full"
@@ -468,7 +509,8 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
           />
         </svg>
-      </div>
+        </div>
+      )}
     </section>
   );
 }

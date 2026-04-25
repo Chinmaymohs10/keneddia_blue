@@ -777,6 +777,9 @@ function AddHeroSectionModal({
                     ? "Property-type mode: this hero will be shown for the selected vertical"
                     : "Homepage mode: All options available"}
                 </p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Desktop View and Mobile View can be controlled independently.
+                </p>
               </div>
 
               {/* Text Fields Section */}
@@ -955,7 +958,7 @@ function AddHeroSectionModal({
               </div>
 
               {/* Switches Section */}
-              <div className="p-6 flex items-center gap-10">
+              <div className="p-6 flex flex-wrap items-center gap-6">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
@@ -970,24 +973,20 @@ function AddHeroSectionModal({
                   </span>
                 </label>
 
-                {/* Show on Homepage toggle - Only for homepage mode */}
-                {/* {!isPropertyTypeSelected && (
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={formData.showOnHomepage}
-                      onChange={(e) =>
-                        handleInputChange("showOnHomepage", e.target.checked)
-                      }
-                      className="w-4 h-4 rounded accent-primary cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
-                      Show on Homepage
-                    </span>
-                  </label>
-                )} */}
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnHomepage}
+                    onChange={(e) =>
+                      handleInputChange("showOnHomepage", e.target.checked)
+                    }
+                    className="w-4 h-4 rounded accent-primary cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
+                    Desktop View
+                  </span>
+                </label>
 
-                {/* Show on Mobile Page toggle */}
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"

@@ -54,6 +54,7 @@ const normalizeHeroSlides = (data) =>
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
+        showOnHomepage: item.showOnHomepage === true,
         showOnMobilePage: item.showOnMobilePage ?? null,
       };
     })

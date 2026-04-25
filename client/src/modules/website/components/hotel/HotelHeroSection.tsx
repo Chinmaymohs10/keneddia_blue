@@ -27,6 +27,7 @@ export interface HeroSlide {
   subtitle: string;
   ctaText?: string;
   ctaLink?: string;
+  showOnHomepage?: boolean;
   showOnMobilePage?: boolean | null;
   backgroundAll: MediaItem[];
   backgroundLight: MediaItem[];
@@ -96,6 +97,11 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
 
+  const desktopSlides = useMemo(
+    () => slides.filter((s) => s.showOnHomepage === true),
+    [slides],
+  );
+
   const mobileSlides = useMemo(
     () => slides.filter((s) => s.showOnMobilePage === true),
     [slides],
@@ -151,7 +157,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
   }, []);
 
   useEffect(() => {
-    if (!swiperInstance || slides.length === 0) return;
+    if (!swiperInstance || desktopSlides.length === 0) return;
 
     if (loadedSlides.has(activeIndex)) {
       swiperInstance.autoplay?.start();
@@ -159,7 +165,26 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     }
 
     swiperInstance.autoplay?.stop();
-  }, [activeIndex, loadedSlides, slides.length, swiperInstance]);
+  }, [activeIndex, desktopSlides.length, loadedSlides, swiperInstance]);
+
+  const upcomingThumbnailSlides = useMemo(() => {
+    if (desktopSlides.length === 0) return [];
+    if (desktopSlides.length === 1) {
+      return [{ slide: desktopSlides[0], index: 0 }];
+    }
+
+    return Array.from({ length: desktopSlides.length - 1 }, (_, offset) => {
+      const index = (activeIndex + offset + 1) % desktopSlides.length;
+      const slide = desktopSlides[index];
+
+      if (!slide) return null;
+
+      return {
+        slide,
+        index,
+      };
+    }).filter(Boolean);
+  }, [activeIndex, desktopSlides]);
 
   const getBackgroundMedia = useCallback(
     (slide: HeroSlide) => {
@@ -327,12 +352,16 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
     [getThumbnailMedia, imageErrors, logMediaError],
   );
 
-  if (!loading && slides.length === 0) {
+  if (!loading && desktopSlides.length === 0 && mobileSlides.length === 0) {
     return <EmptyHeroState />;
   }
 
   return (
-    <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
+    <section
+      className={`relative w-full overflow-hidden bg-background ${
+        desktopSlides.length > 0 ? "h-auto md:h-screen" : "h-auto"
+      }`}
+    >
       {loading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
           <Loader2 size={48} className="animate-spin text-primary" />
@@ -344,12 +373,12 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
         effect="fade"
         speed={1200}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
-        loop={slides.length > 1}
+        loop={desktopSlides.length > 1}
         onSwiper={setSwiperInstance}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="w-full h-full"
       >
-        {slides.map((slide, index) => (
+        {desktopSlides.map((slide, index) => (
           <SwiperSlide key={`${slide.id}-${currentTheme}`} className="relative w-full h-full">
             <div className="hidden md:block absolute inset-0 w-full h-full overflow-hidden">
               {renderDesktopMedia(slide, index)}
@@ -357,13 +386,13 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
             <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
             <div className="hidden md:block absolute inset-0 z-10 pointer-events-none">
               <div className="container mx-auto h-full px-8 md:px-16 lg:px-24 flex items-center">
-                <div className="w-full md:w-[70%] xl:w-[60%] pointer-events-auto">
+                <div className="w-full md:w-[70%] xl:w-[75%] pointer-events-auto">
                   <motion.h1
                     key={`title-${index}-${activeIndex}`}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-tight drop-shadow-lg"
+                    className="text-3xl md:text-5xl lg:text-6xl font-serif font-medium text-white mb-6 leading-[1.1] tracking-tight drop-shadow-lg"
                   >
                     {slide.title}
                   </motion.h1>
@@ -372,7 +401,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase"
+                    className="text-lg md:text-xl text-white/90 font-light mb-10 tracking-wide uppercase drop-shadow-md"
                   >
                     {slide.subtitle}
                   </motion.p>
@@ -448,7 +477,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                   <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
                 </div>
                 <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
-                <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "6.5rem" }}>
+                <div className="absolute inset-x-0 px-5 z-20 flex flex-col items-center justify-center text-center" style={{ top: "64px", bottom: "2.5rem" }}>
                   <motion.h1
                     key={`m-title-${index}-${mobileActiveIndex}`}
                     initial={{ opacity: 0, y: 14 }}
@@ -490,7 +519,7 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
                     </motion.button>
                   )}
                 </div>
-                <div className="absolute inset-x-0 bottom-16 z-20 flex items-center justify-center gap-3">
+                <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
                   <button
                     onClick={(e) => { e.stopPropagation(); mobileSwiperInstance?.slidePrev(); }}
                     className="w-7 h-7 flex items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors"
@@ -524,33 +553,9 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
       </div>
 
       <div className="hidden md:flex absolute right-4 md:right-8 lg:right-12 bottom-48 z-20 flex-col items-end gap-4 max-w-[calc(100vw-2rem)]">
-        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
-          {slides.map((slide, index) => (
-            <motion.div
-              key={`thumbnail-${index}-${currentTheme}`}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.15 + 0.5 }}
-              onClick={() => handleThumbnailClick(index)}
-              className={`relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group ${
-                activeIndex === index
-                  ? "ring-2 ring-[#FDFBF7] shadow-2xl scale-105 z-10 grayscale-0"
-                  : "opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-              }`}
-            >
-              {renderThumbnail(slide)}
-              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
-                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
-                  {slide.subtitle || slide.title}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
         <div className="flex items-center gap-3 md:gap-4 lg:gap-6 pr-2">
           <div className="flex items-center gap-1.5 md:gap-2">
-            {slides.map((_, index) => (
+            {desktopSlides.map((_, index) => (
               <div
                 key={`indicator-${index}`}
                 onClick={() => handleThumbnailClick(index)}
@@ -577,6 +582,26 @@ export default function HotelHeroSection({ slides, loading }: HotelHeroSectionPr
               <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
             </button>
           </div>
+        </div>
+
+        <div className="flex flex-row items-end gap-2 md:gap-3 lg:gap-4 overflow-hidden">
+          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
+            <motion.div
+              key={`thumbnail-${index}-${currentTheme}`}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: thumbOrder * 0.15 + 0.5 }}
+              onClick={() => handleThumbnailClick(index)}
+              className="relative flex-shrink-0 w-[67px] h-28 md:w-[78px] md:h-[134px] lg:w-28 lg:h-[179px] cursor-pointer overflow-hidden transition-all duration-500 ease-out group opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+            >
+              {renderThumbnail(slide)}
+              <div className="absolute bottom-0 left-0 w-full p-2 md:p-3 bg-gradient-to-t from-black/90 to-transparent">
+                <p className="text-[10px] md:text-xs text-white/90 font-medium truncate">
+                  {slide.subtitle || slide.title}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

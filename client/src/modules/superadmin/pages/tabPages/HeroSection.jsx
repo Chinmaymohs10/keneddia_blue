@@ -13,8 +13,6 @@ import {
 import {
   getHeroSectionsPaginated,
   toggleHeroSectionActive,
-  toggleHeroSectionHomepage,
-  toggleHeroSectionMobile,
   getHotelHomepageHeroSection,
   getPropertyTypes,
 } from "@/Api/Api";
@@ -198,60 +196,6 @@ function HeroSection() {
     }
   };
 
-  const handleToggleHomepage = async (
-    id,
-    currentHomepageStatus,
-    sectionActive,
-  ) => {
-    const nextHomepageState = !currentHomepageStatus;
-
-    if (sectionActive !== true && nextHomepageState === true) {
-      showError(
-        "To enable the Homepage, please set the Action Status to Active/On.",
-      );
-      return;
-    }
-
-    const key = `homepage-${id}`;
-
-    try {
-      setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-      await toggleHeroSectionHomepage(id, nextHomepageState);
-      showSuccess("Homepage visibility updated");
-      refetchActiveTab();
-    } catch (error) {
-      console.log("Homepage toggle failed:", error?.response?.data);
-      showError(error?.response?.data?.message || "Update failed");
-    } finally {
-      setTogglingStatus((prev) => ({ ...prev, [key]: false }));
-    }
-  };
-
-  const handleToggleMobile = async (id, currentMobileStatus, sectionActive) => {
-    const nextMobileState = !currentMobileStatus;
-
-    if (sectionActive !== true && nextMobileState === true) {
-      showError(
-        "To enable Mobile visibility, please set the Action Status to Active/On.",
-      );
-      return;
-    }
-
-    const key = `mobile-${id}`;
-
-    try {
-      setTogglingStatus((prev) => ({ ...prev, [key]: true }));
-      await toggleHeroSectionMobile(id, nextMobileState);
-      showSuccess("Mobile visibility updated");
-      refetchActiveTab();
-    } catch (error) {
-      console.log("Mobile toggle failed:", error?.response?.data);
-      showError(error?.response?.data?.message || "Update failed");
-    } finally {
-      setTogglingStatus((prev) => ({ ...prev, [key]: false }));
-    }
-  };
-
   const truncateText = (text, limit = 50) => {
     if (!text) return "";
     return text.length > limit ? `${text.substring(0, limit)}...` : text;
@@ -274,14 +218,6 @@ function HeroSection() {
             <th className="text-left px-4 py-3 text-xs font-semibold">
               Titles
             </th>
-            {activeTab === "homepage" && (
-              <th className="text-center px-4 py-3 text-xs font-semibold">
-                Homepage
-              </th>
-            )}
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Mobile
-            </th>
             <th className="text-center px-4 py-3 text-xs font-semibold">
               Status Action
             </th>
@@ -297,9 +233,6 @@ function HeroSection() {
               section.backgroundLight?.[0] ||
               section.backgroundDark?.[0];
             const isTogglingActive = togglingStatus[`active-${section.id}`];
-            const isTogglingHome = togglingStatus[`homepage-${section.id}`];
-            const isTogglingMobile = togglingStatus[`mobile-${section.id}`];
-
             return (
               <tr
                 key={section.id}
@@ -338,60 +271,6 @@ function HeroSection() {
                   >
                     {truncateText(section.subTitle || "No Subtitle", 50)}
                   </div>
-                </td>
-                {activeTab === "homepage" && (
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() =>
-                        handleToggleHomepage(
-                          section.id,
-                          section.showOnHomepage,
-                          section.active,
-                        )
-                      }
-                      disabled={isTogglingHome}
-                      className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
-                      style={{
-                        backgroundColor: section.showOnHomepage
-                          ? colors.primary
-                          : colors.border,
-                      }}
-                    >
-                      <span
-                        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                          section.showOnHomepage
-                            ? "translate-x-6"
-                            : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </td>
-                )}
-                <td className="px-4 py-3 text-center">
-                  <button
-                    onClick={() =>
-                      handleToggleMobile(
-                        section.id,
-                        section.showOnMobilePage,
-                        section.active,
-                      )
-                    }
-                    disabled={isTogglingMobile}
-                    className="relative inline-flex items-center h-5 w-10 rounded-full transition-colors cursor-pointer outline-none"
-                    style={{
-                      backgroundColor: section.showOnMobilePage
-                        ? colors.primary
-                        : colors.border,
-                    }}
-                  >
-                    <span
-                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                        section.showOnMobilePage
-                          ? "translate-x-6"
-                          : "translate-x-1"
-                      }`}
-                    />
-                  </button>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex flex-col items-center gap-1">

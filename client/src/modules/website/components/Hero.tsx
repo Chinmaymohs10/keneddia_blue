@@ -13,7 +13,8 @@ const CACHE_KEY = "hero_sections_cache";
 const CACHE_DURATION = 5 * 60 * 1000;
 
 interface CachedData {
-  data: HeroSlide[];
+  desktopSlides: HeroSlide[];
+  mobileSlides: HeroSlide[];
   timestamp: number;
   hash: string;
 }
@@ -46,6 +47,7 @@ interface ApiHeroItem {
 }
 
 interface HeroSlide {
+  id?: number;
   type: "video" | "image";         // background media type (desktop)
   mobileMediaType: "video" | "image"; // FIX: actual type of mobileMedia url
   media: string;
@@ -56,6 +58,8 @@ interface HeroSlide {
   subtitle: string;
   cta?: string;
   ctaLink?: string | null;
+  showOnHomepage?: boolean;
+  showOnMobilePage?: boolean | null;
 }
 
 const getCurrentTheme = (): "light" | "dark" => {
@@ -85,9 +89,21 @@ const getCachedData = (): CachedData | null => {
   }
 };
 
-const setCachedData = (slides: HeroSlide[], hash: string): void => {
+const setCachedData = (
+  desktopSlides: HeroSlide[],
+  mobileSlides: HeroSlide[],
+  hash: string,
+): void => {
   try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: slides, timestamp: Date.now(), hash }));
+    sessionStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({
+        desktopSlides,
+        mobileSlides,
+        timestamp: Date.now(),
+        hash,
+      }),
+    );
   } catch {}
 };
 
@@ -154,6 +170,7 @@ const transformApiDataToSlides = (
     const mobileMediaType: "video" | "image" = isBackgroundVideo ? "video" : "image";
 
     return {
+      id: item.id,
       type: isBackgroundVideo ? "video" : "image",
       mobileMediaType,                           // NEW field
       media: backgroundMedia?.url || "",
@@ -164,6 +181,8 @@ const transformApiDataToSlides = (
       subtitle: item.subTitle || "",
       cta: item.ctaText ?? undefined,
       ctaLink: item.ctaLink ?? null,
+      showOnHomepage: item.showOnHomepage,
+      showOnMobilePage: item.showOnMobilePage ?? null,
     };
   });
 };
@@ -175,11 +194,8 @@ const transformApiDataToMobileSlides = (
   const mobileItems = content.filter(
     (item) => item.active === true && item.showOnMobilePage === true,
   );
-  const sourceItems = mobileItems.length > 0
-    ? mobileItems
-    : content.filter((item) => item.active === true && item.showOnHomepage === true);
 
-  return sourceItems.sort((a, b) => b.id - a.id).map((item) => {
+  return mobileItems.sort((a, b) => b.id - a.id).map((item) => {
     const backgroundMedia = selectMediaByTheme(theme, item.backgroundAll, item.backgroundLight, item.backgroundDark);
     const subMedia = selectMediaByTheme(theme, item.subAll, item.subLight, item.subDark);
     const isBackgroundVideo = backgroundMedia?.type === "VIDEO";
@@ -188,6 +204,7 @@ const transformApiDataToMobileSlides = (
     const mobileMediaUrl = backgroundMedia?.url || "";
     const mobileMediaType: "video" | "image" = isBackgroundVideo ? "video" : "image";
     return {
+      id: item.id,
       type: isBackgroundVideo ? "video" : "image",
       mobileMediaType,
       media: backgroundMedia?.url || "",
@@ -198,18 +215,34 @@ const transformApiDataToMobileSlides = (
       subtitle: item.subTitle || "",
       cta: item.ctaText ?? undefined,
       ctaLink: item.ctaLink ?? null,
+      showOnHomepage: item.showOnHomepage,
+      showOnMobilePage: item.showOnMobilePage ?? null,
     };
   });
 };
+
+const getInitialDesktopSlides = (items: HeroSlide[]) =>
+  (Array.isArray(items) ? items : []).filter(
+    (item) => item.showOnHomepage !== false,
+  );
+
+const getInitialMobileSlides = (items: HeroSlide[]) =>
+  (Array.isArray(items) ? items : []).filter(
+    (item) => item.showOnMobilePage === true,
+  );
 
 export default function Hero({ initialSlides = [], onReady }: { initialSlides?: HeroSlide[]; onReady?: () => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
   const [mobileSwiperInstance, setMobileSwiperInstance] = useState<SwiperType | null>(null);
   const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
-  const [mobileSlides, setMobileSlides] = useState<HeroSlide[]>([]);
+  const [mobileSlides, setMobileSlides] = useState<HeroSlide[]>(
+    getInitialMobileSlides(initialSlides),
+  );
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(getCurrentTheme());
-  const [slides, setSlides] = useState<HeroSlide[]>(initialSlides);
+  const [slides, setSlides] = useState<HeroSlide[]>(
+    getInitialDesktopSlides(initialSlides),
+  );
   const [isFetching, setIsFetching] = useState(initialSlides.length === 0);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set());
@@ -232,7 +265,8 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
       if (!forceRefresh) {
         const cachedData = getCachedData();
         if (cachedData) {
-          setSlides(cachedData.data);
+          setSlides(cachedData.desktopSlides);
+          setMobileSlides(cachedData.mobileSlides || []);
           currentHashRef.current = cachedData.hash;
           setIsFetching(false);
           return;
@@ -268,12 +302,12 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
             setSlides(apiSlides);
             setLoadedSlides(new Set());
             currentHashRef.current = newHash;
-            setCachedData(apiSlides, newHash);
           } else {
             setSlides([]);
             setLoadedSlides(new Set());
           }
           setMobileSlides(apiMobileSlides);
+          setCachedData(apiSlides, apiMobileSlides, newHash);
         }
       } catch (error) {
         console.error("Hero fetch failed:", error);
@@ -292,8 +326,12 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
       const newSlides = transformApiDataToSlides(apiDataRef.current, newTheme);
       setSlides(newSlides.length > 0 ? newSlides : []);
       setLoadedSlides(new Set());
-      if (newSlides.length > 0) setCachedData(newSlides, currentHashRef.current);
-      setMobileSlides(transformApiDataToMobileSlides(apiDataRef.current, newTheme));
+      const nextMobileSlides = transformApiDataToMobileSlides(
+        apiDataRef.current,
+        newTheme,
+      );
+      setMobileSlides(nextMobileSlides);
+      setCachedData(newSlides, nextMobileSlides, currentHashRef.current);
     }
   }, []);
 
@@ -490,7 +528,7 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
     [imageErrors, logMediaError],
   );
 
-  if (!isFetching && slides.length === 0) {
+  if (!isFetching && slides.length === 0 && mobileSlides.length === 0) {
     return (
       <section className="relative w-full h-screen overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
@@ -514,7 +552,11 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
   }
 
   return (
-    <section className="relative w-full h-auto md:h-screen overflow-hidden bg-background">
+    <section
+      className={`relative w-full overflow-hidden bg-background ${
+        slides.length > 0 ? "h-auto md:h-screen" : "h-auto"
+      }`}
+    >
       {isFetching && (
         <div className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
           <Loader2 size={16} className="animate-spin text-white/80" />
