@@ -118,7 +118,7 @@ const GROUP_BOOKINGS = [
 
 function ShowcaseCard({ item }) {
   return (
-    <div className="group relative flex h-[460px] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm">
+    <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
       {/* Image */}
       <div className="relative h-full w-full overflow-hidden">
         <img
@@ -212,6 +212,8 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
         }}
         onSwiper={setSwiper}
         className="w-full flex-1"
+        slidesPerView={1}
+        spaceBetween={0}
       >
         {items.map((item) => (
           <SwiperSlide key={item.id}>
