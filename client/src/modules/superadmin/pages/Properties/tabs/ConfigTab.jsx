@@ -728,7 +728,7 @@ function ConfigTab({ propertyData }) {
             Refresh
           </button>
 
-          <button
+          {/* <button
             onClick={loadPlaceDetails}
             disabled={detailsLoading}
             className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
@@ -744,7 +744,7 @@ function ConfigTab({ propertyData }) {
                 Fetch Place Details
               </>
             )}
-          </button>
+          </button> */}
 
           <button
             onClick={handleToggleStatus}
@@ -803,7 +803,7 @@ function ConfigTab({ propertyData }) {
       </div>
 
       {/* Google Place Details */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5">
+      {/* <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4">
           <div>
             <p className="text-sm font-bold text-gray-900">Google Place Details</p>
@@ -881,7 +881,7 @@ function ConfigTab({ propertyData }) {
             No place details loaded yet.
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* ── Guest Experience Reviews ── */}
       <GuestReviewsSection propertyId={propertyId} />

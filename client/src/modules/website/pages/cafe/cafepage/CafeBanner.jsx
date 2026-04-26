@@ -12,37 +12,69 @@ import {
   Linkedin,
   Twitter,
 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
-import { CAFE_GALLERY_ITEMS, CAFE_GALLERY_MEDIA } from "./cafeGalleryData";
+import { useMemo } from "react";
 
-const CAFE_DATA = {
+const FALLBACK_CAFE = {
   name: "Kennedia Cafe",
   location: "Noor Nagar, Raj Nagar Extension, Ghaziabad, Uttar Pradesh 201003",
   city: "Ghaziabad",
+  tagline: "Where Every Sip Feels Like a Hug",
+  description: "Crafted with love, every blend at Kennedia Café is more than just coffee — it's a comforting embrace in a cup. From the first sip to the last, our flavors are designed to bring you warmth, comfort, and joy, turning everyday moments into something truly special.",
 };
 
-const mapsLink = "https://www.google.com/maps/search/Kennedia+Cafe+Ghaziabad";
-
-export default function CafeBanner() {
-  const [isGalleryOpen, setIsGalleryOpen]     = useState(false);
+export default function CafeBanner({ propertyData, galleryData, loading }) {
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
-  const [isBookmarked, setIsBookmarked]       = useState(false);
-  const [showShare, setShowShare]             = useState(false);
-  const [activeThumb, setActiveThumb]         = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying]     = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [activeThumb, setActiveThumb] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  const shareUrl   = typeof window !== "undefined" ? window.location.href : "";
-  const totalImages = CAFE_GALLERY_MEDIA.length;
-  const thumbImages = CAFE_GALLERY_MEDIA.slice(0, Math.min(6, totalImages));
-  const mainImg     = CAFE_GALLERY_MEDIA[activeThumb];
-  const companions  = [
-    CAFE_GALLERY_MEDIA[(activeThumb + 1) % totalImages],
-    CAFE_GALLERY_MEDIA[(activeThumb + 2) % totalImages],
+  // Derive cafe fields from propertyData
+  const cafe = useMemo(() => {
+    if (!propertyData) return FALLBACK_CAFE;
+    return {
+      id: propertyData.id || propertyData.propertyId || 1,
+      propertyId: propertyData.propertyId || propertyData.id || 1,
+      name: propertyData.name || propertyData.propertyName || FALLBACK_CAFE.name,
+      location: propertyData.location || propertyData.fullAddress || FALLBACK_CAFE.location,
+      city: propertyData.city || propertyData.locationName || FALLBACK_CAFE.city,
+      tagline: propertyData.tagline || propertyData.subTitle || FALLBACK_CAFE.tagline,
+      description: propertyData.description || propertyData.mainHeading || FALLBACK_CAFE.description,
+      addressUrl: propertyData.addressUrl || null,
+      coordinates: propertyData.coordinates || null,
+    };
+  }, [propertyData]);
+
+  // Process gallery media
+  const galleryMedia = useMemo(() => {
+    if (!galleryData || galleryData.length === 0) return [];
+    return galleryData
+      .filter((g) => g.isActive && g.media?.url)
+      .sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999))
+      .map((g) => g.media);
+  }, [galleryData]);
+
+  const mapsLink = useMemo(() => {
+    return cafe.addressUrl || (cafe.coordinates
+      ? `https://www.google.com/maps?q=${cafe.coordinates.lat},${cafe.coordinates.lng}`
+      : `https://www.google.com/maps/search/${encodeURIComponent(cafe.name + " " + cafe.city)}`);
+  }, [cafe]);
+
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const totalImages = galleryMedia.length;
+  const thumbImages = galleryMedia.slice(0, Math.min(6, totalImages));
+  const mainImg = galleryMedia[activeThumb];
+  const companions = [
+    galleryMedia[(activeThumb + 1) % totalImages],
+    galleryMedia[(activeThumb + 2) % totalImages],
   ];
 
   // Auto-rotate every 3.5 s
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || totalImages <= 1) return;
     const t = setInterval(() => setActiveThumb((p) => (p + 1) % totalImages), 3500);
     return () => clearInterval(t);
   }, [isAutoPlaying, totalImages]);
@@ -55,11 +87,39 @@ export default function CafeBanner() {
   };
 
   const socialPlatforms = [
-    { name: "WhatsApp", icon: <MessageCircle size={15} />, color: "bg-[#25D366]", link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}` },
-    { name: "Facebook", icon: <Facebook size={15} />,      color: "bg-[#1877F2]", link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
-    { name: "X",        icon: <Twitter size={13} />,       color: "bg-black",     link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}` },
-    { name: "LinkedIn", icon: <Linkedin size={15} />,      color: "bg-[#0A66C2]", link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` },
+    {
+      name: "WhatsApp",
+      icon: <MessageCircle size={15} />,
+      color: "bg-[#25D366]",
+      link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook size={15} />,
+      color: "bg-[#1877F2]",
+      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "X",
+      icon: <Twitter size={13} />,
+      color: "bg-black",
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "LinkedIn",
+      icon: <Linkedin size={15} />,
+      color: "bg-[#0A66C2]",
+      link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    },
   ];
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#F8F8F6] dark:bg-[#14100b]">
+        <Loader2 className="animate-spin w-10 h-10 text-[#7a5c3a]" />
+      </div>
+    );
+  }
 
   return (
     /* ── Root: light = warm off-white | dark = deep espresso ── */
@@ -70,9 +130,14 @@ export default function CafeBanner() {
       <GalleryModal
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
-        hotel={{ name: CAFE_DATA.name, location: CAFE_DATA.location, propertyId: 1, media: CAFE_GALLERY_MEDIA }}
+        hotel={{
+          name: cafe.name,
+          location: cafe.location,
+          propertyId: cafe.propertyId,
+          media: galleryMedia,
+        }}
         initialImageIndex={initialGalleryIndex}
-        galleryData={CAFE_GALLERY_ITEMS}
+        galleryData={galleryData}
       />
 
       {/* ── BODY ── */}
@@ -94,7 +159,7 @@ export default function CafeBanner() {
               transition={{ duration: 0.4 }}
               className="flex items-center gap-1.5 text-xs font-semibold mb-4"
             >
-            <Link
+              <Link
                 to="/"
                 className="text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
               >
@@ -108,7 +173,9 @@ export default function CafeBanner() {
                 Cafes
               </Link>
               <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
-              <span className="text-[#3d1f00] dark:text-[#f0dfc0] font-black">{CAFE_DATA.name}</span>
+              <span className="text-[#3d1f00] dark:text-[#f0dfc0] font-black">
+                {cafe.name}
+              </span>
             </motion.nav>
 
             {/* Title — single line */}
@@ -130,7 +197,7 @@ export default function CafeBanner() {
                   whiteSpace: "nowrap",
                 }}
               >
-                Kennedia Café
+                {cafe.name}
               </h1>
 
               {/* Swoosh */}
@@ -152,7 +219,7 @@ export default function CafeBanner() {
               className="font-black text-[#1e0d00] dark:text-[#e8d0b0] mb-2"
               style={{ fontSize: "clamp(0.78rem, 1.5vw, 1.05rem)" }}
             >
-              Where Every Sip Feels Like a Hug
+              {cafe.tagline}
             </motion.h2>
 
             {/* Description — 2 lines, wider */}
@@ -170,10 +237,7 @@ export default function CafeBanner() {
                 overflow: "hidden",
               }}
             >
-              Crafted with love, every blend at Kennedia Café is more than just
-              coffee — it's a comforting embrace in a cup. From the first sip to
-              the last, our flavors are designed to bring you warmth, comfort, and
-              joy, turning everyday moments into something truly special.
+              {cafe.description}
             </motion.p>
 
             {/* Location */}
@@ -185,7 +249,9 @@ export default function CafeBanner() {
             >
               <div className="flex items-center gap-1.5 text-xs font-medium text-[#7a5c3a] dark:text-[#a07850]">
                 <MapPin className="w-3 h-3 shrink-0" />
-                <span className="truncate max-w-[220px]">{CAFE_DATA.location}</span>
+                <span className="truncate max-w-[220px]">
+                  {cafe.location}
+                </span>
               </div>
               <a
                 href={mapsLink} target="_blank" rel="noopener noreferrer"
@@ -227,12 +293,12 @@ export default function CafeBanner() {
                 onClick={() => handleThumbClick(i)}
                 className="relative rounded-xl overflow-hidden focus:outline-none"
                 style={{
-                  width:  "clamp(56px,8vw,90px)",
+                  width: "clamp(56px,8vw,90px)",
                   height: "clamp(56px,8vw,90px)",
                   flexShrink: 0,
                   transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
-                  border:    activeThumb === i ? "2.5px solid #1e0d00" : "2.5px solid transparent",
-                  transform: activeThumb === i ? "scale(1.08)"         : "scale(1)",
+                  border: activeThumb === i ? "2.5px solid #1e0d00" : "2.5px solid transparent",
+                  transform: activeThumb === i ? "scale(1.08)" : "scale(1)",
                   boxShadow: activeThumb === i
                     ? "0 6px 18px rgba(30,13,0,0.35)"
                     : "0 2px 8px rgba(30,13,0,0.14)",
@@ -336,13 +402,26 @@ export default function CafeBanner() {
                 )}
 
                 <div className="absolute bottom-4 left-4 pointer-events-none z-10">
-                  <p className="text-white font-black italic leading-none"
-                     style={{ fontFamily: '"Georgia",serif', fontSize: "clamp(1rem,2.4vw,1.5rem)", textShadow: "0 2px 10px rgba(0,0,0,0.6)" }}>
-                    Kennedia<br />Café
+                  <p
+                    className="text-white font-black italic leading-none"
+                    style={{
+                      fontFamily: '"Georgia",serif',
+                      fontSize: "clamp(1rem,2.4vw,1.5rem)",
+                      textShadow: "0 2px 10px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {cafe.name.split(" ").map((word, idx) => (
+                      <span key={idx}>
+                        {word}
+                        <br />
+                      </span>
+                    ))}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <MapPin className="w-2.5 h-2.5 text-white/70" />
-                    <span className="text-white/70 text-[9px] font-medium">{CAFE_DATA.city}</span>
+                    <span className="text-white/70 text-[9px] font-medium">
+                      {cafe.city}
+                    </span>
                   </div>
                 </div>
 
@@ -388,11 +467,10 @@ export default function CafeBanner() {
 
             <button
               onClick={() => setIsBookmarked((b) => !b)}
-              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${
-                isBookmarked
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${isBookmarked
                   ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
                   : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
-              }`}
+                }`}
             >
               <Heart className={`w-3.5 h-3.5 ${isBookmarked ? "fill-red-600 dark:fill-red-400" : ""}`} />
               {isBookmarked ? "Saved" : "Save"}
@@ -416,7 +494,12 @@ export default function CafeBanner() {
               />
             </AnimatePresence>
             <div className="absolute inset-0" style={{ background: "linear-gradient(to top,rgba(20,10,5,0.55) 0%,transparent 60%)" }} />
-            <p className="absolute bottom-3 left-4 text-white font-black italic text-base" style={{ fontFamily: '"Georgia",serif' }}>Kennedia Café</p>
+            <p
+              className="absolute bottom-3 left-4 text-white font-black italic text-base"
+              style={{ fontFamily: '"Georgia",serif' }}
+            >
+              {cafe.name}
+            </p>
           </div>
           <div className="flex gap-2 justify-end">
             <button className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]">
@@ -424,9 +507,15 @@ export default function CafeBanner() {
             </button>
             <button
               onClick={() => setIsBookmarked((b) => !b)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400" : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"}`}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked
+                  ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400"
+                  : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
+                }`}
             >
-              <Heart className={`w-3 h-3 ${isBookmarked ? "fill-red-600" : ""}`} /> {isBookmarked ? "Saved" : "Save"}
+              <Heart
+                className={`w-3 h-3 ${isBookmarked ? "fill-red-600" : ""}`}
+              />{" "}
+              {isBookmarked ? "Saved" : "Save"}
             </button>
           </div>
         </div>

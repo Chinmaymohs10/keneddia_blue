@@ -299,20 +299,6 @@ export default function HeroBanner({ initialSlides, onReady }) {
         </>
       )}
 
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {activeSlide.ctaText}
-                  </span>
-                </button>
-              </motion.div>
-            )}
-          </div>
-        </div>
-        </div>
-      )}
-
       {!activeMobileSlide ? (
         <div
           className="relative z-10 flex md:hidden w-full overflow-hidden bg-neutral-900 items-center justify-center h-full"
