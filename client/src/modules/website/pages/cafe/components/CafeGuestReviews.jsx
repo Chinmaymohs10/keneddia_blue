@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Star,
   X,
@@ -8,85 +8,254 @@ import {
   Edit2,
   Video,
   Youtube,
+  Volume2,
+  VolumeX,
+  PlayCircle,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { InstagramEmbed } from "react-social-media-embed";
+import {
+  createGuestExperienceByGuest,
+  getGuestExperienceSection,
+  getGuestExperienceSectionHeader,
+  getGuestExperineceRatingHeader,
+  getPropertyTypes,
+} from "@/Api/Api";
 
 import "swiper/css";
 import "swiper/css/navigation";
 
-const sectionHeader = {
+const DEFAULT_SECTION_HEADER = {
   sectionTag: "Guest Impressions",
   title: "Dining Moments Worth Returning For",
 };
-
-const ratingHeader = {
+const DEFAULT_RATING_HEADER = {
   description: "Average guest dining rating",
   rating: 5,
 };
 
-const guestReviews = [
-  {
-    id: 1,
-    author: "Ritika Sharma",
-    description:
-      "The tasting menu felt polished from start to finish. Every course arrived with perfect pacing and the dessert service was especially memorable.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 2,
-    author: "Arjun Mehta",
-    description:
-      "We booked a family dinner here and the team handled the table setup, recommendations, and service flow exceptionally well.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 3,
-    author: "Sneha Kapoor",
-    description:
-      "The live kitchen counters and beverage pairings made brunch feel premium without becoming overly formal. Strong repeat-visit energy.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 4,
-    author: "Kabir Sethi",
-    description:
-      "Private dining for our celebration was executed cleanly. The ambience, plating, and staff attentiveness stood out throughout the evening.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
-  },
-];
+const normalize = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+const isCafeType = (value = "") => normalize(value) === "cafe";
 
-export default function CafeGuestReviews() {
+const isYoutubeUrl = (url) =>
+  /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(url.trim());
+const isInstagramUrl = (url) =>
+  /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(url.trim());
+
+const getYoutubeId = (url) => {
+  if (!url) return null;
+  const matches = [
+    /youtube\.com\/shorts\/([^"&?/\s]{11})/,
+    /youtu\.be\/([^"&?/\s]{11})/,
+    /[?&]v=([^"&?/\s]{11})/,
+    /embed\/([^"&?/\s]{11})/,
+  ];
+  for (const regex of matches) {
+    const match = url.match(regex);
+    if (match) return match[1];
+  }
+  return null;
+};
+
+const getInstagramId = (url) => {
+  if (!url) return null;
+  const clean = url.trim().split("?")[0].replace(/\/$/, "");
+  const match = clean.match(/instagram\.com\/(?:reel|p|tv)\/([A-Za-z0-9_\-]+)/);
+  return match ? match[1] : null;
+};
+
+const getYoutubeThumbnail = (url) => {
+  const id = getYoutubeId(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
+};
+
+const buildMediaList = (item) => {
+  const allMedia = [];
+  const seenUrls = new Set();
+  const add = (type, url) => {
+    if (!url || typeof url !== "string") return;
+    const clean = url.trim();
+    if (!clean || seenUrls.has(clean)) return;
+    seenUrls.add(clean);
+    allMedia.push({ type, url: clean });
+  };
+
+  if (Array.isArray(item?.mediaList)) {
+    item.mediaList.forEach((m) => {
+      const url = m?.url || m?.imageUrl || m?.videoUrl;
+      if (!url) return;
+      const isVid =
+        m?.type === "VIDEO" ||
+        isYoutubeUrl(url) ||
+        isInstagramUrl(url) ||
+        /\.(mp4|webm|mov|ogg)$/i.test(url);
+      add(isVid ? "video" : "image", url);
+    });
+  }
+  if (item?.videoUrl) add("video", item.videoUrl);
+  if (item?.imageUrl) add("image", item.imageUrl);
+
+  return allMedia;
+};
+
+export default function CafeGuestReviews({
+  initialExperiences,
+  initialSectionHeader,
+  initialRatingHeader,
+  initialCafeTypeId,
+}) {
   const swiperRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const ssrLoaded = Array.isArray(initialExperiences);
+  const [guestExperiences, setGuestExperiences] = useState(ssrLoaded ? initialExperiences : []);
+  const [isLoading, setIsLoading] = useState(!ssrLoaded);
+  const [sectionHeader, setSectionHeader] = useState(
+    initialSectionHeader
+      ? {
+          sectionTag: initialSectionHeader.sectionTag || DEFAULT_SECTION_HEADER.sectionTag,
+          title: initialSectionHeader.title || DEFAULT_SECTION_HEADER.title,
+        }
+      : DEFAULT_SECTION_HEADER,
+  );
+  const [ratingHeader, setRatingHeader] = useState(
+    initialRatingHeader
+      ? {
+          description: initialRatingHeader.description || DEFAULT_RATING_HEADER.description,
+          rating: Number(initialRatingHeader.rating || DEFAULT_RATING_HEADER.rating),
+        }
+      : DEFAULT_RATING_HEADER,
+  );
+  const [cafeTypeId, setCafeTypeId] = useState(initialCafeTypeId ?? null);
+
   const [mediaPreviews, setMediaPreviews] = useState([]);
   const [feedbackText, setFeedbackText] = useState("");
   const [ytLink, setYtLink] = useState("");
+  const [ytError, setYtError] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mediaUploading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaErrors, setMediaErrors] = useState(new Set());
+  const [mutedVideos, setMutedVideos] = useState(new Set());
+  const [isClient, setIsClient] = useState(false);
 
   const hasContent = feedbackText || mediaPreviews.length > 0 || ytLink.trim();
+  const ytThumb =
+    ytLink.trim() && isYoutubeUrl(ytLink) ? getYoutubeThumbnail(ytLink) : null;
+  const instaId = ytLink.trim() && isInstagramUrl(ytLink) ? getInstagramId(ytLink) : null;
+
+  const fetchExperiences = async (resolvedCafeTypeId) => {
+    try {
+      const res = await getGuestExperienceSection({ size: 100 });
+      const rawData = res?.data?.data || res?.data || res || [];
+      const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
+
+      const filtered = list
+        .filter((item) =>
+          item?.isActive !== false &&
+          (resolvedCafeTypeId != null
+            ? Number(item?.propertyTypeId) === Number(resolvedCafeTypeId)
+            : false),
+        )
+        .sort((a, b) => {
+          const dateA = new Date(a?.createdAt || 0).getTime();
+          const dateB = new Date(b?.createdAt || 0).getTime();
+          return dateB - dateA;
+        });
+
+      setGuestExperiences(filtered);
+    } catch (error) {
+      console.error("Failed to load cafe guest experiences", error);
+      setGuestExperiences([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => { setIsClient(true); }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        const [typesRes, headerRes, ratingRes] = await Promise.all([
+          getPropertyTypes(),
+          getGuestExperienceSectionHeader(),
+          getGuestExperineceRatingHeader(),
+        ]);
+
+        const types = typesRes?.data || typesRes || [];
+        const cafeType = Array.isArray(types)
+          ? types.find(
+              (type) => type?.isActive && isCafeType(type?.typeName),
+            )
+          : null;
+        const resolvedCafeTypeId = cafeType?.id
+          ? Number(cafeType.id)
+          : null;
+        setCafeTypeId(resolvedCafeTypeId);
+
+        const sectionData = Array.isArray(headerRes?.data)
+          ? headerRes.data[0]
+          : headerRes?.data;
+        setSectionHeader({
+          sectionTag: sectionData?.sectionTag || DEFAULT_SECTION_HEADER.sectionTag,
+          title: sectionData?.title || DEFAULT_SECTION_HEADER.title,
+        });
+
+        const ratingData = Array.isArray(ratingRes?.data)
+          ? ratingRes.data[0]
+          : ratingRes?.data;
+        setRatingHeader({
+          description:
+            ratingData?.description || DEFAULT_RATING_HEADER.description,
+          rating: Number(ratingData?.rating || DEFAULT_RATING_HEADER.rating),
+        });
+
+        await fetchExperiences(resolvedCafeTypeId);
+      } catch (error) {
+        console.error("Failed to initialize cafe reviews section", error);
+        setIsLoading(false);
+      }
+    };
+
+    init();
+  }, []);
 
   const handleFileUpload = (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
+      setMediaUploading(true);
       const newPreviews = Array.from(files).map((file) => ({
         type: file.type.startsWith("video") ? "video" : "image",
         url: URL.createObjectURL(file),
         file,
       }));
       setMediaPreviews((prev) => [...prev, ...newPreviews]);
+      setMediaUploading(false);
     }
+  };
+
+  const handleYtChange = (value) => {
+    setYtLink(value);
+    const link = value.trim();
+    if (!link) {
+      setYtError("");
+      return;
+    }
+    if (!isYoutubeUrl(link) && !isInstagramUrl(link)) {
+      setYtError("Please enter a valid YouTube or Instagram Reel URL");
+      return;
+    }
+    setYtError("");
   };
 
   const handleSubmit = async () => {
@@ -94,17 +263,203 @@ export default function CafeGuestReviews() {
       setShowPopup(true);
       return;
     }
+    if (!cafeTypeId) {
+      setYtError("Cafe type is unavailable. Please try again.");
+      return;
+    }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSubmitting(false);
-    setFeedbackText("");
-    setMediaPreviews([]);
-    setYtLink("");
-    setIsVerified(false);
-    setAuthorName("");
-    setEmail("");
-    setPhone("");
+    try {
+      const formData = new FormData();
+      formData.append("title", feedbackText.slice(0, 20) || "Experience");
+      formData.append("description", feedbackText);
+      formData.append("author", authorName);
+      formData.append("authorPhone", phone);
+      formData.append("authorEmail", email);
+      formData.append("propertyTypeId", String(cafeTypeId));
+      if (ytLink.trim()) formData.append("videoUrl", ytLink.trim());
+      mediaPreviews.forEach((m) => formData.append("files", m.file));
+
+      await createGuestExperienceByGuest(formData);
+
+      setFeedbackText("");
+      setMediaPreviews([]);
+      setYtLink("");
+      setYtError("");
+      setIsVerified(false);
+      setAuthorName("");
+      setEmail("");
+      setPhone("");
+
+      await fetchExperiences(cafeTypeId);
+    } catch (error) {
+      console.error("Failed to submit cafe guest experience", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const renderMediaItem = (m, idx) => {
+    const videoKey = `video-${m.url}`;
+    const isMuted = !mutedVideos.has(videoKey);
+
+    if (m.type === "video") {
+      if (isInstagramUrl(m.url)) {
+        const id = getInstagramId(m.url);
+        if (!id) return null;
+
+        if (!isClient) {
+          return (
+            <div key={idx} className="relative flex h-full w-full items-center justify-center bg-black">
+              <a href={m.url} target="_blank" rel="noreferrer" className="text-white text-xs font-bold underline">
+                View on Instagram
+              </a>
+            </div>
+          );
+        }
+
+        return (
+          <div
+            key={idx}
+            className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black group"
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
+              <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
+            </div>
+
+            <a
+              href={m.url}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute bottom-3 right-3 z-20 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              Open
+            </a>
+          </div>
+        );
+      }
+
+      if (isYoutubeUrl(m.url)) {
+        const videoId = getYoutubeId(m.url);
+        if (!videoId) return null;
+        return (
+          <div key={idx} className="relative h-full w-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1`}
+              className="h-full w-full"
+              style={{ border: "none" }}
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        );
+      }
+
+      return (
+        <div key={idx} className="relative h-full w-full group">
+          <video
+            src={m.url}
+            className="h-full w-full object-cover"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+          />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setMutedVideos((prev) => {
+                const next = new Set(prev);
+                next.has(videoKey) ? next.delete(videoKey) : next.add(videoKey);
+                return next;
+              });
+            }}
+            className="absolute bottom-3 right-3 z-20 rounded-full bg-black/70 p-2.5 opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            {isMuted ? (
+              <VolumeX size={16} className="text-white" />
+            ) : (
+              <Volume2 size={16} className="text-white" />
+            )}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <img
+        key={idx}
+        src={m.url}
+        alt=""
+        className="h-full w-full object-cover"
+        onError={() => setMediaErrors((prev) => new Set(prev).add(m.url))}
+      />
+    );
+  };
+
+  const renderMediaGrid = (allMedia, item) => {
+    const hasMediaErrors = allMedia.some((m) => mediaErrors.has(m.url));
+    const total = allMedia.length;
+
+     if (total === 0 || hasMediaErrors) {
+      const isLongText = (item.description || "").length > 150;
+
+      return (
+        <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col justify-between overflow-hidden p-6">
+          {/* SCROLLING TEXT AREA */}
+          <div className="relative flex-1 overflow-hidden">
+            <div
+              className={`absolute top-0 left-0 w-full text-center px-2 ${
+                isLongText ? "animate-vertical-scroll" : ""
+              }`}
+            >
+              {item.description?.trim() ? (
+                <p className="text-white text-sm md:text-base italic leading-relaxed">
+                  “{item.description}”
+                </p>
+              ) : (
+                <p className="text-white/50 text-sm italic">
+                  No description provided
+                </p>
+              )}
+            </div>
+
+            {/* FADE EFFECT (top & bottom) */}
+            {isLongText && (
+              <div
+                className="pointer-events-none absolute inset-0 
+        "
+              />
+            )}
+          </div>
+
+          {/* FIXED AUTHOR (always visible) */}
+          {item.author?.trim() && (
+            <div className="text-center pt-4">
+              <p className="text-white/80 font-semibold text-sm">
+                — {item.author}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (total === 1) return <div className="h-full w-full">{renderMediaItem(allMedia[0], 0)}</div>;
+
+    return (
+      <div className="grid h-full grid-cols-2 grid-rows-2 gap-0.5">
+        {allMedia.slice(0, 4).map((m, i) => (
+          <div key={i} className="relative overflow-hidden">
+            {renderMediaItem(m, i)}
+            {i === 3 && total > 4 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <span className="text-xl font-black text-white">+{total - 4}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -129,7 +484,7 @@ export default function CafeGuestReviews() {
                       key={i}
                       size={14}
                       className={
-                        i < ratingHeader.rating
+                        i < (ratingHeader.rating || 0)
                           ? "fill-primary text-primary"
                           : "text-primary/20"
                       }
@@ -144,45 +499,53 @@ export default function CafeGuestReviews() {
 
             <div className="w-full flex-grow overflow-hidden">
               <AnimatePresence mode="wait">
-                <Swiper
-                  modules={[Autoplay, Navigation]}
-                  spaceBetween={15}
-                  slidesPerView={1.2}
-                  breakpoints={{ 768: { slidesPerView: 3 } }}
-                  autoplay={{ delay: 6000, disableOnInteraction: false }}
-                  onSwiper={(s) => {
-                    swiperRef.current = s;
-                  }}
-                  onMouseEnter={() => {
-                    swiperRef.current?.autoplay?.stop();
-                  }}
-                  onMouseLeave={() => {
-                    swiperRef.current?.autoplay?.start();
-                  }}
-                  className="h-full w-full"
-                >
-                  {guestReviews.map((item) => (
-                    <SwiperSlide key={item.id}>
-                      <div className="group flex h-[520px] flex-col overflow-hidden rounded-xl border bg-background">
-                        <div className="relative h-full overflow-hidden bg-muted">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.author}
-                            className="h-full w-full object-cover"
-                          />
-                          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/25 to-transparent p-4">
-                            <p className="line-clamp-4 text-base italic text-white">
-                              "{item.description}"
-                            </p>
-                            <p className="text-sm font-bold text-white">
-                              {item.author}
-                            </p>
+                {isLoading ? (
+                  <div className="flex h-[320px] items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : guestExperiences.length === 0 ? (
+                  <div className="flex h-[320px] items-center justify-center text-sm text-muted-foreground">
+                    No cafe reviews yet.
+                  </div>
+                ) : (
+                  <Swiper
+                    key={guestExperiences.length}
+                    modules={[Autoplay, Navigation]}
+                    spaceBetween={15}
+                    slidesPerView={1.2}
+                    breakpoints={{ 768: { slidesPerView: 3 } }}
+                    autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                    onSwiper={(s) => {
+                      swiperRef.current = s;
+                    }}
+                    className="h-full w-full"
+                  >
+                    {guestExperiences.map((item) => {
+                      const allMedia = buildMediaList(item);
+                      return (
+                        <SwiperSlide key={item.id}>
+                          <div className="group flex h-[520px] flex-col overflow-hidden rounded-xl border bg-background">
+                            <div className="relative h-full overflow-hidden bg-muted">
+                              {renderMediaGrid(allMedia, item)}
+                              {allMedia.length > 0 && (
+                                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-transparent p-4">
+                                  {item.description?.trim() && (
+                                    <p className="line-clamp-4 text-base italic text-white">
+                                      "{item.description}"
+                                    </p>
+                                  )}
+                                  <p className="text-sm font-bold text-white">
+                                    {item.author}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+                        </SwiperSlide>
+                      );
+                    })}
+                  </Swiper>
+                )}
               </AnimatePresence>
             </div>
           </div>
@@ -215,33 +578,72 @@ export default function CafeGuestReviews() {
                 </div>
               </div>
 
-              <textarea
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder="Tell us about your dining experience..."
-                className="mb-3 w-full flex-grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
-              />
+              <div className="relative mb-3 flex flex-col grow">
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value.slice(0, 300))}
+                  placeholder="Tell us about your dining experience..."
+                  maxLength={300}
+                  className="w-full grow resize-none rounded-xl border-none bg-secondary/20 p-4 text-sm outline-none focus:ring-1 focus:ring-primary"
+                />
+                <span className={`self-end text-[10px] mt-1 font-medium ${feedbackText.length >= 300 ? "text-red-500" : "text-muted-foreground"}`}>
+                  {feedbackText.length}/300
+                </span>
+              </div>
 
               <div className="mb-3">
                 <div className="flex items-center gap-2 rounded-xl border border-transparent bg-secondary/20 px-3 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white">
                   <Youtube
                     size={15}
-                    className={ytLink ? "text-red-500" : "text-muted-foreground"}
+                    className={
+                      ytLink && (isYoutubeUrl(ytLink) || isInstagramUrl(ytLink))
+                        ? "text-red-500"
+                        : "text-muted-foreground"
+                    }
                   />
                   <input
                     type="url"
                     value={ytLink}
-                    onChange={(e) => setYtLink(e.target.value)}
+                    onChange={(e) => handleYtChange(e.target.value)}
                     placeholder="Paste YouTube or Instagram Reel link"
                     className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
                   />
                   {ytLink && (
-                    <button onClick={() => setYtLink("")}>
+                    <button
+                      onClick={() => {
+                        setYtLink("");
+                        setYtError("");
+                      }}
+                    >
                       <X size={12} />
                     </button>
                   )}
                 </div>
+                {ytError && <p className="mt-1 text-[10px] text-red-500">{ytError}</p>}
               </div>
+
+              {ytLink.trim() && !ytError && (
+                <div className="mb-3 overflow-hidden rounded-xl border bg-black">
+                  {ytThumb ? (
+                    <div className="group relative">
+                      <img
+                        src={ytThumb}
+                        alt="YouTube preview"
+                        className="h-28 w-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                        <PlayCircle className="h-8 w-8 text-white drop-shadow" />
+                      </div>
+                    </div>
+                  ) : instaId && isClient ? (
+                    <div className="relative h-44 w-full overflow-hidden bg-black flex justify-center items-center">
+                      <div className="absolute top-0 scale-[0.45] origin-top min-w-[328px] mt-2">
+                        <InstagramEmbed url={`https://www.instagram.com/p/${instaId}/`} width={328} />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {mediaPreviews.length > 0 && (
                 <div className="mb-3 grid grid-cols-4 gap-2">
@@ -279,7 +681,7 @@ export default function CafeGuestReviews() {
               <div className="mb-4 flex gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60"
+                  className="flex-grow rounded-xl bg-secondary/40 py-2.5 text-xs font-bold transition-colors hover:bg-secondary/60 cursor-pointer"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {mediaUploading ? (
@@ -302,10 +704,11 @@ export default function CafeGuestReviews() {
               <button
                 disabled={
                   isSubmitting ||
+                  ytError ||
                   (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())
                 }
                 onClick={handleSubmit}
-                className="w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50"
+                className="w-full rounded-xl bg-[#f88d8d] py-4 text-sm font-bold text-white shadow-md transition-all active:scale-95 hover:bg-[#f67a7a] disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="mx-auto animate-spin" size={20} />
@@ -330,32 +733,45 @@ export default function CafeGuestReviews() {
                 <h3 className="text-xl font-serif font-bold">
                   Guest Information
                 </h3>
-                <button onClick={() => setShowPopup(false)}>
+                <button onClick={() => { setShowPopup(false); setFormError(""); }}>
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <input
                   value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Full Name"
+                  onChange={(e) => { setAuthorName(e.target.value.replace(/[^a-zA-Z\s]/g, "")); setFormError(""); }}
+                  placeholder="Full Name *"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
                 <input
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setFormError(""); }}
                   placeholder="Email"
+                  type="email"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone"
+                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "")); setFormError(""); }}
+                  placeholder="Phone (10 digits)"
                   maxLength={10}
+                  inputMode="numeric"
                   className="w-full rounded-lg bg-muted p-3 outline-none"
                 />
+                {formError && (
+                  <p className="text-xs font-medium text-red-500">{formError}</p>
+                )}
                 <button
                   onClick={() => {
+                    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const phoneValid = /^\d{10}$/.test(phone.trim());
+                    if (!authorName.trim()) { setFormError("Full name is required."); return; }
+                    if (!/^[a-zA-Z\s]+$/.test(authorName.trim())) { setFormError("Name must contain only letters and spaces."); return; }
+                    if (!email.trim() && !phone.trim()) { setFormError("Please provide email or phone number."); return; }
+                    if (email.trim() && !emailValid) { setFormError("Please enter a valid email address."); return; }
+                    if (phone.trim() && !phoneValid) { setFormError("Phone number must be exactly 10 digits."); return; }
+                    setFormError("");
                     setIsVerified(true);
                     setShowPopup(false);
                     handleSubmit();
@@ -372,4 +788,3 @@ export default function CafeGuestReviews() {
     </section>
   );
 }
-

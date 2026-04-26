@@ -201,7 +201,7 @@ export default function CafeAbout({ initialSections }) {
                     return (
                       <div className="space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10">
                         {hasSpecial && (
-                          <div className="grid grid-cols-2 gap-8">
+                          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
                             {availabilityItem && (
                               <div className="flex flex-col gap-1.5">
                                 <div className="flex items-center gap-1.5">

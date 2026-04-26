@@ -292,7 +292,10 @@ export default function CafeHomepage() {
           <div className="h-px bg-[#E3E3DF]" />
           <div className="h-4 bg-linear-to-b from-white to-[#EFEFEB]" />
         </div>
-        <CafeBestSellers />
+        <CafeBestSellers
+          initialItems={ssr?.bestSellers}
+          cafeTypeId={ssr?.cafeTypeId}
+        />
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-white" />
           <div className="h-px bg-[#E3E3DF]" />
@@ -317,7 +320,12 @@ export default function CafeHomepage() {
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F8F8F6]" />
         </div>
-        <CafeGuestReviews />
+        <CafeGuestReviews
+          initialExperiences={ssr?.guestExperiences}
+          initialSectionHeader={ssr?.guestExperienceSectionHeader}
+          initialRatingHeader={ssr?.guestExperienceRatingHeader}
+          initialCafeTypeId={ssr?.cafeTypeId}
+        />
       </main>
 
       <div id="contact">

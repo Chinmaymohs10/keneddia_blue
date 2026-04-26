@@ -295,7 +295,7 @@ export default function CafeCoffeeStory({ initialData }) {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
             <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
-          <h2 className="mb-6 text-5xl font-serif text-zinc-950 dark:text-white">
+          <h2 className="mb-6 text-4xl sm:text-5xl font-serif text-zinc-950 dark:text-white">
             {sectionInfo.heading.split(" ").slice(0, -1).join(" ")}{" "}
             <span className="italic text-amber-800">
               {sectionInfo.heading.split(" ").slice(-1).join(" ")}

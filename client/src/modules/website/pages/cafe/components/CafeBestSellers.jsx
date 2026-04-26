@@ -12,132 +12,30 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { siteContent } from "@/data/siteContent";
+import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 
 const FILTERS = ["Hot Brews", "Cold Brews"];
 
-const BEST_SELLERS = [
-  {
-    id: 1,
-    title: "Signature Espresso",
-    description:
-      "Concentrated roast depth with a syrupy body and a polished dark chocolate finish.",
-    image: siteContent.images.cafes.minimalist.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "Espresso Bar",
-    likes: 1180,
-  },
-  {
-    id: 2,
-    title: "Cappuccino Grande",
-    description:
-      "Velvet milk foam layered over a structured espresso pull for a balanced cafe classic.",
-    image: siteContent.images.cafes.parisian.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "Milk Coffee",
-    likes: 1025,
-  },
-  {
-    id: 3,
-    title: "Hazelnut Latte",
-    description:
-      "Toasted nut sweetness folded into creamy milk and a warm aromatic coffee base.",
-    image: siteContent.images.cafes.library.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "Flavoured Latte",
-    likes: 960,
-  },
-  {
-    id: 4,
-    title: "Mocha Indulgence",
-    description:
-      "Espresso and cocoa built into a dessert-like cup with a lingering bittersweet edge.",
-    image: siteContent.images.cafes.bakery.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "Cafe Signature",
-    likes: 910,
-  },
-  {
-    id: 5,
-    title: "Pour Over Reserve",
-    description:
-      "Single-origin brewing for a cleaner cup with brighter fruit notes and longer aroma.",
-    image: siteContent.images.cafes.minimalist.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "Manual Brew",
-    likes: 865,
-  },
-  {
-    id: 6,
-    title: "Caramel Macchiato",
-    description:
-      "A sweet layered profile with espresso intensity, caramel lift, and creamy texture.",
-    image: siteContent.images.cafes.highTea.src,
-    tags: ["Hot Brews", "Best Seller"],
-    category: "House Favorite",
-    likes: 890,
-  },
-  {
-    id: 7,
-    title: "Classic Cold Brew",
-    description:
-      "Slow-steeped overnight for a smoother, low-acid glass with cocoa and malt tones.",
-    image: siteContent.images.cafes.garden.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Cold Coffee",
-    likes: 980,
-  },
-  {
-    id: 8,
-    title: "Vanilla Iced Latte",
-    description:
-      "Soft vanilla sweetness balanced with chilled espresso and a clean milk finish.",
-    image: siteContent.images.cafes.parisian.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Iced Latte",
-    likes: 930,
-  },
-  {
-    id: 9,
-    title: "Affogato Glass",
-    description:
-      "Vanilla gelato topped with hot espresso for a cold-hot contrast that feels instantly indulgent.",
-    image: siteContent.images.cafes.bakery.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Dessert Coffee",
-    likes: 845,
-  },
-  {
-    id: 10,
-    title: "Iced Americano",
-    description:
-      "Sharp, clean, and refreshing with direct roast clarity and a crisp caffeinated finish.",
-    image: siteContent.images.cafes.library.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Black Coffee",
-    likes: 820,
-  },
-  {
-    id: 11,
-    title: "Salted Caramel Frappe",
-    description:
-      "Blended coffee, cream, and caramel in a thicker frozen profile made for long cafe hours.",
-    image: siteContent.images.cafes.highTea.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Blended Coffee",
-    likes: 885,
-  },
-  {
-    id: 12,
-    title: "Espresso Tonic",
-    description:
-      "Bitters, tonic sparkle, and espresso create a sharper modern coffee serve.",
-    image: siteContent.images.cafes.garden.src,
-    tags: ["Cold Brews", "Best Seller"],
-    category: "Special Brew",
-    likes: 775,
-  },
-];
+const toCafeTag = (item) => {
+  const name = (item.itemName || "").toLowerCase();
+  const typeName = (item.type?.typeName || "").toLowerCase();
+  const catName = (item.verticalCardResponseDTO?.verticalName || "").toLowerCase();
+  
+  if (name.includes("cold") || name.includes("ice") || name.includes("frappe") || typeName.includes("cold") || catName.includes("cold")) {
+    return "Cold Brews";
+  }
+  return "Hot Brews";
+};
+
+const normalize = (item) => ({
+  id: item.id,
+  title: item.itemName,
+  description: item.description || "",
+  image: item.image?.url || item.media?.url || "",
+  tags: [toCafeTag(item), "Best Seller"],
+  category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Cafe Signature",
+  likes: item.likeCount || 0,
+});
 
 function CoffeeImage({ src, alt }) {
   const [errored, setErrored] = useState(false);
@@ -182,10 +80,12 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function CafeBestSellers() {
+export default function CafeBestSellers({ initialItems, cafeTypeId }) {
+  const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Hot Brews");
   const [expanded, setExpanded] = useState(false);
-  const [menuItems, setMenuItems] = useState(BEST_SELLERS);
+  const [menuItems, setMenuItems] = useState(ssrLoaded ? initialItems : []);
+  const [fetchLoading, setFetchLoading] = useState(!ssrLoaded);
   const [likedItems, setLikedItems] = useState({});
   const [likeSubmitting, setLikeSubmitting] = useState(false);
   const [likeModal, setLikeModal] = useState({
@@ -197,6 +97,40 @@ export default function CafeBestSellers() {
     phone: "",
     description: "",
   });
+  const [headerData, setHeaderData] = useState(null);
+
+  useEffect(() => {
+    if (!cafeTypeId) return;
+    getMenuSectionsByPropertyTypeId(cafeTypeId)
+      .then((res) => {
+        const data = res.data?.data || res.data;
+        if (Array.isArray(data)) {
+          const activeHeader = data.find((h) => h.isActive);
+          if (activeHeader) setHeaderData(activeHeader);
+          else if (data.length > 0) setHeaderData(data[0]);
+        } else if (data) {
+          setHeaderData(data);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, [cafeTypeId]);
+
+  useEffect(() => {
+    if (ssrLoaded) return;
+    getMenuItemsByTopSold(true)
+      .then((res) => {
+        const data = res.data ?? [];
+        setMenuItems(
+          (Array.isArray(data) ? data : [])
+            .filter((item) => {
+              return cafeTypeId != null && Number(item?.propertyTypeId) === Number(cafeTypeId);
+            })
+            .map(normalize)
+        );
+      })
+      .catch(() => setMenuItems([]))
+      .finally(() => setFetchLoading(false));
+  }, [ssrLoaded, cafeTypeId]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => item.tags.includes(activeFilter));
@@ -210,25 +144,33 @@ export default function CafeBestSellers() {
     setExpanded(false);
   };
 
-  const handleLikeSubmit = () => {
+  const handleLikeSubmit = async () => {
     if (!likeModal.item) return;
-
     setLikeSubmitting(true);
-
-    window.setTimeout(() => {
+    try {
+      const res = await addItemLike(likeModal.item.id, {
+        name: likeForm.name,
+        mobileNumber: likeForm.phone,
+        description: likeForm.description || "Loved it!",
+      });
+      const updated = res?.data || res;
       setMenuItems((prev) =>
         prev.map((item) =>
           item.id === likeModal.item.id
-            ? { ...item, likes: item.likes + 1 }
+            ? { ...item, likes: updated.totalLikeCount ?? item.likes + 1 }
             : item,
         ),
       );
       setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
+      toast.success("Thanks for liking this coffee.");
+    } catch {
+      setLikedItems((prev) => ({ ...prev, [likeModal.item.id]: true }));
+      toast.error("Failed to submit. Please try again.");
+    } finally {
       setLikeModal({ isOpen: false, item: null });
       setLikeForm({ name: "", phone: "", description: "" });
       setLikeSubmitting(false);
-      toast.success("Thanks for liking this coffee.");
-    }, 500);
+    }
   };
 
   const closeLikeModal = () => {
@@ -301,14 +243,13 @@ export default function CafeBestSellers() {
             </div>
 
             <h2 className="mb-2 text-3xl font-serif md:text-4xl">
-              Best Seller <span className="italic text-primary">Coffee Menu</span>
+              {headerData ? headerData.part1 : "Best Seller"}{" "}
+              <span className="italic text-primary">{headerData ? headerData.part2 : "Coffee Menu"}</span>
             </h2>
 
-            <div className="max-w-[80%]">
-              <p className="text-sm font-light leading-relaxed text-zinc-500">
-                The restaurant bestseller layout is reused here exactly in spirit,
-                but tuned for cafe categories, coffee language, and brew-led
-                highlights.
+            <div className="w-full md:max-w-[80%]">
+              <p className="text-sm font-light leading-relaxed text-zinc-500 whitespace-pre-line">
+                {headerData ? headerData.description : "The restaurant bestseller layout is reused here exactly in spirit,\nbut tuned for cafe categories, coffee language, and brew-led\nhighlights."}
               </p>
             </div>
           </div>
@@ -319,7 +260,7 @@ export default function CafeBestSellers() {
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all cursor-pointer ${
                   activeFilter === filter
                     ? filter === "Hot Brews"
                       ? "border-amber-500 bg-amber-500 text-white"
@@ -333,17 +274,27 @@ export default function CafeBestSellers() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4">
-          {primaryItems.map((item, index) => renderCard(item, index))}
-        </div>
+        {fetchLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="py-24 text-center text-muted-foreground">
+            <p className="font-medium">No top selling items found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-16 md:grid-cols-2 lg:grid-cols-4">
+            {primaryItems.map((item, index) => renderCard(item, index))}
+          </div>
+        )}
 
-        {extraItems.length > 0 && (
+        {!fetchLoading && extraItems.length > 0 && (
           <div className="px-5 pb-5 pt-8 lg:px-0 lg:pb-6">
             <div className="flex justify-center">
               <button
                 type="button"
                 onClick={() => setExpanded((current) => !current)}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 transition-all hover:border-primary/40 hover:text-primary cursor-pointer"
               >
                 {expanded ? "Show Less" : `Show More (${extraItems.length})`}
                 {expanded ? (

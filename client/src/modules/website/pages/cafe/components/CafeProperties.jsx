@@ -518,7 +518,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                               transformStyle: "preserve-3d",
                             }}
                           >
-                            <div className="h-[380px] w-[340px] max-w-[80vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl">
+                            <div className="h-[320px] w-[340px] max-w-[80vw] overflow-hidden rounded-2xl border-2 border-border bg-card shadow-2xl sm:h-[380px]">
                               <div className="relative h-full">
                                 <OptimizedImage
                                   {...cafe.image}

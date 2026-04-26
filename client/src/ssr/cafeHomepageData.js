@@ -8,10 +8,14 @@ import {
   getHotelHomepageHeroSection,
   getPropertyTypes,
   getPublicRecognitionsByAboutUsId,
+  getGuestExperienceSection,
+  getGuestExperienceSectionHeader,
+  getGuestExperineceRatingHeader,
 } from "@/Api/Api";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { getCafeSectionById, getCafeSectionsByPropertyType } from "@/Api/CafeApi";
+import { getMenuItemsByTopSold } from "@/Api/RestaurantApi";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -283,6 +287,32 @@ const normalizeEvents = (eventsRes, cafeTypeId) => {
     .filter((item) => item.image);
 };
 
+const toCafeTag = (item) => {
+  const name = (item.itemName || "").toLowerCase();
+  const typeName = (item.type?.typeName || "").toLowerCase();
+  const catName = (item.verticalCardResponseDTO?.verticalName || "").toLowerCase();
+  
+  if (name.includes("cold") || name.includes("ice") || name.includes("frappe") || typeName.includes("cold") || catName.includes("cold")) {
+    return "Cold Brews";
+  }
+  return "Hot Brews";
+};
+
+const normalizeBestSellers = (data, cafeTypeId) =>
+  (Array.isArray(data) ? data : [])
+    .filter((item) => {
+      return cafeTypeId != null && Number(item?.propertyTypeId) === Number(cafeTypeId);
+    })
+    .map((item) => ({
+      id: item.id,
+      title: item.itemName,
+      description: item.description || "",
+      image: item.image?.url || item.media?.url || "",
+      tags: [toCafeTag(item), "Best Seller"],
+      category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Cafe Signature",
+      likes: item.likeCount || 0,
+    }));
+
 const normalizeOffers = (offersRes, cafeTypeId) => {
   const rawData = offersRes?.data?.data || offersRes?.data || [];
   const list = Array.isArray(rawData) ? rawData : rawData.content || [];
@@ -481,6 +511,10 @@ export const defaultCafeHomepageData = {
   cafeEvents: [],
   cafeOffers: [],
   groupBookings: [],
+  guestExperiences: [],
+  guestExperienceSectionHeader: null,
+  guestExperienceRatingHeader: null,
+  bestSellers: [],
 };
 
 export const fetchCafeHomepageData = async () => {
@@ -500,6 +534,10 @@ export const fetchCafeHomepageData = async () => {
     offersRes,
     bookingsRes,
     storyRes,
+    guestExpRes,
+    guestHeaderRes,
+    guestRatingRes,
+    bestSellersRes,
   ] = await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
@@ -515,6 +553,10 @@ export const fetchCafeHomepageData = async () => {
     cafeTypeId
       ? fetchSafe(() => getCafeSectionsByPropertyType(cafeTypeId), { data: [] })
       : { data: [] },
+    fetchSafe(() => getGuestExperienceSection({ size: 100 }), null),
+    fetchSafe(() => getGuestExperienceSectionHeader(), null),
+    fetchSafe(() => getGuestExperineceRatingHeader(), null),
+    fetchSafe(() => getMenuItemsByTopSold(true), { data: [] }),
   ]);
 
   const aboutSections = await normalizeAboutSections(aboutRes, cafeTypeId);
@@ -531,5 +573,32 @@ export const fetchCafeHomepageData = async () => {
       ? normalizeGroupBookings(bookingsRes, cafeTypeId)
       : [],
     coffeeStory: normalizeCoffeeStory(storyRes),
+    guestExperiences: (() => {
+      const rawData = guestExpRes?.data?.data || guestExpRes?.data || guestExpRes || [];
+      const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
+      return list
+        .filter((item) =>
+          item?.isActive !== false &&
+          (cafeTypeId != null
+            ? Number(item?.propertyTypeId) === Number(cafeTypeId)
+            : false)
+        )
+        .sort((a, b) => {
+          const dateA = new Date(a?.createdAt || 0).getTime();
+          const dateB = new Date(b?.createdAt || 0).getTime();
+          return dateB - dateA;
+        });
+    })(),
+    guestExperienceSectionHeader: (() => {
+      const headerRes = guestHeaderRes;
+      const sectionData = Array.isArray(headerRes?.data) ? headerRes.data[0] : headerRes?.data;
+      return sectionData || null;
+    })(),
+    guestExperienceRatingHeader: (() => {
+      const ratingRes = guestRatingRes;
+      const ratingData = Array.isArray(ratingRes?.data) ? ratingRes.data[0] : ratingRes?.data;
+      return ratingData || null;
+    })(),
+    bestSellers: normalizeBestSellers(bestSellersRes?.data ?? [], cafeTypeId),
   };
 };
