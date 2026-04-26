@@ -6,6 +6,7 @@ import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
 
 const WineBestSellers = lazy(() => import("./components/WineBestSellers"));
+const WineTopBrands = lazy(() => import("./components/WineTopBrands"));
 const WineProperties = lazy(() => import("./components/WineProperties"));
 const WineAbout = lazy(() => import("./components/WineAbout"));
 const WineShowcaseSlider = lazy(() => import("./components/WineShowcaseSlider"));
@@ -16,6 +17,7 @@ const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "COLLECTION", key: "collection", href: "#collection" },
+  { type: "link", label: "BRANDS", key: "brand", href: "#brand" },
   { type: "link", label: "SHOWCASE", key: "showcase", href: "#showcase" },
   { type: "link", label: "REVIEWS", key: "reviews", href: "#reviews" },
   { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
@@ -58,6 +60,16 @@ export default function WineHomepage() {
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-white" />
           <div className="h-px bg-[#E5E5E2]" />
+        </div>
+        <div id="brand">
+          <Suspense fallback={<SectionFallback height="h-[24rem]" />}>
+            <WineTopBrands />
+          </Suspense>
+        </div>
+
+        <div className="dark:hidden">
+          <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-white" />
+          <div className="h-px bg-[#E3E3DF]" />
         </div>
         <div id="wine-properties">
           <Suspense fallback={<SectionFallback height="h-[32rem]" />}>

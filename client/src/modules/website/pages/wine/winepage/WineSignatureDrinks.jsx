@@ -350,11 +350,7 @@ export default function BestSellers() {
             ))}
           </div>
 
-          {/* ── Footer line ── */}
-          <div className="mt-12 flex flex-col gap-2 border-t border-zinc-200 pt-6 text-center dark:border-white/5 sm:mt-16 sm:flex-row sm:items-center sm:justify-between sm:pt-8 sm:text-left">
-            <span className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase dark:text-zinc-700">Menu Spotlight</span>
-            <span className="text-[10px] tracking-[0.25em] text-zinc-500 uppercase dark:text-zinc-700">{CATEGORIES.reduce((s, c) => s + c.items.length, 0)} total offerings</span>
-          </div>
+         
         </div>
       </section>
 

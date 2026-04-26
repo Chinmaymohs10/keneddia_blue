@@ -9,11 +9,13 @@ import WineSignatureDrinks from "./winepage/WineSignatureDrinks";
 import WineTestimonials from "./winepage/WineTestimonials";
 import WineGalleryPage from "./winepage/WineGalleryPage";
 import WineReservationForm from "./winepage/WineReservationForm";
+import WineTopBrands from "./components/WineTopBrands";
 import { siteContent } from "@/data/siteContent";
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
+  { type: "link", label: "BRANDS", key: "brand", href: "#brand" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
 ];
@@ -42,6 +44,14 @@ export default function WinePage() {
 
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-[#F5F5F3]" />
+          <div className="h-px bg-[#E3E3DF]" />
+        </div>
+        <div id="brand">
+          <WineTopBrands />
+        </div>
+
+        <div className="dark:hidden">
+          <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#EFEFEB]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
         <div id="about">

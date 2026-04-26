@@ -113,7 +113,7 @@ function BrandCard({ brand }) {
 }
 export default function WineTopBrands() {
   return (
-    <section className="relative overflow-hidden bg-[#f6f0e8] py-12 text-zinc-950 transition-colors duration-500 dark:bg-[#311a1f] dark:text-white md:py-14">
+    <section className="relative overflow-hidden bg-[#F5F5F3] py-12 text-zinc-950 transition-colors duration-500 dark:bg-[#311a1f] dark:text-white md:py-14">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.04),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(255,255,255,0.06),transparent_28%)]" />
 
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
@@ -134,7 +134,7 @@ export default function WineTopBrands() {
         <div className="relative">
           <button
             type="button"
-            className="wine-top-brands-prev absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/5 dark:text-white/80 lg:flex"
+            className="wine-top-brands-prev absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:left-1 md:h-10 md:w-10 lg:left-0"
             aria-label="Previous brands"
           >
             <ChevronLeft size={20} />
@@ -142,13 +142,13 @@ export default function WineTopBrands() {
 
           <button
             type="button"
-            className="wine-top-brands-next absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/5 dark:text-white/80 lg:flex"
+            className="wine-top-brands-next absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:right-1 md:h-10 md:w-10 lg:right-0"
             aria-label="Next brands"
           >
             <ChevronRight size={20} />
           </button>
 
-          <div className="px-0 lg:px-16">
+          <div className="px-10 sm:px-12 lg:px-16">
             <Swiper
               modules={[Navigation]}
               navigation={{
@@ -156,10 +156,12 @@ export default function WineTopBrands() {
                 nextEl: ".wine-top-brands-next",
               }}
               spaceBetween={16}
-              slidesPerView={1.2}
+              slidesPerView={1.1}
               breakpoints={{
-                640: { slidesPerView: 2.2, spaceBetween: 16 },
-                1024: { slidesPerView: 4.2, spaceBetween: 18 },
+                480: { slidesPerView: 1.35, spaceBetween: 14 },
+                640: { slidesPerView: 2.1, spaceBetween: 16 },
+                900: { slidesPerView: 3, spaceBetween: 16 },
+                1200: { slidesPerView: 4.2, spaceBetween: 18 },
               }}
             >
               {BRANDS.map((brand) => (
