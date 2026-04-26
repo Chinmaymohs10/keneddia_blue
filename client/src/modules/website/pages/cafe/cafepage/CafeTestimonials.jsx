@@ -14,141 +14,9 @@ import {
   Play,
 } from "lucide-react";
 import { AnimatePresence, motion, useAnimation, useScroll, useTransform } from "framer-motion";
-
-const sectionHeader = {
-  sectionTag: "The Daily Grind & Glory",
-  title: "A Sip of Guest Stories",
-};
-
-const ratingHeader = {
-  description: "Average Bean Rating",
-  rating: 5,
-};
-
-const guestReviews = [
-  {
-    id: 1,
-    format: "multi",
-    author: "Priya Mehta",
-    description:
-      "Kennedia Cafe is my go-to morning spot. The cold brew is exceptional and the sourdough toast is something I look forward to every weekend.",
-    date: "2 days ago",
-    media: [
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "short",
-        url: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-  {
-    id: 2,
-    format: "content-only",
-    author: "Arjun Kapoor",
-    description:
-      "The Bean-to-Cup Journey event completely changed how I think about coffee. The baristas are knowledgeable and passionate — I've never experienced anything like it at a cafe.",
-    date: "1 week ago",
-    media: [],
-  },
-  {
-    id: 3,
-    format: "multi",
-    author: "Simran Gill",
-    description:
-      "The Belgian waffles and High Tea Sunday experience were absolutely stunning. The garden terrace is a hidden gem.",
-    date: "Just now",
-    media: [
-      {
-        type: "reel",
-        url: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        type: "video",
-        url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-  {
-    id: 4,
-    format: "image-only",
-    author: "Rahul Verma",
-    description:
-      "Fast WiFi, great power sockets, and the best matcha latte I've had. The library corner is quiet enough to work.",
-    date: "3 days ago",
-    media: [
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-  {
-    id: 5,
-    format: "split",
-    author: "Neha Sharma",
-    description:
-      "The garden terrace at golden hour is something else entirely. We stayed for three hours and still didn't want to leave. A truly special place.",
-    date: "5 days ago",
-    media: [
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-  {
-    id: 6,
-    format: "content-only",
-    author: "Vikram Singh",
-    description:
-      "Every weekend feels like a ritual now. The pour over, the warm sourdough, the corner table by the window — this place has become part of my week.",
-    date: "2 weeks ago",
-    media: [],
-  },
-  {
-    id: 7,
-    format: "split",
-    author: "Kavita Rao",
-    description:
-      "Brought my whole team here for a Saturday brunch. The group platter and cold brew tower were a huge hit. Definitely coming back.",
-    date: "4 days ago",
-    media: [
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-  {
-    id: 8,
-    format: "image-only",
-    author: "Rohan Das",
-    description:
-      "The latte art here is unreal. Captured this before my first sip — couldn't help it.",
-    date: "6 days ago",
-    media: [
-      {
-        type: "image",
-        url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
-  },
-];
+import { getPropertyTypes, getGuestExperienceSection, createGuestExperienceByGuest } from "@/Api/Api";
+import { getActiveTestimonialHeaders } from "@/Api/RestaurantApi";
+import { toast } from "react-hot-toast";
 
 const motionPatterns = [
   {
@@ -172,7 +40,7 @@ const motionPatterns = [
 ];
 
 const duplicateToLength = (items, minLength) => {
-  if (items.length === 0) return [];
+  if (!items || items.length === 0) return [];
   const out = [];
   while (out.length < minLength) {
     out.push(...items);
@@ -310,7 +178,6 @@ function DateBadge({ date, light = false }) {
 function TestimonialCard({ item }) {
   const format = item.format ?? "multi";
 
-  // ── IMAGE ONLY ──────────────────────────────────────────────────────────
   if (format === "image-only") {
     const img = item.media?.[0];
     return (
@@ -331,7 +198,7 @@ function TestimonialCard({ item }) {
         <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
 
         <div className="absolute left-4 top-4 flex items-center justify-between right-4">
-          <HeartsRow light />
+          {/* <HeartsRow light /> */}
           <DateBadge date={item.date} light />
         </div>
 
@@ -342,7 +209,6 @@ function TestimonialCard({ item }) {
     );
   }
 
-  // ── CONTENT ONLY ────────────────────────────────────────────────────────
   if (format === "content-only") {
     return (
       <motion.article
@@ -354,7 +220,7 @@ function TestimonialCard({ item }) {
         <div className="absolute inset-x-6 top-0 h-20 rounded-b-full bg-linear-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" />
 
         <div className="relative z-10 flex items-center justify-between gap-4">
-          <HeartsRow />
+          {/* <HeartsRow /> */}
           <DateBadge date={item.date} />
         </div>
 
@@ -373,7 +239,6 @@ function TestimonialCard({ item }) {
     );
   }
 
-  // ── SPLIT (image-top + content-bottom) ──────────────────────────────────
   if (format === "split") {
     const img = item.media?.[0];
     return (
@@ -394,7 +259,7 @@ function TestimonialCard({ item }) {
           )}
           <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
           <div className="absolute left-3 top-3 flex items-center justify-between right-3">
-            <HeartsRow light />
+            {/* <HeartsRow light /> */}
             <DateBadge date={item.date} light />
           </div>
           {img && (
@@ -416,7 +281,6 @@ function TestimonialCard({ item }) {
     );
   }
 
-  // ── MULTI (default) ─────────────────────────────────────────────────────
   return (
     <motion.article
       whileHover={{ y: -8, rotateX: -2, rotateY: 2 }}
@@ -427,7 +291,7 @@ function TestimonialCard({ item }) {
       <div className="absolute inset-x-6 top-0 h-24 rounded-b-full bg-linear-to-b from-[#D8B08C]/20 to-transparent blur-2xl dark:from-[#A06F54]/15" />
 
       <div className="relative z-10 flex items-center justify-between gap-4">
-        <HeartsRow />
+        {/* <HeartsRow /> */}
         <DateBadge date={item.date} />
       </div>
 
@@ -458,7 +322,7 @@ function InfiniteColumn({ items, pattern, scrollYProgress }) {
       ...pattern.animate,
       transition: { duration: pattern.duration, repeat: Infinity, ease: "linear" },
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleMouseEnter = () => controls.stop();
@@ -491,7 +355,108 @@ function InfiniteColumn({ items, pattern, scrollYProgress }) {
   );
 }
 
-export default function CafeTestimonials() {
+export default function CafeTestimonials({
+  initialExperiences = [],
+  initialTestimonialHeader = null,
+  initialCafeTypeId,
+}) {
+  const ssrExperiences = Array.isArray(initialExperiences) && initialExperiences.length > 0;
+
+  const [experiences, setExperiences] = useState(ssrExperiences ? initialExperiences : []);
+  const [headerData, setHeaderData] = useState(initialTestimonialHeader || {
+    title: "A Sip of Guest Stories",
+    sectionTag: "The Daily Grind & Glory",
+    description: "",
+  });
+  const [loading, setLoading] = useState(!ssrExperiences);
+
+  useEffect(() => {
+    if (ssrExperiences && initialTestimonialHeader) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        let cafeTypeId = initialCafeTypeId;
+        if (!cafeTypeId) {
+          const typesRes = await getPropertyTypes();
+          const propertyTypes = typesRes?.data || typesRes || [];
+          const cafeType = Array.isArray(propertyTypes)
+            ? propertyTypes.find((t) => t?.isActive && t?.typeName?.toLowerCase().trim() === "cafe")
+            : null;
+          cafeTypeId = cafeType?.id ? Number(cafeType.id) : null;
+        }
+
+        const [expRes, headersRes] = await Promise.all([
+          getGuestExperienceSection({ size: 100 }),
+          getActiveTestimonialHeaders(),
+        ]);
+
+        const rawData = expRes?.data?.data ?? expRes?.data ?? expRes ?? [];
+        const list = Array.isArray(rawData) ? rawData : (rawData.content ?? []);
+
+        const mappedExp = list.filter(item => {
+          const byTypeName = (item?.propertyTypeName || "").toLowerCase().trim() === "cafe";
+          const byTypeId = cafeTypeId != null && Number(item?.propertyTypeId) === cafeTypeId;
+          return byTypeName || byTypeId;
+        }).sort((a, b) => {
+          if (a.createdAt && b.createdAt) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return Number(b.id) - Number(a.id);
+        }).map(item => {
+          const allMedia = [];
+          if (item.mediaList && Array.isArray(item.mediaList)) {
+            item.mediaList.forEach(m => {
+              if (m.url || m.imageUrl || m.videoUrl) {
+                allMedia.push({ type: m.type === "VIDEO" ? "video" : "image", url: m.url || m.imageUrl || m.videoUrl });
+              }
+            });
+          }
+          if (item.videoUrl) allMedia.push({ type: "video", url: item.videoUrl });
+          if (item.imageUrl) allMedia.push({ type: "image", url: item.imageUrl });
+
+          let format = "multi";
+          if (allMedia.length === 0) format = "content-only";
+          else if (allMedia.length === 1 && !item.description) format = "image-only";
+          else if (allMedia.length > 0 && item.description) format = "split";
+
+          return {
+            id: item.id,
+            format: format,
+            author: item.author || "Guest",
+            description: item.description || "",
+            date: item.createdAt ? new Date(item.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Recent",
+            media: allMedia,
+            title: item.title,
+          };
+        });
+
+        const allHeaders = headersRes?.data || [];
+        const cafeHeaders = allHeaders.filter(h => h.isActive && (cafeTypeId != null ? h.propertyTypeId === cafeTypeId : true)).sort((a, b) => b.id - a.id);
+        const latestHeader = cafeHeaders[0];
+
+        setExperiences(mappedExp);
+        if (latestHeader) {
+          setHeaderData({
+            title: latestHeader.testimonialName1 || latestHeader.header1 || "A Sip of Guest Stories",
+            sectionTag: latestHeader.testimonialName2 || latestHeader.header2 || "The Daily Grind & Glory",
+            description: latestHeader.description || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed fetching cafe testimonials", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [ssrExperiences, initialTestimonialHeader, initialCafeTypeId]);
+
+  const extractRatingFromTitle = (title = "") => {
+    const match = title?.match(/\((\d+)\/5\)/);
+    return match ? Number(match[1]) : null;
+  };
+  const validRatings = experiences.map((e) => extractRatingFromTitle(e.title)).filter((r) => r !== null);
+  const avgRating = validRatings.length > 0 ? (validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length).toFixed(1) : "5.0";
+
   const sectionRef = useRef(null);
   const fileInputRef = useRef(null);
   const [mediaPreviews, setMediaPreviews] = useState([]);
@@ -515,13 +480,13 @@ export default function CafeTestimonials() {
   const glowX = useTransform(scrollYProgress, [0, 1], [-20, 20]);
 
   const testimonialColumns = useMemo(() => {
-    const repeated = duplicateToLength(guestReviews, 9);
+    const repeated = duplicateToLength(experiences, 9);
     return [0, 1, 2].map((columnIndex) =>
       repeated.filter((_, itemIndex) => itemIndex % 3 === columnIndex)
     );
-  }, []);
+  }, [experiences]);
 
-  const mobileFeed = useMemo(() => duplicateToLength(guestReviews, 8), []);
+  const mobileFeed = useMemo(() => duplicateToLength(experiences, 8), [experiences]);
 
   const handleFileUpload = (e) => {
     const files = e.target.files;
@@ -541,17 +506,69 @@ export default function CafeTestimonials() {
       return;
     }
 
+    if (!authorName.trim() || !email.trim() || !phone.trim()) {
+      toast.error("Please fill in all your details to post a review.");
+      setShowPopup(true);
+      return;
+    }
+
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    setIsSubmitting(false);
-    setFeedbackText("");
-    setMediaPreviews([]);
-    setYtLink("");
-    setIsVerified(false);
-    setAuthorName("");
-    setEmail("");
-    setPhone("");
+    try {
+      const fd = new FormData();
+      const rating = 5;
+      const filled = "⭐".repeat(rating);
+      const empty = "☆".repeat(5 - rating);
+      const stars = `${filled}${empty} (${rating}/5)`;
+      const snippet = (feedbackText || "").trim().slice(0, 20);
+      const title = snippet ? `${stars} ${snippet}` : stars;
+
+      fd.append("title", title);
+      fd.append("description", feedbackText);
+      fd.append("author", authorName);
+      fd.append("authorEmail", email);
+      fd.append("authorPhone", phone);
+      fd.append("rating", String(rating));
+      if (initialCafeTypeId != null) {
+        fd.append("propertyTypeId", String(initialCafeTypeId));
+      } else {
+        const typesRes = await getPropertyTypes();
+        const propertyTypes = typesRes?.data || typesRes || [];
+        const cafeType = Array.isArray(propertyTypes)
+          ? propertyTypes.find((t) => t?.isActive && t?.typeName?.toLowerCase().trim() === "cafe")
+          : null;
+        if (cafeType?.id) fd.append("propertyTypeId", String(cafeType.id));
+      }
+
+      if (ytLink.trim()) fd.append("videoUrl", ytLink.trim());
+      mediaPreviews.forEach((m) => fd.append("files", m.file));
+      fd.append(
+        "mediaType",
+        mediaPreviews.some((m) => m.type === "video") ? "VIDEO" : "IMAGE"
+      );
+
+      await createGuestExperienceByGuest(fd);
+      toast.success("Thank you! Your story has been submitted.");
+
+      setFeedbackText("");
+      setMediaPreviews([]);
+      setYtLink("");
+      setIsVerified(false);
+      setAuthorName("");
+      setEmail("");
+      setPhone("");
+      setShowPopup(false);
+
+    } catch (err) {
+      console.error("Submission failed:", err);
+      toast.error("Failed to submit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const titleParts = headerData.title ? headerData.title.split(" ") : ["A", "Sip", "of", "Guest", "Stories"];
+  const titleMain = titleParts.length > 1 ? titleParts.slice(0, -1).join(" ") : titleParts[0] || "";
+  const titleItalic = titleParts.length > 1 ? titleParts[titleParts.length - 1] : "";
 
   return (
     <section
@@ -577,13 +594,13 @@ export default function CafeTestimonials() {
             <div className="mb-3 flex items-center gap-2">
               <span className="h-[1px] w-8 bg-[#8D6E63] dark:bg-[#BEA18F]" />
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8D6E63] dark:text-[#BEA18F]">
-                {sectionHeader.sectionTag}
+                {headerData.sectionTag}
               </p>
             </div>
             <h2 className="text-4xl font-serif font-medium leading-tight md:text-5xl">
-              {sectionHeader.title.split(" ").slice(0, -1).join(" ")}{" "}
+              {titleMain}{" "}
               <span className="italic text-[#A1887F] dark:text-[#DDB8A5]">
-                {sectionHeader.title.split(" ").pop()}
+                {titleItalic}
               </span>
             </h2>
           </div>
@@ -591,7 +608,7 @@ export default function CafeTestimonials() {
           <div className="flex items-center gap-6 rounded-[1.8rem] border border-[#E7D8CA] bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5">
             <div className="text-center">
               <p className="text-3xl font-serif font-bold leading-none text-[#3E2723] dark:text-[#F7EEE8]">
-                {ratingHeader.rating}.0
+                {avgRating}
               </p>
               <div className="mt-2 flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
@@ -601,37 +618,45 @@ export default function CafeTestimonials() {
             </div>
             <div className="h-10 w-[1px] bg-[#E0D7D0] dark:bg-white/10" />
             <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-[#8D6E63] dark:text-[#BEA18F]">
-              {ratingHeader.description}
+              Average Bean Rating
             </p>
           </div>
         </motion.div>
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <div className="hidden gap-5 lg:grid lg:grid-cols-3">
-              {testimonialColumns.map((columnItems, index) => (
-                <InfiniteColumn
-                  key={`column-${index}`}
-                  items={columnItems}
-                  pattern={motionPatterns[index]}
-                  scrollYProgress={scrollYProgress}
-                />
-              ))}
-            </div>
+            {loading && experiences.length === 0 ? (
+              <div className="flex h-64 items-center justify-center">
+                <Loader2 className="animate-spin text-[#D4A373]" size={32} />
+              </div>
+            ) : (
+              <>
+                <div className="hidden gap-5 lg:grid lg:grid-cols-3">
+                  {testimonialColumns.map((columnItems, index) => (
+                    <InfiniteColumn
+                      key={`column-${index}`}
+                      items={columnItems}
+                      pattern={motionPatterns[index]}
+                      scrollYProgress={scrollYProgress}
+                    />
+                  ))}
+                </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:hidden">
-              {mobileFeed.map((item, index) => (
-                <motion.div
-                  key={`${item.id}-mobile-${index}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.45, delay: index * 0.05 }}
-                >
-                  <TestimonialCard item={item} />
-                </motion.div>
-              ))}
-            </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:hidden">
+                  {mobileFeed.map((item, index) => (
+                    <motion.div
+                      key={`${item.id}-mobile-${index}`}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.45, delay: index * 0.05 }}
+                    >
+                      <TestimonialCard item={item} />
+                    </motion.div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="lg:col-span-4">
@@ -769,6 +794,10 @@ export default function CafeTestimonials() {
 
                 <button
                   onClick={() => {
+                    if (!authorName.trim() || !email.trim() || !phone.trim()) {
+                      toast.error("Please fill in all details.");
+                      return;
+                    }
                     setIsVerified(true);
                     setShowPopup(false);
                     handleSubmit();
