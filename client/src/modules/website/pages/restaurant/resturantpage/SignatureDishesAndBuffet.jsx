@@ -20,7 +20,7 @@ import {
   getAllBuffetItems,
   getChefRemarks,
   getMenuHeaders,
-  getMenuItems,
+  getMenuItemsByPropertyId,
   getAllOfferHeaders,
   addItemLike,
   createJoiningUs,
@@ -86,11 +86,10 @@ function BuffetCarousel({ items, onBook }) {
                 key={item.id}
                 animate={positionStyles[pos]}
                 transition={{ duration: 0.6, ease: "easeInOut" }}
-                className={`absolute inset-0 m-auto w-[80%] h-[95%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 ${
-                  pos === "center"
+                className={`absolute inset-0 m-auto w-[80%] h-[95%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 ${pos === "center"
                     ? "pointer-events-auto"
                     : "pointer-events-none"
-                }`}
+                  }`}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <img
@@ -156,7 +155,7 @@ function BuffetCarousel({ items, onBook }) {
               <p className="text-zinc-500 dark:text-zinc-400 text-sm italic font-light leading-relaxed">
                 {activeItem.description}
               </p>
-              
+
             </div>
 
             <div className="pt-2">
@@ -175,11 +174,10 @@ function BuffetCarousel({ items, onBook }) {
           {items.map((_, i) => (
             <div
               key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === active
+              className={`h-1 rounded-full transition-all duration-300 ${i === active
                   ? "w-8 bg-primary"
                   : "w-2 bg-zinc-200 dark:bg-zinc-800"
-              }`}
+                }`}
             />
           ))}
         </div>
@@ -292,7 +290,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
             });
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     getAllBuffetItems()
       .then((res) => {
@@ -304,7 +302,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
           setBuffetItems(matched.length ? matched : BUFFET_DATA_FALLBACK);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
 
     getAllOfferHeaders()
       .then((res) => {
@@ -330,14 +328,14 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
     setMenuLoading(true);
 
-    Promise.all([getMenuHeaders(), getChefRemarks(), getMenuItems()])
+    Promise.all([getMenuHeaders(), getChefRemarks(), getMenuItemsByPropertyId(propertyId)])
       .then(([headersRes, remarksRes, itemsRes]) => {
         const headers = (headersRes?.data || [])
           .filter((h) => h.propertyId === propertyId)
@@ -366,14 +364,13 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
         const items = (itemsRes?.data || [])
           .filter(
             (i) =>
-              i.propertyId === propertyId &&
               i.status !== false &&
               i.signatureItem === true,
           )
           .sort((a, b) => b.id - a.id);
         setMenuItems(items);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setMenuLoading(false));
   }, [propertyId]);
 
@@ -580,11 +577,10 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                     <div className="max-w-[80%]">
                       <div
                         ref={menuDescriptionRef}
-                        className={`text-zinc-500 dark:text-zinc-400 text-sm font-light leading-relaxed break-words ${
-                          isMenuDescriptionExpanded
+                        className={`text-zinc-500 dark:text-zinc-400 text-sm font-light leading-relaxed break-words ${isMenuDescriptionExpanded
                             ? "max-h-32 overflow-y-auto pr-2"
                             : "line-clamp-2"
-                        }`}
+                          }`}
                       >
                         {menuHeader.description}
                       </div>
@@ -862,7 +858,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                               ? "Number of guests cannot be negative."
                               : value && Number(value) < 1
                                 ? "Number of guests should be at least 1."
-                              : "",
+                                : "",
                           }));
                         }}
                         className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"

@@ -10,7 +10,7 @@ import CategoryMenu from "./components/shared/CategoryMenu";
 import ResturantpageEvents from "./resturantpage/ResturantpageEvents";
 import Testimonials from "./components/Testimonials";
 import ReservationForm from "./components/ReservationForm";
-import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
+import { getAllVerticalCards, getMenuItemsByPropertyId } from "@/Api/RestaurantApi";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import {
@@ -379,12 +379,11 @@ function ResturantCategoryPageTemplate() {
         /* ─────────────────────────────────────────────
          2️⃣ Menu Items
         ───────────────────────────────────────────── */
-        const menuRes = await getMenuItems();
+        const menuRes = await getMenuItemsByPropertyId(propertyId);
         const allItems = menuRes?.data || menuRes || [];
 
         const propItems = allItems.filter(
-          (i) =>
-            String(i.propertyId) === String(propertyId) && i.status !== false,
+          (i) => i.status !== false,
         );
 
         setApiMenuItems(propItems);
