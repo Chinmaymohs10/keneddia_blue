@@ -355,13 +355,13 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
         layout
         className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md"
       >
-        <div className="flex items-center justify-between border-b border-border/10 bg-primary/5 p-6">
+        <div className="flex flex-col items-start justify-between gap-4 border-b border-border/10 bg-primary/5 p-4 sm:flex-row sm:items-center sm:p-6">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
               <Search className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-xl font-serif font-medium text-foreground">
+              <h3 className="text-lg font-serif font-medium text-foreground sm:text-xl">
                 Explore Our Cafes
               </h3>
               <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -395,7 +395,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
           )}
         </div>
 
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           <div className="mb-8 flex flex-col gap-4 border-b border-border/10 pb-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap items-center gap-2">
@@ -455,10 +455,10 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 </span>
               </div>
 
-              <div className="inline-flex w-fit items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm">
+              <div className="inline-flex w-full items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm sm:w-fit">
                 <button
                   onClick={() => setViewMode("gallery")}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${
                     viewMode === "gallery"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -469,7 +469,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${
                     viewMode === "map"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -493,7 +493,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
               >
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[60%_40%]">
                   <div
-                    className="relative h-[500px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl"
+                    className="relative h-[360px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl sm:h-[420px] lg:h-[500px]"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                   >
@@ -581,7 +581,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                     </div>
                   </div>
 
-                  <div className="flex h-[500px] flex-col justify-between rounded-2xl border border-border bg-card p-5 shadow-xl">
+                  <div className="flex min-h-[380px] flex-col justify-between rounded-2xl border border-border bg-card p-4 shadow-xl sm:min-h-[420px] sm:p-5 lg:h-[500px]">
                     <div className="space-y-3.5 overflow-y-auto">
                       <div>
                         <div className="mb-2 flex items-center justify-between">
@@ -595,7 +595,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                             </span>
                           </div>
                         </div>
-                        <h3 className="mb-1.5 line-clamp-2 text-xl font-serif font-semibold text-foreground">
+                        <h3 className="mb-1.5 line-clamp-2 text-lg font-serif font-semibold text-foreground sm:text-xl">
                           {activeCafe.name}
                         </h3>
                         <div className="mb-2.5 flex items-center text-sm text-muted-foreground">
@@ -607,7 +607,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-3 pb-1">
+                      <div className="grid grid-cols-1 gap-3 pb-1 sm:grid-cols-3">
                         <div className="rounded-xl border border-border bg-muted/30 px-3 py-3 text-center">
                           <MapPin className="mx-auto mb-1 h-4 w-4 text-primary" />
                           <p className="text-[10px] text-muted-foreground">City</p>
@@ -660,7 +660,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           {(activeCafe.cuisines.length > 0
                             ? activeCafe.cuisines
                             : ["Specialty Beverages", "Prime Location"]
@@ -730,7 +730,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                             {activeCafe.location}
                           </span>
                         </div>
-                        <h3 className="mb-1 text-xl font-serif font-bold">
+                        <h3 className="mb-1 text-lg font-serif font-bold sm:text-xl">
                           {activeCafe.name}
                         </h3>
                         <p className="line-clamp-2 text-xs opacity-80">
@@ -752,7 +752,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                     </div>
 
                     <div className="p-4">
-                      <div className="mb-4 grid grid-cols-3 gap-3 border-b border-border pb-4">
+                      <div className="mb-4 grid grid-cols-1 gap-3 border-b border-border pb-4 sm:grid-cols-3">
                         <div className="text-center">
                           <MapPin className="mx-auto mb-0.5 h-4 w-4 text-primary" />
                           <p className="text-[10px] text-muted-foreground">City</p>

@@ -118,7 +118,7 @@ const GROUP_BOOKINGS = [
 
 function ShowcaseCard({ item }) {
   return (
-    <div className="group relative flex h-[460px] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm">
+    <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
       {/* Image */}
       <div className="relative h-full w-full overflow-hidden">
         <img
@@ -156,7 +156,7 @@ function ShowcaseCard({ item }) {
           {item.description}
         </p>
 
-        <Link to={`/cafe/${item.slug}`} className="mt-4">
+        <Link to={item.detailPath || `/cafe/${item.slug}`} className="mt-4">
           <Button className="h-auto w-full rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
             Explore <ExternalLink className="ml-2 h-3 w-3" />
           </Button>
@@ -225,8 +225,9 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
 
 // ── Group Booking Column ───────────────────────────────────────────────────────
 
-function GroupBookingColumn() {
+function GroupBookingColumn({ initialBookings = [] }) {
   const [groupBookingHeader, setGroupBookingHeader] = useState(null);
+  const bookings = initialBookings?.length > 0 ? initialBookings : GROUP_BOOKINGS;
 
   useEffect(() => {
     let isMounted = true;
@@ -280,9 +281,8 @@ function GroupBookingColumn() {
         Reserve · Celebrate · Connect
       </p> */}
 
-      {/* Booking list */}
       <div className="space-y-3">
-        {GROUP_BOOKINGS.map((item, i) => (
+        {bookings.map((item, i) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, y: 14 }}
@@ -307,7 +307,7 @@ function GroupBookingColumn() {
                   {item.description}
                 </p>
               </div>
-              <Link to={`/cafe/group/${item.slug}`}>
+              <Link to={item.ctaLink || `/cafe/group/${item.slug}`}>
                 <Button
                   type="button"
                   size="icon"
@@ -357,7 +357,31 @@ function GroupBookingColumn() {
 
 // ── Main Export ────────────────────────────────────────────────────────────────
 
-export default function CafeShowcaseSlider() {
+export default function CafeShowcaseSlider({
+  initialEvents = [],
+  initialOffers = [],
+  initialGroupBookings = [],
+  initialCafeTypeId,
+}) {
+  const [events, setEvents] = useState(
+    initialEvents?.length > 0 ? initialEvents : EVENTS,
+  );
+  const [offers, setOffers] = useState(
+    initialOffers?.length > 0 ? initialOffers : OFFERS,
+  );
+
+  useEffect(() => {
+    if (initialEvents?.length > 0) {
+      setEvents(initialEvents);
+    }
+  }, [initialEvents]);
+
+  useEffect(() => {
+    if (initialOffers?.length > 0) {
+      setOffers(initialOffers);
+    }
+  }, [initialOffers]);
+
   return (
     <section id="showcase" className="bg-[#F5F5F3] py-10 dark:bg-muted">
       <div className="mx-auto w-[92%] max-w-7xl">
@@ -374,7 +398,7 @@ export default function CafeShowcaseSlider() {
             // label="Daily Deals · Seasonal Picks"
             title="Offers"
             icon={Gift}
-            items={OFFERS}
+            items={offers}
           />
 
           {/* Centre — Events */}
@@ -382,11 +406,11 @@ export default function CafeShowcaseSlider() {
             // label="Upcoming · Live · Interactive"
             title="Events"
             icon={Sparkles}
-            items={EVENTS}
+            items={events}
           />
 
           {/* Right — Group Booking */}
-          <GroupBookingColumn />
+          <GroupBookingColumn initialBookings={initialGroupBookings} />
         </div>
       </div>
     </section>
