@@ -1,8 +1,16 @@
 import {
   GetAllPropertyDetails,
+  getAboutUsByPropertyType,
+  getAllNews,
+  getDailyOffers,
+  getEventsUpdated,
+  getGroupBookings,
   getHotelHomepageHeroSection,
   getPropertyTypes,
+  getPublicRecognitionsByAboutUsId,
 } from "@/Api/Api";
+import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -122,6 +130,235 @@ const normalizeProperties = (response) => {
     .reverse();
 };
 
+const mapSection = (section, recognitions = []) => ({
+  id: section?.id,
+  subTitle: section?.subTitle || "Neighbourhood Cafe",
+  sectionTitle: section?.sectionTitle || "Coffee First. Atmosphere Always.",
+  description:
+    section?.description ||
+    "Our cafe concept blends specialty coffee, bakery-led comfort, and softer hospitality.",
+  image: section?.media?.find((item) => item?.type === "IMAGE")?.url || "",
+  recognitions: recognitions
+    .filter((item) => item?.isActive)
+    .map((item) => ({
+      id: item.id,
+      value: item.value,
+      title: item.title,
+      subTitle: item.subTitle,
+      isActive: item.isActive,
+    })),
+});
+
+const normalizeAboutSections = async (aboutRes, cafeTypeId) => {
+  if (!cafeTypeId) return null;
+
+  const aboutData = aboutRes?.data || aboutRes;
+  const activeSections = Array.isArray(aboutData)
+    ? aboutData
+        .filter((item) => item?.isActive === true && item?.showOnPropertyPage === true)
+        .sort((a, b) => b.id - a.id)
+        .slice(0, 3)
+    : [];
+
+  if (activeSections.length === 0) return null;
+
+  const recognitionGroups = await Promise.all(
+    activeSections.map(async (section) => {
+      if (Array.isArray(section?.recognitions) && section.recognitions.length > 0) {
+        return section.recognitions;
+      }
+      const recognitionRes = await fetchSafe(
+        () => getPublicRecognitionsByAboutUsId(section.id),
+        { data: [] },
+      );
+      return recognitionRes?.data || [];
+    }),
+  );
+
+  return activeSections.map((section, index) =>
+    mapSection(section, recognitionGroups[index] || []),
+  );
+};
+
+const normalizeNews = (newsRes, cafeTypeId) => {
+  const rawNews =
+    newsRes?.data?.content || newsRes?.content || newsRes?.data || newsRes || [];
+
+  return (Array.isArray(rawNews) ? rawNews : [])
+    .filter((item) => {
+      const badgeName =
+        item?.badgeTypeName ||
+        item?.badgeType ||
+        item?.badge?.typeName ||
+        item?.badge?.name ||
+        "";
+      const byName = isCafeType(badgeName);
+      const byId =
+        cafeTypeId != null && Number(item?.badgeTypeId) === Number(cafeTypeId);
+      return item?.active === true && (byName || byId);
+    })
+    .sort(
+      (a, b) =>
+        new Date(b?.newsDate || b?.dateBadge || 0) -
+        new Date(a?.newsDate || a?.dateBadge || 0),
+    )
+    .slice(0, 6)
+    .map((item) => ({
+      id: item?.id,
+      category: item?.category || "NEWS",
+      title: item?.title || "News",
+      description: item?.description || "",
+      dateBadge:
+        item?.newsDate || item?.dateBadge || new Date().toISOString().split("T")[0],
+      badgeType:
+        item?.badgeTypeName ||
+        item?.badgeType ||
+        item?.badge?.typeName ||
+        "Cafe",
+      ctaText: item?.ctaText || "Read Story",
+      ctaLink: buildNewsDetailPath(item),
+      imageUrl: item?.imageUrl || item?.image || item?.media?.[0]?.url || "",
+    }));
+};
+
+const formatDate = (value) => {
+  if (!value) return "Upcoming";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Upcoming";
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const normalizeEvents = (eventsRes, cafeTypeId) => {
+  const rawEvents = Array.isArray(eventsRes?.data)
+    ? eventsRes.data
+    : Array.isArray(eventsRes)
+      ? eventsRes
+      : [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return rawEvents
+    .filter((item) => {
+      const eventDate = new Date(item?.eventDate);
+      eventDate.setHours(0, 0, 0, 0);
+      const byTypeName = isCafeType(item?.typeName);
+      const byTypeId =
+        cafeTypeId != null && Number(item?.propertyTypeId) === Number(cafeTypeId);
+
+      return (
+        item?.active === true &&
+        normalize(item?.status) === "active" &&
+        (byTypeName || byTypeId) &&
+        !Number.isNaN(eventDate.getTime()) &&
+        eventDate >= today
+      );
+    })
+    .sort((a, b) => new Date(a?.eventDate) - new Date(b?.eventDate))
+    .slice(0, 8)
+    .map((item) => {
+      const media = item?.image || item?.media?.[0] || null;
+      let detailPath = "/events";
+      try {
+        detailPath = buildEventDetailPath(item);
+      } catch {
+        detailPath = item?.slug ? `/events/${item.slug}` : "/events";
+      }
+
+      return {
+        id: item?.id,
+        type: "Event",
+        title: item?.title || "Event",
+        description: item?.description || "",
+        image: media?.url || "",
+        date: formatDate(item?.eventDate),
+        location: item?.locationName || "Cafe Venue",
+        detailPath,
+      };
+    })
+    .filter((item) => item.image);
+};
+
+const normalizeOffers = (offersRes, cafeTypeId) => {
+  const rawData = offersRes?.data?.data || offersRes?.data || [];
+  const list = Array.isArray(rawData) ? rawData : rawData.content || [];
+  const now = Date.now();
+
+  const DAYS = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+  const todayName = DAYS[new Date().getDay()];
+
+  return list
+    .filter((offer) => {
+      let notExpired = true;
+      if (offer.expiresAt) {
+        const expiry = new Date(offer.expiresAt);
+        expiry.setHours(23, 59, 59, 999);
+        notExpired = expiry.getTime() > now;
+      }
+
+      const isDayActive =
+        !offer.activeDays?.length || offer.activeDays.includes(todayName);
+
+      const byTypeName = isCafeType(offer.propertyTypeName);
+      const byTypeId =
+        cafeTypeId != null && Number(offer.propertyTypeId) === Number(cafeTypeId);
+
+      return (
+        offer.isActive === true &&
+        offer.showOnHomepage === true &&
+        isDayActive &&
+        notExpired &&
+        (byTypeName || byTypeId)
+      );
+    })
+    .map((offer) => ({
+      id: offer.id,
+      type: "Offer",
+      title: offer.title || "Special Offer",
+      description: offer.description || "",
+      image: offer.image?.url || "",
+      date: offer.expiresAt ? `Valid until ${formatDate(offer.expiresAt)}` : "Limited Time",
+      location: offer.locationName || "All Outlets",
+      slug: offer.slug || `offer-${offer.id}`,
+    }))
+    .filter((item) => item.image);
+};
+
+
+const normalizeGroupBookings = (bookingsRes, cafeTypeId) => {
+  const rawBookings = bookingsRes?.data || bookingsRes || [];
+  return (Array.isArray(rawBookings) ? rawBookings : [])
+    .filter((item) => {
+      if (item?.isActive === false) return false;
+      if (item?.showOnHomepage !== true) return false;
+      const byTypeName = isCafeType(item?.propertyTypeName);
+      const byTypeId =
+        cafeTypeId != null && Number(item?.propertyTypeId) === Number(cafeTypeId);
+      return byTypeName || byTypeId;
+    })
+    .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))
+    .slice(0, 4)
+    .map((item) => ({
+      id: item?.id,
+      title: item?.title || "Group Booking",
+      description: item?.description || "",
+      image: item?.media?.[0]?.url || "",
+      ctaLink: item?.ctaLink || "",
+    }))
+    .filter((item) => item.image);
+};
+
 const fallbackCafeProperties = [
   {
     id: "fallback-cafe-ghaziabad",
@@ -221,6 +458,11 @@ export const defaultCafeHomepageData = {
   cafeTypeId: null,
   heroSlides: [],
   cafeProperties: fallbackCafeProperties,
+  aboutSections: null,
+  cafeNews: [],
+  cafeEvents: [],
+  cafeOffers: [],
+  groupBookings: [],
 };
 
 export const fetchCafeHomepageData = async () => {
@@ -231,16 +473,33 @@ export const fetchCafeHomepageData = async () => {
     : null;
   const cafeTypeId = cafeType?.id ? Number(cafeType.id) : null;
 
-  const [heroRes, propertiesRes] = await Promise.all([
+  const [heroRes, propertiesRes, aboutRes, newsRes, eventsRes, offersRes, bookingsRes] =
+    await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
       : { data: [] },
     fetchSafe(() => GetAllPropertyDetails(), null),
-  ]);
+    cafeTypeId
+      ? fetchSafe(() => getAboutUsByPropertyType(cafeTypeId), { data: [] })
+      : { data: [] },
+    fetchSafe(() => getAllNews({ category: "", page: 0, size: 50 }), null),
+    fetchSafe(() => getEventsUpdated(), null),
+    fetchSafe(() => getDailyOffers({ page: 0, size: 50 }), null),
+    fetchSafe(() => getGroupBookings(), null),
+    ]);
+
+  const aboutSections = await normalizeAboutSections(aboutRes, cafeTypeId);
 
   return {
     cafeTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
     cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : fallbackCafeProperties,
+    aboutSections,
+    cafeNews: newsRes ? normalizeNews(newsRes, cafeTypeId) : [],
+    cafeEvents: eventsRes ? normalizeEvents(eventsRes, cafeTypeId) : [],
+    cafeOffers: offersRes ? normalizeOffers(offersRes, cafeTypeId) : [],
+    groupBookings: bookingsRes
+      ? normalizeGroupBookings(bookingsRes, cafeTypeId)
+      : [],
   };
 };

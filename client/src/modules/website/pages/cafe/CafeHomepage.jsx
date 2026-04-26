@@ -297,17 +297,22 @@ export default function CafeHomepage() {
           <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-white" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <CafeAbout />
+        <CafeAbout initialSections={ssr?.aboutSections} />
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-white to-[#F5F5F3]" />
         </div>
-        <CafeShowcaseSlider />
+        <CafeShowcaseSlider
+          initialEvents={ssr?.cafeEvents}
+          initialOffers={ssr?.cafeOffers}
+          initialGroupBookings={ssr?.groupBookings}
+          initialCafeTypeId={ssr?.cafeTypeId}
+        />
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#ECECE8]" />
         </div>
-        <CafeNewsSection />
+        <CafeNewsSection initialNews={ssr?.cafeNews} />
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F8F8F6]" />

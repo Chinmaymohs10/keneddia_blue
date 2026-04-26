@@ -248,12 +248,13 @@ function NewsCard({ item }: { item: NewsItem }) {
   };
 
   return (
-    <div className="group flex h-[520px] flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
-      <div className="relative h-[240px] w-full shrink-0 overflow-hidden bg-black sm:h-[280px]">
+    <div className="group flex h-full flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors duration-300">
+      <div className="relative w-full overflow-hidden bg-black">
         <img
           src={item.imageUrl}
           alt={item.title}
-          className="block h-full w-full object-contain transition-transform duration-700 group-hover:scale-105 sm:object-cover"
+          className="block h-auto w-full object-contain transition-transform duration-700 group-hover:scale-105"
+          style={{ maxHeight: "280px", minHeight: "140px" }}
           onError={(e) => {
             // hide broken images gracefully
             (e.currentTarget as HTMLImageElement).style.display = "none";
