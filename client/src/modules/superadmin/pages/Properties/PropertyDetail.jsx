@@ -39,6 +39,7 @@ import Gallery3d from "./tabs/resturant/Gallery3d";
 import EnquiriesTab from "./tabs/resturant/EnquiriesTab";
 import CommentReviewsTab from "./tabs/CommentReviewsTab";
 import CafeStoryTab from "./tabs/cafe/CafeStoryTab";
+import CafeAbout from "./tabs/cafe/CafeAbout";
 
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
@@ -207,7 +208,7 @@ const PropertyDetail = ({ property, onBack }) => {
       "policies",
       "comment reviews",
     ],
-    Cafe: ["overview", "config", "menu", "story", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
+    Cafe: ["overview", "config", "menu", "story", "about", "gallery","offers section", "comment reviews","amenities","Header items","enquiries",],
     Restaurant: [
       "overview",
       "config",
@@ -346,7 +347,12 @@ const PropertyDetail = ({ property, onBack }) => {
         );
 
       case "about":
-        return (
+        return propertyType === "Cafe" ? (
+          <CafeAbout
+            propertyData={currentPropertyInfo}
+            refreshData={fetchAllData}
+          />
+        ) : (
           <ResturantAbout
             propertyData={currentPropertyInfo}
             refreshData={fetchAllData}

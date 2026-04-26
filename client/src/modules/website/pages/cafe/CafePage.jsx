@@ -166,7 +166,7 @@ export default function CafePage() {
           <div className="h-px bg-[#E3E3DF]" />
         </div>
         <div id="about">
-          <AboutCafePage />
+          <AboutCafePage propertyId={resolvedPropertyId} />
         </div>
 
         <div className="dark:hidden">
