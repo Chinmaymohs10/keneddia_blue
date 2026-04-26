@@ -12,6 +12,7 @@ import CafeTestimonials from "./cafepage/CafeTestimonials";
 import CafeGalleryPage from "./cafepage/CafeGalleryPage";
 import CafeReservationForm from "./cafepage/CafeReservationForm";
 import { siteContent } from "@/data/siteContent";
+import { GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
 
 const CAFE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -23,6 +24,9 @@ const CAFE_NAV_ITEMS = [
 export default function CafePage() {
   const { propertySlug, propertyId: paramPropertyId } = useParams();
   const [storyData, setStoryData] = useState(null);
+  const [propertyData, setPropertyData] = useState(null);
+  const [galleryData, setGalleryData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Extract propertyId from either paramPropertyId or propertySlug tail
   const resolvedPropertyId = useMemo(() => {
@@ -37,6 +41,7 @@ export default function CafePage() {
   useEffect(() => {
     if (resolvedPropertyId) {
       fetchStory();
+      fetchData();
     }
   }, [resolvedPropertyId]);
 
@@ -54,13 +59,89 @@ export default function CafePage() {
     }
   };
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setPropertyData(null);
+      setGalleryData([]);
+
+      const response = await GetAllPropertyDetails();
+      const rawData = response?.data || response;
+
+      const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
+        (item) => {
+          const parent = item.propertyResponseDTO;
+          const listings = item.propertyListingResponseDTOS || [];
+
+          return listings.length === 0
+            ? [{ parent, listing: null }]
+            : listings.map((listing) => ({ parent, listing }));
+        },
+      );
+
+      const matched = flattened.find(
+        (item) => Number(item.parent.id) === resolvedPropertyId,
+      );
+
+      if (!matched) {
+        setLoading(false);
+        return;
+      }
+
+      const { parent, listing } = matched;
+      const combinedProperty = {
+        ...parent,
+        ...listing,
+        id: parent.id,
+        propertyId: parent.id,
+        name: listing?.propertyName?.trim() || parent.propertyName,
+        description: listing?.mainHeading || "",
+        location: listing?.fullAddress || parent.address,
+        city: listing?.city || parent.locationName,
+        media:
+          listing?.media?.length > 0 ? listing.media : parent.media || [],
+        coordinates:
+          parent.latitude && parent.longitude
+            ? {
+              lat: Number(parent.latitude),
+              lng: Number(parent.longitude),
+            }
+            : null,
+      };
+
+      const galleryRes = await getGalleryByPropertyId(parent.id);
+      const rawGallery =
+        galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
+      const filteredGallery = (
+        Array.isArray(rawGallery) ? rawGallery : []
+      ).filter(
+        (item) =>
+          item?.isActive &&
+          item?.media?.url &&
+          !item?.vertical &&
+          String(item?.categoryName || "").toLowerCase() !== "3d",
+      );
+
+      setPropertyData(combinedProperty);
+      setGalleryData(filteredGallery);
+    } catch (err) {
+      console.error("Cafe Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       <main>
         <div id="home">
-          <CafeBanner />
+          <CafeBanner
+            propertyData={propertyData}
+            galleryData={galleryData}
+            loading={loading}
+          />
         </div>
 
         <div className="dark:hidden">
