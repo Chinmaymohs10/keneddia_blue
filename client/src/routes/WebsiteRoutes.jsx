@@ -54,14 +54,20 @@ function PropertyDetailRoute() {
   const hostname =
     typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
   const isRestaurantHost = hostname.startsWith("restaurants.");
+
   const slugTail = propertySlug?.split("-").pop() || "";
   const resolvedPropertyId = Number(propertyId || slugTail) || null;
+  const isSlugCafe = propertySlug?.toLowerCase().includes("cafe");
+  const isSlugRestaurant = 
+    propertySlug?.toLowerCase().includes("restaurant") || 
+    propertySlug?.toLowerCase().includes("resturant");
+
   const ssrResolvedType =
     propertyDetail?.propertyId === resolvedPropertyId &&
     (propertyDetail?.propertyType === "restaurant" ||
       propertyDetail?.propertyType === "cafe" ||
       propertyDetail?.propertyType === "hotel")
-      ? propertyDetail.propertyType
+      ? (isSlugCafe && propertyDetail.propertyType === "restaurant" ? "cafe" : propertyDetail.propertyType)
       : null;
   const [resolvedType, setResolvedType] = useState(ssrResolvedType);
 
@@ -83,7 +89,7 @@ function PropertyDetailRoute() {
 
       if (!resolvedPropertyId) {
         if (isMounted)
-          setResolvedType(slugTail === "cafe" ? "cafe" : "hotel");
+          setResolvedType(isSlugCafe ? "cafe" : "hotel");
         return;
       }
 
@@ -112,8 +118,13 @@ function PropertyDetailRoute() {
           ["restaurant", "resturant", "wine & dine", "winedine", "dining"].includes(t),
         );
 
-        if (isMounted)
-          setResolvedType(isCafe ? "cafe" : isRestaurant ? "restaurant" : "hotel");
+        if (isMounted) {
+          // Priority 1: Use slug keywords if present
+          if (isSlugCafe && isCafe) setResolvedType("cafe");
+          else if (isSlugRestaurant && isRestaurant) setResolvedType("restaurant");
+          // Priority 2: Fallback to detected types
+          else setResolvedType(isCafe ? "cafe" : isRestaurant ? "restaurant" : "hotel");
+        }
       } catch {
         if (isMounted) setResolvedType("hotel");
       }

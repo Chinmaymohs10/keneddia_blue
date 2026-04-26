@@ -3,6 +3,7 @@ import {
   getHotelHomepageHeroSection,
   getPropertyTypes,
 } from "@/Api/Api";
+import { getCafeSectionById, getCafeSectionsByPropertyType } from "@/Api/CafeApi";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -122,6 +123,37 @@ const normalizeProperties = (response) => {
     .reverse();
 };
 
+const normalizeCoffeeStory = (response) => {
+  const rawData = response?.data?.data || response?.data || response;
+  if (!rawData) return null;
+
+  // Since it now returns an array of sections, find the first active one or just the first one
+  const data = Array.isArray(rawData) 
+    ? (rawData.find(s => s.active) || rawData[0])
+    : rawData;
+
+  if (!data || !data.id) return null;
+
+  return {
+    heading: data.heading,
+    highlight: data.highlight,
+    description: data.description,
+    cards: (data.entries || [])
+      .filter((e) => e.active !== false)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+      .map((e) => ({
+        id: e.id,
+        eyebrow: e.high || "Ritual",
+        title: e.title || "Untitled Story",
+        description: e.description || "",
+        benefit: e.profileText || "",
+        accent: e.subtitle || "",
+        image: e.imageUrl || e.media?.url || "",
+        stats: [e.tag1, e.tag2].filter(Boolean),
+      })),
+  };
+};
+
 const fallbackCafeProperties = [
   {
     id: "fallback-cafe-ghaziabad",
@@ -221,6 +253,7 @@ export const defaultCafeHomepageData = {
   cafeTypeId: null,
   heroSlides: [],
   cafeProperties: fallbackCafeProperties,
+  coffeeStory: null,
 };
 
 export const fetchCafeHomepageData = async () => {
@@ -231,16 +264,20 @@ export const fetchCafeHomepageData = async () => {
     : null;
   const cafeTypeId = cafeType?.id ? Number(cafeType.id) : null;
 
-  const [heroRes, propertiesRes] = await Promise.all([
+  const [heroRes, propertiesRes, storyRes] = await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
       : { data: [] },
     fetchSafe(() => GetAllPropertyDetails(), null),
+    cafeTypeId
+      ? fetchSafe(() => getCafeSectionsByPropertyType(cafeTypeId), null)
+      : null,
   ]);
 
   return {
     cafeTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
     cafeProperties: propertiesRes ? normalizeProperties(propertiesRes) : fallbackCafeProperties,
+    coffeeStory: normalizeCoffeeStory(storyRes),
   };
 };

@@ -28,6 +28,7 @@ import {
   getAllAmenityFeatures,
   PropertyUploadMedia,
   createPropertyByType,
+  PropertyListingAddMedia
 } from "@/Api/Api";
 import { toast } from "react-hot-toast";
 
@@ -254,10 +255,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
       // PHASE 3: Upload Media
       if (selectedFiles.length > 0) {
         const mediaFormData = new FormData();
-        mediaFormData.append("propertyListingId", newListingId);
         mediaFormData.append("mediaType", "IMAGE");
         selectedFiles.forEach((file) => mediaFormData.append("files", file));
-        await PropertyUploadMedia(mediaFormData);
+        
+        await PropertyListingAddMedia(newListingId, mediaFormData);
       }
 
       toast.success("Setup Complete!", { id: toastId });

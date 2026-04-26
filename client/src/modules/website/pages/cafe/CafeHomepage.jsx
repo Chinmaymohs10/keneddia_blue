@@ -277,7 +277,7 @@ export default function CafeHomepage() {
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-white to-[#F7F7F5]" />
         </div>
-        <CafeCoffeeStory />
+        <CafeCoffeeStory initialData={ssr?.coffeeStory} />
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-white" />
           <div className="h-px bg-[#E5E5E2]" />

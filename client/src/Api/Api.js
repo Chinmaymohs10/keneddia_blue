@@ -52,6 +52,8 @@ export const uploadMedia = (formData) =>
   API.post("api/v1/media/upload", formData);
 export const PropertyUploadMedia = (formData) =>
   API.post("api/v1/property-listings/upload-media", formData);
+export const PropertyListingAddMedia = (listingId, formData) =>
+  API.put(`api/v1/property-listings/${listingId}/edit-media`, formData);
 export const PropertyEdiMedia = (listingId, formData) =>
   API.put(`api/v1/property-listings/${listingId}/edit-media`, formData);
 export const getMediaById = (id) => API.get(`api/v1/media/${id}`);

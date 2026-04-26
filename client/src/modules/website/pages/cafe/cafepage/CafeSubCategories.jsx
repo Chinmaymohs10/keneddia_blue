@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { siteContent } from "@/data/siteContent";
 
-const STORY_CARDS = [
+const STORY_CARDS_STATIC = [
   {
     id: 1,
     eyebrow: "Our Roots",
@@ -86,6 +86,8 @@ const STORY_CARDS = [
     stats: ["Monthly Events", "Open to All"],
   },
 ];
+
+const ICONS = [Coffee, Leaf, SunMedium, Sparkles, Waves, MoonStar];
 
 function DesktopStoryCard({ card, onHoverChange }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -227,31 +229,52 @@ function MobileStoryCard({ card }) {
   );
 }
 
-export default function CafeSubCategories() {
+import { useMemo } from "react";
+
+export default function CafeSubCategories({ initialData }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Determine cards: dynamic from props or static fallback
+  const cards = useMemo(() => {
+    if (initialData?.cards && initialData.cards.length > 0) {
+      return initialData.cards.map((c, i) => ({
+        ...c,
+        icon: ICONS[i % ICONS.length],
+      }));
+    }
+    return STORY_CARDS_STATIC;
+  }, [initialData]);
+
+  const sectionInfo = useMemo(() => {
+    return {
+      heading: initialData?.heading || "Six Chapters One Cafe",
+      highlight: initialData?.highlight || "Our Story",
+      description: initialData?.description || "Discover the story behind every cup and every corner through a simple vertical slider instead of the old scroll-driven flow.",
+    };
+  }, [initialData]);
+
   useEffect(() => {
-    if (isPaused) {
+    if (isPaused || cards.length === 0) {
       return undefined;
     }
 
     const interval = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+      setActiveIndex((prev) => (prev + 1) % cards.length);
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, cards.length]);
 
-  const activeCard = STORY_CARDS[activeIndex];
+  const activeCard = cards[activeIndex] || cards[0];
 
   const handlePrev = () =>
     setActiveIndex((prev) =>
-      prev === 0 ? STORY_CARDS.length - 1 : prev - 1,
+      prev === 0 ? cards.length - 1 : prev - 1,
     );
 
   const handleNext = () =>
-    setActiveIndex((prev) => (prev + 1) % STORY_CARDS.length);
+    setActiveIndex((prev) => (prev + 1) % cards.length);
 
   return (
     <section
@@ -310,21 +333,22 @@ export default function CafeSubCategories() {
           {/* Nav / controls — now on the RIGHT */}
           <div className="flex h-full flex-col justify-center">
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-              <Coffee className="h-3.5 w-3.5" /> Our Story
+              <Coffee className="h-3.5 w-3.5" /> {sectionInfo.highlight}
             </div>
             <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white">
-              Six Chapters <br />
-              <span className="italic text-amber-800">One Cafe</span>
+              {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <br />
+              <span className="italic text-amber-800">
+                {sectionInfo.heading.split(" ").slice(-2).join(" ")}
+              </span>
             </h2>
             <p className="mb-10 max-w-sm text-base leading-relaxed text-zinc-600 dark:text-white/60">
-              Discover the story behind every cup and every corner through a
-              simple vertical slider instead of the old scroll-driven flow.
+              {sectionInfo.description}
             </p>
 
             <div className="flex flex-col gap-4">
-              {STORY_CARDS.map((card, index) => (
+              {cards.map((card, index) => (
                 <button
-                  key={card.id}
+                  key={card.id || index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   className="group flex items-center gap-4 text-left"
@@ -339,7 +363,7 @@ export default function CafeSubCategories() {
                       : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
                       }`}
                   >
-                    {card.eyebrow}
+                    {card.eyebrow || card.title}
                   </span>
                 </button>
               ))}
@@ -362,7 +386,7 @@ export default function CafeSubCategories() {
               </button>
               <span className="ml-2 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
                 {String(activeIndex + 1).padStart(2, "0")} /{" "}
-                {String(STORY_CARDS.length).padStart(2, "0")}
+                {String(cards.length).padStart(2, "0")}
               </span>
             </div>
           </div>
@@ -372,13 +396,13 @@ export default function CafeSubCategories() {
       <div className="w-full px-6 lg:hidden">
         <div className="mb-14">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
-            <Coffee className="h-3 w-3" /> Our Story
+            <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
           <h2 className="mb-6 text-4xl font-serif text-zinc-950 dark:text-white">
-            Six Chapters, <span className="italic text-amber-800">One Cafe</span>
+             {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-amber-800">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
           </h2>
           <p className="text-sm text-zinc-500">
-            The story behind every cup and every corner.
+            {sectionInfo.description}
           </p>
         </div>
 
@@ -396,9 +420,9 @@ export default function CafeSubCategories() {
           </button>
 
           <div className="flex gap-2">
-            {STORY_CARDS.map((card, index) => (
+            {cards.map((card, index) => (
               <button
-                key={card.id}
+                key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={`h-2 rounded-full transition-all ${activeIndex === index

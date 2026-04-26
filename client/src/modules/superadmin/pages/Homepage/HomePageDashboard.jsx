@@ -11,7 +11,8 @@ import {
   Newspaper,
   Star,
   Users,
-  Hotel
+  Hotel,
+  BookOpen
 } from 'lucide-react';
 import HeroSection from '../tabPages/HeroSection';
 import DailyOffers from '../tabPages/DailyOffers';
@@ -23,6 +24,7 @@ import NewsPress from '../tabPages/NewsPress';
 import GuestExp from '../tabPages/GuestExp';
 import GroupBookings from '../tabPages/GroupBookings';
 import HotelHomepage from '../tabPages/HotelHomepage';
+import Story from '../tabPages/Story';
 function HomePageDashboard() {
   const [activeTab, setActiveTab] = useState('hero');
 
@@ -37,6 +39,7 @@ function HomePageDashboard() {
     { id: 'presence', label: 'Our Presence', icon: Building, component: OurPresence },
     { id: 'group', label: 'Group Bookings', icon: Users, component: GroupBookings },
     { id: 'hotel-homepage', label: 'Hotel Homepage', icon: Hotel, component: HotelHomepage },
+    { id: 'story', label: 'Story', icon: BookOpen, component: Story },
   ];
 
 
