@@ -12,7 +12,8 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSoldV2, addItemLike, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
+import { getPropertyTypes } from "@/Api/Api";
 
 const FILTERS = ["Veg", "Non-Veg"];
 
@@ -98,10 +99,25 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
     description: "",
   });
   const [headerData, setHeaderData] = useState(null);
+  const [resolvedTypeId, setResolvedTypeId] = useState(restaurantTypeId);
 
   useEffect(() => {
-    const typeId = restaurantTypeId || 1;
-    getMenuSectionsByPropertyTypeId(typeId)
+    if (restaurantTypeId) {
+      setResolvedTypeId(restaurantTypeId);
+    } else {
+      getPropertyTypes().then((res) => {
+        const types = res.data || res;
+        const restType = Array.isArray(types)
+          ? types.find((t) => (t.typeName || "").toLowerCase().includes("rest"))
+          : null;
+        if (restType?.id) setResolvedTypeId(Number(restType.id));
+      }).catch(err => console.error("Error fetching property types:", err));
+    }
+  }, [restaurantTypeId]);
+
+  useEffect(() => {
+    if (!resolvedTypeId) return;
+    getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         const data = res.data?.data || res.data;
         if (Array.isArray(data)) {
@@ -113,18 +129,26 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
         }
       })
       .catch((err) => console.error(err));
-  }, [restaurantTypeId]);
+  }, [resolvedTypeId]);
 
   useEffect(() => {
-    if (ssrLoaded) return;
-    getMenuItemsByTopSold(true)
+    if (ssrLoaded || !resolvedTypeId) return;
+    setFetchLoading(true);
+    const params = { topSold: true, propertyTypeId: resolvedTypeId };
+    console.log("RestaurantBestSellers: Fetching with params:", params);
+
+    getMenuItemsByTopSoldV2(params)
       .then((res) => {
+        console.log("RestaurantBestSellers: API Response:", res.data);
         const data = res.data ?? [];
         setMenuItems((Array.isArray(data) ? data : []).map(normalise));
       })
-      .catch(() => setMenuItems([]))
+      .catch((err) => {
+        console.error("RestaurantBestSellers: Fetch Error:", err);
+        setMenuItems([]);
+      })
       .finally(() => setFetchLoading(false));
-  }, [ssrLoaded]);
+  }, [ssrLoaded, resolvedTypeId]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => item.tags.includes(activeFilter));

@@ -11,6 +11,7 @@ import {
   Building2,
   Home,
   AlertCircle,
+  Check,
 } from "lucide-react";
 import {
   createCafeSection,
@@ -38,12 +39,27 @@ const Field = ({ label, children, half }) => (
   </div>
 );
 
+const STORY_IMAGE_RECOMMENDATION = {
+  width: 1000,
+  height: 1000,
+  label: "Recommended: 1000 x 1000 (1:1) — matches the story side frame on the website.",
+};
+
 function ImageUpload({ value, onChange, onClear }) {
   const [uploading, setUploading] = useState(false);
+  const [dims, setDims] = useState(null);
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Read dimensions
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      setDims({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+
     setUploading(true);
     try {
       const fd = new FormData();
@@ -59,21 +75,38 @@ function ImageUpload({ value, onChange, onClear }) {
     }
   };
 
+  const isIdeal = dims ? Math.abs(dims.width / dims.height - 1) < 0.1 : true;
+
   return (
-    <div className="flex items-center gap-3">
-      <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all text-sm text-gray-500 font-medium shrink-0">
-        <ImageIcon size={14} />
-        {uploading ? "Uploading…" : "Upload"}
-        <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
-      </label>
-      {value && (
-        <div className="relative">
-          <img src={value} alt="" className="w-12 h-12 rounded-lg object-cover border shadow" />
-          <button onClick={onClear} className="absolute -top-1 -right-1 bg-red-100 text-red-500 rounded-full p-0.5">
-            <X size={10} />
-          </button>
-        </div>
-      )}
+    <div className="space-y-2">
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all text-sm text-gray-500 font-medium shrink-0">
+          <ImageIcon size={14} />
+          {uploading ? "Uploading…" : "Upload Image"}
+          <input type="file" accept="image/*" className="hidden" onChange={handleFile} />
+        </label>
+        {value && (
+          <div className="relative">
+            <img src={value} alt="" className="w-12 h-12 rounded-lg object-cover border shadow" />
+            <button onClick={onClear} className="absolute -top-1 -right-1 bg-red-100 text-red-500 rounded-full p-0.5">
+              <X size={10} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-[10px] text-gray-400 font-medium italic">
+          {STORY_IMAGE_RECOMMENDATION.label}
+        </p>
+        {dims && (
+          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold ${isIdeal ? "bg-green-50 text-green-600 border border-green-100" : "bg-amber-50 text-amber-600 border border-amber-100"
+            }`}>
+            {isIdeal ? <Check size={10} /> : <AlertCircle size={10} />}
+            Current: {dims.width}x{dims.height} {isIdeal ? "(Ideal)" : "(Ratio mismatch)"}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -106,7 +139,7 @@ export default function Story() {
   const [activeTab, setActiveTab] = useState("cafe"); // Default to cafe for now
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [loadingPropertyTypes, setLoadingPropertyTypes] = useState(true);
-  
+
   const [stories, setStories] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -126,7 +159,7 @@ export default function Story() {
       const response = await getPropertyTypes();
       const data = response?.data || response;
       if (Array.isArray(data)) {
-        const activeTypes = data.filter(type => 
+        const activeTypes = data.filter(type =>
           type.isActive && ENABLED_PROPERTY_TYPE_TABS.includes(normalize(type.typeName))
         );
         setPropertyTypes(activeTypes);
@@ -253,7 +286,7 @@ export default function Story() {
     } else {
       up = [...currentStory.entries, { ...editingEntry, tempId: Date.now() }];
     }
-    up.sort((a,b) => a.displayOrder - b.displayOrder);
+    up.sort((a, b) => a.displayOrder - b.displayOrder);
     setCurrentStory(p => ({ ...p, entries: up }));
     setEditingEntry(null);
   };
@@ -274,9 +307,8 @@ export default function Story() {
           <button
             key={type.id}
             onClick={() => { setActiveTab(String(type.id)); setIsEditing(false); }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-              activeTab === String(type.id) ? "bg-primary text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === String(type.id) ? "bg-primary text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
           >
             {type.typeName} Page
           </button>
@@ -310,9 +342,9 @@ export default function Story() {
             <div className="flex flex-col gap-1 pt-2">
               <label className="text-[10px] font-black uppercase text-gray-400">Section Status</label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={currentStory.active} 
+                <input
+                  type="checkbox"
+                  checked={currentStory.active}
                   onChange={e => setCurrentStory(p => ({ ...p, active: e.target.checked }))}
                   className="w-4 h-4 rounded border-gray-300 text-primary"
                 />
@@ -324,7 +356,7 @@ export default function Story() {
           <div className="space-y-4">
             <div className="flex justify-between items-center border-t pt-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Story Entries ({currentStory.entries.length})</h4>
-              <button 
+              <button
                 onClick={handleAddEntry}
                 className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase hover:bg-blue-100"
               >
@@ -335,32 +367,30 @@ export default function Story() {
             {editingEntry && (
               <div className="p-4 border-2 border-blue-50 rounded-xl bg-blue-50/20 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Title" half><input className={inp} value={editingEntry.title} onChange={e => setEditingEntry(p => ({...p, title: e.target.value}))} /></Field>
-                  <Field label="Subtitle" half><input className={inp} value={editingEntry.subtitle} onChange={e => setEditingEntry(p => ({...p, subtitle: e.target.value}))} /></Field>
+                  <Field label="Title" half><input className={inp} value={editingEntry.title} onChange={e => setEditingEntry(p => ({ ...p, title: e.target.value }))} /></Field>
+                  <Field label="Subtitle" half><input className={inp} value={editingEntry.subtitle} onChange={e => setEditingEntry(p => ({ ...p, subtitle: e.target.value }))} /></Field>
                 </div>
-                <Field label="Description"><textarea className={inp} rows={2} value={editingEntry.description} onChange={e => setEditingEntry(p => ({...p, description: e.target.value}))} /></Field>
+                <Field label="Description"><textarea className={inp} rows={2} value={editingEntry.description} onChange={e => setEditingEntry(p => ({ ...p, description: e.target.value }))} /></Field>
                 <div className="grid grid-cols-3 gap-3">
-                  <Field label="Profile Text"><input className={inp} value={editingEntry.profileText} onChange={e => setEditingEntry(p => ({...p, profileText: e.target.value}))} /></Field>
-                  <Field label="High Label"><input className={inp} value={editingEntry.high} onChange={e => setEditingEntry(p => ({...p, high: e.target.value}))} /></Field>
-                  <Field label="Display Order"><input type="number" className={inp} value={editingEntry.displayOrder} onChange={e => setEditingEntry(p => ({...p, displayOrder: parseInt(e.target.value)}))} /></Field>
+                  <Field label="Profile Text"><input className={inp} value={editingEntry.profileText} onChange={e => setEditingEntry(p => ({ ...p, profileText: e.target.value }))} /></Field>
+                  <Field label="High Label"><input className={inp} value={editingEntry.high} onChange={e => setEditingEntry(p => ({ ...p, high: e.target.value }))} /></Field>
+                  <Field label="Display Order"><input type="number" className={inp} value={editingEntry.displayOrder} onChange={e => setEditingEntry(p => ({ ...p, displayOrder: parseInt(e.target.value) }))} /></Field>
                 </div>
                 <div className="grid grid-cols-2 gap-3 items-end">
                   <Field label="Image">
-                    <ImageUpload value={editingEntry.mediaUrl} onChange={(url, id) => setEditingEntry(p => ({...p, mediaUrl: url, mediaId: id}))} onClear={() => setEditingEntry(p => ({...p, mediaUrl: "", mediaId: null}))} />
+                    <ImageUpload value={editingEntry.mediaUrl} onChange={(url, id) => setEditingEntry(p => ({ ...p, mediaUrl: url, mediaId: id }))} onClear={() => setEditingEntry(p => ({ ...p, mediaUrl: "", mediaId: null }))} />
                   </Field>
                   <div className="flex flex-col gap-2 pb-1">
                     <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Entry Status</label>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setEditingEntry(p => ({ ...p, active: !p.active }))}
-                        className={`relative w-10 h-5 rounded-full transition-all duration-300 ${
-                          editingEntry.active ? "bg-green-500" : "bg-gray-300"
-                        }`}
+                        className={`relative w-10 h-5 rounded-full transition-all duration-300 ${editingEntry.active ? "bg-green-500" : "bg-gray-300"
+                          }`}
                       >
                         <span
-                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ${
-                            editingEntry.active ? "translate-x-5" : ""
-                          }`}
+                          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ${editingEntry.active ? "translate-x-5" : ""
+                            }`}
                         />
                       </button>
                       <span className="text-xs font-bold text-gray-700">{editingEntry.active ? 'Active' : 'Inactive'}</span>
@@ -387,14 +417,12 @@ export default function Story() {
                   <div className="flex items-center gap-2 pr-2">
                     <button
                       onClick={() => toggleEntryActive(idx)}
-                      className={`relative w-8 h-4 rounded-full transition-all duration-300 ${
-                        e.active ? "bg-green-500" : "bg-gray-300"
-                      }`}
+                      className={`relative w-8 h-4 rounded-full transition-all duration-300 ${e.active ? "bg-green-500" : "bg-gray-300"
+                        }`}
                     >
                       <span
-                        className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all duration-300 ${
-                          e.active ? "translate-x-4" : ""
-                        }`}
+                        className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all duration-300 ${e.active ? "translate-x-4" : ""
+                          }`}
                       />
                     </button>
                     <button onClick={() => setEditingEntry(e)} className="p-1.5 hover:bg-white rounded text-blue-500"><Pencil size={14} /></button>
@@ -416,7 +444,7 @@ export default function Story() {
           <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
             <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Story Sections</h3>
             {stories.length === 0 && (
-              <button 
+              <button
                 onClick={handleCreateNew}
                 className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold uppercase transition-all shadow hover:opacity-90"
               >
@@ -424,7 +452,7 @@ export default function Story() {
               </button>
             )}
           </div>
-          
+
           <div className="p-0">
             {fetching ? (
               <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>

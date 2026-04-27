@@ -84,6 +84,7 @@ export const getMenuItems = () => API.get("api/v1/menu-items/getMenuItems");
 export const getMenuItemsByPropertyId = (propertyId) => API.get(`api/v1/menu-items/getMenuItemsByPropertyId/${propertyId}`);
 export const getMenuItemsByPropertyTypeId = (typeId) => API.get(`api/v1/menu-items/getMenuItemsByPropertyTypeId/${typeId}`);
 export const getMenuItemsByTopSold = (topSold) => API.get(`api/v1/menu-items/getMenuItemsByTopSold/${topSold}`);
+export const getMenuItemsByTopSoldV2 = (params) => API.get("api/v1/menu-items/getMenuItemsByTopSold", { params });
 export const getActiveMenuItems = () => API.get("api/v1/menu-items/getActiveMenuItems");
 export const getMenuItemById = (id) => API.get(`api/v1/menu-items/getMenuItemById/${id}`);
 export const updateMenuItem = (id, data) => API.patch(`api/v1/menu-items/updateMenuItem/${id}`, data);

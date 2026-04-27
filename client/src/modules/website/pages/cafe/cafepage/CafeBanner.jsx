@@ -116,7 +116,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#F8F8F6] dark:bg-[#14100b]">
-        <Loader2 className="animate-spin w-10 h-10 text-[#7a5c3a]" />
+        <Loader2 className="animate-spin w-10 h-10 text-primary" />
       </div>
     );
   }
@@ -161,19 +161,19 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             >
               <Link
                 to="/"
-                className="cursor-pointer text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
+                className="text-primary dark:text-[#a07850] hover:text-primary/80 dark:hover:text-[#f0dfc0] transition-colors"
               >
                 Home
               </Link>
-              <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
+              <ChevronRight className="w-3 h-3 text-primary/50 dark:text-[#a07850]/50" />
               <Link
                 to="/cafe-homepage"
-                className="cursor-pointer text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
+                className="text-primary dark:text-[#a07850] hover:text-primary/80 dark:hover:text-[#f0dfc0] transition-colors"
               >
                 Cafes
               </Link>
-              <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
-              <span className="text-[#3d1f00] dark:text-[#f0dfc0] font-black">
+              <ChevronRight className="w-3 h-3 text-primary/50 dark:text-[#a07850]/50" />
+              <span className="text-primary dark:text-[#f0dfc0] font-black">
                 {cafe.name}
               </span>
             </motion.nav>
@@ -186,7 +186,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               className="mb-1"
             >
               <h1
-                className="text-[#1e0d00] dark:text-[#f0dfc0]"
+                className="text-zinc-900 dark:text-[#f0dfc0]"
                 style={{
                   fontFamily: '"Georgia","Times New Roman",serif',
                   fontSize: "clamp(2.1rem, 5.8vw, 4.96rem)",
@@ -216,7 +216,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.28 }}
-              className="font-black text-[#1e0d00] dark:text-[#e8d0b0] mb-2"
+              className="font-black text-zinc-800 dark:text-[#e8d0b0] mb-2"
               style={{ fontSize: "clamp(0.78rem, 1.5vw, 1.05rem)" }}
             >
               {cafe.tagline}
@@ -227,7 +227,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.36 }}
-              className="text-[#5a3e28] dark:text-[#b09070] italic leading-relaxed mb-4"
+              className="text-zinc-600 dark:text-[#b09070] italic leading-relaxed mb-4"
               style={{
                 fontSize: "clamp(0.7rem, 1.15vw, 0.88rem)",
                 maxWidth: "560px",
@@ -247,7 +247,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               transition={{ duration: 0.4, delay: 0.42 }}
               className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-5"
             >
-              <div className="flex items-center gap-1.5 text-xs font-medium text-[#7a5c3a] dark:text-[#a07850]">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-[#a07850]">
                 <MapPin className="w-3 h-3 shrink-0" />
                 <span className="truncate max-w-[220px]">
                   {cafe.location}
@@ -268,8 +268,11 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               transition={{ duration: 0.5, delay: 0.48 }}
             >
               <button
-                onClick={() => setIsGalleryOpen(true)}
-                className="cursor-pointer px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-[#1e0d00] dark:bg-[#f0dfc0] transition-all active:scale-95 hover:opacity-90 shadow-lg"
+                onClick={() => {
+                  const el = document.getElementById("menu");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-primary dark:bg-[#f0dfc0] transition-all active:scale-95 hover:bg-primary/90 shadow-lg cursor-pointer"
               >
                 Explore Now
               </button>
@@ -297,11 +300,11 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
                   height: "clamp(56px,8vw,90px)",
                   flexShrink: 0,
                   transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
-                  border: activeThumb === i ? "2.5px solid #1e0d00" : "2.5px solid transparent",
+                  border: activeThumb === i ? "2.5px solid #c0392b" : "2.5px solid transparent",
                   transform: activeThumb === i ? "scale(1.08)" : "scale(1)",
                   boxShadow: activeThumb === i
-                    ? "0 6px 18px rgba(30,13,0,0.35)"
-                    : "0 2px 8px rgba(30,13,0,0.14)",
+                    ? "0 6px 18px rgba(192,57,43,0.35)"
+                    : "0 2px 8px rgba(192,57,43,0.14)",
                 }}
               >
                 <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
@@ -459,7 +462,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
                 )}
               </AnimatePresence>
               <button
-                className="flex cursor-pointer items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15 cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5" /> Share
               </button>
@@ -467,9 +470,9 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
 
             <button
               onClick={() => setIsBookmarked((b) => !b)}
-              className={`flex cursor-pointer items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${isBookmarked
-                  ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
-                  : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 cursor-pointer ${isBookmarked
+                ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
+                : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
                 }`}
             >
               <Heart className={`w-3.5 h-3.5 ${isBookmarked ? "fill-red-600 dark:fill-red-400" : ""}`} />
@@ -508,8 +511,8 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             <button
               onClick={() => setIsBookmarked((b) => !b)}
               className={`flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black ${isBookmarked
-                  ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400"
-                  : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
+                ? "bg-red-100 dark:bg-red-900/25 text-red-700 dark:text-red-400"
+                : "bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
                 }`}
             >
               <Heart

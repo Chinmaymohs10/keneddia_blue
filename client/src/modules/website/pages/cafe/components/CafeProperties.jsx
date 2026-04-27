@@ -134,29 +134,51 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
     [cafes],
   );
 
-  const filteredCafes = useMemo(
-    () =>
-      selectedCity === "All Cities"
-        ? cafes
-        : cafes.filter((item) => item.city === selectedCity),
-    [cafes, selectedCity],
-  );
+  const filteredCafes = useMemo(() => {
+    if (!cafes || cafes.length === 0) return [];
+    if (selectedCity === "All Cities") return cafes;
+
+    const filtered = cafes.filter(
+      (item) => normalize(item.city) === normalize(selectedCity),
+    );
+
+    // If city filtering yields no results (unexpected mismatch), fall back to all cafes
+    if (filtered.length === 0) return cafes;
+
+    return filtered;
+  }, [cafes, selectedCity]);
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [selectedCity]);
+  }, [selectedCity, filteredCafes.length]);
 
   useEffect(() => {
-    if (!locationMatch) return;
+    if (!locationMatch || !cafes.length) return;
 
     if (locationMatch.found && locationMatch.city) {
-      setSelectedCity(locationMatch.city);
-      setLocationBanner("found");
-      return;
-    }
+      // Find if we actually have properties for this detected city
+      const hasPropsInCity = cafes.some(
+        (c) => normalize(c.city) === normalize(locationMatch.city),
+      );
 
-    setLocationBanner("not-found");
-  }, [locationMatch]);
+      if (hasPropsInCity) {
+        // Sync with existing city if found (safeguards casing)
+        const existingCity = cafes.find(
+          (c) => normalize(c.city) === normalize(locationMatch.city),
+        )?.city;
+        setSelectedCity(existingCity || locationMatch.city);
+        setLocationBanner("found");
+      } else {
+        // No properties for the detected city, show everything
+        setSelectedCity("All Cities");
+        setLocationBanner("not-found");
+      }
+    } else {
+      // No city detected or match failed
+      setSelectedCity("All Cities");
+      setLocationBanner("not-found");
+    }
+  }, [locationMatch, cafes]);
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredCafes.length <= 1) {
@@ -208,21 +230,27 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
         },
       ];
 
-  if (loading) {
-    return (
-      <div className="container mx-auto mb-12 px-4">
-        <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-          Loading cafes...
+  if (!activeCafe || cafes.length === 0) {
+    if (loading) {
+      return (
+        <div className="container mx-auto mb-12 px-4">
+          <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 animate-pulse" />
+              Loading cafes...
+            </span>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!activeCafe) {
     return (
       <div className="container mx-auto mb-12 px-4">
-        <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-          No cafes available.
+        <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground">
+          <div className="text-center">
+            <Building2 className="mx-auto mb-2 h-8 w-8 opacity-20" />
+            <p>No cafes available at the moment.</p>
+          </div>
         </div>
       </div>
     );
@@ -281,7 +309,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 <div className="relative">
                   <button
                     onClick={() => setShowCityDropdown((prev) => !prev)}
-                    className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50"
+                    className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50 cursor-pointer"
                   >
                     <MapPin className="h-3 w-3 text-primary" />
                     <span className="font-medium">{selectedCity}</span>
@@ -300,8 +328,14 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                             setSelectedCity(city);
                             setShowCityDropdown(false);
                           }}
+<<<<<<< HEAD
                           className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${selectedCity === city ? "bg-secondary/30 font-semibold" : ""
                             }`}
+=======
+                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 cursor-pointer ${
+                            selectedCity === city ? "bg-secondary/30 font-semibold" : ""
+                          }`}
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                         >
                           {city}
                         </button>
@@ -313,7 +347,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 {selectedCity !== "All Cities" && (
                   <button
                     onClick={() => setSelectedCity("All Cities")}
-                    className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                    className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                     Clear
@@ -335,7 +369,12 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
               <div className="inline-flex w-full items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm sm:w-fit">
                 <button
                   onClick={() => setViewMode("gallery")}
+<<<<<<< HEAD
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${viewMode === "gallery"
+=======
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
+                    viewMode === "gallery"
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -345,7 +384,12 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
+<<<<<<< HEAD
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${viewMode === "map"
+=======
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
+                    viewMode === "map"
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -438,7 +482,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                     <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3">
                       <button
                         onClick={handlePrev}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
@@ -449,7 +493,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </div>
                       <button
                         onClick={handleNext}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
@@ -548,7 +592,11 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </Button>
                       <button
                         onClick={() => goToCafeDetails(activeCafe)}
+<<<<<<< HEAD
                         className="w-full cursor-pointer py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+=======
+                        className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
                       >
                         View Details -&gt;
                       </button>
@@ -601,13 +649,13 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </div>
                       <button
                         onClick={handlePrev}
-                        className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                        className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
                       <button
                         onClick={handleNext}
-                        className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                        className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>

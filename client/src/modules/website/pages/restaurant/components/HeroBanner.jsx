@@ -16,6 +16,12 @@ const transformApiDataToSlides = (content) =>
         item.backgroundDark?.[0] ||
         null;
 
+      const subMedia =
+        item.subAll?.[0] ||
+        item.subLight?.[0] ||
+        item.subDark?.[0] ||
+        null;
+
       if (!backgroundMedia?.url) return null;
 
       const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
@@ -27,6 +33,8 @@ const transformApiDataToSlides = (content) =>
         desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
+        thumbnail: subMedia?.url || backgroundMedia.url,
+        thumbnailIsVideo: subMedia?.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
@@ -457,16 +465,16 @@ export default function HeroBanner({ initialSlides, onReady }) {
                 onClick={() => goToSlide(index)}
                 className="group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
               >
-                {slide.isVideo ? (
+                {slide.thumbnailIsVideo ? (
                   <video
-                    src={slide.img}
+                    src={slide.thumbnail}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                     muted
                     playsInline
                   />
                 ) : (
                   <img
-                    src={slide.img}
+                    src={slide.thumbnail}
                     alt={slide.title}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />

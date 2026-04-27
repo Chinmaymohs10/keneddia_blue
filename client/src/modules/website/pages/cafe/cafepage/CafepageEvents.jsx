@@ -49,8 +49,8 @@ const normalizeHeaderRecords = (payload) => {
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
-  const linkPath = item.type === "Offer" || item.type === "Event" 
-    ? (item.detailPath || `/cafe/${item.slug}`) 
+  const linkPath = item.type === "Offer" || item.type === "Event"
+    ? (item.detailPath || `/cafe/${item.slug}`)
     : `/cafe/${item.slug}`;
 
   return (
@@ -126,13 +126,13 @@ function CarouselColumn({ title, icon: Icon, items }) {
         <div className="flex gap-2">
           <button
             onClick={() => swiper?.slidePrev()}
-            className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted cursor-pointer"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={() => swiper?.slideNext()}
-            className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted cursor-pointer"
           >
             <ChevronRight size={16} />
           </button>
@@ -171,8 +171,8 @@ function GroupBookingColumn({ items = [], openGroupBookingForm }) {
         const propertyTypes = typesResponse?.data || typesResponse || [];
         const cafeType = Array.isArray(propertyTypes)
           ? propertyTypes.find(
-              (type) => type?.isActive && type?.typeName?.toLowerCase() === "cafe",
-            )
+            (type) => type?.isActive && type?.typeName?.toLowerCase() === "cafe",
+          )
           : null;
 
         if (!cafeType?.id) return;

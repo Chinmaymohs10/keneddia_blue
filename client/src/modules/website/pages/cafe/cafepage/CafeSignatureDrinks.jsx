@@ -16,13 +16,14 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  getMenuItemsByPropertyId, 
-  getMenuHeaders, 
-  createJoiningUs 
+import {
+  getMenuItemsByPropertyId,
+  getMenuHeaders,
+  createJoiningUs,
+  getAllMenuThumbnails
 } from "@/Api/RestaurantApi";
 
-export default function CafeSignatureDrinks({ propertyId, propertyType }) {
+export default function CafeSignatureDrinks({ propertyId, propertyType, verticalId }) {
   const [activeTab, setActiveTab] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -30,10 +31,11 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState([]);
   const [menuHeader, setMenuHeader] = useState(null);
+  const [fetchedThumbnails, setFetchedThumbnails] = useState([]);
 
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
+    guestName: "",
+    contactNumber: "",
     date: new Date().toISOString().split("T")[0],
     time: "19:00",
     totalGuest: "2",
@@ -71,6 +73,21 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
       .finally(() => setLoading(false));
   }, [propertyId]);
 
+  // ── Fetch Menu Thumbnails ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!propertyId) return;
+    (async () => {
+      try {
+        const res = await getAllMenuThumbnails();
+        const data = res?.data || [];
+        const active = Array.isArray(data) ? data.filter((t) => t.active === true) : [];
+        setFetchedThumbnails(active);
+      } catch (err) {
+        console.error("Failed to fetch menu thumbnails:", err);
+      }
+    })();
+  }, [propertyId]);
+
   // ── Group menu by category ───────────────────────────────────────────────
   const groupedMenu = useMemo(() => {
     const map = {};
@@ -79,6 +96,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
       if (!map[catName]) {
         map[catName] = {
           category: catName,
+          categoryId: item.itemCategory?.id || null,
           categoryImage: item.media?.url || item.image?.url || "",
           items: [],
         };
@@ -136,26 +154,29 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
     setFormData((prev) => ({ ...prev, [key]: value }));
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone) {
+    if (!formData.guestName || !formData.contactNumber) {
       toast.error("Please fill in your name and phone number.");
       return;
     }
     setIsSubmitting(true);
     try {
+      const category = groupedMenu[activeTab]?.category || "General";
+      const itemType = selectedItem?.name || "Table Reservation";
+
       await createJoiningUs({
-        name: formData.name,
-        mobileNumber: formData.phone,
-        bookingDate: formData.date,
-        bookingTime: formData.time,
-        numberOfGuest: formData.totalGuest,
+        guestName: formData.guestName.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        date: formData.date,
+        time: formData.time,
+        totalGuest: Number(formData.totalGuest),
         propertyId: propertyId,
-        bookingType: selectedItem?.name || "Table Reservation",
+        description: `Request: ${itemType} | Category: ${category}`,
       });
       toast.success("Reservation request sent!");
       setShowModal(false);
       setFormData({
-        name: "",
-        phone: "",
+        guestName: "",
+        contactNumber: "",
         date: new Date().toISOString().split("T")[0],
         time: "19:00",
         totalGuest: "2",
@@ -183,17 +204,38 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
 
   const activeSection = groupedMenu[activeTab];
 
-  // 1 thumbnail per 4 items — first uses categoryImage, rest use every 4th item's image
-  const getThumbnails = (section) => {
+  // ── Thumbnail matching logic from CategoryMenu ──────────────────────────
+  const getDisplayThumbs = (section) => {
     if (!section) return [];
-    const count = Math.ceil(section.items.length / 4);
-    return Array.from({ length: count }, (_, i) => ({
-      image: i === 0 ? section.categoryImage : (section.items[i * 4 - 1]?.image ?? section.categoryImage),
-      label: i === 0 ? section.category : section.items[i * 4 - 1]?.name ?? section.category,
-    }));
+
+    const sectionTypeId = section.categoryId;
+    const itemCount = section.items?.length || 0;
+    const thumbsNeeded = Math.ceil(itemCount / 4); // Cafe uses 4 per thumb grid
+
+    // Filter thumbnails by propertyId (Cafes don't have verticals)
+    const propertyThumbs = fetchedThumbnails.filter(
+      (t) => Number(t.propertyId) === Number(propertyId),
+    );
+
+    // Nothing for this property — show nothing
+    if (!propertyThumbs.length) return [];
+
+    // Prefer type-specific match within the property
+    const typeMatched = sectionTypeId !== null
+      ? propertyThumbs.filter((t) => Number(t.itemTypeId) === Number(sectionTypeId))
+      : [];
+
+    const pool = typeMatched.length > 0 ? typeMatched : propertyThumbs;
+
+    // Cycle through pool to fill thumbsNeeded slots
+    const result = [];
+    for (let i = 0; i < thumbsNeeded; i++) {
+      result.push(pool[i % pool.length]);
+    }
+    return result;
   };
 
-  const thumbnails = getThumbnails(activeSection);
+  const displayThumbs = getDisplayThumbs(activeSection);
 
   return (
     <section
@@ -218,7 +260,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
               <button
                 onClick={handlePrev}
                 disabled={activeTab === 0}
-                className="p-2 cursor-pointer rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all cursor-pointer"
               >
                 <ChevronLeft className="w-5 h-5 dark:text-white" />
               </button>
@@ -228,7 +270,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
               <button
                 onClick={handleNext}
                 disabled={activeTab === groupedMenu.length - 1}
-                className="p-2 cursor-pointer rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all"
+                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 disabled:opacity-30 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all cursor-pointer"
               >
                 <ChevronRight className="w-5 h-5 dark:text-white" />
               </button>
@@ -236,7 +278,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
 
             <button
               onClick={() => openReserve()}
-              className="hidden md:flex cursor-pointer items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none"
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none cursor-pointer"
             >
               <CalendarCheck size={14} /> Reserve Now
             </button>
@@ -252,11 +294,10 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
             <motion.button
               key={idx}
               onClick={() => handleTabClick(idx)}
-              className={`relative shrink-0 px-6 py-3 cursor-pointer rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center ${
-                activeTab === idx
-                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
-                  : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
-              }`}
+              className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center cursor-pointer ${activeTab === idx
+                ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
+                : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
+                }`}
             >
               {section.category}
             </motion.button>
@@ -275,33 +316,42 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
             {/* LEFT: thumbnails — 1 per 4 items */}
             <div className="lg:col-span-5 hidden lg:block">
               <div className="space-y-4">
-                {thumbnails.map((thumb, i) => (
-                  <div
-                    key={i}
-                    className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-zinc-100 dark:bg-zinc-900"
-                  >
-                    {thumb.image ? (
-                      <img
-                        src={thumb.image}
-                        alt={thumb.label}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center opacity-20">
-                         <ImageIcon size={48} />
+                {displayThumbs.map((thumb, i) => {
+                  const url = thumb.media?.url;
+                  const vid = thumb.media?.type === "VIDEO";
+                  return (
+                    <div
+                      key={i}
+                      className="relative w-full aspect-4/3 rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-zinc-100 dark:bg-zinc-900"
+                    >
+                      {vid ? (
+                        <video
+                          src={url}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <img
+                          src={url || thumb.imageUrl}
+                          alt={thumb.tag || thumb.label}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-6 left-6 text-white text-left">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
+                          {thumb.tag || "Featured"}
+                        </p>
+                        <h3 className="text-2xl font-serif uppercase tracking-tight line-clamp-1">
+                          {activeSection.category}
+                        </h3>
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-6 left-6 text-white text-left">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
-                        {i === 0 ? "Featured" : `Items ${i * 4 + 1}–${Math.min((i + 1) * 4, activeSection.items?.length || 0)}`}
-                      </p>
-                      <h3 className="text-2xl font-serif uppercase tracking-tight line-clamp-1">
-                        {i === 0 ? activeSection.category : thumb.label}
-                      </h3>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -392,7 +442,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400"
+                  className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 cursor-pointer"
                 >
                   <X size={20} />
                 </button>
@@ -407,8 +457,8 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
                       <Input
-                        value={formData.name}
-                        onChange={(e) => setField("name", e.target.value)}
+                        value={formData.guestName}
+                        onChange={(e) => setField("guestName", e.target.value)}
                         placeholder="Full Name"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
                       />
@@ -424,9 +474,9 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                       <Input
                         type="tel"
                         maxLength={10}
-                        value={formData.phone}
+                        value={formData.contactNumber}
                         onChange={(e) =>
-                          setField("phone", e.target.value.replace(/\D/g, ""))
+                          setField("contactNumber", e.target.value.replace(/\D/g, ""))
                         }
                         placeholder="10-digit number"
                         className="pl-10 h-11 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border-none"
@@ -485,7 +535,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType }) {
                 <Button
                   disabled={isSubmitting}
                   onClick={handleSubmit}
-                  className="w-full h-11 cursor-pointer bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20"
+                  className="w-full h-11 bg-primary text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-primary/20 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <Loader2 className="animate-spin" size={18} />

@@ -157,7 +157,7 @@ export default function CafeGalleryPage({ propertyId }) {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 cursor-pointer rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === cat
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${activeCategory === cat
                   ? "bg-primary text-white shadow-md"
                   : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"
                   }`}
@@ -219,7 +219,7 @@ export default function CafeGalleryPage({ propertyId }) {
                           viewport={{ once: true }}
                           transition={{ delay: Math.min(loopIndex * 0.04, 0.2) }}
                           onClick={() => openLightbox(sourceIndex)}
-                          className="relative group cursor-pointer overflow-hidden rounded-[1.5rem] text-left"
+                          className="relative group overflow-hidden rounded-[1.5rem] text-left cursor-pointer"
                         >
                           <div
                             className={`relative ${loopIndex % 3 === 0 ? "aspect-[4/5]" : "aspect-[5/4]"
@@ -268,7 +268,7 @@ export default function CafeGalleryPage({ propertyId }) {
         >
           <button
             onClick={closeLightbox}
-            className="absolute top-5 right-5 p-2 cursor-pointer bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -277,7 +277,7 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxPrev();
             }}
-            className="absolute left-5 p-3 cursor-pointer bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            className="absolute left-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -296,7 +296,7 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxNext();
             }}
-            className="absolute right-5 p-3 cursor-pointer bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            className="absolute right-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
           >
             <ChevronRight className="w-6 h-6" />
           </button>

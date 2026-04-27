@@ -64,7 +64,7 @@ function NewsCard({ item }) {
                 e.stopPropagation();
                 setExpanded((prev) => !prev);
               }}
-              className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+              className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
             >
               {expanded ? (
                 <>
@@ -193,10 +193,10 @@ export default function CafeNewsSection({ initialNews }) {
               View All <ArrowUpRight className="h-4 w-4" />
             </Link>
             <div className="flex gap-2">
-              <button onClick={() => swiperRef.current?.slidePrev()} className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground" aria-label="Previous">
+               <button onClick={() => swiperRef.current?.slidePrev()} className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer" aria-label="Previous">
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <button onClick={() => swiperRef.current?.slideNext()} className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground" aria-label="Next">
+               <button onClick={() => swiperRef.current?.slideNext()} className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer" aria-label="Next">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

@@ -16,6 +16,12 @@ const transformApiDataToSlides = (content) =>
         item.backgroundDark?.[0] ||
         null;
 
+      const subMedia =
+        item.subAll?.[0] ||
+        item.subLight?.[0] ||
+        item.subDark?.[0] ||
+        null;
+
       if (!backgroundMedia?.url) return null;
 
       const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
@@ -27,6 +33,8 @@ const transformApiDataToSlides = (content) =>
         desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
+        thumbnail: subMedia?.url || backgroundMedia.url,
+        thumbnailIsVideo: subMedia?.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
@@ -107,8 +115,8 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
         const types = typeResponse?.data || typeResponse;
         const cafeType = Array.isArray(types)
           ? types.find(
-              (type) => type.isActive && type.typeName?.toLowerCase() === "cafe",
-            )
+            (type) => type.isActive && type.typeName?.toLowerCase() === "cafe",
+          )
           : null;
 
         if (!cafeType?.id) return;
@@ -170,10 +178,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
   );
   const activeMobileSlide = useMemo(() => mobileSlides[mobileActiveIndex] || null, [mobileActiveIndex, mobileSlides]);
   const upcomingThumbnailSlides = useMemo(() => {
-    if (desktopSlides.length === 0) return [];
-    if (desktopSlides.length === 1) {
-      return [{ slide: desktopSlides[0], index: 0 }];
-    }
+    if (desktopSlides.length <= 1) return [];
 
     return Array.from({ length: desktopSlides.length - 1 }, (_, offset) => {
       const index = (activeIndex + offset + 1) % desktopSlides.length;
@@ -224,7 +229,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.9, ease: "easeOut" }}
-              className="absolute inset-0"
+              className="absolute inset-0 hidden md:block"
             >
               <HeroMedia slide={activeSlide} />
             </motion.div>
@@ -275,8 +280,8 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
                       disabled={!activeSlide.ctaLink}
                       onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
                       className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${!activeSlide.ctaLink
-                          ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                          : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
+                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
                         }`}
                     >
                       {activeSlide.ctaLink && (
@@ -373,11 +378,10 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
                   <button
                     disabled={!activeMobileSlide.ctaLink}
                     onClick={() => { if (activeMobileSlide.ctaLink) { const url = /^https?:\/\//i.test(activeMobileSlide.ctaLink) ? activeMobileSlide.ctaLink : `https://${activeMobileSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                    className={`group relative h-auto overflow-hidden rounded-full border px-5 py-2 text-xs font-semibold transition-all duration-500 ease-out inline-flex items-center gap-2 ${
-                      !activeMobileSlide.ctaLink
-                        ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                        : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
-                    }`}
+                    className={`group relative h-auto overflow-hidden rounded-full border px-5 py-2 text-xs font-semibold transition-all duration-500 ease-out inline-flex items-center gap-2 ${!activeMobileSlide.ctaLink
+                      ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
+                      : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
+                      }`}
                   >
                     {activeMobileSlide.ctaLink && (
                       <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
@@ -393,7 +397,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
               <button
                 onClick={() => goToMobileSlide(mobileActiveIndex - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20 cursor-pointer"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
@@ -402,17 +406,16 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
                   <div
                     key={`mob-dot-${index}`}
                     onClick={() => goToMobileSlide(index)}
-                    className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
-                      mobileActiveIndex === index
-                        ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
-                        : "w-4 bg-white/40 hover:bg-white/70"
-                    }`}
+                    className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${mobileActiveIndex === index
+                      ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                      : "w-4 bg-white/40 hover:bg-white/70"
+                      }`}
                   />
                 ))}
               </div>
               <button
                 onClick={() => goToMobileSlide(mobileActiveIndex + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20 cursor-pointer"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -423,76 +426,74 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
 
       {activeSlide && (
         <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
-        <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            {desktopSlides.map((_, index) => (
-              <div
-                key={`indicator-${index}`}
-                onClick={() => goToSlide(index)}
-                className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
-                  activeIndex === index
+          <div className="flex items-center gap-3 pr-2 md:gap-4 lg:gap-6">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              {desktopSlides.map((_, index) => (
+                <div
+                  key={`indicator-${index}`}
+                  onClick={() => goToSlide(index)}
+                  className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${activeIndex === index
                     ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] md:w-10 lg:w-12"
                     : "w-4 bg-white/30 hover:bg-white/60 md:w-5 lg:w-6"
-                }`}
-              />
+                    }`}
+                />
+              ))}
+            </div>
+
+            <div className="flex gap-2 md:gap-3">
+              <button
+                onClick={() => goToSlide(activeIndex - 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10 cursor-pointer"
+              >
+                <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
+              </button>
+              <button
+                onClick={() => goToSlide(activeIndex + 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10 cursor-pointer"
+              >
+                <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
+            {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
+              <motion.div
+                key={`thumbnail-${slide.id}`}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: thumbOrder * 0.12 + 0.35 }}
+                onClick={() => goToSlide(index)}
+                className="group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
+              >
+                {slide.thumbnailIsVideo ? (
+                  <video
+                    src={slide.thumbnail}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={slide.thumbnail}
+                    alt={slide.title}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                )}
+                {slide.tag && (
+                  <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
+                    <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
+                      {slide.tag}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
             ))}
           </div>
-
-          <div className="flex gap-2 md:gap-3">
-            <button
-              onClick={() => goToSlide(activeIndex - 1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
-            >
-              <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
-            </button>
-            <button
-              onClick={() => goToSlide(activeIndex + 1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
-            >
-              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-row items-end gap-2 overflow-hidden md:gap-3 lg:gap-4">
-          {upcomingThumbnailSlides.map(({ slide, index }, thumbOrder) => (
-            <motion.div
-              key={`thumbnail-${slide.id}`}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: thumbOrder * 0.12 + 0.35 }}
-              onClick={() => goToSlide(index)}
-              className="group relative h-28 w-[67px] flex-shrink-0 cursor-pointer overflow-hidden transition-all duration-500 ease-out md:h-[134px] md:w-[78px] lg:h-[179px] lg:w-28 grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
-            >
-              {slide.isVideo ? (
-                <video
-                  src={slide.img}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  muted
-                  playsInline
-                />
-              ) : (
-                <img
-                  src={slide.img}
-                  alt={slide.title}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-              )}
-              {slide.tag && (
-                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent p-2 md:p-3">
-                  <p className="truncate text-[10px] font-medium text-white/90 md:text-xs">
-                    {slide.tag}
-                  </p>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
         </div>
       )}
 
-      {activeSlide && (
-        <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
+      <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
         <svg
           viewBox="0 0 1440 320"
           className="h-full w-full"
@@ -503,8 +504,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
           />
         </svg>
-        </div>
-      )}
+      </div>
     </section>
   );
 }

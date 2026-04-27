@@ -38,8 +38,8 @@ function HomePageDashboard() {
     { id: 'guest', label: 'Guest Exp', icon: Star, component: GuestExp },
     { id: 'presence', label: 'Our Presence', icon: Building, component: OurPresence },
     { id: 'group', label: 'Group Bookings', icon: Users, component: GroupBookings },
-    { id: 'hotel-homepage', label: 'Hotel Homepage', icon: Hotel, component: HotelHomepage },
-    { id: 'story', label: 'Story', icon: BookOpen, component: Story },
+    { id: 'hotel-homepage', label: 'Property Homepage', icon: Hotel, component: HotelHomepage },
+    { id: 'story', label: 'Cafe Story', icon: BookOpen, component: Story },
   ];
 
 

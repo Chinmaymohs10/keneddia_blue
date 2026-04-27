@@ -104,13 +104,21 @@ function CarouselColumn({ label, title, icon: Icon, items, accentColor }) {
         <div className="flex gap-2">
           <button
             onClick={() => swiper?.slidePrev()}
+<<<<<<< HEAD
             className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
+=======
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted cursor-pointer"
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={() => swiper?.slideNext()}
+<<<<<<< HEAD
             className="rounded-full border border-border bg-background p-2 cursor-pointer shadow-sm transition-colors hover:bg-muted"
+=======
+            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted cursor-pointer"
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
           >
             <ChevronRight size={16} />
           </button>

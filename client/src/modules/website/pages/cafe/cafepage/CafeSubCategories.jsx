@@ -61,16 +61,15 @@ function DesktopStoryCard({ card, onHoverChange }) {
       >
         <div className="flex h-full w-full flex-col justify-center gap-6 overflow-hidden p-8 xl:p-10">
           <div className="space-y-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-800/60">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">
               {card.accent}
             </p>
             <h3 className="text-3xl font-serif leading-tight text-zinc-950 dark:text-white">
               {card.title}
             </h3>
             <p
-              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${
-                isHovered ? "" : "line-clamp-3"
-              }`}
+              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${isHovered ? "" : "line-clamp-3"
+                }`}
             >
               {card.description}
             </p>
@@ -80,7 +79,7 @@ function DesktopStoryCard({ card, onHoverChange }) {
             animate={{ opacity: isHovered ? 1 : 0.82, y: isHovered ? 0 : 8 }}
             className="space-y-4"
           >
-            <div className="rounded-3xl bg-[#2b1d14] p-5 text-white shadow-lg">
+            <div className="rounded-3xl bg-primary p-5 text-white shadow-lg">
               <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-white/40">
                 Highlight
               </p>
@@ -128,7 +127,7 @@ function MobileStoryCard({ card }) {
         />
       </div>
       <div className="space-y-4 p-8">
-        <div className="inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
           <Icon className="h-3 w-3" /> {card.eyebrow}
         </div>
         <h3 className="text-3xl font-serif text-zinc-950 dark:text-white">
@@ -137,7 +136,7 @@ function MobileStoryCard({ card }) {
         <p className="text-sm leading-relaxed text-zinc-600 dark:text-white/50">
           {card.description}
         </p>
-        <div className="rounded-2xl bg-[#2b1d14] p-5 text-white">
+        <div className="rounded-2xl bg-primary p-5 text-white">
           <p className="text-sm italic font-serif">{card.benefit}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -268,12 +267,12 @@ export default function CafeSubCategories({ initialData }) {
 
           {/* Nav / controls — now on the RIGHT */}
           <div className="flex h-full flex-col justify-center">
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-900">
+            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
               <Coffee className="h-3.5 w-3.5" /> {sectionInfo.highlight}
             </div>
-            <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white">
+            <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-primary">
               {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <br />
-              <span className="italic text-amber-800">
+              <span className="italic text-primary">
                 {sectionInfo.heading.split(" ").slice(-2).join(" ")}
               </span>
             </h2>
@@ -287,10 +286,10 @@ export default function CafeSubCategories({ initialData }) {
                   key={card.id || index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
-                  className="group flex cursor-pointer items-center gap-4 text-left"
+                  className="group flex items-center gap-4 text-left cursor-pointer"
                 >
                   <span
-                    className={`h-px w-8 transition-all ${activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
+                    className={`h-px w-8 transition-all ${activeIndex === index ? "bg-primary" : "bg-zinc-300"
                       }`}
                   />
                   <span
@@ -309,14 +308,14 @@ export default function CafeSubCategories({ initialData }) {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -331,11 +330,11 @@ export default function CafeSubCategories({ initialData }) {
 
       <div className="w-full px-6 lg:hidden">
         <div className="mb-14">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-900">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
             <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
-          <h2 className="mb-6 text-4xl font-serif text-zinc-950 dark:text-white">
-             {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-amber-800">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
+          <h2 className="mb-6 text-4xl font-serif text-primary">
+            {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-primary">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
           </h2>
           <p className="text-sm text-zinc-500">
             {sectionInfo.description}
@@ -350,7 +349,7 @@ export default function CafeSubCategories({ initialData }) {
           <button
             type="button"
             onClick={handlePrev}
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -361,8 +360,8 @@ export default function CafeSubCategories({ initialData }) {
                 key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 cursor-pointer rounded-full transition-all ${activeIndex === index
-                  ? "w-8 bg-amber-800"
+                className={`h-2 rounded-full transition-all cursor-pointer ${activeIndex === index
+                  ? "w-8 bg-primary"
                   : "w-2 bg-zinc-300 dark:bg-white/20"
                   }`}
                 aria-label={`Go to ${card.title}`}
@@ -373,7 +372,7 @@ export default function CafeSubCategories({ initialData }) {
           <button
             type="button"
             onClick={handleNext}
-            className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

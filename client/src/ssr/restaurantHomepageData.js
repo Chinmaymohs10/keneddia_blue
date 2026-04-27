@@ -14,7 +14,7 @@ import {
   getPropertyTypes,
   getPublicRecognitionsByAboutUsId,
 } from "@/Api/Api";
-import { getMenuItemsByTopSold } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSoldV2 } from "@/Api/RestaurantApi";
 
 const fetchSafe = async (fn, fallback) => {
   try {
@@ -42,8 +42,17 @@ const normalizeHeroSlides = (data) =>
         item.backgroundLight?.[0] ||
         item.backgroundDark?.[0] ||
         null;
+
+      const subMedia =
+        item.subAll?.[0] ||
+        item.subLight?.[0] ||
+        item.subDark?.[0] ||
+        null;
+
       if (!backgroundMedia?.url) return null;
+
       const primaryWord = item.mainTitle?.trim()?.split(/\s+/)?.[0] || "";
+
       return {
         id: item.id,
         tag: item.ctaText || null,
@@ -51,6 +60,8 @@ const normalizeHeroSlides = (data) =>
         desc: item.subTitle || null,
         img: backgroundMedia.url,
         isVideo: backgroundMedia.type === "VIDEO",
+        thumbnail: subMedia?.url || backgroundMedia.url,
+        thumbnailIsVideo: subMedia?.type === "VIDEO",
         bgTitle: primaryWord.toUpperCase(),
         ctaText: item.ctaText || null,
         ctaLink: item.ctaLink || null,
@@ -155,16 +166,21 @@ const toTag = (foodType) => {
   return foodType.toUpperCase() === "NON_VEG" ? "Non-Veg" : "Veg";
 };
 
-const normalizeBestSellers = (data) =>
-  (Array.isArray(data) ? data : []).map((item) => ({
-    id: item.id,
-    title: item.itemName,
-    description: item.description || "",
-    image: item.image?.url || item.media?.url || "",
-    tags: [toTag(item.foodType), "Best Seller"],
-    category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "",
-    likes: item.likeCount || 0,
-  }));
+const normalizeBestSellers = (data, restaurantTypeId) =>
+  (Array.isArray(data) ? data : [])
+    .filter((item) => {
+      // Basic safety check: if we have a typeId, ensure it matches
+      return restaurantTypeId != null ? Number(item?.propertyTypeId) === Number(restaurantTypeId) : true;
+    })
+    .map((item) => ({
+      id: item.id,
+      title: item.itemName,
+      description: item.description || "",
+      image: item.image?.url || item.media?.url || "",
+      tags: [toTag(item.foodType), "Best Seller"],
+      category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "",
+      likes: item.likeCount || 0,
+    }));
 
 // ── News ──────────────────────────────────────────────────────────────────────
 const normalizeNews = (newsRes, restaurantTypeId) => {
@@ -370,7 +386,7 @@ export const fetchRestaurantHomepageData = async () => {
       : { data: [] },
     fetchSafe(() => getDailyOffers({ targetType: "GLOBAL", page: 0, size: 100 }), null),
     fetchSafe(() => GetAllPropertyDetails(), null),
-    fetchSafe(() => getMenuItemsByTopSold(true), { data: [] }),
+    fetchSafe(() => getMenuItemsByTopSoldV2({ topSold: true, propertyTypeId: restaurantTypeId }), { data: [] }),
     fetchSafe(() => getAllNews({ category: "", page: 0, size: 50 }), null),
     fetchSafe(() => getEventsUpdated(), null),
     fetchSafe(() => getGroupBookings(), null),
@@ -390,7 +406,7 @@ export const fetchRestaurantHomepageData = async () => {
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
     restaurantOffers: offersRes ? await normalizeOffers(offersRes) : [],
     restaurantProperties: propertiesRes ? normalizeProperties(propertiesRes) : [],
-    bestSellers: normalizeBestSellers(bestSellersRes?.data ?? []),
+    bestSellers: normalizeBestSellers(bestSellersRes?.data ?? [], restaurantTypeId),
     restaurantNews: newsRes ? normalizeNews(newsRes, restaurantTypeId) : [],
     restaurantEvents: eventsRes ? normalizeEvents(eventsRes, restaurantTypeId) : [],
     groupBookings: bookingsRes ? normalizeGroupBookings(bookingsRes, restaurantTypeId) : [],

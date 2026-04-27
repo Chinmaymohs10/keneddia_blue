@@ -12,19 +12,24 @@ import {
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMenuItemsByTopSold, addItemLike, getMenuSectionsByPropertyTypeId, getMenuItemsByPropertyTypeId } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSoldV2, addItemLike, getMenuSectionsByPropertyTypeId, getMenuItemsByPropertyTypeId } from "@/Api/RestaurantApi";
 import { getPropertyTypes } from "@/Api/Api";
 
-// Dynamic categories will be derived from data
+const FILTERS = ["Veg", "Non-Veg"];
 
-
+function toTag(foodType) {
+  if (!foodType) return "Veg";
+  const f = foodType.toUpperCase();
+  if (f === "NON_VEG") return "Non-Veg";
+  return "Veg";
+}
 
 const normalize = (item) => ({
   id: item.id,
   title: item.itemName,
   description: item.description || "",
   image: item.image?.url || item.media?.url || "",
-  tags: ["Best Seller"],
+  tags: [toTag(item.foodType), "Best Seller"],
   category: item.type?.typeName || item.verticalCardResponseDTO?.verticalName || "Other",
   likes: item.likeCount || 0,
 });
@@ -72,9 +77,9 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function CafeBestSellers({ initialItems, cafeTypeId }) {
+export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
-  const [activeFilter, setActiveFilter] = useState("");
+  const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
   const [menuItems, setMenuItems] = useState(ssrLoaded ? initialItems : []);
   const [fetchLoading, setFetchLoading] = useState(!ssrLoaded);
@@ -108,36 +113,37 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
   }, [cafeTypeId]);
 
   useEffect(() => {
-    // Enable fetching even if initialItems is provided but empty, or if we specifically need fresh data
-    if (!resolvedTypeId) return;
+    if (!resolvedTypeId && !propertyId) return;
     setFetchLoading(true);
 
-    getMenuItemsByPropertyTypeId(resolvedTypeId)
+    const params = { 
+      topSold: true, 
+      propertyTypeId: resolvedTypeId,
+      propertyId: propertyId 
+    };
+    console.log("CafeBestSellers: Fetching with params:", params);
+
+    getMenuItemsByTopSoldV2(params)
       .then((res) => {
+        console.log("CafeBestSellers: API Response:", res.data);
         const data = res.data ?? [];
         const normalizedItems = (Array.isArray(data) ? data : [])
-          .filter((item) => item.topSold === true)
           .map(normalize);
 
         setMenuItems(normalizedItems);
-
-        // Auto-set the first filter if none is set
-        if (normalizedItems.length > 0) {
-          const firstCat = normalizedItems[0].category;
-          setActiveFilter(firstCat);
-        }
       })
       .catch((err) => {
         console.error("CafeBestSellers fetch error:", err);
         setMenuItems([]);
       })
       .finally(() => setFetchLoading(false));
-  }, [resolvedTypeId]); // Removed ssrLoaded to ensure fetch happens if ID is resolved later
+  }, [resolvedTypeId, propertyId]);
 
   useEffect(() => {
     if (!resolvedTypeId) return;
     getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
+        console.log(res);
         const data = res.data?.data || res.data;
         if (Array.isArray(data)) {
           const activeHeader = data.find((h) => h.isActive);
@@ -150,14 +156,8 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
       .catch((err) => console.error(err));
   }, [resolvedTypeId]);
 
-  const categories = useMemo(() => {
-    const cats = new Set(menuItems.map(i => i.category));
-    return Array.from(cats).sort();
-  }, [menuItems]);
-
   const filteredItems = useMemo(() => {
-    if (!activeFilter) return menuItems;
-    return menuItems.filter((item) => item.category === activeFilter);
+    return menuItems.filter((item) => item.tags.includes(activeFilter));
   }, [activeFilter, menuItems]);
 
   const primaryItems = filteredItems.slice(0, 4);
@@ -279,13 +279,15 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {categories.map((filter) => (
+            {FILTERS.map((filter) => (
               <button
                 key={filter}
                 type="button"
                 onClick={() => handleFilterChange(filter)}
-                className={`rounded-full border px-4 py-2 text-sm font-bold capitalize transition-all cursor-pointer ${activeFilter === filter
-                  ? "border-primary bg-primary text-white"
+                className={`rounded-full border px-4 py-2 text-sm font-bold transition-all cursor-pointer ${activeFilter === filter
+                  ? filter === "Veg"
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : "border-rose-400 bg-white dark:bg-[#050505] text-rose-500"
                   : "border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-primary/40 hover:text-primary"
                   }`}
               >

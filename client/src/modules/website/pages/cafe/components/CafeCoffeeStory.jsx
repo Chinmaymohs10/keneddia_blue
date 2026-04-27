@@ -69,9 +69,8 @@ function DesktopStoryCard({ card, onHoverChange }) {
               {card.title}
             </h3>
             <p
-              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${
-                isHovered ? "" : "line-clamp-3"
-              }`}
+              className={`text-sm leading-relaxed text-zinc-600 dark:text-white/50 ${isHovered ? "" : "line-clamp-3"
+                }`}
             >
               {card.description}
             </p>
@@ -155,6 +154,7 @@ function MobileStoryCard({ card }) {
 }
 
 export default function CafeCoffeeStory({ initialData }) {
+  console.log('data', initialData);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -237,16 +237,14 @@ export default function CafeCoffeeStory({ initialData }) {
                   className="group flex items-center gap-4 text-left"
                 >
                   <span
-                    className={`h-px w-8 transition-all ${
-                      activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
-                    }`}
+                    className={`h-px w-8 transition-all ${activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
+                      }`}
                   />
                   <span
-                    className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${
-                      activeIndex === index
+                    className={`text-[10px] font-black uppercase tracking-[0.3em] transition-all ${activeIndex === index
                         ? "text-zinc-900 dark:text-white"
                         : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-white/70"
-                    }`}
+                      }`}
                   >
                     {card.title}
                   </span>
@@ -323,11 +321,10 @@ export default function CafeCoffeeStory({ initialData }) {
                 key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all ${
-                  activeIndex === index
+                className={`h-2 rounded-full transition-all ${activeIndex === index
                     ? "w-8 bg-amber-800"
                     : "w-2 bg-zinc-300 dark:bg-white/20"
-                }`}
+                  }`}
                 aria-label={`Go to ${card.title}`}
               />
             ))}

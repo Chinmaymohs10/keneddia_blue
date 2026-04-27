@@ -372,8 +372,13 @@ function HeaderEditor({ propertyId, propertyType }) {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Chef's remark card
       {propertyType !== "cafe" && (
+=======
+      {/* Chef's remark card */}
+      {propertyType?.toLowerCase() !== "cafe" && (
+>>>>>>> bd58290fc21dea392d7c2cc1ca7dd6a1e1eb310c
         <div className="border border-gray-100 rounded-xl overflow-hidden">
           <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">
@@ -1213,7 +1218,7 @@ const MenuTab = ({
           {
             key: "header",
             label:
-              propertyData?.propertyType === "cafe"
+              propertyData?.propertyType?.toLowerCase() === "cafe"
                 ? "Header"
                 : "Header & Chef",
           },

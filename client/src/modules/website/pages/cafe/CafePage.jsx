@@ -136,7 +136,7 @@ export default function CafePage() {
       <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
 
       <main>
-        <div id="home">
+        <div id="home" className="relative z-20 shadow-sm">
           <CafeBanner
             propertyData={propertyData}
             galleryData={galleryData}
@@ -149,7 +149,7 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#F8F8F6] to-[#F7F7F5]" />
         </div>
 
-        <div id="menu">
+        <div id="menu" className="relative z-10 shadow-sm">
           <CafeSubCategories initialData={storyData} />
           <div className="dark:hidden">
             <div className="h-px bg-[#E3E3DF]" />
@@ -158,6 +158,7 @@ export default function CafePage() {
           <CafeSignatureDrinks
             propertyId={resolvedPropertyId}
             propertyType={propertyData?.propertyType}
+            verticalId={storyData?.id}
           />
         </div>
 
@@ -165,7 +166,7 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-[#F5F5F3]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <div id="about">
+        <div id="about" className="relative z-[9] shadow-sm">
           <AboutCafePage propertyId={resolvedPropertyId} />
         </div>
 
@@ -173,7 +174,7 @@ export default function CafePage() {
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#ECECE8]" />
         </div>
-        <div id="events">
+        <div id="events" className="relative z-[8] shadow-sm">
           <CafepageEvents />
         </div>
 
@@ -181,13 +182,15 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F7F7F5]" />
           <div className="h-px bg-[#E5E5E2]" />
         </div>
-        <CafeTestimonials />
+        <div className="relative z-[7] shadow-sm">
+          <CafeTestimonials propertyId={resolvedPropertyId} />
+        </div>
 
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-[#F8F8F6]" />
         </div>
-        <div id="gallery">
+        <div id="gallery" className="relative z-[6] shadow-sm">
           <CafeGalleryPage propertyId={resolvedPropertyId} />
         </div>
 
@@ -195,7 +198,9 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#F8F8F6] to-[#EFEFEB]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <CafeReservationForm propertyId={resolvedPropertyId} />
+        <div className="relative z-[5] shadow-sm">
+          <CafeReservationForm propertyId={resolvedPropertyId} />
+        </div>
       </main>
 
       <div id="contact">
