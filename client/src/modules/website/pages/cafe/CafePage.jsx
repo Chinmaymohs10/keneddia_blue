@@ -188,14 +188,14 @@ export default function CafePage() {
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-[#F8F8F6]" />
         </div>
         <div id="gallery">
-          <CafeGalleryPage />
+          <CafeGalleryPage propertyId={resolvedPropertyId} />
         </div>
 
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F8F8F6] to-[#EFEFEB]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <CafeReservationForm />
+        <CafeReservationForm propertyId={resolvedPropertyId} />
       </main>
 
       <div id="contact">

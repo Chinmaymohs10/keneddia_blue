@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   motion,
   AnimatePresence,
@@ -10,6 +10,10 @@ import { ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  getPrimaryConversionsHeader,
+  createJoiningUs,
+} from "@/Api/RestaurantApi";
 import { validateReservationForm } from "@/lib/validation/reservationValidation";
 
 const FALLBACK = {
@@ -28,13 +32,36 @@ const EMPTY_FORM = {
   totalGuest: "",
 };
 
-export default function CafeReservationForm() {
+export default function CafeReservationForm({ propertyId }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const containerRef = useRef(null);
+
+  const [header, setHeader] = useState(FALLBACK);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    getPrimaryConversionsHeader()
+      .then((res) => {
+        const all = res?.data || [];
+        const matched = all
+          .filter((h) => h.propertyId === propertyId)
+          .sort((a, b) => b.id - a.id);
+        const latest = matched[0] || null;
+        if (latest) {
+          setHeader({
+            header1: latest.header1 || FALLBACK.header1,
+            header2: latest.header2 || FALLBACK.header2,
+            description: latest.description || FALLBACK.description,
+            footer: latest.footer || FALLBACK.footer,
+          });
+        }
+      })
+      .catch(() => {});
+  }, [propertyId]);
 
   const setField = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -65,7 +92,14 @@ export default function CafeReservationForm() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await createJoiningUs({
+        guestName: formData.guestName.trim(),
+        contactNumber: formData.contactNumber.trim(),
+        date: formData.date,
+        time: formData.time,
+        totalGuest: Number(formData.totalGuest),
+        propertyId,
+      });
       setCurrentStep(3);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
@@ -103,13 +137,13 @@ export default function CafeReservationForm() {
               </span>
             </div>
             <h2 className="text-5xl md:text-7xl font-serif text-zinc-900 dark:text-white leading-none mb-8 transition-colors">
-              {FALLBACK.header1} <br />
+              {header.header1} <br />
               <span className="italic text-zinc-400 dark:text-white/30">
-                {FALLBACK.header2}
+                {header.header2}
               </span>
             </h2>
             <p className="text-zinc-600 dark:text-white/50 text-lg leading-relaxed font-light mb-8 transition-colors">
-              {FALLBACK.description}
+              {header.description}
             </p>
             <div className="h-1 w-20 bg-primary/30" />
           </div>
@@ -376,8 +410,8 @@ export default function CafeReservationForm() {
         </div>
 
         <div className="mt-20 flex flex-col items-center">
-          <p className="text-zinc-400 dark:text-white/20 text-[9px] uppercase tracking-[0.5em] font-bold">
-            {FALLBACK.footer}
+          <p className="text-zinc-400 dark:text-white/20 text-[10px] uppercase tracking-[0.5em] font-bold">
+            {header.footer}
           </p>
         </div>
       </div>

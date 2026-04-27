@@ -1,28 +1,113 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Camera, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { CAFE_GALLERY_ITEMS } from "./cafeGalleryData";
+import { getGalleryByPropertyId } from "@/Api/Api";
+import { getActiveVisualGalleriesHeader } from "@/Api/RestaurantApi";
 
-const CATEGORIES = ["All", "Interior", "Brews", "Bakery", "Events", "Outdoor"];
-
-export default function CafeGalleryPage() {
+export default function CafeGalleryPage({ propertyId }) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [galleryHeader, setGalleryHeader] = useState({
+    header1: "Moments from the",
+    header2: "Cafe",
+    description: "",
+  });
+
+  // Dynamically derive unique categories from the gallery items
+  const dynamicCategories = useMemo(() => {
+    const cats = new Set(["All"]);
+    galleryItems.forEach((item) => {
+      if (item.categoryName) {
+        const normalized =
+          item.categoryName.charAt(0).toUpperCase() +
+          item.categoryName.slice(1).toLowerCase();
+        cats.add(normalized);
+      }
+    });
+    return Array.from(cats);
+  }, [galleryItems]);
+
+  const fetchGalleryHeader = async () => {
+    try {
+      const res = await getActiveVisualGalleriesHeader();
+      const all = res?.data || [];
+      const matched = all
+        .filter((h) => h.propertyId === propertyId && h.isActive === true)
+        .sort((a, b) => b.id - a.id);
+      const latest = matched[0];
+
+      if (latest) {
+        setGalleryHeader({
+          header1: latest.header1 || "Moments from the",
+          header2: latest.header2 || "Cafe",
+          description: latest.description || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load gallery header:", err);
+    }
+  };
+
+  const fetchGallery = async () => {
+    try {
+      setLoading(true);
+      const response = await getGalleryByPropertyId(propertyId);
+      const allData = response?.data || response;
+      const allContent = allData?.content || (Array.isArray(allData) ? allData : []);
+
+      const filtered = allContent
+        .filter((item) => item.isActive)
+        .map((item) => ({
+          id: item.id,
+          categoryName: item.categoryName || "All",
+          media: {
+            url: item.media?.url,
+            alt: item.propertyName,
+          },
+        }));
+
+      console.log("Cafe Gallery Property Response:", allContent);
+      console.log("Filtered Cafe Gallery Items:", filtered);
+
+      if (filtered.length > 0) {
+        setGalleryItems(filtered);
+      } else {
+        setGalleryItems(CAFE_GALLERY_ITEMS);
+      }
+    } catch (error) {
+      console.error("Gallery fetch error:", error);
+      setGalleryItems(CAFE_GALLERY_ITEMS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (propertyId) {
+      fetchGalleryHeader();
+      fetchGallery();
+    }
+  }, [propertyId]);
 
   const filtered = useMemo(() => {
-    const normalized = CAFE_GALLERY_ITEMS.map((item) => ({
-      id: item.id,
-      category:
-        item.categoryName.charAt(0) +
-        item.categoryName.slice(1).toLowerCase(),
-      image: item.media.url,
-      alt: item.media.alt || item.media.fileName || item.propertyName,
-    }));
-
-    return activeCategory === "All"
-      ? normalized
-      : normalized.filter((item) => item.category === activeCategory);
-  }, [activeCategory]);
+    return galleryItems
+      .map((item) => {
+        const cat = String(item.categoryName || "All");
+        return {
+          id: item.id,
+          category: cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase(),
+          image: item.media?.url,
+          alt: item.media?.alt || item.propertyName || "Cafe Gallery Image",
+        };
+      })
+      .filter((item) => {
+        if (activeCategory === "All") return true;
+        return item.category === activeCategory;
+      });
+  }, [activeCategory, galleryItems]);
 
   const columns = useMemo(
     () =>
@@ -35,7 +120,9 @@ export default function CafeGalleryPage() {
   const openLightbox = (index) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
   const lightboxPrev = () =>
-    setLightboxIndex((current) => (current - 1 + filtered.length) % filtered.length);
+    setLightboxIndex(
+      (current) => (current - 1 + filtered.length) % filtered.length,
+    );
   const lightboxNext = () =>
     setLightboxIndex((current) => (current + 1) % filtered.length);
 
@@ -55,20 +142,25 @@ export default function CafeGalleryPage() {
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-serif text-zinc-900 dark:text-white tracking-tight">
-              Moments from the <span className="italic text-primary">Cafe</span>
+              {galleryHeader.header1}{" "}
+              <span className="italic text-primary">{galleryHeader.header2}</span>
             </h2>
+            {galleryHeader.description && (
+              <p className="mt-4 text-zinc-500 dark:text-white/40 text-lg font-light max-w-xl">
+                {galleryHeader.description}
+              </p>
+            )}
           </motion.div>
 
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  activeCategory === cat
-                    ? "bg-primary text-white shadow-md"
-                    : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 ${activeCategory === cat
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"
+                  }`}
               >
                 {cat}
               </button>
@@ -80,7 +172,15 @@ export default function CafeGalleryPage() {
           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-[760px] overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-[760px] overflow-hidden relative">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                  <p className="text-sm font-medium text-zinc-500">Loading gallery...</p>
+                </div>
+              </div>
+            ) : null}
             {columns.map((columnItems, columnIndex) => {
               const loopItems =
                 columnItems.length > 0 ? [...columnItems, ...columnItems] : [];
@@ -122,9 +222,8 @@ export default function CafeGalleryPage() {
                           className="relative group overflow-hidden rounded-[1.5rem] text-left"
                         >
                           <div
-                            className={`relative ${
-                              loopIndex % 3 === 0 ? "aspect-[4/5]" : "aspect-[5/4]"
-                            }`}
+                            className={`relative ${loopIndex % 3 === 0 ? "aspect-[4/5]" : "aspect-[5/4]"
+                              }`}
                           >
                             <img
                               src={item.image}
