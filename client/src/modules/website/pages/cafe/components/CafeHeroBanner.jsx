@@ -397,7 +397,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">
               <button
                 onClick={() => goToMobileSlide(mobileActiveIndex - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20 cursor-pointer"
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </button>
@@ -415,7 +415,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
               </div>
               <button
                 onClick={() => goToMobileSlide(mobileActiveIndex + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20 cursor-pointer"
               >
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -443,13 +443,13 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
             <div className="flex gap-2 md:gap-3">
               <button
                 onClick={() => goToSlide(activeIndex - 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10 cursor-pointer"
               >
                 <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
               </button>
               <button
                 onClick={() => goToSlide(activeIndex + 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 text-white backdrop-blur-md transition-all duration-300 hover:bg-white hover:text-black md:h-10 md:w-10 cursor-pointer"
               >
                 <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
               </button>

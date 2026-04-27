@@ -158,6 +158,7 @@ export default function CafePage() {
           <CafeSignatureDrinks
             propertyId={resolvedPropertyId}
             propertyType={propertyData?.propertyType}
+            verticalId={storyData?.id}
           />
         </div>
 

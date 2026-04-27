@@ -373,7 +373,7 @@ export default function CafeGuestReviews({
                 return next;
               });
             }}
-            className="absolute bottom-3 right-3 z-20 rounded-full bg-black/70 p-2.5 opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute bottom-3 right-3 z-20 rounded-full bg-black/70 p-2.5 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
           >
             {isMuted ? (
               <VolumeX size={16} className="text-white" />
@@ -557,7 +557,7 @@ export default function CafeGuestReviews({
                 {hasContent && (
                   <button
                     onClick={() => setShowPopup(true)}
-                    className="rounded-full p-1 text-primary hover:bg-primary/10"
+                    className="rounded-full p-1 text-primary hover:bg-primary/10 cursor-pointer"
                   >
                     <Edit2 size={16} />
                   </button>
@@ -614,6 +614,7 @@ export default function CafeGuestReviews({
                         setYtLink("");
                         setYtError("");
                       }}
+                      className="cursor-pointer"
                     >
                       <X size={12} />
                     </button>
@@ -669,7 +670,7 @@ export default function CafeGuestReviews({
                             prev.filter((_, idx) => idx !== i),
                           )
                         }
-                        className="absolute right-0 top-0 bg-black/50 text-white"
+                        className="absolute right-0 top-0 bg-black/50 text-white cursor-pointer"
                       >
                         <X size={10} />
                       </button>
@@ -733,7 +734,7 @@ export default function CafeGuestReviews({
                 <h3 className="text-xl font-serif font-bold">
                   Guest Information
                 </h3>
-                <button onClick={() => { setShowPopup(false); setFormError(""); }}>
+                <button onClick={() => { setShowPopup(false); setFormError(""); }} className="cursor-pointer">
                   <X size={20} />
                 </button>
               </div>
@@ -776,7 +777,7 @@ export default function CafeGuestReviews({
                     setShowPopup(false);
                     handleSubmit();
                   }}
-                  className="w-full rounded-lg bg-primary py-3 font-bold text-white"
+                  className="w-full rounded-lg bg-primary py-3 font-bold text-white cursor-pointer"
                 >
                   Save & Continue
                 </button>

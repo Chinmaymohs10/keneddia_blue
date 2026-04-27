@@ -268,8 +268,11 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               transition={{ duration: 0.5, delay: 0.48 }}
             >
               <button
-                onClick={() => setIsGalleryOpen(true)}
-                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-primary dark:bg-[#f0dfc0] transition-all active:scale-95 hover:bg-primary/90 shadow-lg"
+                onClick={() => {
+                  const el = document.getElementById("menu");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-primary dark:bg-[#f0dfc0] transition-all active:scale-95 hover:bg-primary/90 shadow-lg cursor-pointer"
               >
                 Explore Now
               </button>
@@ -297,11 +300,11 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
                   height: "clamp(56px,8vw,90px)",
                   flexShrink: 0,
                   transition: "transform 0.3s, box-shadow 0.3s, border-color 0.3s",
-                  border: activeThumb === i ? "2.5px solid #1e0d00" : "2.5px solid transparent",
+                  border: activeThumb === i ? "2.5px solid #c0392b" : "2.5px solid transparent",
                   transform: activeThumb === i ? "scale(1.08)" : "scale(1)",
                   boxShadow: activeThumb === i
-                    ? "0 6px 18px rgba(30,13,0,0.35)"
-                    : "0 2px 8px rgba(30,13,0,0.14)",
+                    ? "0 6px 18px rgba(192,57,43,0.35)"
+                    : "0 2px 8px rgba(192,57,43,0.14)",
                 }}
               >
                 <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
@@ -459,7 +462,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
                 )}
               </AnimatePresence>
               <button
-                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15 cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5" /> Share
               </button>
@@ -467,7 +470,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
 
             <button
               onClick={() => setIsBookmarked((b) => !b)}
-              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${isBookmarked
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 cursor-pointer ${isBookmarked
                   ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
                   : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
                 }`}

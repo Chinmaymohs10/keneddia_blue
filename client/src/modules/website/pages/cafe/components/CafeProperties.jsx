@@ -430,7 +430,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 <div className="relative">
                   <button
                     onClick={() => setShowCityDropdown((prev) => !prev)}
-                    className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50"
+                    className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs shadow-sm transition-colors hover:border-primary/50 cursor-pointer"
                   >
                     <MapPin className="h-3 w-3 text-primary" />
                     <span className="font-medium">{selectedCity}</span>
@@ -450,7 +450,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                             setSelectedCity(city);
                             setShowCityDropdown(false);
                           }}
-                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 ${
+                          className={`w-full px-3 py-2 text-left text-xs transition-colors hover:bg-secondary/50 cursor-pointer ${
                             selectedCity === city ? "bg-secondary/30 font-semibold" : ""
                           }`}
                         >
@@ -464,7 +464,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 {selectedCity !== "All Cities" && (
                   <button
                     onClick={() => setSelectedCity("All Cities")}
-                    className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+                    className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 cursor-pointer"
                   >
                     <X className="h-3 w-3" />
                     Clear
@@ -486,7 +486,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
               <div className="inline-flex w-full items-center gap-0.5 rounded-full border border-border bg-background p-0.5 shadow-sm sm:w-fit">
                 <button
                   onClick={() => setViewMode("gallery")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
                     viewMode === "gallery"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -497,7 +497,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                 </button>
                 <button
                   onClick={() => setViewMode("map")}
-                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all sm:flex-none cursor-pointer ${
                     viewMode === "map"
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -591,7 +591,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                     <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3">
                       <button
                         onClick={handlePrev}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
@@ -602,7 +602,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </div>
                       <button
                         onClick={handleNext}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
@@ -708,13 +708,13 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                     <div className="mt-4 space-y-2.5">
                       <Button
                         onClick={() => goToCafeDetails(activeCafe)}
-                        className="w-full gap-2 py-3 text-sm font-bold uppercase"
+                        className="w-full gap-2 py-3 text-sm font-bold uppercase cursor-pointer"
                       >
                         Explore Cafe <ArrowRight className="h-4 w-4" />
                       </Button>
                       <button
                         onClick={() => goToCafeDetails(activeCafe)}
-                        className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        className="w-full py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
                       >
                         View Details -&gt;
                       </button>
@@ -767,13 +767,13 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       </div>
                       <button
                         onClick={handlePrev}
-                        className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                        className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white cursor-pointer"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </button>
                       <button
                         onClick={handleNext}
-                        className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                        className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900 shadow-lg transition-all hover:scale-110 hover:bg-white cursor-pointer"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>

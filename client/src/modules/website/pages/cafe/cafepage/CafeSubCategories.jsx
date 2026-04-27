@@ -271,7 +271,7 @@ export default function CafeSubCategories({ initialData }) {
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
               <Coffee className="h-3.5 w-3.5" /> {sectionInfo.highlight}
             </div>
-            <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-zinc-950 dark:text-white">
+            <h2 className="mb-8 text-5xl xl:text-6xl font-serif leading-[1.1] text-primary">
               {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <br />
               <span className="italic text-primary">
                 {sectionInfo.heading.split(" ").slice(-2).join(" ")}
@@ -287,7 +287,7 @@ export default function CafeSubCategories({ initialData }) {
                   key={card.id || index}
                   type="button"
                   onClick={() => setActiveIndex(index)}
-                  className="group flex items-center gap-4 text-left"
+                  className="group flex items-center gap-4 text-left cursor-pointer"
                 >
                   <span
                     className={`h-px w-8 transition-all ${activeIndex === index ? "bg-primary" : "bg-zinc-300"
@@ -309,14 +309,14 @@ export default function CafeSubCategories({ initialData }) {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -334,7 +334,7 @@ export default function CafeSubCategories({ initialData }) {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
             <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
-          <h2 className="mb-6 text-4xl font-serif text-zinc-950 dark:text-white">
+          <h2 className="mb-6 text-4xl font-serif text-primary">
              {sectionInfo.heading.split(" ").slice(0, -2).join(" ")} <span className="italic text-primary">{sectionInfo.heading.split(" ").slice(-2).join(" ")}</span>
           </h2>
           <p className="text-sm text-zinc-500">
@@ -350,7 +350,7 @@ export default function CafeSubCategories({ initialData }) {
           <button
             type="button"
             onClick={handlePrev}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -361,7 +361,7 @@ export default function CafeSubCategories({ initialData }) {
                 key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all ${activeIndex === index
+                className={`h-2 rounded-full transition-all cursor-pointer ${activeIndex === index
                   ? "w-8 bg-primary"
                   : "w-2 bg-zinc-300 dark:bg-white/20"
                   }`}
@@ -373,7 +373,7 @@ export default function CafeSubCategories({ initialData }) {
           <button
             type="button"
             onClick={handleNext}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

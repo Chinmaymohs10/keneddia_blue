@@ -142,10 +142,10 @@ function AuthorRow({ item, light = false }) {
         {item.author[0]}
       </div>
       <div>
-        <p className={`text-sm font-bold uppercase tracking-[0.18em] ${light ? "text-white" : "text-[#3E2723] dark:text-[#F7EEE8]"}`}>
+        <p className={`text-sm font-bold uppercase tracking-[0.18em] ${light ? "text-white" : "text-zinc-800 dark:text-[#F7EEE8]"}`}>
           {item.author}
         </p>
-        <p className={`mt-0.5 text-[11px] uppercase tracking-[0.22em] ${light ? "text-white/60" : "text-[#927668] dark:text-[#BEA18F]"}`}>
+        <p className={`mt-0.5 text-[11px] uppercase tracking-[0.22em] ${light ? "text-white/60" : "text-primary/70 dark:text-primary/70"}`}>
           Guest Highlight
         </p>
       </div>
@@ -160,7 +160,7 @@ function HeartsRow({ light = false }) {
         <Heart
           key={i}
           size={12}
-          className={light ? "fill-[#D08A6A] text-[#D08A6A]" : "fill-[#D08A6A] text-[#D08A6A] dark:fill-[#E5A07B] dark:text-[#E5A07B]"}
+          className={light ? "fill-primary text-primary" : "fill-primary text-primary dark:fill-primary dark:text-primary"}
         />
       ))}
     </div>
@@ -169,7 +169,7 @@ function HeartsRow({ light = false }) {
 
 function DateBadge({ date, light = false }) {
   return (
-    <div className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] backdrop-blur-md ${light ? "border-white/20 bg-black/35 text-white" : "border-[#E8D6C9] bg-[#F6F0EA] text-[#8B6756] dark:border-white/10 dark:bg-white/5 dark:text-[#D7B7A2]"}`}>
+    <div className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] backdrop-blur-md ${light ? "border-white/20 bg-black/35 text-white" : "border-primary/20 bg-primary/5 text-primary dark:border-white/10 dark:bg-white/5 dark:text-primary"}`}>
       {date}
     </div>
   );
@@ -225,11 +225,11 @@ function TestimonialCard({ item }) {
         </div>
 
         <div className="relative z-10 mt-4">
-          <p className="font-serif text-6xl leading-none text-[#D4A373]/25 select-none dark:text-[#A06F54]/25">&ldquo;</p>
-          <p className="mt-1 font-serif text-base italic leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
+          <p className="font-serif text-6xl leading-none text-primary/20 select-none dark:text-primary/20">&ldquo;</p>
+          <p className="mt-1 font-serif text-base italic leading-7 text-zinc-700 dark:text-[#D8C7BB]">
             {item.description}
           </p>
-          <p className="mt-2 font-serif text-6xl leading-none text-[#D4A373]/25 select-none text-right dark:text-[#A06F54]/25">&rdquo;</p>
+          <p className="mt-2 font-serif text-6xl leading-none text-primary/20 select-none text-right dark:text-primary/20">&rdquo;</p>
         </div>
 
         <div className="relative z-10 mt-3">
@@ -270,7 +270,7 @@ function TestimonialCard({ item }) {
         </div>
 
         <div className="p-5">
-          <p className="line-clamp-3 text-sm leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
+          <p className="line-clamp-3 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
             &ldquo;{item.description}&rdquo;
           </p>
           <div className="mt-4">
@@ -300,7 +300,7 @@ function TestimonialCard({ item }) {
       </div>
 
       <div className="relative z-10 mt-5">
-        <p className="line-clamp-4 text-sm leading-7 text-[#5B433A] dark:text-[#D8C7BB]">
+        <p className="line-clamp-4 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
           &ldquo;{item.description}&rdquo;
         </p>
       </div>
@@ -610,14 +610,14 @@ export default function CafeTestimonials({
               <p className="text-3xl font-serif font-bold leading-none text-zinc-900 dark:text-[#F7EEE8]">
                 {avgRating}
               </p>
-              <div className="mt-2 flex gap-0.5">
+              <div className="mt-2 flex gap-0.5 cursor-pointer">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} className="fill-primary text-primary dark:fill-[#E5A07B] dark:text-[#E5A07B]" />
+                  <Star key={i} size={14} className="fill-primary text-primary dark:fill-primary dark:text-primary" />
                 ))}
               </div>
             </div>
             <div className="h-10 w-[1px] bg-primary/20 dark:bg-white/10" />
-            <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-primary/80 dark:text-[#BEA18F]">
+            <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-primary dark:text-primary">
               Average Bean Rating
             </p>
           </div>
@@ -704,7 +704,7 @@ export default function CafeTestimonials({
                     <div className="flex gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10 cursor-pointer"
                       >
                         {mediaUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
                         Add Media
@@ -726,7 +726,7 @@ export default function CafeTestimonials({
                           )}
                           <button
                             onClick={() => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i))}
-                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white"
+                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white cursor-pointer"
                           >
                             <X size={8} />
                           </button>
@@ -738,7 +738,7 @@ export default function CafeTestimonials({
                   <button
                     disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())}
                     onClick={handleSubmit}
-                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary/90 active:scale-[0.98] disabled:grayscale disabled:opacity-50"
+                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary/90 active:scale-[0.98] disabled:grayscale disabled:opacity-50 cursor-pointer"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -769,7 +769,7 @@ export default function CafeTestimonials({
             >
               <div className="mb-8 flex items-center justify-between">
                 <h3 className="text-2xl font-serif">Guest Details</h3>
-                <button onClick={() => setShowPopup(false)} className="transition-transform hover:rotate-90">
+                <button onClick={() => setShowPopup(false)} className="transition-transform hover:rotate-90 cursor-pointer">
                   <X size={24} />
                 </button>
               </div>
