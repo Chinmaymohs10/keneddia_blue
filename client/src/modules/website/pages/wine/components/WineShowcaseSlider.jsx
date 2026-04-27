@@ -320,7 +320,7 @@ function NewsColumn({ className = "" }) {
 // ─── Root section ──────────────────────────────────────────────────────────────
 export default function WineShowcaseSlider() {
   return (
-    <section id="showcase" className="relative overflow-hidden bg-[#F5F5F3] py-10 dark:bg-[#311a1f]">
+    <section id="showcase" className="relative overflow-hidden bg-[#EDE7DF] py-10 dark:bg-[#0A0407]">
       <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_20%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.18),transparent_28%)] dark:block" />
       <div className="mx-auto w-[92%] max-w-7xl">
         <div className="mb-8">
