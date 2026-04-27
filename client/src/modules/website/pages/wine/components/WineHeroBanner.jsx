@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
-import coverimg from "./../../../../../assets/resturant_images/Kennedia-cover.png";
+import coverimg from "./../../../../../assets/resturant_images/wine_hero_premium.png";
 
 const fallbackSlides = [
   {
@@ -147,15 +147,15 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
 
   if (isLoading) {
     return (
-      <section className="relative h-[78svh] min-h-[520px] w-full overflow-hidden bg-neutral-900 md:h-[90vh]">
-        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.15),_rgba(23,23,23,1))]" />
+      <section className="relative h-svh w-full overflow-hidden bg-[#0D0508]">
+        <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,rgba(139,26,42,0.18),rgba(13,5,8,1))]" />
       </section>
     );
   }
 
   if (!activeSlide) {
     return (
-      <section className="relative h-[78svh] min-h-[520px] w-full overflow-hidden bg-neutral-900 md:h-[90vh]">
+      <section className="relative h-svh w-full overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
         <div className="absolute inset-0 backdrop-blur-sm" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -164,20 +164,12 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
           </div>
           <p className="text-sm text-white/25">Hero section has no active slides configured.</p>
         </div>
-        <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
-          <svg viewBox="0 0 1440 320" className="h-full w-full" preserveAspectRatio="none">
-            <path
-              className="fill-background"
-              d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            />
-          </svg>
-        </div>
       </section>
     );
   }
 
   return (
-    <section className="relative h-[78svh] min-h-[560px] w-full overflow-hidden bg-background sm:min-h-[620px] md:h-[90vh] md:min-h-0">
+    <section className="relative h-svh w-full overflow-hidden bg-background">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlide.id}
@@ -447,18 +439,6 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-0 left-0 z-10 hidden h-32 w-full md:block md:h-40">
-        <svg
-          viewBox="0 0 1440 320"
-          className="h-full w-full"
-          preserveAspectRatio="none"
-        >
-          <path
-            className="fill-background"
-            d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,181.3C672,171,768,181,864,181.3C960,181,1056,171,1152,165.3C1248,160,1344,160,1392,160L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-          />
-        </svg>
-      </div>
     </section>
   );
 }

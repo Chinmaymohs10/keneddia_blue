@@ -175,7 +175,7 @@ const WebsiteRoutes = [
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
   <Route key="wine-homepage" path="/wine-homepage" element={withRouteSuspense(<WineHomepage />)} />,
-  <Route key="wine-page-preview" path="/wine-page" element={withRouteSuspense(<WinePage />)} />,
+  <Route key="wine-detail" path="/wine-detail/:citySlug/:propertySlug" element={withRouteSuspense(<WinePage />)} />,
 
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 

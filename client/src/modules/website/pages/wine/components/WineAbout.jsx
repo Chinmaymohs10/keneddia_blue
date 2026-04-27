@@ -28,7 +28,7 @@ export default function WineAbout() {
   const section = ABOUT_SECTIONS[currentIndex];
 
   return (
-    <section id="about" className="relative overflow-hidden bg-[#EFEFEB] px-6 py-8 transition-colors duration-500 dark:bg-[#311a1f]">
+    <section id="about" className="relative overflow-hidden bg-[#F5F0EA] px-6 py-8 transition-colors duration-500 dark:bg-[#0D0508]">
       <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_22%)] dark:block" />
       <div className="container mx-auto max-w-7xl">
         <div className="mb-8">

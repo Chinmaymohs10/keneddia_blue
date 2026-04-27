@@ -113,7 +113,7 @@ function BrandCard({ brand }) {
 }
 export default function WineTopBrands() {
   return (
-    <section className="relative overflow-hidden bg-[#F5F5F3] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#311a1f] dark:text-white md:py-10">
+    <section className="relative overflow-hidden bg-[#F0EAE2] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#100609] dark:text-white md:py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.04),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(255,255,255,0.06),transparent_28%)]" />
 
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">

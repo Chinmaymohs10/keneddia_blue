@@ -270,9 +270,10 @@ export default function CafeHomepage() {
         <div id="home" className="relative z-20 shadow-sm">
           <CafeHeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>
-        <div id="quick-booking" className="relative z-10 shadow-sm">
+        <div id="quick-booking" className="relative z-30 shadow-sm">
           <CafeQuickBooking />
         </div>
+        <div className="h-10" /> {/* Spacer to match gap patterns */}
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-white to-[#F7F7F5]" />

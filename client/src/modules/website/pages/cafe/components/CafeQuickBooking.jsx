@@ -157,7 +157,7 @@ export default function CafeQuickBooking() {
   };
 
   return (
-    <div className="relative z-30 mb-12 -mt-10 container mx-auto px-4">
+    <div className="relative z-30 mb-12 mt-6 md:-mt-10 container mx-auto px-4">
       <RestaurantReserveDialog
         open={Boolean(selectedProperty)}
         onOpenChange={(open) => {

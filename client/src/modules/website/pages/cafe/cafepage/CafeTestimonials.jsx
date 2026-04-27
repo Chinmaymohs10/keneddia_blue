@@ -224,13 +224,15 @@ function TestimonialCard({ item }) {
           <DateBadge date={item.date} />
         </div>
 
-        <div className="relative z-10 mt-4">
-          <p className="font-serif text-6xl leading-none text-primary/20 select-none dark:text-primary/20">&ldquo;</p>
-          <p className="mt-1 font-serif text-base italic leading-7 text-zinc-700 dark:text-[#D8C7BB]">
-            {item.description}
-          </p>
-          <p className="mt-2 font-serif text-6xl leading-none text-primary/20 select-none text-right dark:text-primary/20">&rdquo;</p>
-        </div>
+        {item.description?.trim() && (
+          <div className="relative z-10 mt-4">
+            <p className="font-serif text-6xl leading-none text-primary/20 select-none dark:text-primary/20">&ldquo;</p>
+            <p className="mt-1 font-serif text-base italic leading-7 text-zinc-700 dark:text-[#D8C7BB]">
+              {item.description}
+            </p>
+            <p className="mt-2 font-serif text-6xl leading-none text-primary/20 select-none text-right dark:text-primary/20">&rdquo;</p>
+          </div>
+        )}
 
         <div className="relative z-10 mt-3">
           <AuthorRow item={item} />
@@ -270,9 +272,11 @@ function TestimonialCard({ item }) {
         </div>
 
         <div className="p-5">
-          <p className="line-clamp-3 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
-            &ldquo;{item.description}&rdquo;
-          </p>
+          {item.description?.trim() && (
+            <p className="line-clamp-3 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
+              &ldquo;{item.description}&rdquo;
+            </p>
+          )}
           <div className="mt-4">
             <AuthorRow item={item} />
           </div>
@@ -299,11 +303,13 @@ function TestimonialCard({ item }) {
         <MediaGrid items={item.media} />
       </div>
 
-      <div className="relative z-10 mt-5">
-        <p className="line-clamp-4 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
-          &ldquo;{item.description}&rdquo;
-        </p>
-      </div>
+      {item.description?.trim() && (
+        <div className="relative z-10 mt-5">
+          <p className="line-clamp-4 text-sm leading-7 text-zinc-700 dark:text-[#D8C7BB]">
+            &ldquo;{item.description}&rdquo;
+          </p>
+        </div>
+      )}
 
       <div className="relative z-10 mt-5">
         <AuthorRow item={item} />
@@ -402,21 +408,31 @@ export default function CafeTestimonials({
           if (a.createdAt && b.createdAt) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           return Number(b.id) - Number(a.id);
         }).map(item => {
+          const mediaUrls = new Set();
           const allMedia = [];
           if (item.mediaList && Array.isArray(item.mediaList)) {
             item.mediaList.forEach(m => {
-              if (m.url || m.imageUrl || m.videoUrl) {
-                allMedia.push({ type: m.type === "VIDEO" ? "video" : "image", url: m.url || m.imageUrl || m.videoUrl });
+              const url = m.url || m.imageUrl || m.videoUrl;
+              if (url && !mediaUrls.has(url)) {
+                mediaUrls.add(url);
+                allMedia.push({ type: m.type === "VIDEO" ? "video" : "image", url });
               }
             });
           }
-          if (item.videoUrl) allMedia.push({ type: "video", url: item.videoUrl });
-          if (item.imageUrl) allMedia.push({ type: "image", url: item.imageUrl });
+          if (item.videoUrl && !mediaUrls.has(item.videoUrl)) {
+            mediaUrls.add(item.videoUrl);
+            allMedia.push({ type: "video", url: item.videoUrl });
+          }
+          if (item.imageUrl && !mediaUrls.has(item.imageUrl)) {
+            mediaUrls.add(item.imageUrl);
+            allMedia.push({ type: "image", url: item.imageUrl });
+          }
 
           let format = "multi";
+          const hasDesc = item.description && item.description.trim().length > 0;
           if (allMedia.length === 0) format = "content-only";
-          else if (allMedia.length === 1 && !item.description) format = "image-only";
-          else if (allMedia.length > 0 && item.description) format = "split";
+          else if (allMedia.length === 1 && !hasDesc) format = "image-only";
+          else if (allMedia.length > 0 && hasDesc) format = "split";
 
           return {
             id: item.id,
