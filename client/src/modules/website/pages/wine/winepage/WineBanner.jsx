@@ -205,7 +205,7 @@ export default function WineBanner() {
               </a>
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.48 }}
@@ -216,12 +216,12 @@ export default function WineBanner() {
               >
                 Explore Now
               </button>
-            </motion.div>
+            </motion.div> */}
           </div>
 
           <div className="hidden min-h-0 flex-1 lg:block" />
 
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.56 }}
@@ -268,7 +268,7 @@ export default function WineBanner() {
                 <span className="text-[9px] font-semibold opacity-60 mt-0.5">MORE</span>
               </button>
             )}
-          </motion.div>
+          </motion.div> */}
         </div>
 
         <motion.div
@@ -433,11 +433,10 @@ export default function WineBanner() {
 
               <button
                 onClick={() => setIsBookmarked((b) => !b)}
-                className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${
-                  isBookmarked
-                    ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
-                    : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
-                }`}
+                className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 ${isBookmarked
+                  ? "bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-300/50 dark:border-red-700/30"
+                  : "bg-[#e8d8c4]/60 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0] border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15"
+                  }`}
               >
                 <Heart className={`w-3.5 h-3.5 ${isBookmarked ? "fill-red-600 dark:fill-red-400" : ""}`} />
                 {isBookmarked ? "Saved" : "Save"}

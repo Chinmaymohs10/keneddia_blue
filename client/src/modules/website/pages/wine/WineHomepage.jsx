@@ -67,7 +67,7 @@ export default function WineHomepage() {
           </Suspense>
         </div>
 
-        <div className="dark:hidden">
+        {/* <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-white" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
@@ -75,7 +75,7 @@ export default function WineHomepage() {
           <Suspense fallback={<SectionFallback height="h-[32rem]" />}>
             <WineProperties locationMatch={null} />
           </Suspense>
-        </div>
+        </div> */}
 
         <div className="dark:hidden">
           <div className="h-px bg-[#E3E3DF]" />
@@ -97,8 +97,8 @@ export default function WineHomepage() {
           </Suspense>
         </div>
 
-      
 
+        {/* 
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#F8F8F6]" />
@@ -107,7 +107,7 @@ export default function WineHomepage() {
           <Suspense fallback={<SectionFallback height="h-[36rem]" />}>
             <WineGuestReviews />
           </Suspense>
-        </div>
+        </div> */}
       </main>
 
       <div id="contact">

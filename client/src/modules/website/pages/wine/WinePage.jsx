@@ -50,13 +50,13 @@ export default function WinePage() {
           <WineTopBrands />
         </div>
 
-        <div className="dark:hidden">
+        {/* <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#EFEFEB]" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
         <div id="about">
           <AboutWinePage />
-        </div>
+        </div> */}
 
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />

@@ -142,49 +142,49 @@ function ShowcaseCard({ item }) {
 function EventsColumn({ title, icon: Icon, items }) {
   const [swiper, setSwiper] = useState(null);
 
-  return (
-    <div className="flex h-full flex-col rounded-2xl border bg-card p-5 dark:border-white/10 dark:bg-[#14090d]">
-      <div className="mb-5 flex items-center justify-between">
-        <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
-          <Icon className="h-5 w-5 text-primary" />
-          {title}
-        </h3>
-        <div className="flex gap-2">
-          <button
-            onClick={() => swiper?.slidePrev()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            onClick={() => swiper?.slideNext()}
-            className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+  // return (
+  //   <div className="flex h-full flex-col rounded-2xl border bg-card p-5 dark:border-white/10 dark:bg-[#14090d]">
+  //     <div className="mb-5 flex items-center justify-between">
+  //       <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
+  //         <Icon className="h-5 w-5 text-primary" />
+  //         {title}
+  //       </h3>
+  //       <div className="flex gap-2">
+  //         <button
+  //           onClick={() => swiper?.slidePrev()}
+  //           className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
+  //         >
+  //           <ChevronLeft size={16} />
+  //         </button>
+  //         <button
+  //           onClick={() => swiper?.slideNext()}
+  //           className="rounded-full border border-border bg-background p-2 shadow-sm transition-colors hover:bg-muted dark:border-white/10 dark:bg-[#1a0c11] dark:hover:bg-[#241116]"
+  //         >
+  //           <ChevronRight size={16} />
+  //         </button>
+  //       </div>
+  //     </div>
 
-      <Swiper
-        modules={[Navigation, Autoplay]}
-        slidesPerView={1}
-        spaceBetween={0}
-        autoplay={{
-          delay: 4500,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        onSwiper={setSwiper}
-        className="w-full flex-1"
-      >
-        {items.map((item) => (
-          <SwiperSlide key={item.id}>
-            <ShowcaseCard item={item} />
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
-  );
+  //     <Swiper
+  //       modules={[Navigation, Autoplay]}
+  //       slidesPerView={1}
+  //       spaceBetween={0}
+  //       autoplay={{
+  //         delay: 4500,
+  //         disableOnInteraction: false,
+  //         pauseOnMouseEnter: true,
+  //       }}
+  //       onSwiper={setSwiper}
+  //       className="w-full flex-1"
+  //     >
+  //       {items.map((item) => (
+  //         <SwiperSlide key={item.id}>
+  //           <ShowcaseCard item={item} />
+  //         </SwiperSlide>
+  //       ))}
+  //     </Swiper>
+  //   </div>
+  // );
 }
 
 // ─── Single news card — 2-up layout ───────────────────────────────────────────
@@ -222,9 +222,8 @@ function NewsCard({ item }) {
         </h3>
 
         <p
-          className={`text-sm leading-relaxed text-muted-foreground transition-all duration-300 ${
-            expanded ? "" : "line-clamp-2"
-          }`}
+          className={`text-sm leading-relaxed text-muted-foreground transition-all duration-300 ${expanded ? "" : "line-clamp-2"
+            }`}
         >
           {item.description}
         </p>
@@ -267,7 +266,7 @@ function NewsColumn({ className = "" }) {
     <div className={className}>
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
-        <h3 className="text-2xl font-serif text-foreground md:text-3xl">Wine News & Press</h3>
+        {/* <h3 className="text-2xl font-serif text-foreground md:text-3xl">Wine News & Press</h3> */}
         <div className="flex items-center gap-4">
           <Link
             to="/news"

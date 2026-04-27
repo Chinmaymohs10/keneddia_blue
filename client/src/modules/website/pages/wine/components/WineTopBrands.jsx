@@ -58,22 +58,22 @@ function BrandCard({ brand }) {
   const hasLogo = Boolean(brand.logo);
 
   return (
-    <article className="group relative h-full overflow-hidden rounded-[1.5rem] border border-zinc-200/80 bg-white/90 px-4 py-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_24px_80px_rgba(0,0,0,0.35)] dark:hover:border-white/20">
+    <article className="group relative h-full overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20">
       <div
         className="absolute inset-x-4 top-0 h-px opacity-80"
         style={{ background: `linear-gradient(90deg, transparent, ${brand.accent}, transparent)` }}
       />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_56%)] opacity-60 transition-opacity duration-500 group-hover:opacity-80 dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_52%)] dark:opacity-0 dark:group-hover:opacity-100" />
 
-      <div className="relative flex h-full min-h-[220px] flex-col items-center justify-center text-center">
+      <div className="relative flex h-full min-h-[160px] flex-col items-center justify-center text-center">
         {/* Detail label */}
-        <span className="mb-3 text-[0.6rem] uppercase tracking-[0.4em]" style={{ color: `${brand.accent}cc` }}>
+        <span className="mb-2 text-[0.55rem] uppercase tracking-[0.4em]" style={{ color: `${brand.accent}cc` }}>
           {brand.detail}
         </span>
 
         {/* Image area — always same height, image fits without cropping */}
         {hasLogo ? (
-          <div className="mb-3 flex h-24 w-full items-center justify-center px-3">
+          <div className="mb-2 flex h-16 w-full items-center justify-center px-2">
             <img
               src={brand.logo}
               alt={brand.name}
@@ -83,7 +83,7 @@ function BrandCard({ brand }) {
           </div>
         ) : (
           <h3
-            className="text-[1.7rem] font-semibold tracking-[0.08em] text-zinc-950 dark:text-white sm:text-[2rem]"
+            className="text-[1.4rem] font-semibold tracking-[0.08em] text-zinc-950 dark:text-white sm:text-[1.6rem]"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
           >
             {brand.name}
@@ -92,7 +92,7 @@ function BrandCard({ brand }) {
 
         {/* Accent divider */}
         <div
-          className="my-3 h-px w-14"
+          className="my-2 h-px w-10"
           style={{ background: `linear-gradient(90deg, transparent, ${brand.accent}, transparent)` }}
         />
 
@@ -103,7 +103,7 @@ function BrandCard({ brand }) {
 
         {/* Show brand name below sub label when image is present */}
         {hasLogo && (
-          <p className="mt-2 text-[0.68rem] font-medium uppercase tracking-[0.24em] text-zinc-600 dark:text-white/70">
+          <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.24em] text-zinc-600 dark:text-white/70">
             {brand.name}
           </p>
         )}
@@ -113,11 +113,11 @@ function BrandCard({ brand }) {
 }
 export default function WineTopBrands() {
   return (
-    <section className="relative overflow-hidden bg-[#F5F5F3] py-12 text-zinc-950 transition-colors duration-500 dark:bg-[#311a1f] dark:text-white md:py-14">
+    <section className="relative overflow-hidden bg-[#F5F5F3] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#311a1f] dark:text-white md:py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.04),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(255,255,255,0.06),transparent_28%)]" />
 
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
-        <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-6 flex flex-col items-center text-center">
           <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
             Curated Labels
           </span>
@@ -128,7 +128,7 @@ export default function WineTopBrands() {
             Top Brands
           </h2>
          
-          <div className="mt-4 h-px w-24 bg-gradient-to-r from-transparent via-[#c9a25a] to-transparent" />
+          <div className="mt-2 h-px w-20 bg-gradient-to-r from-transparent via-[#c9a25a] to-transparent" />
         </div>
 
         <div className="relative">
@@ -148,7 +148,7 @@ export default function WineTopBrands() {
             <ChevronRight size={20} />
           </button>
 
-          <div className="px-10 sm:px-12 lg:px-16">
+          <div className="px-6 sm:px-8 lg:px-12">
             <Swiper
               modules={[Navigation]}
               navigation={{
