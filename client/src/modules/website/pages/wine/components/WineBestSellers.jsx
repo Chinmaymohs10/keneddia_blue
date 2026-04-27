@@ -309,6 +309,14 @@ function WineCard({ wine, index }) {
   const accent = TYPE_ACCENTS[wine.type] || TYPE_ACCENTS.Red;
   const navigate = useNavigate();
 
+  const generateSlug = (text) => 
+    text?.toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-');
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 30 }}
@@ -352,11 +360,16 @@ function WineCard({ wine, index }) {
           {/* Top: property + type */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              {/* Property name — highlighted, navigates to wine detail page */}
+              {/* Property name — highlighted, navigates to wine detail page with slug */}
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); navigate("/wine-page"); }}
-                className="mb-1.5 flex items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const citySlug = wine.location.toLowerCase();
+                  const propSlug = generateSlug(wine.property);
+                  navigate(`/wine-detail/${citySlug}/${propSlug}`); 
+                }}
+                className="mb-1.5 flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
                 title="Explore this property"
               >
                 <Building2 size={10} style={{ color: accent.color }} className="shrink-0" />
