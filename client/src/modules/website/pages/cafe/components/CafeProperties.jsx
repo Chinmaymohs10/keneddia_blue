@@ -249,29 +249,51 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
     [cafes],
   );
 
-  const filteredCafes = useMemo(
-    () =>
-      selectedCity === "All Cities"
-        ? cafes
-        : cafes.filter((item) => item.city === selectedCity),
-    [cafes, selectedCity],
-  );
+  const filteredCafes = useMemo(() => {
+    if (!cafes || cafes.length === 0) return [];
+    if (selectedCity === "All Cities") return cafes;
+
+    const filtered = cafes.filter(
+      (item) => normalize(item.city) === normalize(selectedCity),
+    );
+
+    // If city filtering yields no results (unexpected mismatch), fall back to all cafes
+    if (filtered.length === 0) return cafes;
+
+    return filtered;
+  }, [cafes, selectedCity]);
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [selectedCity]);
+  }, [selectedCity, filteredCafes.length]);
 
   useEffect(() => {
-    if (!locationMatch) return;
+    if (!locationMatch || !cafes.length) return;
 
     if (locationMatch.found && locationMatch.city) {
-      setSelectedCity(locationMatch.city);
-      setLocationBanner("found");
-      return;
-    }
+      // Find if we actually have properties for this detected city
+      const hasPropsInCity = cafes.some(
+        (c) => normalize(c.city) === normalize(locationMatch.city),
+      );
 
-    setLocationBanner("not-found");
-  }, [locationMatch]);
+      if (hasPropsInCity) {
+        // Sync with existing city if found (safeguards casing)
+        const existingCity = cafes.find(
+          (c) => normalize(c.city) === normalize(locationMatch.city),
+        )?.city;
+        setSelectedCity(existingCity || locationMatch.city);
+        setLocationBanner("found");
+      } else {
+        // No properties for the detected city, show everything
+        setSelectedCity("All Cities");
+        setLocationBanner("not-found");
+      }
+    } else {
+      // No city detected or match failed
+      setSelectedCity("All Cities");
+      setLocationBanner("not-found");
+    }
+  }, [locationMatch, cafes]);
 
   useEffect(() => {
     if (viewMode !== "gallery" || isPaused || filteredCafes.length <= 1) {
@@ -329,21 +351,27 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
           },
         ];
 
-  if (loading) {
-    return (
-      <div className="container mx-auto mb-12 px-4">
-        <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-          Loading cafes...
+  if (!activeCafe || cafes.length === 0) {
+    if (loading) {
+      return (
+        <div className="container mx-auto mb-12 px-4">
+          <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 animate-pulse" />
+              Loading cafes...
+            </span>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!activeCafe) {
     return (
       <div className="container mx-auto mb-12 px-4">
-        <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-          No cafes available.
+        <div className="flex h-[300px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground">
+          <div className="text-center">
+            <Building2 className="mx-auto mb-2 h-8 w-8 opacity-20" />
+            <p>No cafes available at the moment.</p>
+          </div>
         </div>
       </div>
     );
