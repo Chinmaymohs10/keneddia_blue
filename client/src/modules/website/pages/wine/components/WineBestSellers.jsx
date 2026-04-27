@@ -256,7 +256,7 @@ function FilterSelect({ value, options, onChange, label, accentColor }) {
 }
 
 // ─── HOVER QUERY POPUP ────────────────────────────────────────────────────────
-function HoverQueryPopup({ wine, accent }) {
+function HoverQueryPopup({ wine, accent, onExplore }) {
   const message = encodeURIComponent(
     `Hi! I'd like to enquire about *${wine.name}* (${wine.subtitle}) available at *${wine.property}, ${wine.location}*. Could you share more details and pricing?`
   );
@@ -287,17 +287,24 @@ function HoverQueryPopup({ wine, accent }) {
           </p>
         </div>
 
-        <a
-          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="ml-4 flex shrink-0 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/20"
-          aria-label={`Enquire about ${wine.name}`}
-        >
-          Query
-          <MoveRight size={12} />
-        </a>
+        <div className="ml-4 flex shrink-0 items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); onExplore(); }}
+            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105"
+          >
+            Explore
+          </button>
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10"
+            aria-label={`Enquire about ${wine.name}`}
+          >
+            Query
+          </a>
+        </div>
       </div>
     </motion.div>
   );
@@ -317,15 +324,22 @@ function WineCard({ wine, index }) {
       .replace(/[^\w-]+/g, '')
       .replace(/--+/g, '-');
 
+  const handleExplore = () => {
+    const citySlug = wine.location.toLowerCase();
+    const propSlug = generateSlug(wine.property);
+    navigate(`/wine-detail/${citySlug}/${propSlug}`);
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: 30 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ delay: Math.min(index * 0.07, 0.35), duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="relative flex h-full cursor-default select-none overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C12]"
+      transition={{ duration: 0.45, delay: index * 0.05 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={handleExplore}
+      className="group relative flex h-full cursor-pointer select-none overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-white/10 dark:bg-[#1A0C12]"
     >
       {/* Left accent bar */}
       <div
@@ -339,7 +353,7 @@ function WineCard({ wine, index }) {
 
       <div className="flex h-full gap-0 overflow-hidden">
         {/* Image column — compact, secondary */}
-        <div className="relative shrink-0 overflow-hidden" style={{ width: 112 }}>
+        <div className="relative shrink-0 overflow-hidden" style={{ width: 184 }}>
           <WineImage
             src={wine.image}
             alt={wine.name}
@@ -350,53 +364,48 @@ function WineCard({ wine, index }) {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/80 dark:to-[#1A0C12]/80" />
           {/* Top-left type dot */}
           <div
-            className="absolute left-2.5 top-2.5 h-2 w-2 rounded-full shadow-sm"
+            className="absolute left-3 top-3 h-2.5 w-2.5 rounded-full shadow-sm"
             style={{ backgroundColor: accent.dot }}
           />
         </div>
 
         {/* Content column — primary */}
-        <div className="flex min-w-0 flex-1 flex-col justify-between px-5 py-5">
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-6 py-5 text-center items-center">
           {/* Top: property + type */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              {/* Property name — highlighted, navigates to wine detail page with slug */}
-              <button
-                type="button"
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  const citySlug = wine.location.toLowerCase();
-                  const propSlug = generateSlug(wine.property);
-                  navigate(`/wine-detail/${citySlug}/${propSlug}`); 
-                }}
-                className="mb-1.5 flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
-                title="Explore this property"
+          <div className="mb-4 flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                const citySlug = wine.location.toLowerCase();
+                const propSlug = generateSlug(wine.property);
+                navigate(`/wine-detail/${citySlug}/${propSlug}`); 
+              }}
+              className="flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-70 active:opacity-50"
+              title="Explore this property"
+            >
+              <Building2 size={10} style={{ color: accent.color }} className="shrink-0" />
+              <span
+                className="text-[9px] font-black uppercase tracking-[0.22em]"
+                style={{ color: accent.color }}
               >
-                <Building2 size={10} style={{ color: accent.color }} className="shrink-0" />
-                <span
-                  className="truncate text-[10px] font-black uppercase tracking-[0.22em] underline-offset-2 hover:underline"
-                  style={{ color: accent.color }}
-                >
-                  {wine.property}
-                </span>
-                <span className="shrink-0 text-[9px] text-stone-400 dark:text-stone-600">
-                  · {wine.location}
-                </span>
-                <MoveRight size={9} style={{ color: accent.color }} className="shrink-0 opacity-60" />
-              </button>
+                {wine.property} · {wine.location}
+              </span>
+            </button>
 
-              {/* Wine name */}
-              <h3 className="mb-0.5 font-serif text-[1.18rem] leading-snug text-stone-950 dark:text-stone-100">
-                {wine.name}
-              </h3>
-              <p className="text-[11px] italic text-stone-400 dark:text-stone-500">
-                {wine.subtitle}
-              </p>
-            </div>
+            {/* Wine name */}
+            <h3 className="font-serif text-[1.25rem] leading-tight text-stone-950 dark:text-stone-100">
+              {wine.name}
+            </h3>
+            <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+              {wine.subtitle}
+            </p>
+          </div>
 
-            {/* Type badge */}
+          {/* Type badge */}
+          <div className="mb-4">
             <span
-              className="mt-0.5 shrink-0 rounded-lg px-2.5 py-1 text-[9px] font-black uppercase tracking-widest"
+              className="rounded-lg px-3 py-1 text-[8px] font-black uppercase tracking-widest"
               style={{
                 color: accent.color,
                 backgroundColor: accent.bg,
@@ -408,46 +417,33 @@ function WineCard({ wine, index }) {
           </div>
 
           {/* Middle: rating + meta badges */}
-          <div className="my-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <div className="mb-4 flex flex-col items-center gap-2">
             <StarRating rating={wine.rating} />
-            <div className="flex items-center gap-1.5">
-              <span className="rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-semibold text-stone-500 dark:border-white/10 dark:bg-white/5 dark:text-stone-400">
-                {wine.vintage}
+            <div className="flex flex-wrap justify-center gap-2">
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
+                {wine.vintage} · {wine.abv} ABV
               </span>
-              <span className="rounded-md border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-semibold text-stone-500 dark:border-white/10 dark:bg-white/5 dark:text-stone-400">
-                {wine.abv} ABV
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
+                {wine.body}
               </span>
             </div>
           </div>
 
           {/* Bottom: tasting + origin */}
-          <div className="space-y-4">
-            <p className="line-clamp-3 text-[11px] italic leading-relaxed text-stone-500 dark:text-stone-500">
+          <div className="w-full space-y-4">
+            <p className="mx-auto max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">
               &ldquo;{wine.tasting}&rdquo;
             </p>
             
-            <div className="grid grid-cols-2 gap-y-2.5">
+            <div className="mt-auto grid w-full grid-cols-2 gap-3 border-t border-stone-100 pt-4 dark:border-white/5">
               <div className="space-y-0.5">
-                <p className="text-[9px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Body</p>
-                <p className="text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.body || "Medium Body"}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Origin</p>
+                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.origin}</p>
               </div>
               <div className="space-y-0.5">
-                <p className="text-[9px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Service</p>
-                <p className="text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.servingTemp || "16°C"}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Pairing</p>
+                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.pairing}</p>
               </div>
-              <div className="col-span-2 space-y-0.5 border-t border-stone-100 pt-2 dark:border-white/5">
-                <p className="text-[9px] font-black uppercase tracking-widest text-stone-300 dark:text-stone-700">Best Paired With</p>
-                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{wine.pairing || "Fine dining cuisine"}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-[10px] text-stone-400 dark:text-stone-600">
-              <span className="flex items-center gap-1">
-                <MapPin size={9} />
-                {wine.origin}
-              </span>
-              <span className="h-2.5 w-px bg-stone-300 dark:bg-stone-700" />
-              <span>{wine.grape}</span>
             </div>
           </div>
         </div>
@@ -456,7 +452,16 @@ function WineCard({ wine, index }) {
       {/* Hover query popup */}
       <AnimatePresence>
         {hovered && (
-          <HoverQueryPopup key="popup" wine={wine} accent={accent} />
+          <HoverQueryPopup 
+            key="popup" 
+            wine={wine} 
+            accent={accent} 
+            onExplore={() => {
+              const citySlug = wine.location.toLowerCase();
+              const propSlug = generateSlug(wine.property);
+              navigate(`/wine-detail/${citySlug}/${propSlug}`);
+            }}
+          />
         )}
       </AnimatePresence>
     </motion.div>

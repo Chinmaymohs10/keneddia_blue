@@ -15,6 +15,8 @@ import {
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { Wine_GALLERY_ITEMS, Wine_GALLERY_MEDIA } from "./WineGalleryData";
 
+import coverimg from "./../../../../../assets/resturant_images/wine_hero_premium.png";
+
 const Wine_DATA = {
   name: "Kennedia Wine",
   location: "Noor Nagar, Raj Nagar Extension, Ghaziabad, Uttar Pradesh 201003",
@@ -23,11 +25,18 @@ const Wine_DATA = {
 
 const mapsLink = "https://www.google.com/maps/search/Kennedia+Wine+Ghaziabad";
 
+const WINE_BANNER_IMAGES = [
+  { url: coverimg, alt: "Premium Wine Collection" },
+  { url: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1600&q=80", alt: "Vintage Red Wine" },
+  { url: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1600&q=80", alt: "Artisan Pouring" },
+  { url: "https://images.unsplash.com/photo-1560512823-829485b8bf24?w=1600&q=80", alt: "Estate Cellar" },
+];
+
 const MAX_VISIBLE = 7;
 
 export default function WineBanner() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const totalSlides = Wine_GALLERY_MEDIA.length;
+  const totalSlides = WINE_BANNER_IMAGES.length;
 
   // Auto-slide functionality
   useEffect(() => {
@@ -37,7 +46,7 @@ export default function WineBanner() {
     return () => clearInterval(timer);
   }, [totalSlides]);
 
-  const activeSlide = Wine_GALLERY_MEDIA[activeIndex];
+  const activeSlide = WINE_BANNER_IMAGES[activeIndex];
 
   return (
     <section className="relative h-svh w-full overflow-hidden bg-[#0D0508]">
@@ -143,7 +152,7 @@ export default function WineBanner() {
 
       {/* Slide Indicators */}
       <div className="absolute bottom-10 right-10 z-20 flex items-center gap-3">
-        {Wine_GALLERY_MEDIA.slice(0, 5).map((_, idx) => (
+        {WINE_BANNER_IMAGES.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setActiveIndex(idx)}

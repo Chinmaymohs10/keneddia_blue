@@ -84,7 +84,7 @@ function FilterSelect({ value, options, onChange, label }) {
   );
 }
 
-function HoverQueryPopup({ drink, accent }) {
+function HoverQueryPopup({ drink, accent, onExplore }) {
   const message = encodeURIComponent(`Hi! Interested in *${drink.name}* (${drink.subtitle}) at Kennedia Blu. Details?`);
   return (
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 14 }} className="absolute inset-x-0 bottom-0 z-20 overflow-hidden rounded-b-[1.75rem]">
@@ -94,9 +94,23 @@ function HoverQueryPopup({ drink, accent }) {
           <p className="mb-0.5 truncate text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: accent.dot }}>Kennedia Blu · {drink.type}</p>
           <p className="truncate font-serif text-[14px] leading-tight text-white/90">{drink.name}</p>
         </div>
-        <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="ml-4 flex shrink-0 items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/20">
-          Query <MoveRight size={12} />
-        </a>
+        <div className="ml-4 flex shrink-0 items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); onExplore(); }}
+            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105"
+          >
+            Explore
+          </button>
+          <a
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10"
+          >
+            Query
+          </a>
+        </div>
       </div>
     </motion.div>
   );
@@ -109,6 +123,12 @@ function DrinkCard({ drink, index }) {
 
   const generateSlug = (text) => text?.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
+  const handleExplore = () => {
+    const citySlug = drink.location?.toLowerCase() || "ghaziabad";
+    const propSlug = generateSlug(drink.property);
+    navigate(`/wine-detail/${citySlug}/${propSlug}`);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 30 }}
@@ -117,45 +137,57 @@ function DrinkCard({ drink, index }) {
       transition={{ delay: Math.min(index * 0.07, 0.35), duration: 0.55 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative flex h-full cursor-default select-none overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13]"
+      onClick={handleExplore}
+      className="relative flex h-full cursor-pointer select-none overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-shadow duration-300 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13]"
     >
       <div className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500" style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }} />
       <div className="flex h-full gap-0 overflow-hidden">
-        <div className="relative shrink-0 overflow-hidden" style={{ width: 112 }}>
+        <div className="relative shrink-0 overflow-hidden" style={{ width: 184 }}>
           <DrinkImage src={drink.image} alt={drink.name} className="h-full w-full transition-transform duration-700" style={{ transform: hovered ? "scale(1.06)" : "scale(1)" }} />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/80 dark:to-[#1A0C13]/80" />
-          <div className="absolute left-2.5 top-2.5 h-2 w-2 rounded-full" style={{ backgroundColor: accent.dot }} />
+          <div className="absolute left-3 top-3 h-2.5 w-2.5 rounded-full" style={{ backgroundColor: accent.dot }} />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-between px-5 py-5">
-          <div>
-            <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-6 py-5 text-center items-center">
+          <div className="w-full">
+            <div className="mb-4 flex flex-col items-center gap-2">
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); navigate(`/wine-detail/ghaziabad/${generateSlug(drink.property)}`); }}
-                className="mb-1.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#8B1A2A] hover:underline dark:text-[#C8956A]"
+                onClick={(e) => { e.stopPropagation(); handleExplore(); }}
+                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-[#8B1A2A] hover:underline dark:text-[#C8956A]"
               >
                 <Building2 size={10} /> {drink.property}
               </button>
-              <span className="shrink-0 rounded-lg px-2 py-0.5 text-[8px] font-black uppercase tracking-widest" style={{ color: accent.color, backgroundColor: accent.bg }}>{drink.tag}</span>
+              <div className="flex flex-col items-center gap-1">
+                <h3 className="font-serif text-[1.25rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
+                <p className="text-[11px] font-medium italic text-stone-400">{drink.subtitle}</p>
+              </div>
             </div>
-            <h3 className="mb-0.5 font-serif text-[1.18rem] leading-snug text-stone-900 dark:text-stone-100">{drink.name}</h3>
-            <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>
-            <div className="my-2 flex items-center gap-3"><StarRating rating={drink.rating} /><span className="text-[10px] font-bold text-stone-500">{drink.abv}</span></div>
-            <p className="line-clamp-3 text-[11px] italic leading-relaxed text-stone-500">“{drink.tasting}”</p>
+
+            <div className="mb-3 flex justify-center">
+              <span className="rounded-lg px-2.5 py-1 text-[8px] font-black uppercase tracking-widest" style={{ color: accent.color, backgroundColor: accent.bg, border: `1px solid ${accent.color}30` }}>{drink.tag}</span>
+            </div>
+
+            <div className="mb-4 flex flex-col items-center gap-2">
+              <StarRating rating={drink.rating} />
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-400">{drink.abv} ABV</span>
+            </div>
+
+            <p className="mx-auto mb-5 max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">“{drink.tasting}”</p>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-stone-100 pt-3 dark:border-white/5">
+
+          <div className="mt-auto grid w-full grid-cols-2 gap-3 border-t border-stone-100 pt-4 dark:border-white/5">
              <div className="space-y-0.5">
-               <p className="text-[8px] font-black uppercase text-stone-300">Origin</p>
+               <p className="text-[8px] font-black uppercase tracking-widest text-stone-300">Origin</p>
                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{drink.origin}</p>
              </div>
              <div className="space-y-0.5">
-               <p className="text-[8px] font-black uppercase text-stone-300">Pairing</p>
+               <p className="text-[8px] font-black uppercase tracking-widest text-stone-300">Pairing</p>
                <p className="truncate text-[10px] font-bold text-stone-700 dark:text-stone-300">{drink.pairing}</p>
              </div>
           </div>
         </div>
       </div>
-      <AnimatePresence>{hovered && <HoverQueryPopup drink={drink} accent={accent} />}</AnimatePresence>
+      <AnimatePresence>{hovered && <HoverQueryPopup drink={drink} accent={accent} onExplore={handleExplore} />}</AnimatePresence>
     </motion.div>
   );
 }
