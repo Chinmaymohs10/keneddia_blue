@@ -319,19 +319,70 @@ function NewsColumn({ className = "" }) {
 
 // ─── Root section ──────────────────────────────────────────────────────────────
 export default function WineShowcaseSlider() {
+  const swiperRef = useRef(null);
+
   return (
-    <section id="showcase" className="relative overflow-hidden bg-[#EDE7DF] py-10 dark:bg-[#0A0407]">
+    <section id="news" className="relative overflow-hidden bg-[#EDE7DF] py-16 dark:bg-[#0A0407]">
       <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_20%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.18),transparent_28%)] dark:block" />
-      <div className="mx-auto w-[92%] max-w-7xl">
-        <div className="mb-8">
-          <h2 className="font-serif text-2xl md:text-3xl">Wine Showcase</h2>
-          <div className="mt-3 h-0.5 w-16 bg-primary" />
+      
+      <div className="container mx-auto px-6 lg:px-12">
+        {/* Section Header */}
+        <div className="mb-10 flex items-center justify-between">
+          <div>
+            <span className="mb-2 block text-xs font-bold uppercase tracking-[0.25em] text-primary">
+              Updates & Highlights
+            </span>
+            <h2 className="font-serif text-2xl md:text-4xl text-foreground">
+              Wine News & Press
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link
+              to="/news"
+              className="hidden items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5 md:flex"
+            >
+              View All <ArrowUpRight className="h-4 w-4" />
+            </Link>
+            <div className="flex gap-2">
+              <button
+                onClick={() => swiperRef.current?.slidePrev()}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground dark:border-white/10"
+                aria-label="Previous"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => swiperRef.current?.slideNext()}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground dark:border-white/10"
+                aria-label="Next"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <EventsColumn title="Events" icon={Sparkles} items={EVENTS} />
-          <NewsColumn className="lg:col-span-2" />
-        </div>
+        {/* 3-up Swiper Carousel */}
+        <Swiper
+          modules={[Autoplay, Navigation]}
+          spaceBetween={24}
+          slidesPerView={1}
+          breakpoints={{
+            640: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }}
+          loop={WINE_NEWS_ITEMS.length > 3}
+          autoplay={{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+          onSwiper={(swiper) => { swiperRef.current = swiper; }}
+          className="w-full"
+        >
+          {WINE_NEWS_ITEMS.map((item) => (
+            <SwiperSlide key={item.id} className="!h-auto">
+              <NewsCard item={item} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </section>
   );

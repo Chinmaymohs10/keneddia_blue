@@ -13,126 +13,123 @@ const WineShowcaseSlider = lazy(() => import("./components/WineShowcaseSlider"))
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
-  { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "COLLECTION", key: "collection", href: "#collection" },
   { type: "link", label: "BRANDS", key: "brand", href: "#brand" },
-  { type: "link", label: "SHOWCASE", key: "showcase", href: "#showcase" },
-  { type: "link", label: "REVIEWS", key: "reviews", href: "#reviews" },
-  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
+  { type: "link", label: "ABOUT", key: "about", href: "#about" },
+  { type: "link", label: "NEWS", key: "news", href: "#news" },
+  { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
 // ─── KENNEDIA WINES LOADER ────────────────────────────────────────────────────
 function KenediaWinesLoader() {
-  const R_OUTER = 88;
-  const R_INNER = 68;
-  const CX = 110;
-  const CY = 110;
-  const circlePerimeter = 2 * Math.PI * R_OUTER;
-
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#0D0508]"
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.65, ease: "easeInOut" } }}
+      exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] } }}
     >
-      <div className="flex flex-col items-center">
-        <svg width="220" height="220" viewBox="0 0 220 220" fill="none">
-          <style>{`
-            @keyframes kw-draw { to { stroke-dashoffset: 0; } }
-            @keyframes kw-fade { to { opacity: 1; } }
-            @keyframes kw-expand {
-              from { stroke-dasharray: 0 220; }
-              to   { stroke-dasharray: 100 220; }
-            }
-            .kw-circle {
-              stroke-dasharray: ${circlePerimeter};
-              stroke-dashoffset: ${circlePerimeter};
-              animation: kw-draw 1.4s cubic-bezier(0.4,0,0.2,1) 0.1s forwards;
-            }
-            .kw-fade-1 { opacity: 0; animation: kw-fade 0.5s ease 0.9s forwards; }
-            .kw-fade-2 { opacity: 0; animation: kw-fade 0.5s ease 1.05s forwards; }
-            .kw-fade-3 { opacity: 0; animation: kw-fade 0.5s ease 1.2s forwards; }
-            .kw-fade-4 { opacity: 0; animation: kw-fade 0.5s ease 1.35s forwards; }
-            .kw-fade-5 { opacity: 0; animation: kw-fade 0.5s ease 1.5s forwards; }
-          `}</style>
+      {/* Dynamic Background Accents */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, 0],
+            opacity: [0.03, 0.07, 0.03]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute -right-1/4 -top-1/4 h-[80%] w-[80%] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #8B1A2A 0%, transparent 70%)" }}
+        />
+        <motion.div
+          animate={{
+            scale: [1.1, 1, 1.1],
+            rotate: [0, -5, 0],
+            opacity: [0.02, 0.05, 0.02]
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-1/4 -left-1/4 h-[80%] w-[80%] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, #D4AF37 0%, transparent 70%)" }}
+        />
+      </div>
 
-          {/* Outer circle */}
-          <circle
-            cx={CX} cy={CY} r={R_OUTER}
-            stroke="#C49A22" strokeWidth="1.4"
-            className="kw-circle"
-          />
+      <div className="relative flex flex-col items-center">
+        {/* The Minimalist 'K' Monogram */}
+        <div className="relative mb-8 h-32 w-32">
+          <svg viewBox="0 0 100 100" className="h-full w-full">
+            <style>{`
+              @keyframes dash { to { stroke-dashoffset: 0; } }
+              @keyframes revealText { to { opacity: 1; transform: translateY(0); } }
+              @keyframes pulseSlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+            `}</style>
 
-          {/* Inner dotted arc — top half */}
-          <path
-            d={`M ${CX - R_INNER},${CY} A ${R_INNER},${R_INNER} 0 0,1 ${CX + R_INNER},${CY}`}
-            stroke="#C49A22" strokeWidth="1.2"
-            strokeDasharray="3.5 5"
-            className="kw-fade-1"
-          />
+            {/* Outer Ring — Elegant Trace */}
+            <circle
+              cx="50" cy="50" r="48"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="0.5"
+              strokeDasharray="301.6"
+              strokeDashoffset="301.6"
+              style={{ animation: "dash 2s cubic-bezier(0.4, 0, 0.2, 1) forwards" }}
+            />
 
-          {/* Top rule */}
-          <line
-            x1={CX - 58} y1={CY - 9} x2={CX + 58} y2={CY - 9}
-            stroke="#C49A22" strokeWidth="0.7"
-            className="kw-fade-2"
-          />
+            {/* Inner Ring — Dotted Accents */}
+            <circle
+              cx="50" cy="50" r="42"
+              fill="none"
+              stroke="#8B1A2A"
+              strokeWidth="0.75"
+              strokeDasharray="2 6"
+              opacity="0"
+              style={{ animation: "revealText 1s ease 0.8s forwards" }}
+            />
 
-          {/* KENNEDIA */}
-          <text
-            x={CX} y={CY + 5}
-            textAnchor="middle"
-            fill="white"
-            fontSize="17"
-            fontWeight="700"
-            letterSpacing="6"
-            fontFamily="Georgia, 'Times New Roman', serif"
-            className="kw-fade-3"
+            {/* Central 'K' Monogram */}
+            <text
+              x="50" y="62"
+              textAnchor="middle"
+              fill="white"
+              fontSize="38"
+              fontFamily="'Playfair Display', serif"
+              fontWeight="300"
+              opacity="0"
+              style={{
+                animation: "revealText 1.2s ease 0.4s forwards",
+                transform: "translateY(10px)"
+              }}
+            >
+              K
+            </text>
+          </svg>
+        </div>
+
+        {/* Brand Text Branding */}
+        <div className="text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="flex flex-col items-center"
           >
-            KENNEDIA
-          </text>
+            <span className="text-[10px] font-black uppercase tracking-[0.6em] text-[#D4AF37]">
+              Kennedia
+            </span>
+            <div className="my-2 h-px w-24 bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent" />
+            <span className="italic font-serif text-[18px] tracking-[0.1em] text-white/90">
+              Fine Wines & Estates
+            </span>
+          </motion.div>
+        </div>
 
-          {/* Bottom rule */}
-          <line
-            x1={CX - 58} y1={CY + 16} x2={CX + 58} y2={CY + 16}
-            stroke="#C49A22" strokeWidth="0.7"
-            className="kw-fade-2"
+        {/* Loading Progress Line */}
+        <div className="mt-12 h-[1px] w-48 overflow-hidden bg-white/5">
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: "0%" }}
+            transition={{ duration: 2.2, ease: "easeInOut" }}
+            className="h-full w-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"
           />
-
-          {/* Inner dotted arc — bottom half */}
-          <path
-            d={`M ${CX - R_INNER},${CY} A ${R_INNER},${R_INNER} 0 0,0 ${CX + R_INNER},${CY}`}
-            stroke="#C49A22" strokeWidth="1.2"
-            strokeDasharray="3.5 5"
-            className="kw-fade-1"
-          />
-
-          {/* WINES — inside circle, below KENNEDIA band */}
-          <text
-            x={CX} y={CY + 42}
-            textAnchor="middle"
-            fill="#C49A22"
-            fontSize="8.5"
-            fontWeight="600"
-            letterSpacing="7"
-            fontFamily="'Helvetica Neue', Arial, sans-serif"
-            className="kw-fade-4"
-          >
-            WINES
-          </text>
-
-          {/* ® mark */}
-          <text
-            x={CX + 52} y={CY + 3}
-            textAnchor="start"
-            fill="white"
-            fontSize="7"
-            fontFamily="serif"
-            className="kw-fade-3"
-          >
-            ®
-          </text>
-        </svg>
+        </div>
       </div>
     </motion.div>
   );
@@ -193,8 +190,8 @@ export default function WineHomepage() {
             </Suspense>
           </div>
 
-          {/* Showcase */}
-          <div id="showcase" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
+          {/* News & Press */}
+          <div id="news" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
             <Suspense fallback={<SectionFallback height="h-[28rem]" />}>
               <WineShowcaseSlider />
             </Suspense>
