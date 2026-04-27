@@ -116,7 +116,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#F8F8F6] dark:bg-[#14100b]">
-        <Loader2 className="animate-spin w-10 h-10 text-[#7a5c3a]" />
+        <Loader2 className="animate-spin w-10 h-10 text-primary" />
       </div>
     );
   }
@@ -161,19 +161,19 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             >
               <Link
                 to="/"
-                className="text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
+                className="text-primary dark:text-[#a07850] hover:text-primary/80 dark:hover:text-[#f0dfc0] transition-colors"
               >
                 Home
               </Link>
-              <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
+              <ChevronRight className="w-3 h-3 text-primary/50 dark:text-[#a07850]/50" />
               <Link
                 to="/cafe-homepage"
-                className="text-[#7a5c3a] dark:text-[#a07850] hover:text-[#3d1f00] dark:hover:text-[#f0dfc0] transition-colors"
+                className="text-primary dark:text-[#a07850] hover:text-primary/80 dark:hover:text-[#f0dfc0] transition-colors"
               >
                 Cafes
               </Link>
-              <ChevronRight className="w-3 h-3 text-[#7a5c3a]/50 dark:text-[#a07850]/50" />
-              <span className="text-[#3d1f00] dark:text-[#f0dfc0] font-black">
+              <ChevronRight className="w-3 h-3 text-primary/50 dark:text-[#a07850]/50" />
+              <span className="text-primary dark:text-[#f0dfc0] font-black">
                 {cafe.name}
               </span>
             </motion.nav>
@@ -186,7 +186,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               className="mb-1"
             >
               <h1
-                className="text-[#1e0d00] dark:text-[#f0dfc0]"
+                className="text-zinc-900 dark:text-[#f0dfc0]"
                 style={{
                   fontFamily: '"Georgia","Times New Roman",serif',
                   fontSize: "clamp(2.1rem, 5.8vw, 4.96rem)",
@@ -216,7 +216,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.28 }}
-              className="font-black text-[#1e0d00] dark:text-[#e8d0b0] mb-2"
+              className="font-black text-zinc-800 dark:text-[#e8d0b0] mb-2"
               style={{ fontSize: "clamp(0.78rem, 1.5vw, 1.05rem)" }}
             >
               {cafe.tagline}
@@ -227,7 +227,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.36 }}
-              className="text-[#5a3e28] dark:text-[#b09070] italic leading-relaxed mb-4"
+              className="text-zinc-600 dark:text-[#b09070] italic leading-relaxed mb-4"
               style={{
                 fontSize: "clamp(0.7rem, 1.15vw, 0.88rem)",
                 maxWidth: "560px",
@@ -247,7 +247,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               transition={{ duration: 0.4, delay: 0.42 }}
               className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-5"
             >
-              <div className="flex items-center gap-1.5 text-xs font-medium text-[#7a5c3a] dark:text-[#a07850]">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 dark:text-[#a07850]">
                 <MapPin className="w-3 h-3 shrink-0" />
                 <span className="truncate max-w-[220px]">
                   {cafe.location}
@@ -269,7 +269,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             >
               <button
                 onClick={() => setIsGalleryOpen(true)}
-                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-[#1e0d00] dark:bg-[#f0dfc0] transition-all active:scale-95 hover:opacity-90 shadow-lg"
+                className="px-6 py-2.5 rounded-full font-black text-sm tracking-wide text-white dark:text-[#1e0d00] bg-primary dark:bg-[#f0dfc0] transition-all active:scale-95 hover:bg-primary/90 shadow-lg"
               >
                 Explore Now
               </button>

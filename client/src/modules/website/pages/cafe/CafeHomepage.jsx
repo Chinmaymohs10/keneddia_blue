@@ -267,22 +267,24 @@ export default function CafeHomepage() {
       </AnimatePresence>
 
       <main>
-        <div id="home">
+        <div id="home" className="relative z-20 shadow-sm">
           <CafeHeroBanner initialSlides={ssr?.heroSlides} onReady={handleReady} />
         </div>
-        <div id="quick-booking">
+        <div id="quick-booking" className="relative z-10 shadow-sm">
           <CafeQuickBooking />
         </div>
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-white to-[#F7F7F5]" />
         </div>
-        <CafeCoffeeStory initialData={ssr?.coffeeStory} />
+        <div className="relative z-[9] shadow-sm">
+          <CafeCoffeeStory initialData={ssr?.coffeeStory} />
+        </div>
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-white" />
           <div className="h-px bg-[#E5E5E2]" />
         </div>
-        <div id="cafe-properties">
+        <div id="cafe-properties" className="relative z-[8] shadow-sm">
           <CafeProperties
             locationMatch={locationMatch}
             initialCafes={ssr?.cafeProperties}
@@ -292,40 +294,50 @@ export default function CafeHomepage() {
           <div className="h-px bg-[#E3E3DF]" />
           <div className="h-4 bg-linear-to-b from-white to-[#EFEFEB]" />
         </div>
-        <CafeBestSellers
-          initialItems={ssr?.bestSellers}
-          cafeTypeId={ssr?.cafeTypeId}
-        />
+        <div className="relative z-[7] shadow-sm">
+          <CafeBestSellers
+            initialItems={ssr?.bestSellers}
+            cafeTypeId={ssr?.cafeTypeId}
+          />
+        </div>
         <div className="dark:hidden">
           <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-white" />
           <div className="h-px bg-[#E3E3DF]" />
         </div>
-        <CafeAbout initialSections={ssr?.aboutSections} />
+        <div className="relative z-[6] shadow-sm">
+          <CafeAbout initialSections={ssr?.aboutSections} />
+        </div>
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
           <div className="h-4 bg-linear-to-b from-white to-[#F5F5F3]" />
         </div>
-        <CafeShowcaseSlider
-          initialEvents={ssr?.cafeEvents}
-          initialOffers={ssr?.cafeOffers}
-          initialGroupBookings={ssr?.groupBookings}
-          initialCafeTypeId={ssr?.cafeTypeId}
-        />
+        <div className="relative z-[5] shadow-sm">
+          <CafeShowcaseSlider
+            initialEvents={ssr?.cafeEvents}
+            initialOffers={ssr?.cafeOffers}
+            initialGroupBookings={ssr?.groupBookings}
+            initialCafeTypeId={ssr?.cafeTypeId}
+          />
+        </div>
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#ECECE8]" />
         </div>
-        <CafeNewsSection initialNews={ssr?.cafeNews} />
+        <div className="relative z-[4] shadow-sm">
+          <CafeNewsSection initialNews={ssr?.cafeNews} />
+        </div>
         <div className="dark:hidden">
           <div className="h-px bg-[#E1E1DD]" />
           <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F8F8F6]" />
         </div>
-        <CafeGuestReviews
-          initialExperiences={ssr?.guestExperiences}
-          initialSectionHeader={ssr?.guestExperienceSectionHeader}
-          initialRatingHeader={ssr?.guestExperienceRatingHeader}
-          initialCafeTypeId={ssr?.cafeTypeId}
-        />
+        <div className="relative z-[3] shadow-sm">
+          <CafeGuestReviews
+            initialExperiences={ssr?.guestExperiences}
+            initialSectionHeader={ssr?.guestExperienceSectionHeader}
+            initialRatingHeader={ssr?.guestExperienceRatingHeader}
+            initialCafeTypeId={ssr?.cafeTypeId}
+          />
+        </div>
       </main>
 
       <div id="contact">

@@ -138,7 +138,7 @@ function MediaGrid({ items }) {
 function AuthorRow({ item, light = false }) {
   return (
     <div className={`flex items-center gap-3 border-t pt-4 ${light ? "border-white/20" : "border-[#F0E6DE] dark:border-white/10"}`}>
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${light ? "bg-[#D4A373]/80" : "bg-[#D4A373] dark:bg-[#8D5C42]"}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white ${light ? "bg-primary/80" : "bg-primary dark:bg-[#8D5C42]"}`}>
         {item.author[0]}
       </div>
       <div>
@@ -574,7 +574,7 @@ export default function CafeTestimonials({
     <section
       id="reviews"
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#F7F7F5] py-20 text-[#3E2723] dark:bg-[#120D0C] dark:text-[#F7EEE8]"
+      className="relative overflow-hidden bg-[#F7F7F5] py-20 text-zinc-900 dark:bg-[#120D0C] dark:text-[#F7EEE8]"
     >
       <motion.div
         style={{ x: glowX, y: glowY }}
@@ -588,36 +588,36 @@ export default function CafeTestimonials({
       <div className="container mx-auto max-w-7xl px-4">
         <motion.div
           style={{ y: headerY }}
-          className="mb-16 flex flex-col justify-between gap-6 border-b border-[#E8DDD4] pb-8 md:flex-row md:items-end dark:border-white/10"
+          className="mb-16 flex flex-col justify-between gap-6 border-b border-primary/20 pb-8 md:flex-row md:items-end dark:border-white/10"
         >
           <div>
             <div className="mb-3 flex items-center gap-2">
-              <span className="h-[1px] w-8 bg-[#8D6E63] dark:bg-[#BEA18F]" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8D6E63] dark:text-[#BEA18F]">
+              <span className="h-[1px] w-8 bg-primary dark:bg-[#BEA18F]" />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary dark:text-[#BEA18F]">
                 {headerData.sectionTag}
               </p>
             </div>
             <h2 className="text-4xl font-serif font-medium leading-tight md:text-5xl">
               {titleMain}{" "}
-              <span className="italic text-[#A1887F] dark:text-[#DDB8A5]">
+              <span className="italic text-primary dark:text-[#DDB8A5]">
                 {titleItalic}
               </span>
             </h2>
           </div>
 
-          <div className="flex items-center gap-6 rounded-[1.8rem] border border-[#E7D8CA] bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-6 rounded-[1.8rem] border border-primary/20 bg-white/80 p-6 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5">
             <div className="text-center">
-              <p className="text-3xl font-serif font-bold leading-none text-[#3E2723] dark:text-[#F7EEE8]">
+              <p className="text-3xl font-serif font-bold leading-none text-zinc-900 dark:text-[#F7EEE8]">
                 {avgRating}
               </p>
               <div className="mt-2 flex gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} className="fill-[#D4A373] text-[#D4A373] dark:fill-[#E5A07B] dark:text-[#E5A07B]" />
+                  <Star key={i} size={14} className="fill-primary text-primary dark:fill-[#E5A07B] dark:text-[#E5A07B]" />
                 ))}
               </div>
             </div>
-            <div className="h-10 w-[1px] bg-[#E0D7D0] dark:bg-white/10" />
-            <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-[#8D6E63] dark:text-[#BEA18F]">
+            <div className="h-10 w-[1px] bg-primary/20 dark:bg-white/10" />
+            <p className="max-w-[90px] text-[11px] font-semibold uppercase leading-tight tracking-widest text-primary/80 dark:text-[#BEA18F]">
               Average Bean Rating
             </p>
           </div>
@@ -627,7 +627,7 @@ export default function CafeTestimonials({
           <div className="lg:col-span-8">
             {loading && experiences.length === 0 ? (
               <div className="flex h-64 items-center justify-center">
-                <Loader2 className="animate-spin text-[#D4A373]" size={32} />
+                <Loader2 className="animate-spin text-primary" size={32} />
               </div>
             ) : (
               <>
@@ -666,12 +666,12 @@ export default function CafeTestimonials({
               <div className="relative z-10">
                 <div className="mb-8 flex items-center justify-between">
                   <h4 className="text-xl font-serif">Sign our Guestbook</h4>
-                  <Edit2 size={18} className="text-[#D4A373]" />
+                  <Edit2 size={18} className="text-primary-foreground/70" />
                 </div>
 
                 <div className="space-y-5">
                   <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#D4A373]/20 text-[#D4A373]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
                       <User size={20} />
                     </div>
                     <div>
@@ -685,7 +685,7 @@ export default function CafeTestimonials({
                       value={feedbackText}
                       onChange={(e) => setFeedbackText(e.target.value)}
                       placeholder="Share your cafe moment..."
-                      className="h-32 w-full resize-none border-b border-white/20 bg-transparent py-2 text-sm leading-relaxed outline-none transition-all placeholder:text-white/20 focus:border-[#D4A373]"
+                      className="h-32 w-full resize-none border-b border-white/20 bg-transparent py-2 text-sm leading-relaxed outline-none transition-all placeholder:text-white/20 focus:border-white/40"
                     />
                   </div>
 
@@ -738,7 +738,7 @@ export default function CafeTestimonials({
                   <button
                     disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())}
                     onClick={handleSubmit}
-                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50"
+                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-primary py-4 text-sm font-bold text-white transition-all hover:bg-primary/90 active:scale-[0.98] disabled:grayscale disabled:opacity-50"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -765,7 +765,7 @@ export default function CafeTestimonials({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-[2.5rem] bg-white p-10 text-[#3E2723] shadow-2xl dark:bg-[#1A1210] dark:text-[#F7EEE8]"
+              className="w-full max-w-md rounded-[2.5rem] bg-white p-10 text-zinc-900 shadow-2xl dark:bg-[#1A1210] dark:text-[#F7EEE8]"
             >
               <div className="mb-8 flex items-center justify-between">
                 <h3 className="text-2xl font-serif">Guest Details</h3>
@@ -781,13 +781,13 @@ export default function CafeTestimonials({
                   ["Phone Number", phone, setPhone],
                 ].map(([label, val, set], i) => (
                   <div key={i}>
-                    <label className="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-widest text-[#8D6E63] dark:text-[#BEA18F]">
+                    <label className="mb-1 ml-1 block text-[10px] font-bold uppercase tracking-widest text-primary/80 dark:text-[#BEA18F]">
                       {label}
                     </label>
                     <input
                       value={val}
                       onChange={(e) => set(e.target.value)}
-                      className="w-full rounded-xl border border-[#E0D7D0] bg-[#FAF9F6] p-4 outline-none transition-colors focus:border-[#D4A373] dark:border-white/10 dark:bg-white/5"
+                      className="w-full rounded-xl border border-primary/20 bg-[#FAF9F6] p-4 outline-none transition-colors focus:border-primary dark:border-white/10 dark:bg-white/5"
                     />
                   </div>
                 ))}
@@ -802,7 +802,7 @@ export default function CafeTestimonials({
                     setShowPopup(false);
                     handleSubmit();
                   }}
-                  className="mt-4 w-full rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54]"
+                  className="mt-4 w-full rounded-2xl bg-primary py-4 font-bold text-white shadow-lg transition-all hover:bg-primary/90"
                 >
                   Verify & Post Review
                 </button>
