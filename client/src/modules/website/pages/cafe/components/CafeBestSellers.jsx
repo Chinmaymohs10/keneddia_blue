@@ -138,6 +138,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId }) {
     if (!resolvedTypeId) return;
     getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
+        console.log(res);
         const data = res.data?.data || res.data;
         if (Array.isArray(data)) {
           const activeHeader = data.find((h) => h.isActive);
