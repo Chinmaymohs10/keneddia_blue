@@ -24,6 +24,20 @@ import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 const normalize = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
 
+// Fuzzy city match — handles spelling variants returned by APIs
+// (e.g. "Bhubaneshwar" ≈ "Bhubaneswar", "Bengaluru" ≈ "Bangalore")
+const normSlug = (v = "") =>
+  String(v).toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+
+const citiesFuzzyMatch = (a, b) => {
+  const na = normSlug(a);
+  const nb = normSlug(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const prefixLen = Math.min(6, Math.min(na.length, nb.length));
+  return prefixLen >= 5 && na.slice(0, prefixLen) === nb.slice(0, prefixLen);
+};
+
 const getAmenityName = (amenity) =>
   typeof amenity === "string"
     ? amenity
@@ -156,25 +170,37 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
     if (!locationMatch || !cafes.length) return;
 
     if (locationMatch.found && locationMatch.city) {
-      // Find if we actually have properties for this detected city
-      const hasPropsInCity = cafes.some(
-        (c) => normalize(c.city) === normalize(locationMatch.city),
+      console.group("[CafeProperties] Location match debug");
+      console.log("locationMatch.city:", locationMatch.city);
+      console.log("All cafe city/name/location fields:");
+      cafes.forEach((c) =>
+        console.log(
+          `  id=${c.propertyId} | name="${c.name}" | city="${c.city}" | location="${c.location}" | nearbyLocation="${c.nearbyLocation}"`,
+          "| fuzzy:", citiesFuzzyMatch(c.city, locationMatch.city),
+          "| cityNormSlug:", normSlug(c.city),
+          "| matchNormSlug:", normSlug(locationMatch.city),
+        )
       );
 
-      if (hasPropsInCity) {
-        // Sync with existing city if found (safeguards casing)
-        const existingCity = cafes.find(
-          (c) => normalize(c.city) === normalize(locationMatch.city),
-        )?.city;
-        setSelectedCity(existingCity || locationMatch.city);
+      // Try city field first (fuzzy), then fallback: check if name/location/address contains the city string
+      const matchedCafe =
+        cafes.find((c) => citiesFuzzyMatch(c.city, locationMatch.city)) ||
+        cafes.find((c) =>
+          [c.name, c.location, c.nearbyLocation]
+            .some((field) => normSlug(field || "").includes(normSlug(locationMatch.city)))
+        );
+
+      console.log("matchedCafe:", matchedCafe ? `"${matchedCafe.name}" (city: "${matchedCafe.city}")` : "none");
+      console.groupEnd();
+
+      if (matchedCafe) {
+        setSelectedCity(matchedCafe.city);
         setLocationBanner("found");
       } else {
-        // No properties for the detected city, show everything
         setSelectedCity("All Cities");
         setLocationBanner("not-found");
       }
     } else {
-      // No city detected or match failed
       setSelectedCity("All Cities");
       setLocationBanner("not-found");
     }

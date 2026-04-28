@@ -29,11 +29,31 @@ const CAFE_NAV_ITEMS = [
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// Cities with Kennedia cafe properties — used for matching against Mapbox nearby results
-const PROPERTY_CITIES = ["Ghaziabad", "Noida", "Delhi", "Bhubaneswar", "Bangalore"];
+// Kennedia cafe property cities with fixed coordinates — used for direct distance matching
+const PROPERTY_CITIES = [
+  { name: "Ghaziabad",   lat: 28.6692, lng: 77.4538 },
+  { name: "Noida",       lat: 28.5355, lng: 77.3910 },
+  { name: "Delhi",       lat: 28.7041, lng: 77.1025 },
+  { name: "Bhubaneswar", lat: 20.2961, lng: 85.8245 },
+  { name: "Bangalore",   lat: 12.9716, lng: 77.5946 },
+];
 
-// Only consider railway stations within this radius for city matching
-const NEARBY_RADIUS_KM = 70;
+// Show "nearby property" popup when user is within this km of a property city
+const PROPERTY_MATCH_RADIUS_KM = 300;
+
+// Only consider railway stations within this radius for display purposes
+const NEARBY_RADIUS_KM = 100;
+
+const haversineKm = (lat1, lng1, lat2, lng2) => {
+  const R = 6371;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 export default function CafeHomepage() {
   const { cafeHomepage: ssr } = useSsrData();
@@ -152,21 +172,30 @@ export default function CafeHomepage() {
             distanceKm: f.properties.distance / 1000,
           }));
 
-        // ── Match property city ──────────────────────────────────────────────────
-        const matched = nearbyStations.find((entry) =>
-          PROPERTY_CITIES.some(
-            (propCity) => propCity.toLowerCase() === entry.city?.toLowerCase()
-          )
+        // ── Match property city via direct haversine distance ───────────────────
+        // Mapbox station search only finds cities near the GPS pin, so spelling
+        // variants and distant-but-nearest cities are unreliable. Instead we
+        // calculate straight-line distance from the user to every property city
+        // and pick the closest one within PROPERTY_MATCH_RADIUS_KM.
+        const citiesWithDistance = PROPERTY_CITIES.map((pc) => ({
+          ...pc,
+          distanceKm: haversineKm(latitude, longitude, pc.lat, pc.lng),
+        })).sort((a, b) => a.distanceKm - b.distanceKm);
+
+        const nearestPropertyCity = citiesWithDistance[0];
+        const canonicalCity =
+          nearestPropertyCity && nearestPropertyCity.distanceKm <= PROPERTY_MATCH_RADIUS_KM
+            ? nearestPropertyCity.name
+            : null;
+
+        console.log(
+          "Property city distances:",
+          citiesWithDistance.map((c) => `${c.name} — ${c.distanceKm.toFixed(0)}km`).join(" | ")
         );
-
-        const canonicalCity = matched
-          ? PROPERTY_CITIES.find((c) => c.toLowerCase() === matched.city.toLowerCase())
-          : null;
-
         if (canonicalCity) {
-          console.log(`Location match found: ${canonicalCity} (${matched.distanceKm.toFixed(2)}km)`);
+          console.log(`Location match: ${canonicalCity} (${nearestPropertyCity.distanceKm.toFixed(0)}km away)`);
         } else {
-          console.log("No property city matched nearby locations.");
+          console.log(`No property city within ${PROPERTY_MATCH_RADIUS_KM}km. Nearest: ${nearestPropertyCity?.name} (${nearestPropertyCity?.distanceKm.toFixed(0)}km)`);
         }
 
         setLocationMatch({
