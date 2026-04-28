@@ -12,6 +12,8 @@ import {
   Heart,
   Send,
   Play,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { AnimatePresence, motion, useAnimation, useScroll, useTransform } from "framer-motion";
 import { getPropertyTypes, getGuestExperienceSection, createGuestExperienceByGuest } from "@/Api/Api";
@@ -49,32 +51,153 @@ const duplicateToLength = (items, minLength) => {
 };
 
 const getMediaBadge = (type) => {
+  if (type === "instagram") return "Instagram";
+  if (type === "youtube") return "YouTube";
   if (type === "video") return "Video";
   if (type === "reel") return "Reel";
   if (type === "short") return "Short";
   return "Photo";
 };
 
+const normalizeExternalUrl = (url = "") => {
+  const clean = String(url).trim();
+  if (!clean) return "";
+  if (/^(https?:|blob:|data:)/i.test(clean) || clean.startsWith("/")) {
+    return clean;
+  }
+  if (/^(www\.)?(instagram\.com|youtube\.com|youtu\.be)\//i.test(clean)) {
+    return `https://${clean}`;
+  }
+  if (/^[\w.-]+\.[a-z]{2,}\//i.test(clean)) {
+    return `https://${clean}`;
+  }
+  return clean;
+};
+
+const isYoutubeUrl = (url = "") =>
+  /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/.test(String(url).trim());
+
+const isInstagramUrl = (url = "") =>
+  /^(https?:\/\/)?(www\.)?instagram\.com\/(reel|p|tv)\/.+/.test(String(url).trim());
+
+const isVideoFileUrl = (url = "") =>
+  /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(String(url).trim());
+
+const getYoutubeId = (url = "") => {
+  const clean = normalizeExternalUrl(url);
+  const matches = [
+    /youtube\.com\/shorts\/([^"&?/\s]{11})/,
+    /youtu\.be\/([^"&?/\s]{11})/,
+    /[?&]v=([^"&?/\s]{11})/,
+    /embed\/([^"&?/\s]{11})/,
+  ];
+  for (const regex of matches) {
+    const match = clean.match(regex);
+    if (match) return match[1];
+  }
+  return null;
+};
+
+const getInstagramEmbedUrl = (url = "") => {
+  const clean = normalizeExternalUrl(url).split("?")[0].replace(/\/$/, "");
+  return clean ? `${clean}/embed/` : "";
+};
+
 function MediaTile({ item, index, total }) {
+  const [isMuted, setIsMuted] = useState(true);
+
   if (!item) return null;
 
   const roundedClass = total === 1 ? "rounded-[1.4rem]" : "rounded-[1rem]";
+  const url = normalizeExternalUrl(item.url);
+  const isInstagram = isInstagramUrl(url);
+  const isYoutube = isYoutubeUrl(url);
+  const isNativeVideo = item.type === "video" || isVideoFileUrl(url);
+  const youtubeId = isYoutube ? getYoutubeId(url) : null;
+  const instagramEmbedUrl = isInstagram ? getInstagramEmbedUrl(url) : "";
 
   return (
     <div className={`group relative overflow-hidden ${roundedClass} bg-[#E7D8CA]/70 dark:bg-[#241716]`}>
-      <img
-        src={item.url}
-        alt={item.alt || getMediaBadge(item.type)}
-        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#140c0a]/80 via-[#140c0a]/20 to-transparent" />
-      <div className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white backdrop-blur-md">
+      {isInstagram ? (
+        instagramEmbedUrl ? (
+          <iframe
+            src={instagramEmbedUrl}
+            className="h-full w-full bg-black"
+            style={{ border: "none" }}
+            scrolling="no"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            title={item.alt || "Instagram post"}
+          />
+        ) : (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-full w-full items-center justify-center bg-black text-xs font-bold uppercase tracking-[0.2em] text-white underline"
+          >
+            View on Instagram
+          </a>
+        )
+      ) : isYoutube && youtubeId ? (
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+          className="h-full w-full"
+          style={{ border: "none" }}
+          allow="autoplay; encrypted-media"
+          title={item.alt || "Guest video"}
+        />
+      ) : isNativeVideo ? (
+        <div className="relative h-full w-full">
+          <video
+            src={url}
+            className="h-full w-full object-cover"
+            autoPlay
+            muted={isMuted}
+            loop
+            playsInline
+            preload="metadata"
+          />
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsMuted((current) => !current);
+            }}
+            className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+            aria-label={isMuted ? "Unmute video" : "Mute video"}
+          >
+            {isMuted ? (
+              <VolumeX size={16} className="text-white" />
+            ) : (
+              <Volume2 size={16} className="text-white" />
+            )}
+          </button>
+        </div>
+      ) : (
+        <img
+          src={url}
+          alt={item.alt || getMediaBadge(item.type)}
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+      )}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#140c0a]/80 via-[#140c0a]/20 to-transparent" />
+      <div className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white backdrop-blur-md">
         {getMediaBadge(item.type)}
       </div>
-      {item.type !== "image" && (
-        <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#3E2723] shadow-lg transition-transform duration-500 group-hover:scale-110">
+      {item.type !== "image" && !isYoutube && !isNativeVideo && (
+        <div className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#3E2723] shadow-lg transition-transform duration-500 group-hover:scale-110">
           <Play size={14} className="ml-0.5" />
         </div>
+      )}
+      {isInstagram && (
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="absolute bottom-3 right-3 z-20 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
+        >
+          Open
+        </a>
       )}
       {index === 3 && total > 4 && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#140c0a]/70 text-xl font-bold text-white">
@@ -135,6 +258,98 @@ function MediaGrid({ items }) {
   );
 }
 
+function StandaloneMedia({ media, alt, className }) {
+  const [isMuted, setIsMuted] = useState(true);
+
+  if (!media) return null;
+
+  const url = normalizeExternalUrl(media.url);
+  const isInstagram = isInstagramUrl(url);
+  const isYoutube = isYoutubeUrl(url);
+  const isNativeVideo = media.type === "video" || isVideoFileUrl(url);
+  const youtubeId = isYoutube ? getYoutubeId(url) : null;
+  const instagramEmbedUrl = isInstagram ? getInstagramEmbedUrl(url) : "";
+
+  if (isInstagram) {
+    return (
+      <div className={`${className} relative flex items-center justify-center overflow-hidden bg-black`}>
+        {instagramEmbedUrl ? (
+          <iframe
+            src={instagramEmbedUrl}
+            className="h-full w-full bg-black"
+            style={{ border: "none" }}
+            scrolling="no"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            title={alt || "Instagram post"}
+          />
+        ) : (
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold uppercase tracking-[0.2em] text-white underline"
+          >
+            View on Instagram
+          </a>
+        )}
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="absolute bottom-3 right-3 z-20 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white"
+        >
+          Open
+        </a>
+      </div>
+    );
+  }
+
+  if (isYoutube && youtubeId) {
+    return (
+      <iframe
+        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+        className={className}
+        style={{ border: "none" }}
+        allow="autoplay; encrypted-media"
+        title={alt || "Guest video"}
+      />
+    );
+  }
+
+  if (isNativeVideo) {
+    return (
+      <div className={`${className} group relative overflow-hidden bg-black`}>
+        <video
+          src={url}
+          className="h-full w-full object-cover"
+          autoPlay
+          muted={isMuted}
+          loop
+          playsInline
+          preload="metadata"
+        />
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setIsMuted((current) => !current);
+          }}
+          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+        >
+          {isMuted ? (
+            <VolumeX size={16} className="text-white" />
+          ) : (
+            <Volume2 size={16} className="text-white" />
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  return <img src={url} alt={alt} className={className} />;
+}
+
 function AuthorRow({ item, light = false }) {
   return (
     <div className={`flex items-center gap-3 border-t pt-4 ${light ? "border-white/20" : "border-[#F0E6DE] dark:border-white/10"}`}>
@@ -187,8 +402,8 @@ function TestimonialCard({ item }) {
         className="relative h-64 overflow-hidden rounded-[2rem] shadow-[0_18px_45px_rgba(72,41,26,0.18)]"
       >
         {img ? (
-          <img
-            src={img.url}
+          <StandaloneMedia
+            media={img}
             alt={item.author}
             className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
           />
@@ -251,8 +466,8 @@ function TestimonialCard({ item }) {
       >
         <div className="relative h-44 overflow-hidden">
           {img ? (
-            <img
-              src={img.url}
+            <StandaloneMedia
+              media={img}
               alt={item.author}
               className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
             />
@@ -414,18 +629,39 @@ export default function CafeTestimonials({
             item.mediaList.forEach(m => {
               const url = m.url || m.imageUrl || m.videoUrl;
               if (url && !mediaUrls.has(url)) {
+                const cleanUrl = normalizeExternalUrl(url);
                 mediaUrls.add(url);
-                allMedia.push({ type: m.type === "VIDEO" ? "video" : "image", url });
+                allMedia.push({
+                  type: isInstagramUrl(cleanUrl)
+                    ? "instagram"
+                      : isYoutubeUrl(cleanUrl)
+                        ? "youtube"
+                      : m.type === "VIDEO" || isVideoFileUrl(cleanUrl)
+                        ? "video"
+                        : "image",
+                  url: cleanUrl,
+                });
               }
             });
           }
           if (item.videoUrl && !mediaUrls.has(item.videoUrl)) {
+            const cleanUrl = normalizeExternalUrl(item.videoUrl);
             mediaUrls.add(item.videoUrl);
-            allMedia.push({ type: "video", url: item.videoUrl });
+            allMedia.push({
+              type: isInstagramUrl(cleanUrl)
+                ? "instagram"
+                : isYoutubeUrl(cleanUrl)
+                  ? "youtube"
+                  : isVideoFileUrl(cleanUrl)
+                    ? "video"
+                  : "video",
+              url: cleanUrl,
+            });
           }
           if (item.imageUrl && !mediaUrls.has(item.imageUrl)) {
+            const cleanUrl = normalizeExternalUrl(item.imageUrl);
             mediaUrls.add(item.imageUrl);
-            allMedia.push({ type: "image", url: item.imageUrl });
+            allMedia.push({ type: "image", url: cleanUrl });
           }
 
           let format = "multi";
@@ -516,8 +752,8 @@ export default function CafeTestimonials({
     }
   };
 
-  const handleSubmit = async () => {
-    if (!isVerified) {
+  const handleSubmit = async ({ verified = isVerified } = {}) => {
+    if (!verified) {
       setShowPopup(true);
       return;
     }
@@ -537,6 +773,12 @@ export default function CafeTestimonials({
 
     if (!feedbackText.trim() && mediaPreviews.length === 0 && !ytLink.trim()) {
       toast.error("Please provide a comment, image, or video link.");
+      return;
+    }
+
+    const videoLink = normalizeExternalUrl(ytLink);
+    if (ytLink.trim() && !isYoutubeUrl(videoLink) && !isInstagramUrl(videoLink)) {
+      toast.error("Please enter a valid YouTube or Instagram link.");
       return;
     }
 
@@ -569,15 +811,56 @@ export default function CafeTestimonials({
         if (cafeType?.id) fd.append("propertyTypeId", String(cafeType.id));
       }
 
-      if (ytLink.trim()) fd.append("videoUrl", ytLink.trim());
+      if (videoLink) fd.append("videoUrl", videoLink);
       mediaPreviews.forEach((m) => fd.append("files", m.file));
       fd.append(
         "mediaType",
-        mediaPreviews.some((m) => m.type === "video") ? "VIDEO" : "IMAGE"
+        videoLink || mediaPreviews.some((m) => m.type === "video") ? "VIDEO" : "IMAGE"
       );
 
       await createGuestExperienceByGuest(fd);
       toast.success("Thank you! Your story has been submitted.");
+
+      const submittedMedia = [
+        ...(videoLink
+          ? [
+              {
+                type: isInstagramUrl(videoLink)
+                  ? "instagram"
+                  : isYoutubeUrl(videoLink)
+                    ? "youtube"
+                    : "video",
+                url: videoLink,
+              },
+            ]
+          : []),
+        ...mediaPreviews.map((m) => ({
+          type: m.type,
+          url: m.url,
+        })),
+      ];
+      const hasDesc = feedbackText.trim().length > 0;
+      setExperiences((prev) => [
+        {
+          id: `local-${Date.now()}`,
+          format:
+            submittedMedia.length === 0
+              ? "content-only"
+              : submittedMedia.length === 1 && !hasDesc
+                ? "image-only"
+                : "split",
+          author: authorName.trim() || "Guest",
+          description: feedbackText.trim(),
+          date: new Date().toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }),
+          media: submittedMedia,
+          title,
+        },
+        ...prev,
+      ]);
 
       setFeedbackText("");
       setMediaPreviews([]);
@@ -849,7 +1132,7 @@ export default function CafeTestimonials({
                     }
                     setIsVerified(true);
                     setShowPopup(false);
-                    handleSubmit();
+                    handleSubmit({ verified: true });
                   }}
                   className="mt-4 w-full rounded-2xl bg-primary py-4 font-bold text-white shadow-lg transition-all hover:bg-primary/90"
                 >

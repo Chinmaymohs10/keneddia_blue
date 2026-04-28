@@ -11,7 +11,6 @@ import {
   User,
   Utensils,
   X,
-  ImageIcon,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,9 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
       .then(([itemsRes, headersRes]) => {
         // Items
         const allItems = itemsRes?.data || [];
-        setMenuItems(allItems.filter((i) => i.isActive !== false));
+        setMenuItems(
+          allItems.filter((i) => i.isActive !== false && i.status !== false),
+        );
 
         // Header
         const allHeaders = headersRes?.data || [];
@@ -89,14 +90,37 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
   }, [propertyId]);
 
   // ── Group menu by category ───────────────────────────────────────────────
+  const getItemVerticalId = (item) =>
+    item.verticalCardResponseDTO?.id ?? item.verticalCardId ?? null;
+
+  const getItemType = (item) => item.type || item.itemType || null;
+
   const groupedMenu = useMemo(() => {
     const map = {};
-    menuItems.forEach((item) => {
-      const catName = item.itemCategory?.categoryName || "Signature";
+
+    const hasVerticalMatches =
+      verticalId &&
+      menuItems.some(
+        (item) => Number(getItemVerticalId(item)) === Number(verticalId),
+      );
+
+    const itemsForMenu = hasVerticalMatches
+      ? menuItems.filter(
+          (item) => Number(getItemVerticalId(item)) === Number(verticalId),
+        )
+      : menuItems;
+
+    itemsForMenu.forEach((item) => {
+      const itemType = getItemType(item);
+      const catName =
+        itemType?.typeName ||
+        item.verticalCardResponseDTO?.verticalName ||
+        "Other";
+      const typeId = itemType?.id ?? null;
       if (!map[catName]) {
         map[catName] = {
           category: catName,
-          categoryId: item.itemCategory?.id || null,
+          itemTypeId: typeId,
           categoryImage: item.media?.url || item.image?.url || "",
           items: [],
         };
@@ -109,10 +133,15 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
         foodType: item.foodType,
         price: item.price ? `₹${item.price}` : null,
         isSpicy: item.isSpicy,
+        likeCount: item.likeCount || 0,
+        typeId,
+        typeName: itemType?.typeName || "",
+        propertyId: item.propertyId,
+        status: item.status,
       });
     });
     return Object.values(map);
-  }, [menuItems]);
+  }, [menuItems, verticalId]);
 
   useEffect(() => {
     if (groupedMenu.length > 0 && activeTab >= groupedMenu.length) {
@@ -208,24 +237,34 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
   const getDisplayThumbs = (section) => {
     if (!section) return [];
 
-    const sectionTypeId = section.categoryId;
+    const sectionTypeId = section.itemTypeId ?? section.items?.[0]?.typeId ?? null;
     const itemCount = section.items?.length || 0;
     const thumbsNeeded = Math.ceil(itemCount / 4); // Cafe uses 4 per thumb grid
 
     // Filter thumbnails by propertyId (Cafes don't have verticals)
+    const verticalThumbs = verticalId
+      ? fetchedThumbnails.filter(
+          (t) =>
+            Number(t.verticalCardResponseDTO?.id ?? t.verticalCardId) ===
+            Number(verticalId),
+        )
+      : [];
+
     const propertyThumbs = fetchedThumbnails.filter(
-      (t) => Number(t.propertyId) === Number(propertyId),
+      (t) => Number(t.propertyId ?? t.propertyResponseDTO?.id) === Number(propertyId),
     );
 
+    const scopedThumbs = verticalThumbs.length > 0 ? verticalThumbs : propertyThumbs;
+
     // Nothing for this property — show nothing
-    if (!propertyThumbs.length) return [];
+    if (!scopedThumbs.length) return [];
 
     // Prefer type-specific match within the property
     const typeMatched = sectionTypeId !== null
-      ? propertyThumbs.filter((t) => Number(t.itemTypeId) === Number(sectionTypeId))
+      ? scopedThumbs.filter((t) => Number(t.itemTypeId) === Number(sectionTypeId))
       : [];
 
-    const pool = typeMatched.length > 0 ? typeMatched : propertyThumbs;
+    const pool = typeMatched.length > 0 ? typeMatched : scopedThumbs;
 
     // Cycle through pool to fill thumbsNeeded slots
     const result = [];

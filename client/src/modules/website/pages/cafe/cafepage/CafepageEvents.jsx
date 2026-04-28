@@ -85,11 +85,17 @@ function ShowcaseCard({ item }) {
         <p className="mt-2 line-clamp-2 text-[11px] italic text-white/65">
           {item.description}
         </p>
-        <Link to={linkPath} className="mt-4">
-          <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
-            Explore <ExternalLink className="ml-2 h-3 w-3" />
-          </Button>
-        </Link>
+        {item.ctaText && (
+          <Link
+            to={item.ctaLink || linkPath}
+            className="mt-4"
+            {...(item.ctaLink ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          >
+            <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+              {item.ctaText} <ExternalLink className="ml-2 h-3 w-3" />
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -434,6 +440,8 @@ export default function CafepageEvents({
           date: item?.eventDate ? new Date(item.eventDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Upcoming",
           location: item?.locationName || "Cafe Venue",
           detailPath: item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`,
+          ctaText: item?.ctaText || "",
+          ctaLink: item?.ctaLink || "",
         })).filter(i => i.image);
 
         const now = Date.now();
@@ -462,6 +470,8 @@ export default function CafepageEvents({
           date: offer.expiresAt ? `Valid until ${new Date(offer.expiresAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}` : "Limited Time",
           location: offer.locationName || "All Outlets",
           slug: offer.slug || `offer-${offer.id}`,
+          ctaText: offer.ctaText || "",
+          ctaLink: offer.ctaLink || "",
         })).filter(i => i.image);
 
         const rawBookings = bookingsRes?.data || bookingsRes || [];
