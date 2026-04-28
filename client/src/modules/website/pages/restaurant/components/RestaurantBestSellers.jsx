@@ -98,6 +98,8 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
     mobileNumber: "",
     description: "",
   });
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [headerData, setHeaderData] = useState(null);
   const [resolvedTypeId, setResolvedTypeId] = useState(restaurantTypeId);
 
@@ -164,11 +166,27 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
 
   const handleLikeSubmit = async () => {
     if (!likeModal.item) return;
+    const trimmedName = likeForm.name.trim();
+    if (!/^[A-Za-z ]{2,50}$/.test(trimmedName)) {
+      setNameError("Please enter a valid name (2-50 letters).");
+      return;
+    }
+
+    const trimmedPhone = likeForm.mobileNumber.trim();
+    const phoneDigits = trimmedPhone.replace(/\D/g, "");
+
+    if (!/^\d{10}$/.test(phoneDigits)) {
+      setPhoneError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    setNameError("");
+    setPhoneError("");
     setLikeSubmitting(true);
     try {
       const res = await addItemLike(likeModal.item.id, {
-        name: likeForm.name,
-        mobileNumber: likeForm.mobileNumber,
+        name: trimmedName,
+        mobileNumber: phoneDigits,
         description: likeForm.description || "Great taste!",
       });
       const updated = res?.data || res;
@@ -195,6 +213,8 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
   const closeLikeModal = () => {
     setLikeModal({ isOpen: false, item: null });
     setLikeForm({ name: "", mobileNumber: "", description: "" });
+    setNameError("");
+    setPhoneError("");
     setLikeSubmitting(false);
   };
 
@@ -374,19 +394,33 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
                 <Input
                   placeholder="Your Name"
                   value={likeForm.name}
-                  onChange={(e) =>
-                    setLikeForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    setLikeForm((prev) => ({ ...prev, name: e.target.value }));
+                    if (nameError) {
+                      setNameError("");
+                    }
+                  }}
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
+                {nameError && (
+                  <p className="text-xs text-red-500 px-1">{nameError}</p>
+                )}
                 <Input
                   placeholder="Phone Number"
                   value={likeForm.mobileNumber}
-                  onChange={(e) =>
-                    setLikeForm((prev) => ({ ...prev, mobileNumber: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setLikeForm((prev) => ({ ...prev, mobileNumber: digitsOnly }));
+                    if (phoneError) {
+                      setPhoneError("");
+                    }
+                  }}
+                  maxLength={10}
                   className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
                 />
+                {phoneError && (
+                  <p className="text-xs text-red-500 px-1">{phoneError}</p>
+                )}
                 <Input
                   placeholder="Leave a comment (optional)"
                   value={likeForm.description}
@@ -397,7 +431,7 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
                 />
 
                 <Button
-                  disabled={!likeForm.name || !likeForm.mobileNumber || likeSubmitting}
+                  disabled={!/^[A-Za-z ]{2,50}$/.test(likeForm.name.trim()) || !/^\d{10}$/.test(likeForm.mobileNumber) || likeSubmitting}
                   onClick={handleLikeSubmit}
                   className="w-full h-14 bg-primary text-white rounded-2xl font-black uppercase shadow-lg hover:bg-primary/90 transition-all active:scale-95"
                 >

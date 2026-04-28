@@ -99,6 +99,9 @@ function EventCard({ event, index }) {
   const TARGET_RATIO = 1080 / 1920;
   const showFullMedia =
     naturalRatio === null || naturalRatio <= TARGET_RATIO + 0.1;
+  const ctaLabel = event.ctaText?.trim() || "";
+  const ctaTarget = event.ctaLink?.trim() || event.detailPath;
+  const ctaExternal = Boolean(event.ctaLink?.trim());
 
   const handleImageLoad = (e) => {
     const { naturalWidth, naturalHeight } = e.currentTarget;
@@ -202,11 +205,18 @@ aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card 
                 </p>
               ) : null}
             </div>
-            <Link to={event.detailPath}>
-              <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90 cursor-pointer">
-                View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
-              </Button>
-            </Link>
+            {ctaLabel && (
+              <Link
+                to={ctaTarget}
+                {...(ctaExternal
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+              >
+                <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-primary/90 cursor-pointer">
+                  {ctaLabel} <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -285,11 +295,18 @@ aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl border bg-card 
             </p>
 
             <div className="mt-auto border-t border-muted pt-4">
-              <Link to={event.detailPath}>
-                <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary/90">
-                  View Event <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                </Button>
-              </Link>
+              {ctaLabel && (
+                <Link
+                  to={ctaTarget}
+                  {...(ctaExternal
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  <Button className="h-auto w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary/90">
+                    {ctaLabel} <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </>
@@ -400,6 +417,8 @@ export default function EventsSchedule({
               date: formatDate(item?.eventDate),
               location: item?.locationName || "Restaurant Venue",
               detailPath,
+              ctaText: item?.ctaText || "",
+              ctaLink: item?.ctaLink || "",
               media: {
                 type: media?.type || "IMAGE",
                 src: media?.url || "",

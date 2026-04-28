@@ -872,18 +872,16 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
                   </div>
                 )}
 
-                {/* <Input
-                  placeholder={
-                    bookingModal.type === "like"
-                      ? "Leave a comment"
-                      : "Special requests"
-                  }
-                  value={likeForm.description}
-                  onChange={(e) =>
-                    setLikeForm((f) => ({ ...f, description: e.target.value }))
-                  }
-                  className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
-                /> */}
+                {bookingModal.type === "like" && (
+                  <Input
+                    placeholder="Leave a comment (optional)"
+                    value={likeForm.description}
+                    onChange={(e) =>
+                      setLikeForm((f) => ({ ...f, description: e.target.value }))
+                    }
+                    className="h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border-none shadow-sm"
+                  />
+                )}
 
                 <Button
                   disabled={likeSubmitting}
