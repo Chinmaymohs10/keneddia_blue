@@ -516,16 +516,16 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
         {/* Section header */}
         <div className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="mb-4 flex items-center gap-3">
+            {/* <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-10 opacity-40" style={{ background: accent.dot }} />
               <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: accent.color }}>
                 Full Collection
               </span>
-            </div>
+            </div> */}
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
               All {meta.typeKey} <em className="not-italic" style={{ color: accent.color }}>Across Every Brand</em>
             </h2>
-            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filteredItems.length} expressions available at Kennedia Blu</p>
+            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filteredItems.length} items available</p>
           </div>
 
           <div className="relative min-w-[280px]">
