@@ -47,16 +47,12 @@ const WINES = [
     name: "Château Margaux",
     subtitle: "Premier Grand Cru Classé",
     type: "Red",
-    grape: "Cabernet Sauvignon",
-    origin: "Bordeaux, France",
-    vintage: "2018",
-    abv: "13.5%",
-    rating: 4.9,
+
+
     tasting: "Opulent dark berry, cedar, violet, and perfectly polished tannins with extraordinary length.",
     image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85",
-    pairing: "Grilled Ribeye, Lamb",
-    servingTemp: "18°C",
-    body: "Full Body"
+
+
   },
   {
     id: 2,
@@ -65,16 +61,12 @@ const WINES = [
     name: "Veuve Clicquot",
     subtitle: "Yellow Label Brut",
     type: "Champagne",
-    grape: "Pinot Noir & Chardonnay",
-    origin: "Reims, France",
-    vintage: "NV",
-    abv: "12%",
-    rating: 4.8,
+
+
     tasting: "Toasty brioche, fresh apple and a persistent, pinpoint mousse that lingers beautifully.",
     image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85",
-    pairing: "Oysters, Fried Chicken",
-    servingTemp: "8°C",
-    body: "Light & Crisp"
+
+
   },
   {
     id: 3,
@@ -83,16 +75,11 @@ const WINES = [
     name: "Cloudy Bay",
     subtitle: "Sauvignon Blanc",
     type: "White",
-    grape: "Sauvignon Blanc",
-    origin: "Marlborough, NZ",
-    vintage: "2022",
-    abv: "13%",
-    rating: 4.6,
+
     tasting: "Zesty passionfruit, fresh herbs, citrus peel on a crisp mineral-driven finish.",
     image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=85",
-    pairing: "Goat Cheese, Seafood",
-    servingTemp: "10°C",
-    body: "Medium Body"
+
+
   },
   {
     id: 4,
@@ -101,16 +88,10 @@ const WINES = [
     name: "Whispering Angel",
     subtitle: "Côtes de Provence",
     type: "Rosé",
-    grape: "Grenache & Cinsault",
-    origin: "Provence, France",
-    vintage: "2023",
-    abv: "13%",
-    rating: 4.5,
+
     tasting: "Pale and elegant — wild strawberry, white peach, bone-dry with mineral freshness.",
     image: "https://images.unsplash.com/photo-1547595628-c61a29f496f0?w=600&q=85",
-    pairing: "Salads, Grilled Poultry",
-    servingTemp: "12°C",
-    body: "Light Body"
+
   },
   {
     id: 5,
@@ -119,16 +100,9 @@ const WINES = [
     name: "Antinori Tignanello",
     subtitle: "Super Tuscan Red",
     type: "Red",
-    grape: "Sangiovese & Cabernet",
-    origin: "Tuscany, Italy",
-    vintage: "2019",
-    abv: "14%",
-    rating: 4.7,
+
     tasting: "Dark plum, tobacco, dried violet and characteristic earthy Sangiovese depth.",
     image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85",
-    pairing: "Osso Buco, Hard Cheeses",
-    servingTemp: "18°C",
-    body: "Full Body"
   },
   {
     id: 6,
@@ -137,16 +111,10 @@ const WINES = [
     name: "Moët & Chandon",
     subtitle: "Impérial Brut",
     type: "Champagne",
-    grape: "Pinot Noir, Chardonnay",
-    origin: "Épernay, France",
-    vintage: "NV",
-    abv: "12%",
-    rating: 4.7,
     tasting: "Green apple, white florals and brioche note with refined, silky effervescence.",
     image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85",
-    pairing: "Sushi, White Fruit Tarts",
-    servingTemp: "9°C",
-    body: "Medium Body"
+
+
   },
   {
     id: 7,
@@ -156,15 +124,8 @@ const WINES = [
     subtitle: "Special Selection Cabernet",
     type: "Red",
     grape: "Cabernet Sauvignon",
-    origin: "Napa Valley, USA",
-    vintage: "2020",
-    abv: "14.5%",
-    rating: 4.9,
-    tasting: "Plush blackcurrant, mocha, cassis, and a velvety, seamlessly long finish.",
     image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85",
-    pairing: "Steak House Cuts",
-    servingTemp: "18°C",
-    body: "Extra Full"
+
   },
   {
     id: 8,
@@ -173,16 +134,8 @@ const WINES = [
     name: "Kim Crawford",
     subtitle: "Reserve Sauvignon Blanc",
     type: "White",
-    grape: "Sauvignon Blanc",
-    origin: "Marlborough, NZ",
-    vintage: "2023",
-    abv: "12.5%",
-    rating: 4.4,
     tasting: "Vibrant grapefruit, tropical fruit notes and a lively, refreshing clean finish.",
     image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=85",
-    pairing: "Asparagus, Fresh Prawns",
-    servingTemp: "8°C",
-    body: "Light Body"
   }
 ];
 
@@ -209,20 +162,7 @@ function WineImage({ src, alt, className = "" }) {
 function StarRating({ rating }) {
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={9}
-          className={
-            s <= Math.round(rating)
-              ? "fill-amber-500 text-amber-500"
-              : "text-stone-300 dark:text-zinc-700"
-          }
-        />
-      ))}
-      <span className="ml-1 text-[11px] font-bold tabular-nums text-amber-600 dark:text-amber-400">
-        {rating}
-      </span>
+
     </div>
   );
 }
@@ -421,9 +361,7 @@ function WineCard({ wine, index }) {
           {/* Middle: meta badges */}
           <div className="mb-4 flex justify-center">
             <div className="flex flex-wrap justify-center gap-2">
-              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
-                {wine.vintage} · {wine.abv} ABV
-              </span>
+
               <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
                 {wine.body}
               </span>

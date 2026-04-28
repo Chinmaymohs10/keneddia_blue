@@ -94,6 +94,21 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
     phone: "",
     description: "",
   });
+  const [likeFormErrors, setLikeFormErrors] = useState({
+    phone: "",
+  });
+
+  const handlePhoneChange = (value) => {
+    const sanitized = value.replace(/\D/g, "").slice(0, 10);
+    setLikeForm((f) => ({ ...f, phone: sanitized }));
+    setLikeFormErrors((errors) => ({
+      ...errors,
+      phone:
+        sanitized.length > 0 && sanitized.length < 10
+          ? "Enter a 10 digit phone number."
+          : "",
+    }));
+  };
   const [headerData, setHeaderData] = useState(null);
 
   const [resolvedTypeId, setResolvedTypeId] = useState(cafeTypeId);
@@ -193,6 +208,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
     } finally {
       setLikeModal({ isOpen: false, item: null });
       setLikeForm({ name: "", phone: "", description: "" });
+      setLikeFormErrors({ phone: "" });
       setLikeSubmitting(false);
     }
   };
@@ -200,6 +216,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
   const closeLikeModal = () => {
     setLikeModal({ isOpen: false, item: null });
     setLikeForm({ name: "", phone: "", description: "" });
+    setLikeFormErrors({ phone: "" });
     setLikeSubmitting(false);
   };
 
@@ -382,14 +399,22 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
                   }
                   className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
                 />
-                <Input
-                  placeholder="Phone Number"
-                  value={likeForm.phone}
-                  onChange={(e) =>
-                    setLikeForm((f) => ({ ...f, phone: e.target.value }))
-                  }
-                  className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
-                />
+                <div>
+                  <Input
+                    placeholder="Phone Number"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    value={likeForm.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    className="h-14 rounded-2xl border-none bg-zinc-50 dark:bg-zinc-800/50 shadow-sm"
+                  />
+                  {likeFormErrors.phone && (
+                    <p className="-mt-0 px-1 pt-1 text-xs font-medium text-red-500">
+                      {likeFormErrors.phone}
+                    </p>
+                  )}
+                </div>
                 <Input
                   placeholder="Leave a comment"
                   value={likeForm.description}
@@ -400,9 +425,9 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
                 />
 
                 <Button
-                  disabled={likeSubmitting}
+                  disabled={likeSubmitting || !!likeFormErrors.phone || likeForm.phone.length < 10}
                   onClick={handleLikeSubmit}
-                  className="h-14 w-full bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95 rounded-2xl"
+                  className="h-14 w-full bg-primary font-black uppercase text-white shadow-lg transition-all hover:bg-primary/90 active:scale-95 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {likeSubmitting ? (
                     <Loader2 size={18} className="mx-auto animate-spin" />

@@ -199,7 +199,7 @@ export default function CafeHomepage() {
 
   return (
     <div
-      className="min-h-screen bg-background [scrollbar-gutter:stable]"
+      className="min-h-screen bg-background [scrollbar-gutter:stable] overflow-x-hidden"
       data-ssr-hero={ssr?.heroSlides?.length ?? 0}
       data-ssr-properties={ssr?.cafeProperties?.length ?? 0}
     >
@@ -273,17 +273,8 @@ export default function CafeHomepage() {
         <div id="quick-booking" className="relative z-30 shadow-sm">
           <CafeQuickBooking />
         </div>
-        <div className="h-10" /> {/* Spacer to match gap patterns */}
-        <div className="dark:hidden">
-          <div className="h-px bg-[#E5E5E2]" />
-          <div className="h-4 bg-linear-to-b from-white to-[#F7F7F5]" />
-        </div>
         <div className="relative z-[9] shadow-sm">
           <CafeCoffeeStory initialData={ssr?.coffeeStory} />
-        </div>
-        <div className="dark:hidden">
-          <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-white" />
-          <div className="h-px bg-[#E5E5E2]" />
         </div>
         <div id="cafe-properties" className="relative z-[8] shadow-sm">
           <CafeProperties
@@ -291,26 +282,14 @@ export default function CafeHomepage() {
             initialCafes={ssr?.cafeProperties}
           />
         </div>
-        <div className="dark:hidden">
-          <div className="h-px bg-[#E3E3DF]" />
-          <div className="h-4 bg-linear-to-b from-white to-[#EFEFEB]" />
-        </div>
         <div className="relative z-[7] shadow-sm">
           <CafeBestSellers
             initialItems={ssr?.bestSellers}
             cafeTypeId={ssr?.cafeTypeId}
           />
         </div>
-        <div className="dark:hidden">
-          <div className="h-4 bg-linear-to-b from-[#EFEFEB] to-white" />
-          <div className="h-px bg-[#E3E3DF]" />
-        </div>
         <div className="relative z-[6] shadow-sm">
           <CafeAbout initialSections={ssr?.aboutSections} />
-        </div>
-        <div className="dark:hidden">
-          <div className="h-px bg-[#E5E5E2]" />
-          <div className="h-4 bg-linear-to-b from-white to-[#F5F5F3]" />
         </div>
         <div className="relative z-[5] shadow-sm">
           <CafeShowcaseSlider
@@ -320,16 +299,8 @@ export default function CafeHomepage() {
             initialCafeTypeId={ssr?.cafeTypeId}
           />
         </div>
-        <div className="dark:hidden">
-          <div className="h-px bg-[#E1E1DD]" />
-          <div className="h-4 bg-linear-to-b from-[#F5F5F3] to-[#ECECE8]" />
-        </div>
         <div className="relative z-[4] shadow-sm">
           <CafeNewsSection initialNews={ssr?.cafeNews} />
-        </div>
-        <div className="dark:hidden">
-          <div className="h-px bg-[#E1E1DD]" />
-          <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F8F8F6]" />
         </div>
         <div className="relative z-[3] shadow-sm">
           <CafeGuestReviews

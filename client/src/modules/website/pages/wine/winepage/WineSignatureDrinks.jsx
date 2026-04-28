@@ -20,10 +20,10 @@ const WHATSAPP_NUMBER = "919999999999";
 
 // ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
 const TYPE_ACCENTS = {
-  Whiskey:   { color: "#C9922A", light: "#FDF9F2", dark: "#3D2B08", dot: "#D4A017", bg: "#FDF9F2" },
-  Wine:      { color: "#8B1A2A", light: "#FDF2F4", dark: "#3D0A10", dot: "#C4485A", bg: "#FDF2F4" },
-  Beers:     { color: "#B8860B", light: "#FBF7ED", dark: "#3A2C08", dot: "#D4B035", bg: "#FBF7ED" },
-  Tastings:  { color: "#556B5E", light: "#F2F7F4", dark: "#1A241F", dot: "#7AA088", bg: "#F2F7F4" },
+  Whiskey: { color: "#C9922A", light: "#FDF9F2", dark: "#3D2B08", dot: "#D4A017", bg: "#FDF9F2" },
+  Wine: { color: "#8B1A2A", light: "#FDF2F4", dark: "#3D0A10", dot: "#C4485A", bg: "#FDF2F4" },
+  Beers: { color: "#B8860B", light: "#FBF7ED", dark: "#3A2C08", dot: "#D4B035", bg: "#FBF7ED" },
+  Tastings: { color: "#556B5E", light: "#F2F7F4", dark: "#1A241F", dot: "#7AA088", bg: "#F2F7F4" },
 };
 
 // ─── DATA ADAPTATION ──────────────────────────────────────────────────────────
@@ -31,16 +31,16 @@ const DRINK_CATEGORIES = ["All Collections", "Whiskey", "Wine", "Beers", "Tastin
 
 const DRINKS_DATA = [
   // --- Whiskey ---
-  { id: 101, property: "Kennedia Blu", location: "Ghaziabad", name: "Glenfiddich", subtitle: "12 Year Old Single Malt", type: "Whiskey", tag: "Single Malt", origin: "Speyside, Scotland", abv: "40%", rating: 4.8, tasting: "Fresh pear, vanilla oak and a long clean finish with hints of spice.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", pairing: "Dark Chocolate", servingTemp: "neat", body: "Medium Body" },
-  { id: 102, property: "Kennedia Blu", location: "Ghaziabad", name: "Johnnie Walker", subtitle: "Black Label Blended Scotch", type: "Whiskey", tag: "Blended Scotch", origin: "Scotland", abv: "40%", rating: 4.7, tasting: "Dark fruit and vanilla with a rich signature smokiness and malty depth.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85", pairing: "Smoked Meat", servingTemp: "Rocks", body: "Full Body" },
-  { id: 103, property: "Kennedia Blu", location: "Ghaziabad", name: "Maker's Mark", subtitle: "Bourbon Whiskey", type: "Whiskey", tag: "Bourbon", origin: "Kentucky, USA", abv: "45%", rating: 4.6, tasting: "Caramel, red winter wheat softness and toasted oak with sweet notes.", image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?w=600&q=85", pairing: "BBQ, Pork", servingTemp: "Neat", body: "Full Body" },
+  { id: 101, property: "Kennedia Blu", subtitle: "12 Year Old Single Malt", type: "Whiskey", tag: "Single Malt", rating: 4.8, tasting: "Fresh pear, vanilla oak and a long clean finish with hints of spice.", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85" },
+  { id: 102, property: "Kennedia Blu", subtitle: "Black Label Blended Scotch", type: "Whiskey", tag: "Blended Scotch", rating: 4.7, tasting: "Dark fruit and vanilla with a rich signature smokiness and malty depth.", image: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=85" },
+  { id: 103, property: "Kennedia Blu", subtitle: "Bourbon Whiskey", type: "Whiskey", tag: "Bourbon", rating: 4.6, tasting: "Caramel, red winter wheat softness and toasted oak with sweet notes.", image: "https://images.unsplash.com/photo-1602523961358-f9f03dd557db?w=600&q=85" },
   // --- Wine ---
-  { id: 201, property: "Kennedia Blu", location: "Ghaziabad", name: "Château Margaux", subtitle: "Premier Grand Cru Classé", type: "Wine", tag: "Red Bordeaux", origin: "Bordeaux, France", abv: "13.5%", rating: 4.9, tasting: "Dark berry, cedar, violet and perfectly polished tannins with long finish.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", pairing: "Lamb, Steak", servingTemp: "18°C", body: "Full Body" },
-  { id: 202, property: "Kennedia Blu", location: "Ghaziabad", name: "Cloudy Bay", subtitle: "Sauvignon Blanc", type: "Wine", tag: "White Wine", origin: "Marlborough, NZ", abv: "13%", rating: 4.5, tasting: "Zesty passionfruit, citrus and crisp mineral finish with lingering freshness.", image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=85", pairing: "Seafood, Salads", servingTemp: "10°C", body: "Light Body" },
-  { id: 203, property: "Kennedia Blu", location: "Ghaziabad", name: "Veuve Clicquot", subtitle: "Yellow Label Brut", type: "Wine", tag: "Champagne", origin: "Reims, France", abv: "12%", rating: 4.8, tasting: "Toasty brioche, fresh apple and a persistent mousse with refined elegance.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85", pairing: "Oysters, Sushi", servingTemp: "8°C", body: "Medium Body" },
+  { id: 201, property: "Kennedia Blu", subtitle: "Premier Grand Cru Classé", type: "Wine", tag: "Red Bordeaux", rating: 4.9, tasting: "Dark berry, cedar, violet and perfectly polished tannins with long finish.", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85" },
+  { id: 202, property: "Kennedia Blu", subtitle: "Sauvignon Blanc", type: "Wine", tag: "White Wine", rating: 4.5, tasting: "Zesty passionfruit, citrus and crisp mineral finish with lingering freshness.", image: "https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=85" },
+  { id: 203, property: "Kennedia Blu", subtitle: "Yellow Label Brut", type: "Wine", tag: "Champagne", rating: 4.8, tasting: "Toasty brioche, fresh apple and a persistent mousse with refined elegance.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85" },
   // --- Beers ---
-  { id: 301, property: "Kennedia Blu", location: "Ghaziabad", name: "Weihenstephaner", subtitle: "Hefeweissbier", type: "Beers", tag: "Wheat Beer", origin: "Bavaria, Germany", abv: "5.4%", rating: 4.7, tasting: "Banana, clove and a beautifully hazy golden body with creamy head.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", pairing: "Pretzels, Sausages", servingTemp: "6°C", body: "Medium Body" },
-  { id: 302, property: "Kennedia Blu", location: "Ghaziabad", name: "Guinness", subtitle: "Draught Stout", type: "Beers", tag: "Irish Stout", origin: "Dublin, Ireland", abv: "4.2%", rating: 4.9, tasting: "Silky nitrogen cascade with roasted coffee and chocolate undertones.", image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=85", pairing: "Oysters, Pot Pie", servingTemp: "6°C", body: "Full Body" },
+  { id: 301, property: "Kennedia Blu", subtitle: "Hefeweissbier", type: "Beers", tag: "Wheat Beer", origin: "Bavaria, Germany", abv: "5.4%", rating: 4.7, tasting: "Banana, clove and a beautifully hazy golden body with creamy head.", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85" },
+  { id: 302, property: "Kennedia Blu", subtitle: "Draught Stout", type: "Beers", tag: "Irish Stout", origin: "Dublin, Ireland", abv: "4.2%", rating: 4.9, tasting: "Silky nitrogen cascade with roasted coffee and chocolate undertones.", image: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=600&q=85" },
   // --- Tastings ---
   { id: 401, property: "Kennedia Blu", location: "Ghaziabad", name: "Whiskey Master Class", subtitle: "House Experience", type: "Tastings", tag: "Event", origin: "In-House", abv: "Varies", rating: 5.0, tasting: "Five single malts, one sommelier, one hour of sensory discovery.", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", pairing: "Matched Bites", servingTemp: "Mixed", body: "Educational" },
 ];
@@ -158,7 +158,6 @@ function DrinkCard({ drink, index }) {
 
             <p className="mx-auto mb-5 max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">“{drink.tasting}”</p>
           </div>
-
 
         </div>
       </div>
