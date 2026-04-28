@@ -126,7 +126,8 @@ function DrinkCard({ drink, index }) {
   const handleExplore = () => {
     const citySlug = drink.location?.toLowerCase() || "ghaziabad";
     const propSlug = generateSlug(drink.property);
-    navigate(`/wine-detail/${citySlug}/${propSlug}`);
+    const typeSlug = drink.type?.toLowerCase() || "wine";
+    navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}`);
   };
 
   return (
