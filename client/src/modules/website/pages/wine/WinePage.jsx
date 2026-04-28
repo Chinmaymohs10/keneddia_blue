@@ -12,6 +12,7 @@ import WineGalleryPage from "./winepage/WineGalleryPage";
 import WineReservationForm from "./winepage/WineReservationForm";
 import WineTopBrands from "./components/WineTopBrands";
 import { siteContent } from "@/data/siteContent";
+import WineWhatsAppButton from "./components/WineWhatsAppButton";
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -108,7 +109,7 @@ export default function WinePage() {
             <div className="dark:hidden">
               <div className="h-px bg-[#DCD4CB]/40" />
             </div>
-            <WineTopBrands />
+            <WineTopBrands clickable={true} />
           </div>
 
           {/* Gallery */}
@@ -123,6 +124,8 @@ export default function WinePage() {
         <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
           <Footer />
         </div>
+
+        <WineWhatsAppButton />
       </div>
     </>
   );

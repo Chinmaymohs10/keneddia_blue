@@ -679,7 +679,7 @@ export default function WineTestimonials() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-xs font-bold transition-all hover:bg-white/10 cursor-pointer"
                       >
                         {mediaUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
                         Add Media
@@ -701,7 +701,7 @@ export default function WineTestimonials() {
                           )}
                           <button
                             onClick={() => setMediaPreviews((prev) => prev.filter((_, idx) => idx !== i))}
-                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white"
+                            className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white cursor-pointer"
                           >
                             <X size={8} />
                           </button>
@@ -713,7 +713,7 @@ export default function WineTestimonials() {
                   <button
                     disabled={isSubmitting || (!feedbackText && mediaPreviews.length === 0 && !ytLink.trim())}
                     onClick={handleSubmit}
-                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50"
+                    className="group/btn relative w-full overflow-hidden rounded-2xl bg-[#D4A373] py-4 text-sm font-bold text-[#3E2723] transition-all hover:bg-[#C29262] active:scale-[0.98] disabled:grayscale disabled:opacity-50 cursor-pointer"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -744,7 +744,7 @@ export default function WineTestimonials() {
             >
               <div className="mb-8 flex items-center justify-between">
                 <h3 className="text-2xl font-serif">Guest Details</h3>
-                <button onClick={() => setShowPopup(false)} className="transition-transform hover:rotate-90">
+                <button onClick={() => setShowPopup(false)} className="transition-transform hover:rotate-90 cursor-pointer">
                   <X size={24} />
                 </button>
               </div>
@@ -773,7 +773,7 @@ export default function WineTestimonials() {
                     setShowPopup(false);
                     handleSubmit();
                   }}
-                  className="mt-4 w-full rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54]"
+                  className="mt-4 w-full rounded-2xl bg-[#3E2723] py-4 font-bold text-white shadow-lg transition-all hover:bg-[#5D4037] dark:bg-[#8D5C42] dark:hover:bg-[#A06F54] cursor-pointer"
                 >
                   Verify & Post Review
                 </button>

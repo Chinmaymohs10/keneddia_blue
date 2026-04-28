@@ -334,12 +334,14 @@ function WineCard({ wine, index }) {
             </button>
 
             {/* Wine name */}
-            <h3 className="font-serif text-[1.25rem] leading-tight text-stone-950 dark:text-stone-100">
-              {wine.name}
-            </h3>
-            <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
-              {wine.subtitle}
-            </p>
+            <div className="flex flex-col items-center gap-1">
+              <h3 className="font-serif text-[1.25rem] leading-tight text-stone-950 dark:text-stone-100">
+                {wine.name}
+              </h3>
+              <p className="text-[11px] font-medium italic text-stone-400 dark:text-stone-500">
+                {wine.subtitle}
+              </p>
+            </div>
           </div>
 
           {/* Type badge */}
@@ -356,9 +358,8 @@ function WineCard({ wine, index }) {
             </span>
           </div>
 
-          {/* Middle: rating + meta badges */}
-          <div className="mb-4 flex flex-col items-center gap-2">
-            <StarRating rating={wine.rating} />
+          {/* Middle: meta badges */}
+          <div className="mb-4 flex justify-center">
             <div className="flex flex-wrap justify-center gap-2">
 
               <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-400 dark:bg-white/5 dark:text-stone-500">
@@ -372,8 +373,6 @@ function WineCard({ wine, index }) {
             <p className="mx-auto max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">
               &ldquo;{wine.tasting}&rdquo;
             </p>
-
-
           </div>
         </div>
       </div>
@@ -578,9 +577,6 @@ function WineCarousel({ wines }) {
 
         {/* Count + arrows */}
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold tabular-nums text-stone-400 dark:text-stone-600">
-            {activeIndex + 1} / {wines.length}
-          </span>
           <div className="flex gap-2">
             <motion.button
               type="button"
@@ -729,12 +725,12 @@ export default function WineBestSellers() {
               />
 
               {/* Active count pill */}
-              <div className="flex h-9 items-center rounded-xl border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.07] px-3.5 text-[12px] font-black text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/[0.08] dark:text-[#C8956A]">
+              {/* <div className="flex h-9 items-center rounded-xl border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.07] px-3.5 text-[12px] font-black text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/[0.08] dark:text-[#C8956A]">
                 {filtered.length}&nbsp;
                 <span className="font-normal text-[#8B1A2A]/60 dark:text-[#C8956A]/60">
                   wine{filtered.length !== 1 ? "s" : ""}
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -753,8 +749,6 @@ export default function WineBestSellers() {
         </div>
       </section>
 
-      {/* Fixed common WhatsApp — floats across the entire homepage */}
-      <CommonWhatsAppButton />
     </>
   );
 }

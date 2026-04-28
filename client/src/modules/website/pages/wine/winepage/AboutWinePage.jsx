@@ -97,7 +97,7 @@ export default function AboutWinePage() {
                     </h4>
                     <a
                       href="tel:+919876543210"
-                      className="block font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white"
+                      className="block font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white cursor-pointer"
                     >
                       +91 98765 43210
                     </a>
@@ -114,7 +114,7 @@ export default function AboutWinePage() {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`h-1 rounded-full transition-all duration-300 ${
+                  className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
                     idx === currentIndex
                       ? "w-6 bg-primary"
                       : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"

@@ -141,7 +141,7 @@ export default function WineBanner() {
                 href={mapsLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center gap-2 rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black transition-all hover:scale-105 hover:bg-white"
+                className="group flex items-center gap-2 rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black transition-all hover:scale-105 hover:bg-white cursor-pointer"
               >
                 Navigate to Estate <Navigation className="h-3 w-3 transition-transform group-hover:translate-x-1" />
               </a>
@@ -156,7 +156,7 @@ export default function WineBanner() {
           <button
             key={idx}
             onClick={() => setActiveIndex(idx)}
-            className={`h-1 rounded-full transition-all duration-500 ${
+            className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${
               activeIndex === idx ? "w-12 bg-[#D4AF37]" : "w-6 bg-white/20 hover:bg-white/40"
             }`}
           />

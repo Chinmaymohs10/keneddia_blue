@@ -327,7 +327,7 @@ export default function WineSubCategories() {
                   key={card.id}
                   type="button"
                   onClick={() => setActiveIndex(index)}
-                  className="group flex items-center gap-4 text-left"
+                  className="group flex items-center gap-4 text-left cursor-pointer"
                 >
                   <span
                     className={`h-px w-8 transition-all ${activeIndex === index ? "bg-amber-800" : "bg-zinc-300"
@@ -349,14 +349,14 @@ export default function WineSubCategories() {
               <button
                 type="button"
                 onClick={handlePrev}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -390,7 +390,7 @@ export default function WineSubCategories() {
           <button
             type="button"
             onClick={handlePrev}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -401,7 +401,7 @@ export default function WineSubCategories() {
                 key={card.id}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all ${activeIndex === index
+                className={`h-2 rounded-full transition-all cursor-pointer ${activeIndex === index
                   ? "w-8 bg-amber-800"
                   : "w-2 bg-zinc-300 dark:bg-white/20"
                   }`}
@@ -413,7 +413,7 @@ export default function WineSubCategories() {
           <button
             type="button"
             onClick={handleNext}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </button>

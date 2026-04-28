@@ -357,7 +357,7 @@ export default function WineReservationForm() {
                       <button
                         type="button"
                         onClick={handleReset}
-                        className="text-xs font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity"
+                        className="text-xs font-bold text-primary underline underline-offset-4 hover:opacity-70 transition-opacity cursor-pointer"
                       >
                         Make another reservation
                       </button>

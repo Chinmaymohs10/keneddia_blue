@@ -5,6 +5,7 @@ import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
+import WineWhatsAppButton from "./components/WineWhatsAppButton";
 
 const WineBestSellers = lazy(() => import("./components/WineBestSellers"));
 const WineTopBrands = lazy(() => import("./components/WineTopBrands"));
@@ -201,6 +202,7 @@ export default function WineHomepage() {
         <div id="contact">
           <Footer />
         </div>
+        <WineWhatsAppButton />
       </div>
     </>
   );

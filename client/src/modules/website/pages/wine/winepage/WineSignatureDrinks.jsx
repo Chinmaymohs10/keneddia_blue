@@ -11,6 +11,8 @@ import {
   ChevronDown,
   Building2,
   MoveRight,
+  Search,
+  X,
 } from "lucide-react";
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
@@ -55,16 +57,7 @@ function DrinkImage({ src, alt, className = "" }) {
   return <img src={src} alt={alt} className={`object-cover ${className}`} onError={() => setErrored(true)} />;
 }
 
-function StarRating({ rating }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star key={s} size={9} className={s <= Math.round(rating) ? "fill-amber-500 text-amber-500" : "text-stone-300 dark:text-zinc-700"} />
-      ))}
-      <span className="ml-1 text-[11px] font-bold tabular-nums text-amber-600 dark:text-amber-400">{rating}</span>
-    </div>
-  );
-}
+
 
 function FilterSelect({ value, options, onChange, label }) {
   return (
@@ -97,7 +90,7 @@ function HoverQueryPopup({ drink, accent, onExplore }) {
         <div className="ml-4 flex shrink-0 items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); onExplore(); }}
-            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105"
+            className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#8B1A2A] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all hover:bg-black hover:scale-105 cursor-pointer"
           >
             Explore
           </button>
@@ -106,7 +99,7 @@ function HoverQueryPopup({ drink, accent, onExplore }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm transition-all hover:bg-white/10 cursor-pointer"
           >
             Query
           </a>
@@ -126,7 +119,8 @@ function DrinkCard({ drink, index }) {
   const handleExplore = () => {
     const citySlug = drink.location?.toLowerCase() || "ghaziabad";
     const propSlug = generateSlug(drink.property);
-    navigate(`/wine-detail/${citySlug}/${propSlug}`);
+    const typeSlug = drink.type?.toLowerCase() || "wine";
+    navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}`);
   };
 
   return (
@@ -149,24 +143,18 @@ function DrinkCard({ drink, index }) {
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center px-6 py-5 text-center items-center">
           <div className="w-full">
-            <div className="mb-4 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleExplore(); }}
-                className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-[#8B1A2A] hover:underline dark:text-[#C8956A]"
-              >
-                <Building2 size={10} /> {drink.property}
-              </button>
-              <div className="flex flex-col items-center gap-1">
-                <h3 className="font-serif text-[1.25rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-                <p className="text-[11px] font-medium italic text-stone-400">{drink.subtitle}</p>
-              </div>
+            <div className="mb-4 flex flex-col items-center gap-1 mt-2">
+              <h3 className="font-serif text-[1.25rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
+              <p className="text-[11px] font-medium italic text-stone-400">{drink.subtitle}</p>
             </div>
 
             <div className="mb-3 flex justify-center">
               <span className="rounded-lg px-2.5 py-1 text-[8px] font-black uppercase tracking-widest" style={{ color: accent.color, backgroundColor: accent.bg, border: `1px solid ${accent.color}30` }}>{drink.tag}</span>
             </div>
 
+            <div className="mb-4 flex justify-center">
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-400">{drink.abv} ABV</span>
+            </div>
 
             <p className="mx-auto mb-5 max-w-[220px] line-clamp-3 text-[11px] italic leading-relaxed text-stone-400 dark:text-stone-500">“{drink.tasting}”</p>
           </div>
@@ -178,40 +166,51 @@ function DrinkCard({ drink, index }) {
   );
 }
 
-// ─── CAROUSEL ─────────────────────────────────────────────────────────────────
-function DrinkCarousel({ drinks }) {
-  const trackRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const scroll = (dir) => {
-    trackRef.current?.scrollBy({ left: dir * 484, behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const handleScroll = () => setActiveIndex(Math.round(el.scrollLeft / 484));
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, []);
+// ─── GRID / EXPAND ────────────────────────────────────────────────────────────
+function DrinkGrid({ drinks }) {
+  const [expanded, setExpanded] = useState(false);
+  const limit = 6;
+  const hasMore = drinks.length > limit;
+  const visibleDrinks = expanded ? drinks : drinks.slice(0, limit);
 
   return (
-    <div className="relative">
-      <div ref={trackRef} className="flex gap-4 overflow-x-auto pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {drinks.map((d, i) => (<div key={d.id} className="shrink-0" style={{ width: 468, height: 320 }}><DrinkCard drink={d} index={i} /></div>))}
-        <div className="shrink-0 w-20" />
-      </div>
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex gap-1.5">
-          {drinks.slice(0, 8).map((_, i) => (
-            <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? "w-8 bg-[#8B1A2A]" : "w-1.5 bg-stone-200"}`} />
+    <div className="flex flex-col items-center pb-12 w-full">
+      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        <AnimatePresence>
+          {visibleDrinks.map((d, i) => (
+            <motion.div
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              key={d.id}
+              className="h-[320px]"
+            >
+              <DrinkCard drink={d} index={i} />
+            </motion.div>
           ))}
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => scroll(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50"><ChevronLeft size={18} /></button>
-          <button onClick={() => scroll(1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white transition-all hover:bg-stone-50"><ChevronRight size={18} /></button>
-        </div>
+        </AnimatePresence>
       </div>
+
+      {drinks.length === 0 && (
+        <div className="py-20 text-center text-sm font-medium italic text-stone-500">
+          No drinks found matching your criteria.
+        </div>
+      )}
+
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="group mt-10 flex cursor-pointer items-center gap-2 rounded-full border border-stone-200 bg-white px-6 py-3 text-xs font-bold uppercase tracking-widest text-stone-700 shadow-sm transition-all hover:bg-stone-50 dark:border-white/10 dark:bg-[#1A0C13] dark:text-stone-300 dark:hover:bg-black/40"
+        >
+          {expanded ? "Show Less" : "Show More"}
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+          />
+        </button>
+      )}
     </div>
   );
 }
@@ -219,33 +218,71 @@ function DrinkCarousel({ drinks }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function WineSignatureDrinks() {
   const [activeCategory, setActiveCategory] = useState("All Collections");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredDrinks = useMemo(() => {
-    if (activeCategory === "All Collections") return DRINKS_DATA;
-    return DRINKS_DATA.filter((d) => d.type === activeCategory);
-  }, [activeCategory]);
+    let res = DRINKS_DATA;
+    if (activeCategory !== "All Collections") {
+      res = res.filter((d) => d.type === activeCategory);
+    }
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      res = res.filter((d) => 
+        d.name.toLowerCase().includes(q) || 
+        d.subtitle.toLowerCase().includes(q) || 
+        d.tag.toLowerCase().includes(q)
+      );
+    }
+    return res;
+  }, [activeCategory, searchTerm]);
 
   return (
     <section className="relative overflow-hidden bg-[#FAF8F4] pt-20 pb-0 dark:bg-[#0D0508]">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+       
+       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+         <div className="mb-12 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+           <div className="max-w-2xl">
+              <div className="mb-5 flex items-center gap-3">
+                <div className="h-px w-10 bg-[#8B1A2A]/40" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">Sommelier Selection</span>
+              </div>
+              <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+                Signature Drinks & <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">House Masterpieces</em>
+              </h2>
+              <p className="mt-3 max-w-xl text-sm italic text-stone-400">
+                {filteredDrinks.length} expressions available
+              </p>
+           </div>
+           
+           <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-auto lg:items-end">
+             <div className="relative w-full sm:w-64">
+               <label className="mb-1 block text-[9px] font-black uppercase tracking-[0.22em] text-stone-400 dark:text-stone-600">Search</label>
+               <div className="relative">
+                 <input
+                   type="text"
+                   placeholder="Search..."
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                   className="h-9 w-full rounded-xl border border-stone-200 bg-white pl-9 pr-8 text-[12px] font-semibold text-stone-800 shadow-sm outline-none transition-all placeholder:text-stone-400 placeholder:font-normal focus:border-stone-400 dark:border-white/10 dark:bg-[#1A0C13] dark:text-stone-200 dark:focus:border-white/20"
+                 />
+                 <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                 {searchTerm && (
+                   <button
+                     onClick={() => setSearchTerm("")}
+                     className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
+                   >
+                     <X size={12} />
+                   </button>
+                 )}
+               </div>
+             </div>
+             <FilterSelect label="Drink Category" value={activeCategory} options={DRINK_CATEGORIES} onChange={setActiveCategory} />
+           </div>
+         </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
-        <div className="mb-12 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
-          <div className="max-w-2xl">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="h-px w-10 bg-[#8B1A2A]/40" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">Sommelier Selection</span>
-            </div>
-            <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-              Signature Drinks & <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">House Masterpieces</em>
-            </h2>
-          </div>
-
-          <FilterSelect label="Drink Category" value={activeCategory} options={DRINK_CATEGORIES} onChange={setActiveCategory} />
-        </div>
-
-        <DrinkCarousel drinks={filteredDrinks} />
-      </div>
+         <DrinkGrid drinks={filteredDrinks} />
+       </div>
     </section>
   );
 }

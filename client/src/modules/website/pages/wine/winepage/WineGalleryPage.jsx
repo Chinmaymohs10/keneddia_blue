@@ -107,7 +107,7 @@ export default function WineGalleryPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`rounded-full px-5 py-2 text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+                  className={`rounded-full px-5 py-2 text-[11px] font-black uppercase tracking-widest transition-all duration-300 cursor-pointer ${
                     activeCategory === cat
                       ? "bg-[#8B1A2A] text-white shadow-lg shadow-[#8B1A2A]/20"
                       : "bg-white/50 text-stone-400 hover:bg-stone-100 dark:bg-white/5 dark:text-stone-500 dark:hover:bg-white/10"
@@ -165,7 +165,7 @@ export default function WineGalleryPage() {
             <div className="absolute top-6 right-6 flex gap-4">
                <button 
                 onClick={closeLightbox}
-                className="group flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 transition-all hover:bg-white/20"
+                className="group flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/20 transition-all hover:bg-white/20 cursor-pointer"
                >
                  <X size={24} className="text-white" />
                </button>
@@ -174,7 +174,7 @@ export default function WineGalleryPage() {
             <div className="relative flex h-full w-full items-center justify-center px-4 md:px-20">
                <button 
                 onClick={prevImage}
-                className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white transition-all hover:bg-white/20 hover:scale-110"
+                className="absolute left-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white transition-all hover:bg-white/20 hover:scale-110 cursor-pointer"
                >
                  <ChevronLeft size={32} />
                </button>
@@ -204,7 +204,7 @@ export default function WineGalleryPage() {
 
                <button 
                 onClick={nextImage}
-                className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white transition-all hover:bg-white/20 hover:scale-110"
+                className="absolute right-6 z-10 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/10 text-white transition-all hover:bg-white/20 hover:scale-110 cursor-pointer"
                >
                  <ChevronRight size={32} />
                </button>
@@ -251,7 +251,7 @@ function GalleryCard({ item, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className={`group relative shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-100 transition-all duration-700 hover:z-30 dark:border-white/10 dark:bg-[#1A0C13] shadow-xl ${
+      className={`group relative shrink-0 overflow-hidden rounded-[2rem] border border-stone-200 bg-stone-100 transition-all duration-700 hover:z-30 dark:border-white/10 dark:bg-[#1A0C13] shadow-xl cursor-pointer ${
         item.isHighlighted ? "w-[240px] h-[320px] -rotate-1" : "w-[180px] h-[240px]"
       } hover:scale-110 hover:rotate-0`}
     >

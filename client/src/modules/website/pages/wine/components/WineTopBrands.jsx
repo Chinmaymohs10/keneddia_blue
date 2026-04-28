@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
+import { useNavigate, useParams } from "react-router-dom";
 import img from "../../../../../assets/resturant_images/logo.jpg"
 import img1 from "../../../../../assets/resturant_images/download.png"
 import "swiper/css";
@@ -54,11 +55,11 @@ const BRANDS = [
   },
 ];
 
-function BrandCard({ brand }) {
+function BrandCard({ brand, onClick, clickable }) {
   const hasLogo = Boolean(brand.logo);
 
   return (
-    <article className="group relative h-full overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20">
+    <article onClick={onClick} className={`group relative h-full overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20 ${clickable ? "cursor-pointer" : ""}`}>
       <div
         className="absolute inset-x-4 top-0 h-px opacity-80"
         style={{ background: `linear-gradient(90deg, transparent, ${brand.accent}, transparent)` }}
@@ -111,7 +112,18 @@ function BrandCard({ brand }) {
     </article>
   );
 }
-export default function WineTopBrands() {
+export default function WineTopBrands({ clickable = false }) {
+  const navigate = useNavigate();
+  const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
+
+  const handleBrandClick = (brand) => {
+    if (clickable) {
+      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
+    }
+  };
+
+
+
   return (
     <section className="relative overflow-hidden bg-[#F0EAE2] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#100609] dark:text-white md:py-10">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.04),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(255,255,255,0.06),transparent_28%)]" />
@@ -134,7 +146,7 @@ export default function WineTopBrands() {
         <div className="relative">
           <button
             type="button"
-            className="wine-top-brands-prev absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:left-1 md:h-10 md:w-10 lg:left-0"
+            className="wine-top-brands-prev absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:left-1 md:h-10 md:w-10 lg:left-0 cursor-pointer"
             aria-label="Previous brands"
           >
             <ChevronLeft size={20} />
@@ -142,7 +154,7 @@ export default function WineTopBrands() {
 
           <button
             type="button"
-            className="wine-top-brands-next absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:right-1 md:h-10 md:w-10 lg:right-0"
+            className="wine-top-brands-next absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:right-1 md:h-10 md:w-10 lg:right-0 cursor-pointer"
             aria-label="Next brands"
           >
             <ChevronRight size={20} />
@@ -166,7 +178,7 @@ export default function WineTopBrands() {
             >
               {BRANDS.map((brand) => (
                 <SwiperSlide key={brand.id} className="h-auto">
-                  <BrandCard brand={brand} />
+                  <BrandCard brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
                 </SwiperSlide>
               ))}
             </Swiper>
