@@ -228,9 +228,9 @@ export default function WineSignatureDrinks() {
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       res = res.filter((d) => 
-        d.name.toLowerCase().includes(q) || 
-        d.subtitle.toLowerCase().includes(q) || 
-        d.tag.toLowerCase().includes(q)
+        d.name?.toLowerCase().includes(q) || 
+        d.subtitle?.toLowerCase().includes(q) || 
+        d.tag?.toLowerCase().includes(q)
       );
     }
     return res;
