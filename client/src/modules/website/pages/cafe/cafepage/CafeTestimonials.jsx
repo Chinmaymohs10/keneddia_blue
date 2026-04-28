@@ -139,13 +139,30 @@ function MediaTile({ item, index, total }) {
           </a>
         )
       ) : isYoutube && youtubeId ? (
-        <iframe
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
-          className="h-full w-full"
-          style={{ border: "none" }}
-          allow="autoplay; encrypted-media"
-          title={item.alt || "Guest video"}
-        />
+        <div className="relative h-full w-full">
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+            className="h-full w-full"
+            style={{ border: "none" }}
+            allow="autoplay; encrypted-media"
+            title={item.alt || "Guest video"}
+          />
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsMuted((current) => !current);
+            }}
+            className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+            aria-label={isMuted ? "Unmute video" : "Mute video"}
+          >
+            {isMuted ? (
+              <VolumeX size={16} className="text-white" />
+            ) : (
+              <Volume2 size={16} className="text-white" />
+            )}
+          </button>
+        </div>
       ) : isNativeVideo ? (
         <div className="relative h-full w-full">
           <video
@@ -306,13 +323,30 @@ function StandaloneMedia({ media, alt, className }) {
 
   if (isYoutube && youtubeId) {
     return (
-      <iframe
-        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
-        className={className}
-        style={{ border: "none" }}
-        allow="autoplay; encrypted-media"
-        title={alt || "Guest video"}
-      />
+      <div className={`${className} group relative overflow-hidden bg-black`}>
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+          className="h-full w-full"
+          style={{ border: "none" }}
+          allow="autoplay; encrypted-media"
+          title={alt || "Guest video"}
+        />
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setIsMuted((current) => !current);
+          }}
+          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+        >
+          {isMuted ? (
+            <VolumeX size={16} className="text-white" />
+          ) : (
+            <Volume2 size={16} className="text-white" />
+          )}
+        </button>
+      </div>
     );
   }
 
