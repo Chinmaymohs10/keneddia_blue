@@ -197,7 +197,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group relative w-full aspect-[9/16] max-h-[520px] flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
+      className="group relative w-full aspect-[9/16] max-h-[520px] flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl cursor-pointer"
     >
       {isFullFrame ? (
         /* ── FULL-FRAME MODE ─────────────────────────────────────────────── */
@@ -216,38 +216,46 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
           <div className="absolute inset-0 bg-black/40" />
 
           {/* Actual media — object-contain, no crop */}
-          {imageUrl ? (
-            isVideo ? (
-              <>
+          <Link 
+            to={buildEventDetailPath(event)} 
+            className="absolute inset-0 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {imageUrl ? (
+              isVideo ? (
                 <video
                   ref={videoRef}
                   src={imageUrl}
-                  className="absolute inset-0 w-full h-full object-contain z-10"
+                  className="w-full h-full object-contain"
                   autoPlay
                   loop
                   muted
                   playsInline
                   onLoadedMetadata={handleVideoMeta}
                 />
-                <button
-                  onClick={toggleMute}
-                  className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors"
-                >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
-              </>
+              ) : (
+                <img
+                  src={imageUrl}
+                  alt={event.title}
+                  className="w-full h-full object-contain"
+                  onLoad={handleImageLoad}
+                />
+              )
             ) : (
-              <img
-                src={imageUrl}
-                alt={event.title}
-                className="absolute inset-0 w-full h-full object-contain z-10"
-                onLoad={handleImageLoad}
-              />
-            )
-          ) : (
-            <div className="absolute inset-0 z-10 flex items-center justify-center">
-              <ImageIcon className="w-10 h-10 text-white/20" />
-            </div>
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageIcon className="w-10 h-10 text-white/20" />
+              </div>
+            )}
+          </Link>
+
+          {/* Mute button needs to be outside Link to stay clickable */}
+          {imageUrl && isVideo && (
+            <button
+              onClick={toggleMute}
+              className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
           )}
 
           {/* Date badge */}
@@ -274,6 +282,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             {event.ctaText?.trim() && (
               <Link
                 to={buildEventDetailPath(event)}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full bg-primary text-white py-3 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
               >
                 {event.ctaText} <ArrowRight size={14} />
@@ -299,32 +308,39 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
             )}
             <div className="absolute inset-0 bg-black/20" />
 
-            {isVideo ? (
-              <>
+            <Link 
+              to={buildEventDetailPath(event)} 
+              className="relative z-10 block w-full h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isVideo ? (
                 <video
                   ref={videoRef}
                   src={imageUrl}
-                  className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                   autoPlay
                   loop
                   muted
                   playsInline
                   onLoadedMetadata={handleVideoMeta}
                 />
-                <button
-                  onClick={toggleMute}
-                  className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors"
-                >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
-              </>
-            ) : (
-              <img
-                src={imageUrl}
-                alt={event.title}
-                className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                onLoad={handleImageLoad}
-              />
+              ) : (
+                <img
+                  src={imageUrl}
+                  alt={event.title}
+                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  onLoad={handleImageLoad}
+                />
+              )}
+            </Link>
+
+            {isVideo && (
+              <button
+                onClick={toggleMute}
+                className="absolute bottom-3 right-3 z-30 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
             )}
 
             {/* Date badge */}
@@ -341,9 +357,14 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
 
           {/* Info panel */}
           <div className="flex flex-col flex-1 p-5 bg-card min-h-0">
-            <h3 className="text-base font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
-              {event.title}
-            </h3>
+            <Link 
+              to={buildEventDetailPath(event)}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-base font-serif font-bold line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+                {event.title}
+              </h3>
+            </Link>
             <div className="flex items-center gap-1.5 text-muted-foreground mt-2 mb-2">
               <Clock size={12} className="text-primary flex-shrink-0" />
               <span className="text-[11px] font-medium italic uppercase truncate">
@@ -363,6 +384,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
               {event.ctaText?.trim() && (
                 <Link
                   to={buildEventDetailPath(event)}
+                  onClick={(e) => e.stopPropagation()}
                   className="w-full bg-primary text-white py-2.5 rounded-xl text-[11px] font-bold flex items-center justify-center gap-2 uppercase tracking-wider active:scale-95 transition-transform"
                 >
                   {event.ctaText} <ArrowRight size={14} />
