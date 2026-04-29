@@ -124,7 +124,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
   return (
     /* ── Root: light = warm off-white | dark = deep espresso ── */
     <div
-      className="h-screen overflow-hidden flex flex-col bg-[#F8F8F6] dark:bg-[#14100b] transition-colors duration-300"
+      className="min-h-[calc(100vh-var(--navbar-height,72px))] lg:h-screen overflow-visible lg:overflow-hidden flex flex-col bg-[#F8F8F6] dark:bg-[#14100b] transition-colors duration-300"
       style={{ paddingTop: "var(--navbar-height,72px)" }}
     >
       <GalleryModal
@@ -141,13 +141,13 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
       />
 
       {/* ── BODY ── */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row px-6 md:px-8 lg:px-10 pt-4 pb-5 gap-0 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row px-6 md:px-8 lg:px-10 pt-4 pb-5 gap-0 overflow-visible lg:overflow-hidden">
 
         {/* ════ LEFT PANEL ════ */}
         <div className="flex-1 min-w-0 flex flex-col pr-0 lg:pr-10 overflow-hidden">
 
           {/* ── small flex spacer so content sits ~30% down, not flush top ── */}
-          <div style={{ flex: "0.25", minHeight: 0 }} />
+          <div className="hidden lg:block" style={{ flex: "0.25", minHeight: 0 }} />
 
           {/* Content block — breadcrumb through CTA */}
           <div className="flex flex-col shrink-0">
@@ -280,14 +280,14 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
           </div>
 
           {/* spacer pushes thumbnails to bottom */}
-          <div className="flex-1 min-h-0" />
+          <div className="hidden lg:block flex-1 min-h-0" />
 
           {/* ── Thumbnail row ── */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.56 }}
-            className="flex items-end gap-2 shrink-0 overflow-x-auto"
+            className="mt-3 flex items-end gap-2 shrink-0 overflow-x-auto lg:mt-0"
             style={{ paddingBottom: "4px", scrollbarWidth: "none" }}
           >
             {thumbImages.map((img, i) => (

@@ -311,7 +311,7 @@ export default function CafeStoryTab({ propertyData, refreshData }) {
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all disabled:opacity-50"
         >
-          <Save size={16} /> {saving ? "Saving..." : "Save Story Header"}
+          <Save size={16} /> {saving ? "Saving..." : "Save Story Section"}
         </button>
       </div>
 

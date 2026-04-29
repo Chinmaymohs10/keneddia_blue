@@ -210,7 +210,7 @@ export default function CafeCoffeeStory({ initialData }) {
     setActiveIndex((prev) => (prev + 1) % cards.length);
 
   return (
-    <section className="relative overflow-hidden bg-[#F7F7F5] py-24 dark:bg-[#080808]">
+    <section className="relative overflow-hidden bg-[#F7F7F5] pt-6 pb-16 md:py-24 dark:bg-[#080808]">
       <div className="hidden w-full lg:block">
         <div className="grid w-full min-h-[58vh] items-stretch grid-cols-[0.7fr_1.3fr] gap-16 px-12 xl:px-24">
           <div className="flex h-full flex-col justify-center">
@@ -305,24 +305,24 @@ export default function CafeCoffeeStory({ initialData }) {
           <MobileStoryCard key={activeCard?.id || activeIndex} card={activeCard} />
         </AnimatePresence>
 
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-center gap-4 sm:mt-8 sm:gap-5">
           <button
             type="button"
             onClick={handlePrev}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white sm:h-11 sm:w-11"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 sm:h-4 sm:w-4" />
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
             {cards.map((card, index) => (
               <button
                 key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all ${activeIndex === index
-                    ? "w-8 bg-amber-800"
-                    : "w-2 bg-zinc-300 dark:bg-white/20"
+                className={`h-1.5 rounded-full transition-all sm:h-2 ${activeIndex === index
+                    ? "w-7 bg-amber-800 sm:w-8"
+                    : "w-1.5 bg-zinc-300 dark:bg-white/20 sm:w-2"
                   }`}
                 aria-label={`Go to ${card.title}`}
               />
@@ -332,9 +332,9 @@ export default function CafeCoffeeStory({ initialData }) {
           <button
             type="button"
             onClick={handleNext}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-amber-800 hover:text-amber-800 dark:border-white/10 dark:bg-zinc-900 dark:text-white sm:h-11 sm:w-11"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 sm:h-4 sm:w-4" />
           </button>
         </div>
       </div>

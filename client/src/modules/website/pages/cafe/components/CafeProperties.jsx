@@ -283,7 +283,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
   }
 
   return (
-    <div className="container mx-auto mb-12 px-4">
+    <div className="container mx-auto mb-12 mt-4 px-4 sm:mt-0">
       <motion.div
         layout
         className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-2xl backdrop-blur-md"
@@ -422,7 +422,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
               >
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[60%_40%]">
                   <div
-                    className="relative h-[360px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl sm:h-[420px] lg:h-[500px]"
+                    className="relative h-[380px] overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-secondary/20 shadow-xl sm:h-[420px] lg:h-[500px]"
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                   >
@@ -465,7 +465,7 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                                    <div className="absolute bottom-0 left-0 right-0 p-5 pb-16 text-white sm:pb-5">
                                       <div className="mb-1.5 inline-block rounded border border-white/30 bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm">
                                         {cafe.type}
                                       </div>
@@ -489,23 +489,23 @@ export default function CafeProperties({ locationMatch, initialCafes }) {
                       })}
                     </div>
 
-                    <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3">
+                    <div className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 sm:bottom-4 sm:gap-3">
                       <button
                         onClick={handlePrev}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer sm:h-10 sm:w-10"
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
-                      <div className="rounded-full border border-border bg-background/90 px-3 py-1 backdrop-blur-sm">
-                        <span className="text-xs font-semibold text-foreground">
+                      <div className="rounded-full border border-border bg-background/90 px-2.5 py-0.5 backdrop-blur-sm sm:px-3 sm:py-1">
+                        <span className="text-[11px] font-semibold leading-tight text-foreground sm:text-xs">
                           {activeIndex + 1} / {filteredCafes.length}
                         </span>
                       </div>
                       <button
                         onClick={handleNext}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-lg transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 cursor-pointer sm:h-10 sm:w-10"
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </button>
                     </div>
                   </div>

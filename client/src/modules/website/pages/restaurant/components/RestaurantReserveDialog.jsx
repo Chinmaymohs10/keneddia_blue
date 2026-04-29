@@ -82,12 +82,12 @@ export default function RestaurantReserveDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="w-[calc(100%-1rem)] max-w-[560px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">
+          <DialogTitle className="font-serif text-xl sm:text-2xl">
             Reserve a Table
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {property?.propertyName
               ? `Submit your dine-in request for ${property.propertyName}.`
               : "Submit your dine-in reservation request."}
@@ -197,16 +197,17 @@ export default function RestaurantReserveDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => handleClose(false)}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

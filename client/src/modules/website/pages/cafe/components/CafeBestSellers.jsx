@@ -274,7 +274,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
   );
 
   return (
-    <section className="bg-white dark:bg-[#050505] pb-2 pt-16 transition-colors duration-500">
+    <section className="bg-white dark:bg-[#050505] pb-2 pt-10 md:pt-16 transition-colors duration-500">
       <div className="mx-auto max-w-[1400px] px-6 text-left md:px-12">
         <div className="mb-20 flex flex-col items-start justify-between gap-8 lg:flex-row">
           <div className="min-w-0 flex-1 lg:max-w-[80%]">

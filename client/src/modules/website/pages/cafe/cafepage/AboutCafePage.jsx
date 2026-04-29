@@ -103,14 +103,14 @@ export default function AboutCafePage({ propertyId }) {
   }, [carouselImages]);
 
   return (
-    <section className="bg-[#F5F5F3] px-6 py-8 lg:py-10 transition-colors duration-500 dark:bg-[#050505] overflow-hidden">
+    <section className="overflow-hidden bg-[#F5F5F3] px-4 py-8 transition-colors duration-500 dark:bg-[#050505] sm:px-6 lg:py-10">
       <div className="container mx-auto max-w-7xl">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <h2 className="font-serif text-2xl md:text-3xl text-zinc-900 dark:text-white">About Us</h2>
           <div className="mt-3 h-0.5 w-16 bg-primary" />
         </div>
 
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[45%_55%]">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[45%_55%] lg:gap-10">
           {/* Image Section */}
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -130,34 +130,34 @@ export default function AboutCafePage({ propertyId }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </motion.div>
             </AnimatePresence>
-            <div className="absolute -bottom-4 -right-4 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0" />
-            <div className="absolute -left-4 -top-4 h-1/2 w-1/2 rounded-xl bg-zinc-100/80 -z-0 dark:bg-white/5" />
+            <div className="absolute -bottom-2 -right-2 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0 sm:-bottom-4 sm:-right-4" />
+            <div className="absolute -left-2 -top-2 h-1/2 w-1/2 rounded-xl bg-zinc-100/80 -z-0 dark:bg-white/5 sm:-left-4 sm:-top-4" />
           </div>
 
           {/* Content Section */}
           <div className="relative lg:pl-4">
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               <div>
                 <h3 className="mb-1.5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
                   <MapPin className="h-3 w-3" />
                   {aboutData.subTitle}
                 </h3>
-                <h2 className="mb-3 text-3xl font-serif leading-tight text-zinc-900 dark:text-white md:text-4xl">
+                <h2 className="mb-3 text-2xl font-serif leading-tight text-zinc-900 dark:text-white sm:text-3xl md:text-4xl">
                   {aboutData.sectionTitle}
                 </h2>
               </div>
 
-              <p className="text-base font-light leading-relaxed text-zinc-500 dark:text-white/60">
+              <p className="text-sm font-light leading-relaxed text-zinc-500 dark:text-white/60 sm:text-base">
                 {aboutData.description}
               </p>
 
-              <div className="grid grid-cols-2 gap-6 border-t border-zinc-200 pt-4 dark:border-white/10">
+              <div className="grid grid-cols-1 gap-5 border-t border-zinc-200 pt-4 dark:border-white/10 sm:grid-cols-2 sm:gap-6">
                 {/* Availability */}
                 <div>
                   <h4 className="mb-2 text-[9px] font-bold uppercase tracking-widest text-zinc-400 dark:text-white/40">
                     Availability
                   </h4>
-                  <p className="flex items-center gap-2 font-serif text-base italic text-zinc-900 dark:text-white">
+                  <p className="flex items-center gap-2 font-serif text-sm italic text-zinc-900 dark:text-white sm:text-base">
                     <Clock className="h-3.5 w-3.5 text-primary" />
                     {aboutData.openingTime} – {aboutData.closingTime}
                   </p>
@@ -173,7 +173,7 @@ export default function AboutCafePage({ propertyId }) {
                   </h4>
                   <a
                     href={`tel:+${connectData.phoneNumber.replace(/\D/g, "")}`}
-                    className="block cursor-pointer font-serif text-base italic text-zinc-900 transition-colors hover:text-primary dark:text-white"
+                    className="block cursor-pointer font-serif text-sm italic text-zinc-900 transition-colors hover:text-primary dark:text-white sm:text-base"
                   >
                     {connectData.title || connectData.phoneNumber}
                   </a>

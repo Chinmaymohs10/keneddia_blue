@@ -46,21 +46,49 @@ const normalizeHeaderRecords = (payload) => {
   return [...list].sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0));
 };
 
+const getMediaSrc = (media) => {
+  if (!media) return "";
+  if (typeof media === "string") return media;
+  return media.url || media.src || "";
+};
+
+const getMediaType = (media) => {
+  if (!media) return "IMAGE";
+  if (typeof media === "string") {
+    const clean = media.split("?")[0].toLowerCase();
+    return /\.(mp4|webm|ogg|mov|m4v)$/.test(clean) ? "VIDEO" : "IMAGE";
+  }
+  return (media.type || "IMAGE").toUpperCase();
+};
+
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
   const linkPath = item.type === "Offer" || item.type === "Event"
     ? (item.detailPath || `/cafe/${item.slug}`)
     : `/cafe/${item.slug}`;
+  const mediaSrc = getMediaSrc(item?.image);
+  const mediaType = getMediaType(item?.image);
 
   return (
     <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
       <div className="relative h-full w-full overflow-hidden">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        {mediaType === "VIDEO" ? (
+          <video
+            src={mediaSrc}
+            className="h-full w-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        ) : (
+          <img
+            src={mediaSrc}
+            alt={item.title}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        )}
         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
       </div>
 
@@ -275,10 +303,10 @@ function GroupBookingColumn({ items = [], openGroupBookingForm }) {
         <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
           <Users className="h-8 w-8 text-primary/60" />
-          <p className="font-serif text-sm font-semibold text-foreground/80">
+          <p className="font-serif text-sm font-semibold text-[#2F2F2B]">
             {groupBookingHeader?.header || "Planning something bigger?"}
           </p>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-[#5A5A56]">
             {groupBookingHeader?.description ||
               "Reach out for bespoke group experiences, private dining, and exclusive cafe takeovers."}
           </p>
@@ -436,13 +464,17 @@ export default function CafepageEvents({
           type: "Event",
           title: item?.title || "Event",
           description: item?.description || "",
-          image: item?.image?.url || item?.media?.[0]?.url || "",
+          image: item?.image?.url
+            ? { url: item.image.url, type: item?.image?.type || "IMAGE" }
+            : item?.media?.[0]?.url
+              ? { url: item.media[0].url, type: item?.media?.[0]?.type || "IMAGE" }
+              : null,
           date: item?.eventDate ? new Date(item.eventDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Upcoming",
           location: item?.locationName || "Cafe Venue",
           detailPath: item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`,
           ctaText: item?.ctaText || "",
           ctaLink: item?.ctaLink || "",
-        })).filter(i => i.image);
+        })).filter(i => getMediaSrc(i.image));
 
         const now = Date.now();
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
@@ -466,13 +498,15 @@ export default function CafepageEvents({
           type: "Offer",
           title: offer.title || "Special Offer",
           description: offer.description || "",
-          image: offer.image?.url || "",
+          image: offer.image?.url
+            ? { url: offer.image.url, type: offer?.image?.type || "IMAGE" }
+            : null,
           date: offer.expiresAt ? `Valid until ${new Date(offer.expiresAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}` : "Limited Time",
           location: offer.locationName || "All Outlets",
           slug: offer.slug || `offer-${offer.id}`,
           ctaText: offer.ctaText || "",
           ctaLink: offer.ctaLink || "",
-        })).filter(i => i.image);
+        })).filter(i => getMediaSrc(i.image));
 
         const rawBookings = bookingsRes?.data || bookingsRes || [];
         const mappedBookings = (Array.isArray(rawBookings) ? rawBookings : []).filter(item => {

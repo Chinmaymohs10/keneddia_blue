@@ -214,7 +214,7 @@ export default function CafeSubCategories({ initialData }) {
 
   return (
     <section
-      className="relative overflow-hidden py-24 bg-[#F7F7F5] dark:bg-[#0f0f0f]"
+      className="relative overflow-hidden bg-[#F7F7F5] py-10 md:py-24 dark:bg-[#0f0f0f]"
     >
       {/* ── Sparkle background animation ─────────────────────────────────── */}
       <style>{`
@@ -329,7 +329,7 @@ export default function CafeSubCategories({ initialData }) {
       </div>
 
       <div className="w-full px-6 lg:hidden">
-        <div className="mb-14">
+        <div className="mb-8">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
             <Coffee className="h-3 w-3" /> {sectionInfo.highlight}
           </div>
@@ -345,24 +345,24 @@ export default function CafeSubCategories({ initialData }) {
           <MobileStoryCard key={activeCard.id} card={activeCard} />
         </AnimatePresence>
 
-        <div className="mt-8 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-center gap-4">
           <button
             type="button"
             onClick={handlePrev}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer sm:h-11 sm:w-11"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
 
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
             {cards.map((card, index) => (
               <button
                 key={card.id || index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`h-2 rounded-full transition-all cursor-pointer ${activeIndex === index
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-zinc-300 dark:bg-white/20"
+                className={`h-1.5 rounded-full transition-all cursor-pointer sm:h-2 ${activeIndex === index
+                  ? "w-7 bg-primary sm:w-8"
+                  : "w-1.5 bg-zinc-300 dark:bg-white/20 sm:w-2"
                   }`}
                 aria-label={`Go to ${card.title}`}
               />
@@ -372,9 +372,9 @@ export default function CafeSubCategories({ initialData }) {
           <button
             type="button"
             onClick={handleNext}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-primary hover:text-primary dark:border-white/10 dark:bg-zinc-900 dark:text-white cursor-pointer sm:h-11 sm:w-11"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
         </div>
       </div>

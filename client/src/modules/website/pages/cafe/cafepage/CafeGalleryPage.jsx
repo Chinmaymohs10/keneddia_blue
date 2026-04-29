@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { Camera, X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { CAFE_GALLERY_ITEMS } from "./cafeGalleryData";
 import { getGalleryByPropertyId } from "@/Api/Api";
@@ -127,9 +128,9 @@ export default function CafeGalleryPage({ propertyId }) {
     setLightboxIndex((current) => (current + 1) % filtered.length);
 
   return (
-    <section className="py-16 lg:py-28 bg-[#F8F8F6] dark:bg-zinc-900/40">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 lg:px-20">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+    <section className="bg-[#F8F8F6] pb-12 pt-0 dark:bg-zinc-900/40 md:pb-16 lg:pb-24">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 md:px-10 lg:px-16">
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:mb-10 md:flex-row md:items-end md:gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -137,16 +138,16 @@ export default function CafeGalleryPage({ propertyId }) {
           >
             <div className="flex items-center gap-2 mb-3">
               <Camera className="w-4 h-4 text-primary" />
-              <span className="text-primary text-[11px] font-bold uppercase tracking-[0.4em]">
+              <span className="text-primary text-[10px] font-bold uppercase tracking-[0.3em] sm:text-[11px] sm:tracking-[0.4em]">
                 Visual Gallery
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif text-zinc-900 dark:text-white tracking-tight">
+            <h2 className="text-3xl font-serif tracking-tight text-zinc-900 dark:text-white sm:text-4xl md:text-5xl">
               {galleryHeader.header1}{" "}
               <span className="italic text-primary">{galleryHeader.header2}</span>
             </h2>
             {galleryHeader.description && (
-              <p className="mt-4 text-zinc-500 dark:text-white/40 text-lg font-light max-w-xl">
+              <p className="mt-3 max-w-xl text-base font-light text-zinc-500 dark:text-white/40 sm:mt-4 sm:text-lg">
                 {galleryHeader.description}
               </p>
             )}
@@ -157,7 +158,7 @@ export default function CafeGalleryPage({ propertyId }) {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${activeCategory === cat
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-300 cursor-pointer sm:px-4 sm:text-sm ${activeCategory === cat
                   ? "bg-primary text-white shadow-md"
                   : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-primary/10"
                   }`}
@@ -168,11 +169,11 @@ export default function CafeGalleryPage({ propertyId }) {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[2rem] border border-zinc-200/70 dark:border-white/10 bg-white dark:bg-zinc-950 shadow-[0_35px_80px_-35px_rgba(0,0,0,0.35)]">
+        <div className="relative overflow-hidden rounded-[1.5rem] border border-zinc-200/70 bg-white shadow-[0_35px_80px_-35px_rgba(0,0,0,0.35)] dark:border-white/10 dark:bg-zinc-950 sm:rounded-[2rem]">
           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/80 z-20 pointer-events-none" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-[760px] overflow-hidden relative">
+          <div className="relative grid h-[520px] grid-cols-1 gap-3 overflow-hidden p-3 sm:h-[620px] sm:gap-4 sm:p-4 md:h-[700px] md:grid-cols-2 lg:h-[760px] lg:grid-cols-3">
             {loading ? (
               <div className="absolute inset-0 flex items-center justify-center z-30 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-4">
@@ -261,14 +262,20 @@ export default function CafeGalleryPage({ propertyId }) {
         </div>
       </div>
 
-      {lightboxIndex !== null && filtered.length > 0 && (
+      {lightboxIndex !== null &&
+        filtered.length > 0 &&
+        createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center"
           onClick={closeLightbox}
         >
           <button
-            onClick={closeLightbox}
-            className="absolute top-5 right-5 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeLightbox();
+            }}
+            className="absolute top-3 right-3 z-[1210] p-2 sm:top-5 sm:right-5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Close image"
           >
             <X className="w-6 h-6" />
           </button>
@@ -277,7 +284,8 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxPrev();
             }}
-            className="absolute left-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            className="absolute left-3 sm:left-5 z-[1210] p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Previous image"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -296,14 +304,16 @@ export default function CafeGalleryPage({ propertyId }) {
               e.stopPropagation();
               lightboxNext();
             }}
-            className="absolute right-5 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            className="absolute right-3 sm:right-5 z-[1210] p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors cursor-pointer"
+            aria-label="Next image"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
           <div className="absolute bottom-5 text-white/60 text-sm">
             {lightboxIndex + 1} / {filtered.length}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );

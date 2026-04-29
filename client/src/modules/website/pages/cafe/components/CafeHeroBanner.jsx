@@ -210,7 +210,7 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-background h-[90vh]"
+      className="relative w-full overflow-hidden bg-background md:h-[90vh]"
     >
       {!activeSlide ? (
         <div className="absolute inset-0 hidden items-center justify-center bg-neutral-900 md:flex">
@@ -236,7 +236,6 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
           </AnimatePresence>
 
           <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" />
 
           <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
             {activeSlide.bgTitle}
@@ -367,31 +366,6 @@ export default function CafeHeroBanner({ initialSlides, onReady }) {
                 >
                   {activeMobileSlide.desc}
                 </motion.p>
-              )}
-              {activeMobileSlide.ctaText && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.92 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.45, duration: 0.6 }}
-                  className="flex flex-wrap items-center justify-center gap-3"
-                >
-                  <button
-                    disabled={!activeMobileSlide.ctaLink}
-                    onClick={() => { if (activeMobileSlide.ctaLink) { const url = /^https?:\/\//i.test(activeMobileSlide.ctaLink) ? activeMobileSlide.ctaLink : `https://${activeMobileSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                    className={`group relative h-auto overflow-hidden rounded-full border px-5 py-2 text-xs font-semibold transition-all duration-500 ease-out inline-flex items-center gap-2 ${!activeMobileSlide.ctaLink
-                      ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                      : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
-                      }`}
-                  >
-                    {activeMobileSlide.ctaLink && (
-                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
-                    )}
-                    <span className="relative z-10 flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {activeMobileSlide.ctaText}
-                    </span>
-                  </button>
-                </motion.div>
               )}
             </div>
             <div className="absolute inset-x-0 bottom-3 z-20 flex items-center justify-center gap-3">

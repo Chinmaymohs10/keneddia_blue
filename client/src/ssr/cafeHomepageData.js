@@ -282,7 +282,12 @@ const normalizeEvents = (eventsRes, cafeTypeId) => {
         type: "Event",
         title: item?.title || "Event",
         description: item?.description || "",
-        image: media?.url || "",
+        image: media?.url
+          ? {
+              url: media.url,
+              type: media?.type || "IMAGE",
+            }
+          : "",
         date: formatDate(item?.eventDate),
         location: item?.locationName || "Cafe Venue",
         detailPath,
@@ -358,7 +363,12 @@ const normalizeOffers = (offersRes, cafeTypeId) => {
       type: "Offer",
       title: offer.title || "Special Offer",
       description: offer.description || "",
-      image: offer.image?.url || "",
+      image: offer.image?.url
+        ? {
+            url: offer.image.url,
+            type: offer.image?.type || "IMAGE",
+          }
+        : "",
       date: offer.expiresAt ? `Valid until ${formatDate(offer.expiresAt)}` : "Limited Time",
       location: offer.locationName || "All Outlets",
       slug: offer.slug || `offer-${offer.id}`,

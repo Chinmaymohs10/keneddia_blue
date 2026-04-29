@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import {
   CalendarCheck,
   ChevronLeft,
@@ -218,6 +219,15 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
     }
   };
 
+  useEffect(() => {
+    if (!showModal) return undefined;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [showModal]);
+
   if (loading) {
     return (
       <div className="py-24 flex flex-col items-center justify-center gap-4 text-zinc-400">
@@ -279,11 +289,11 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
   return (
     <section
       id="menu"
-      className="py-16 bg-[#EFEFEB] dark:bg-[#050505] transition-colors duration-500"
+      className="bg-[#EFEFEB] py-10 dark:bg-[#050505] transition-colors duration-500 sm:py-12 md:py-16"
     >
       <div className="container mx-auto px-6 max-w-[1200px]">
         {/* ── HEADER ──────────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:mb-10 md:flex-row md:items-center md:gap-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-full">
               <Utensils className="w-5 h-5 text-primary" />
@@ -294,7 +304,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
             </h2>
           </div>
 
-          <div className="flex flex-row-reverse items-center gap-6">
+          <div className="flex w-full flex-row-reverse items-center justify-between gap-3 md:w-auto md:justify-start md:gap-6">
             <div className="flex items-center gap-3">
               <button
                 onClick={handlePrev}
@@ -317,7 +327,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
 
             <button
               onClick={() => openReserve()}
-              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-primary dark:hover:bg-primary dark:hover:text-white transition-all active:scale-95 shadow-lg shadow-zinc-200 dark:shadow-none cursor-pointer"
+              className="hidden items-center gap-2 rounded-full bg-zinc-900 px-6 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-zinc-200 transition-all active:scale-95 cursor-pointer hover:bg-primary dark:bg-white dark:text-black dark:shadow-none dark:hover:bg-primary dark:hover:text-white md:flex"
             >
               <CalendarCheck size={14} /> Reserve Now
             </button>
@@ -327,13 +337,13 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
         {/* ── TAB SCROLLER ─────────────────────────────────────────────────── */}
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-8 snap-x no-scrollbar"
+          className="no-scrollbar flex snap-x gap-2 overflow-x-auto pb-6 sm:gap-3 sm:pb-8 md:gap-4"
         >
           {groupedMenu.map((section, idx) => (
             <motion.button
               key={idx}
               onClick={() => handleTabClick(idx)}
-              className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center cursor-pointer ${activeTab === idx
+              className={`relative shrink-0 snap-center rounded-full border px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.16em] transition-all cursor-pointer sm:px-5 sm:text-xs sm:tracking-widest md:px-6 md:py-3 ${activeTab === idx
                 ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                 : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50 dark:text-zinc-400"
                 }`}
@@ -350,7 +360,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -10 }}
-            className="grid lg:grid-cols-12 gap-8 items-start"
+            className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8"
           >
             {/* LEFT: thumbnails — 1 per 4 items */}
             <div className="lg:col-span-5 hidden lg:block">
@@ -395,16 +405,16 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
             </div>
 
             {/* RIGHT: item list */}
-            <div className="lg:col-span-7 space-y-2">
+            <div className="space-y-1 lg:col-span-7 sm:space-y-2">
               {activeSection.items.map((item, i) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                  className="group flex items-start gap-3 rounded-2xl p-3 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50 sm:gap-4 sm:p-4 md:gap-5"
                 >
-                  <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800 sm:h-18 sm:w-18 md:h-20 md:w-20">
                     {item.image ? (
                       <img
                         src={item.image}
@@ -419,9 +429,9 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                   </div>
 
                   <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none text-left">
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="mb-1.5 flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-base font-extrabold tracking-tight text-zinc-900 dark:text-white">
+                        <h4 className="text-sm font-extrabold tracking-tight text-zinc-900 dark:text-white sm:text-base">
                           {item.name}
                         </h4>
 
@@ -441,12 +451,12 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                       </div>
                     </div>
 
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2">
+                    <p className="line-clamp-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-sm">
                       {item.description}
                     </p>
 
                     {item.price && (
-                      <p className="text-xs font-bold text-primary mt-1">
+                      <p className="mt-1 text-xs font-bold text-primary">
                         {item.price}
                       </p>
                     )}
@@ -459,14 +469,15 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
       </div>
 
       {/* ── RESERVE MODAL ────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      {createPortal(
+        <AnimatePresence>
+          {showModal && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-4xl overflow-hidden shadow-2xl relative border border-zinc-100 dark:border-white/5"
+              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-zinc-100 bg-white shadow-2xl dark:border-white/5 dark:bg-zinc-900 sm:rounded-4xl"
             >
               <div className="p-6 border-b border-zinc-100 dark:border-white/5 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-800/50">
                 <div className="flex items-center gap-3">
@@ -482,13 +493,14 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                 <button
                   onClick={() => setShowModal(false)}
                   className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 cursor-pointer"
+                  aria-label="Close reservation form"
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4 p-4 sm:p-6">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                   <div className="space-y-1 text-left">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Full Name <span className="text-red-500">*</span>
@@ -548,7 +560,7 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                     />
                   </div>
 
-                  <div className="space-y-1 col-span-2 text-left">
+                  <div className="col-span-1 space-y-1 text-left sm:col-span-2">
                     <label className="text-[10px] uppercase font-black tracking-widest text-primary">
                       Total Guests <span className="text-red-500">*</span>
                     </label>
@@ -588,8 +600,10 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }

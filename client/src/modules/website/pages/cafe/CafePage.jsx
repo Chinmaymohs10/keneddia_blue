@@ -179,7 +179,7 @@ export default function CafePage() {
         </div>
 
         <div className="dark:hidden">
-          <div className="h-4 bg-linear-to-b from-[#ECECE8] to-[#F7F7F5]" />
+          <div className="h-0 bg-linear-to-b from-[#ECECE8] to-[#F7F7F5]" />
           <div className="h-px bg-[#E5E5E2]" />
         </div>
         <div className="relative z-[7] shadow-sm">
@@ -188,7 +188,7 @@ export default function CafePage() {
 
         <div className="dark:hidden">
           <div className="h-px bg-[#E5E5E2]" />
-          <div className="h-4 bg-linear-to-b from-[#F7F7F5] to-[#F8F8F6]" />
+          <div className="h-0 bg-linear-to-b from-[#F7F7F5] to-[#F8F8F6]" />
         </div>
         <div id="gallery" className="relative z-[6] shadow-sm">
           <CafeGalleryPage propertyId={resolvedPropertyId} />
