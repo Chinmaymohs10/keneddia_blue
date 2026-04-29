@@ -659,7 +659,8 @@ export default function CafeTestimonials({
         const mappedExp = list.filter(item => {
           const byTypeName = (item?.propertyTypeName || "").toLowerCase().trim() === "cafe";
           const byTypeId = cafeTypeId != null && Number(item?.propertyTypeId) === cafeTypeId;
-          return byTypeName || byTypeId;
+          const byPropertyId = propertyId != null ? String(item?.propertyId) === String(propertyId) : true;
+          return (byTypeName || byTypeId) && byPropertyId;
         }).sort((a, b) => {
           if (a.createdAt && b.createdAt) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           return Number(b.id) - Number(a.id);
@@ -862,6 +863,7 @@ export default function CafeTestimonials({
       fd.append("authorEmail", email.trim());
       fd.append("authorPhone", phone.trim());
       fd.append("rating", String(rating));
+      if (propertyId) fd.append("propertyId", String(propertyId));
       if (initialCafeTypeId != null) {
         fd.append("propertyTypeId", String(initialCafeTypeId));
       } else {

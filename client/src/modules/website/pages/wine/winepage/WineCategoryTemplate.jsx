@@ -524,10 +524,7 @@ function ItemCard({ drink, index }) {
             &ldquo;{drink.tasting}&rdquo;
           </p>
 
-          <div className="mt-4 flex items-center gap-2">
-            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
-              {drink.body}
-            </span>
+          <div className="mt-4 flex justify-center">
             <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
               <MapPin size={10} />
               {drink.location}
@@ -732,59 +729,268 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
 
 function BrandItemsSection({ items, brand }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("All Locations");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const availableLocations = useMemo(() => (
+    ["All Locations", ...Array.from(new Set(items.map((d) => d.location))).sort()]
+  ), [items]);
+
+  const availableCategories = useMemo(() => (
+    ["All", ...Array.from(new Set(items.map((d) => d.type))).sort()]
+  ), [items]);
 
   const filtered = useMemo(() => {
-    if (!searchTerm.trim()) return items;
-    const lower = searchTerm.toLowerCase();
-    return items.filter(
-      (d) =>
-        d.name.toLowerCase().includes(lower) ||
-        d.tag.toLowerCase().includes(lower) ||
-        d.subtitle?.toLowerCase().includes(lower)
-    );
-  }, [items, searchTerm]);
+    let result = items;
+    if (selectedLocation !== "All Locations") result = result.filter((d) => d.location === selectedLocation);
+    if (selectedCategory !== "All") result = result.filter((d) => d.type === selectedCategory);
+    if (searchTerm.trim()) {
+      const lower = searchTerm.toLowerCase();
+      result = result.filter(
+        (d) =>
+          d.name.toLowerCase().includes(lower) ||
+          d.tag.toLowerCase().includes(lower) ||
+          d.subtitle?.toLowerCase().includes(lower)
+      );
+    }
+    return result;
+  }, [items, selectedLocation, selectedCategory, searchTerm]);
 
   return (
     <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
-        {/* Section header */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            {/* <div className="mb-4 flex items-center gap-3">
-              <div className="h-px w-10 opacity-50" style={{ background: brand.accent }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: brand.accent }}>
-                {brand.subLabel}
-              </span>
-            </div> */}
+        <div className="mb-14 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-xl">
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
               {brand.name} <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collection</em>
             </h2>
-            <p className="mt-3 max-w-xl text-sm italic text-stone-400">{filtered.length} item{filtered.length !== 1 ? "s" : ""} available</p>
+            <p className="mt-3 text-sm italic text-stone-400">{filtered.length} item{filtered.length !== 1 ? "s" : ""} available</p>
           </div>
 
-          <div className="relative min-w-[280px]">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
-            <input
-              type="text"
-              placeholder="Search by name, tag..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-full border border-stone-200 bg-white py-3 pl-10 pr-10 text-sm outline-none focus:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-[#c9a25a] transition-colors"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
-              >
-                <X size={14} />
-              </button>
-            )}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            {/* Location filter */}
+            <div className="relative min-w-[200px]">
+              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Location</span>
+              <div className="relative">
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className="flex w-full appearance-none items-center rounded-full border border-stone-200 bg-white px-5 py-2.5 pr-10 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600"
+                >
+                  {availableLocations.map((loc) => (
+                    <option key={loc} value={loc}>{loc}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
+              </div>
+            </div>
+
+            {/* Category filter */}
+            <div className="relative min-w-[200px]">
+              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Category</span>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="flex w-full appearance-none items-center rounded-full border border-stone-200 bg-white px-5 py-2.5 pr-10 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600"
+                >
+                  {availableCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat === "All" ? "All Categories" : cat}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="relative min-w-[260px]">
+              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Search Collection</span>
+              <div className="relative">
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
+                <input
+                  type="text"
+                  placeholder="Search name, tag..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-full border border-stone-200 bg-white py-2.5 pl-10 pr-10 text-[10px] font-medium outline-none focus:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-amber-600 transition-colors"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         <FlattenedItemsSection items={filtered} accentColor={brand.accent} />
+      </div>
+    </section>
+  );
+}
+
+// ─── GLOBAL BRAND SWITCHER ────────────────────────────────────────────────────
+function GlobalBrandSwitcher({ currentSlug }) {
+  const navigate = useNavigate();
+
+  return (
+    <section className="bg-[#F0EAE2] py-14 dark:bg-[#100609]">
+      <div className="mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="h-px w-10 bg-[#c9a25a]/40" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#c9a25a]">Switch Brand</span>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+          {BRANDS.map((b, i) => {
+            const isActive = b.id === currentSlug;
+            return (
+              <motion.button
+                key={b.id}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => !isActive && navigate(`/wine-categories/${b.id}`)}
+                disabled={isActive}
+                className={`group relative overflow-hidden rounded-[1.25rem] border p-5 text-center transition-all dark:border-white/[0.07] dark:bg-[#1A0C13] ${
+                  isActive
+                    ? "border-transparent"
+                    : "cursor-pointer border-stone-200/80 bg-white/90 hover:-translate-y-1 hover:shadow-lg"
+                }`}
+                style={isActive ? { background: `linear-gradient(135deg, ${b.accent}22, ${b.accent}0a)`, borderColor: `${b.accent}50` } : {}}
+              >
+                <div
+                  className="absolute inset-x-4 top-0 h-px"
+                  style={{ background: `linear-gradient(90deg, transparent, ${b.accent}, transparent)`, opacity: isActive ? 1 : 0.7 }}
+                />
+                <p className="mb-0.5 text-[8px] uppercase tracking-[0.4em]" style={{ color: b.accent + "cc" }}>
+                  {isActive ? "Current" : b.detail}
+                </p>
+                <h4
+                  className="font-serif text-base font-semibold text-stone-900 dark:text-white"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  {b.name}
+                </h4>
+                <div className="mx-auto my-2 h-px w-8" style={{ background: `linear-gradient(90deg, transparent, ${b.accent}, transparent)` }} />
+                <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: b.accent + "cc" }}>{b.subLabel}</p>
+                {isActive && (
+                  <div className="absolute inset-0 rounded-[1.25rem] ring-1" style={{ ringColor: b.accent, boxShadow: `inset 0 0 0 1px ${b.accent}60` }} />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── GLOBAL CATEGORY SWITCHER ─────────────────────────────────────────────────
+function GlobalCategorySwitcher({ currentSlug }) {
+  const navigate = useNavigate();
+  const [hoveredSlug, setHoveredSlug] = useState(null);
+
+  return (
+    <section className="relative overflow-hidden bg-[#F5F0EA] py-16 dark:bg-[#12070A]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+
+      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-10 max-w-2xl">
+          <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+            Switch <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Category</em>
+          </h2>
+          {/* <p className="mt-4 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+            Switch between collections to explore whiskey, wine, beers, and tasting experiences.
+          </p> */}
+        </div>
+
+        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {Object.entries(TYPE_META).map(([slug, meta], i) => {
+            const isActive = slug === currentSlug;
+            const isHovered = hoveredSlug === slug;
+
+            return (
+              <motion.div
+                key={slug}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.45 }}
+                onMouseEnter={() => !isActive && setHoveredSlug(slug)}
+                onMouseLeave={() => setHoveredSlug(null)}
+                onClick={() => !isActive && navigate(`/wine-categories/${slug}`)}
+                className={`group relative flex min-h-[96px] select-none items-center overflow-hidden rounded-[1.5rem] border px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 ${
+                  isActive
+                    ? "border-transparent dark:border-transparent"
+                    : "cursor-pointer border-stone-200/90 bg-white hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
+                }`}
+                style={isActive ? { background: `linear-gradient(135deg, ${meta.accent.color}18, ${meta.accent.dot}10)`, borderColor: `${meta.accent.color}40` } : {}}
+              >
+                <div
+                  className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500"
+                  style={{ background: isActive || isHovered ? `linear-gradient(to bottom, ${meta.accent.dot}, ${meta.accent.color})` : "transparent" }}
+                />
+
+                <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
+                  <div
+                    className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full ring-2 transition-all duration-300"
+                    style={{ ringColor: isActive ? meta.accent.color : "transparent", boxShadow: isActive ? `0 0 0 2px ${meta.accent.color}` : "0 0 0 1px rgba(0,0,0,0.08)" }}
+                  >
+                    <img
+                      src={meta.heroImage}
+                      alt={meta.label}
+                      className="h-full w-full object-cover transition-transform duration-700"
+                      style={{ transform: isHovered || isActive ? "scale(1.08)" : "scale(1)" }}
+                    />
+                    {isActive && (
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: `${meta.accent.color}55` }}>
+                        <span className="text-white text-[10px] font-black uppercase tracking-widest" style={{ writingMode: "unset" }}>✓</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">
+                      {meta.label.replace(" Collection", "").replace(" Experiences", "")}
+                    </h3>
+                    {isActive && (
+                      <p className="mt-0.5 text-[9px] font-black uppercase tracking-widest" style={{ color: meta.accent.color }}>
+                        Current
+                      </p>
+                    )}
+                  </div>
+
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-transform duration-300"
+                    style={{
+                      background: isActive
+                        ? `linear-gradient(135deg, ${meta.accent.dot}, ${meta.accent.color})`
+                        : `linear-gradient(135deg, ${meta.accent.dot}99, ${meta.accent.color}99)`,
+                      transform: isHovered ? "translateX(2px)" : "translateX(0px)",
+                      opacity: isActive ? 1 : 0.7,
+                    }}
+                  >
+                    <ChevronRight size={20} />
+                  </div>
+                </div>
+
+                {!isActive && (
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{ background: `linear-gradient(90deg, ${meta.accent.color}08 0%, transparent 45%)` }}
+                  />
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -933,7 +1139,17 @@ export default function WineCategoryTemplate() {
           <BrandItemsSection items={items} brand={brand} />
         )}
 
-        {/* Related strip */}
+        {/* Category switcher — global type pages only, after the showcase */}
+        {isGlobalPage && isTypePage && (
+          <GlobalCategorySwitcher currentSlug={normalizedSlug} />
+        )}
+
+        {/* Brand switcher — global brand pages only, after the showcase */}
+        {isGlobalPage && !isTypePage && brand && (
+          <GlobalBrandSwitcher currentSlug={normalizedSlug} />
+        )}
+
+        {/* Related strip — property pages only */}
         {!isGlobalPage && (
           <RelatedStrip currentSlug={normalizedSlug} isTypePage={isTypePage} citySlug={citySlug} propertySlug={propertySlug} />
         )}

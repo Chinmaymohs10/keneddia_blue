@@ -156,10 +156,7 @@ function WineShowcaseCard({ wine, index }) {
             &ldquo;{wine.tasting}&rdquo;
           </p>
 
-          <div className="mt-4 flex items-center gap-2">
-            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
-              {wine.body}
-            </span>
+          <div className="mt-4 flex justify-center">
             <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
               <MapPin size={10} />
               {wine.location}

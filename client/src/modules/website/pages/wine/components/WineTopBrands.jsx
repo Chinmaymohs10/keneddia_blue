@@ -112,12 +112,15 @@ function BrandCard({ brand, onClick, clickable }) {
     </article>
   );
 }
-export default function WineTopBrands({ clickable = false }) {
+export default function WineTopBrands({ clickable = false, globalRoute = false }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
 
   const handleBrandClick = (brand) => {
-    if (clickable) {
+    if (!clickable) return;
+    if (globalRoute) {
+      navigate(`/wine-categories/${brand.id}`);
+    } else {
       navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
     }
   };

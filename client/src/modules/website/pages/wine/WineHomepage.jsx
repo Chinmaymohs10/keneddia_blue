@@ -186,7 +186,7 @@ export default function WineHomepage() {
           {/* Brands */}
           <div id="brand" className="bg-[#F0EAE2] dark:bg-[#100609]">
             <Suspense fallback={<SectionFallback height="h-[24rem]" />}>
-              <WineTopBrands />
+              <WineTopBrands clickable globalRoute />
             </Suspense>
           </div>
 
