@@ -59,21 +59,17 @@ export const togglePropertyPetPoojaStatus = (propertyId, active) =>
     params: { active },
   });
 
-export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken }) =>
+export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID }) =>
   axios.post(
     "https://qle1yy2ydc.execute-api.ap-southeast-1.amazonaws.com/V1/mapped_restaurant_menus",
-    undefined,
+    { restID },
     {
-      params: {
+      headers: {
         "app-key": appKey,
         "app-secret": appSecret,
         "access-token": accessToken,
+        "Content-Type": "application/json",
       },
-      transformRequest: [(data, headers) => {
-        delete headers["Content-Type"];
-        delete headers.post?.["Content-Type"];
-        return data;
-      }],
     }
   );
 

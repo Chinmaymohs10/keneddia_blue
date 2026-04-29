@@ -255,6 +255,7 @@ function MenuSection({ propertyId }) {
         appKey:      credentials["app-key"],
         appSecret:   credentials["app-secret"],
         accessToken: credentials["access-token"],
+        restID:      credentials.restID,
       });
       const raw = res?.data;
       const list = Array.isArray(raw)
