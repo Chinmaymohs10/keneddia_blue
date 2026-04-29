@@ -286,6 +286,8 @@ const normalizeEvents = (eventsRes, cafeTypeId) => {
         date: formatDate(item?.eventDate),
         location: item?.locationName || "Cafe Venue",
         detailPath,
+        ctaText: item?.ctaText || "",
+        ctaLink: item?.ctaLink || item?.ctaUrl || "",
       };
     })
     .filter((item) => item.image);
@@ -360,6 +362,8 @@ const normalizeOffers = (offersRes, cafeTypeId) => {
       date: offer.expiresAt ? `Valid until ${formatDate(offer.expiresAt)}` : "Limited Time",
       location: offer.locationName || "All Outlets",
       slug: offer.slug || `offer-${offer.id}`,
+      ctaText: offer.ctaText || "",
+      ctaLink: offer.ctaUrl || offer.ctaLink || "",
     }))
     .filter((item) => item.image);
 };

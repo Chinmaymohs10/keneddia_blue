@@ -39,6 +39,10 @@ const EMPTY_FORM = {
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
+  const ctaText = item?.ctaText?.trim() || item?.ctaLabel?.trim() || "";
+  const ctaHref = item?.ctaLink || item?.ctaUrl || item?.detailPath || (item?.slug ? `/cafe/${item.slug}` : null);
+  const isExternalCta = typeof ctaHref === "string" && /^https?:\/\//i.test(ctaHref);
+
   return (
     <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
       {/* Image */}
@@ -78,11 +82,25 @@ function ShowcaseCard({ item }) {
           {item.description}
         </p>
 
-        <Link to={item.detailPath || `/cafe/${item.slug}`} className="mt-4">
-          <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
-            Explore <ExternalLink className="ml-2 h-3 w-3" />
-          </Button>
-        </Link>
+        {ctaText && ctaHref &&
+          (isExternalCta ? (
+            <a
+              href={ctaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4"
+            >
+              <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+                {ctaText} <ExternalLink className="ml-2 h-3 w-3" />
+              </Button>
+            </a>
+          ) : (
+            <Link to={ctaHref} className="mt-4">
+              <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
+                {ctaText} <ExternalLink className="ml-2 h-3 w-3" />
+              </Button>
+            </Link>
+          ))}
       </div>
     </div>
   );
@@ -343,6 +361,8 @@ export default function CafeShowcaseSlider({
           date: item?.eventDate ? new Date(item.eventDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Upcoming",
           location: item?.locationName || "Cafe Venue",
           detailPath: item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`,
+          ctaText: item?.ctaText || item?.buttonText || "Explore Event",
+          ctaLink: item?.ctaLink || item?.ctaUrl || "",
         })).filter(i => i.image);
 
         const now = Date.now();
@@ -371,6 +391,8 @@ export default function CafeShowcaseSlider({
           date: offer.expiresAt ? `Valid until ${new Date(offer.expiresAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}` : "Limited Time",
           location: offer.locationName || "All Outlets",
           slug: offer.slug || `offer-${offer.id}`,
+          ctaText: offer?.ctaText || offer?.buttonText || "View Offer",
+          ctaLink: offer?.ctaUrl || offer?.ctaLink || "",
         })).filter(i => i.image);
 
         const rawBookings = bookingsRes?.data || bookingsRes || [];

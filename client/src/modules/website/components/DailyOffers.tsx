@@ -256,29 +256,14 @@ export default function DailyOffers({ initialOffers = [] }: { initialOffers?: an
 
             return (
               <SwiperSlide key={offer.id || i}>
-                <div className="group h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer">
+                <div className="group h-[440px] sm:h-[520px] bg-card border rounded-xl overflow-hidden flex flex-col shadow-sm relative transition-all duration-300 hover:shadow-xl cursor-pointer">
                   {/* MEDIA CONTAINER */}
                   <div
-                    className={`relative overflow-hidden ${showFullImage ? "h-full" : "h-[280px]"}`}
+                    className={`relative overflow-hidden ${showFullImage ? "h-full" : "h-[240px] sm:h-[280px]"}`}
                   >
                     {offer.image ? (
                       offer.image.type === "VIDEO" ? (
                         <OfferVideo src={offer.image.src} />
-                      ) : showFullImage ? (
-                        <div className="relative w-full h-full overflow-hidden">
-                          {/* Blurred backdrop — fills empty space without bars */}
-                          <img
-                            src={offer.image.src}
-                            aria-hidden="true"
-                            className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl brightness-50 pointer-events-none"
-                          />
-                          {/* Actual image — fully visible, no crop, no distortion */}
-                          <img
-                            src={offer.image.src}
-                            alt={offer.image.alt}
-                            className="relative w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </div>
                       ) : (
                         <img
                           src={offer.image.src}
@@ -391,3 +376,4 @@ export default function DailyOffers({ initialOffers = [] }: { initialOffers?: an
     </section>
   );
 }
+

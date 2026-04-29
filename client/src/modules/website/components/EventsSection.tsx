@@ -197,7 +197,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       onClick={() => navigate(buildEventDetailPath(event))}
-      className="group relative w-full aspect-[9/16] max-h-[520px] flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl cursor-pointer"
+      className="group relative w-full h-[440px] sm:h-[520px] flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:shadow-xl cursor-pointer"
     >
       {isFullFrame ? (
         /* ── FULL-FRAME MODE ─────────────────────────────────────────────── */
@@ -226,7 +226,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
                 <video
                   ref={videoRef}
                   src={imageUrl}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover sm:object-contain"
                   autoPlay
                   loop
                   muted
@@ -237,7 +237,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
                 <img
                   src={imageUrl}
                   alt={event.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover sm:object-contain"
                   onLoad={handleImageLoad}
                 />
               )
@@ -317,7 +317,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
                 <video
                   ref={videoRef}
                   src={imageUrl}
-                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-cover sm:object-contain transition-transform duration-700 group-hover:scale-105"
                   autoPlay
                   loop
                   muted
@@ -328,7 +328,7 @@ function EventCard({ event, index }: { event: ApiEvent; index: number }) {
                 <img
                   src={imageUrl}
                   alt={event.title}
-                  className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover sm:object-contain transition-transform duration-700 group-hover:scale-105"
                   onLoad={handleImageLoad}
                 />
               )}

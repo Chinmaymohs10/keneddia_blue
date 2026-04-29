@@ -343,11 +343,12 @@ export default function NewsListing() {
                       className="group flex flex-col sm:flex-row bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                     >
                       {/* Image */}
-                      <div className="relative w-full sm:w-48 md:w-56 lg:w-64 flex-shrink-0 aspect-[16/10] sm:aspect-[4/3] overflow-hidden">
+                      <div className="relative w-full sm:w-48 md:w-56 lg:w-64 flex-shrink-0 overflow-hidden bg-black">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="w-full h-full object-contain bg-black/5 transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-auto object-contain block transition-transform duration-500 group-hover:scale-105"
+                          style={{ maxHeight: "280px", minHeight: "140px" }}
                         />
                         <div className="absolute top-2 left-2">
                           <span className={`px-2 py-0.5 ${getCategoryBadgeColor(item.badgeType)} text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow`}>
@@ -428,11 +429,12 @@ export default function NewsListing() {
                       // key={item.id}
                       className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"
                     >
-                      <div className="relative aspect-[4/3] overflow-hidden">
+                      <div className="relative w-full bg-black overflow-hidden">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-auto object-contain block transition-transform duration-700 group-hover:scale-105"
+                          style={{ maxHeight: "280px", minHeight: "140px" }}
                         />
                         <div className="absolute top-2 left-2">
                           <span className={`px-2 py-0.5 ${getCategoryBadgeColor(item.badgeType)} text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow`}>
