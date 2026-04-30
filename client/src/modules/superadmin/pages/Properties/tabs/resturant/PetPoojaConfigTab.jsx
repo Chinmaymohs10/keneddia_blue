@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import {
   ArrowPathIcon,
   CheckCircleIcon,
@@ -8,6 +8,8 @@ import {
   EyeIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import {
@@ -225,22 +227,38 @@ function CredentialSection({ propertyId }) {
   );
 }
 
+const PAGE_SIZE = 8;
+
+// Veg indicator dot (attribute 1 = veg, 2 = non-veg)
+function VegDot({ attributeId }) {
+  const isVeg = String(attributeId) === "1";
+  return (
+    <span
+      className={`inline-block h-3 w-3 flex-shrink-0 rounded-sm border-2 ${
+        isVeg ? "border-green-600" : "border-red-600"
+      } flex items-center justify-center`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${isVeg ? "bg-green-600" : "bg-red-600"}`}
+      />
+    </span>
+  );
+}
+
 // ─── Menu Section ─────────────────────────────────────────────────────────────
 function MenuSection({ propertyId }) {
-  const [credentials, setCredentials] = useState(null);
-  const [menus, setMenus]             = useState([]);
-  const [loading, setLoading]         = useState(false);
-  const [expandedIds, setExpandedIds] = useState(new Set());
-  const [fetched, setFetched]         = useState(false);
+  const [credentials, setCredentials]   = useState(null);
+  const [categories, setCategories]     = useState([]);
+  const [items, setItems]               = useState([]);
+  const [loading, setLoading]           = useState(false);
+  const [fetched, setFetched]           = useState(false);
+  const [activeCatId, setActiveCatId]   = useState(null);
+  const [page, setPage]                 = useState(1);
 
-  // Load stored credentials to use for fetch
   useEffect(() => {
     if (!propertyId) return;
     getPropertyPetPoojaByPropertyId(propertyId)
-      .then((res) => {
-        const data = unwrapResponse(res);
-        setCredentials(data);
-      })
+      .then((res) => setCredentials(unwrapResponse(res)))
       .catch(() => {});
   }, [propertyId]);
 
@@ -258,13 +276,15 @@ function MenuSection({ propertyId }) {
         restID:      credentials.restID,
       });
       const raw = res?.data;
-      const list = Array.isArray(raw)
-        ? raw
-        : raw?.menu ?? raw?.menus ?? raw?.data ?? [];
-      setMenus(list);
+      const cats  = raw?.categories ?? [];
+      const itms  = raw?.items ?? [];
+      setCategories(cats);
+      setItems(itms);
+      setActiveCatId(cats[0]?.categoryid ?? null);
+      setPage(1);
       setFetched(true);
-      if (list.length === 0) showSuccess("Menus fetched — no items returned.");
-      else showSuccess(`Fetched ${list.length} menu item(s).`);
+      if (itms.length === 0) showSuccess("Menus fetched — no items returned.");
+      else showSuccess(`Fetched ${itms.length} item(s) across ${cats.length} categories.`);
     } catch (err) {
       showError(err?.response?.data?.message || "Failed to fetch menus from Pet Pooja.");
     } finally {
@@ -272,16 +292,22 @@ function MenuSection({ propertyId }) {
     }
   };
 
-  const toggleExpand = (id) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const filteredItems = useMemo(
+    () => items.filter((it) => String(it.item_categoryid) === String(activeCatId)),
+    [items, activeCatId]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleCatChange = (catId) => {
+    setActiveCatId(catId);
+    setPage(1);
   };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h3 className="text-base font-bold text-gray-900">Pet Pooja Menus</h3>
@@ -294,11 +320,7 @@ function MenuSection({ propertyId }) {
           disabled={loading || !credentials}
           className="inline-flex items-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
         >
-          {loading ? (
-            <ArrowPathIcon className="h-4 w-4 animate-spin" />
-          ) : (
-            <EyeIcon className="h-4 w-4" />
-          )}
+          {loading ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : <EyeIcon className="h-4 w-4" />}
           {loading ? "Fetching…" : "Fetch Menus"}
         </button>
       </div>
@@ -309,78 +331,125 @@ function MenuSection({ propertyId }) {
         </p>
       )}
 
-      {fetched && menus.length === 0 && (
+      {fetched && items.length === 0 && (
         <p className="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">
           No menu items returned from Pet Pooja.
         </p>
       )}
 
-      {menus.length > 0 && (
-        <div className="space-y-3">
-          {menus.map((menu, i) => {
-            const id = menu.id ?? menu.menu_id ?? i;
-            const isOpen = expandedIds.has(id);
-            const items = menu.items ?? menu.menu_items ?? [];
+      {fetched && categories.length > 0 && (
+        <div className="space-y-5">
+          {/* Category tabs */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.categoryid}
+                onClick={() => handleCatChange(cat.categoryid)}
+                className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                  String(activeCatId) === String(cat.categoryid)
+                    ? "bg-orange-500 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {cat.categoryname}
+                <span className="ml-1.5 opacity-70">
+                  ({items.filter((it) => String(it.item_categoryid) === String(cat.categoryid)).length})
+                </span>
+              </button>
+            ))}
+          </div>
 
-            return (
-              <div key={id} className="overflow-hidden rounded-xl border border-gray-200">
-                <button
-                  onClick={() => toggleExpand(id)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-gray-50"
+          {/* Items grid */}
+          {pagedItems.length === 0 ? (
+            <p className="rounded-xl bg-gray-50 p-4 text-sm text-gray-400">No items in this category.</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {pagedItems.map((item) => (
+                <div
+                  key={item.itemid}
+                  className={`rounded-xl border p-4 transition ${
+                    item.in_stock === "0" ? "border-gray-100 bg-gray-50 opacity-60" : "border-gray-200 bg-white"
+                  }`}
                 >
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">
-                      {menu.menu_name ?? menu.name ?? `Menu ${i + 1}`}
-                    </p>
-                    {menu.menu_category_name && (
-                      <p className="text-[11px] text-gray-400">{menu.menu_category_name}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold text-gray-500">
-                      {items.length} items
-                    </span>
-                    {isOpen ? (
-                      <ChevronUpIcon className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronDownIcon className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
-                </button>
-
-                {isOpen && items.length > 0 && (
-                  <div className="border-t border-gray-100 bg-gray-50 px-5 py-3">
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                      {items.map((item, j) => (
-                        <div
-                          key={item.id ?? j}
-                          className="rounded-lg border border-gray-200 bg-white p-3"
-                        >
-                          <p className="text-[13px] font-semibold text-gray-800">
-                            {item.item_name ?? item.name ?? `Item ${j + 1}`}
-                          </p>
-                          {item.price != null && (
-                            <p className="mt-0.5 text-xs text-gray-500">₹{item.price}</p>
-                          )}
-                          {item.item_description && (
-                            <p className="mt-1 line-clamp-2 text-[11px] text-gray-400">
-                              {item.item_description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                  <div className="flex items-start gap-2">
+                    <VegDot attributeId={item.item_attributeid} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-semibold text-gray-800">{item.itemname}</p>
+                      {item.price && (
+                        <p className="mt-0.5 text-xs font-bold text-orange-600">₹{parseFloat(item.price).toFixed(2)}</p>
+                      )}
+                      {item.itemdescription && (
+                        <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-gray-400">
+                          {item.itemdescription}
+                        </p>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {item.in_stock === "0" && (
+                          <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-500">
+                            Out of stock
+                          </span>
+                        )}
+                        {item.itemallowaddon === "1" && (
+                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-500">
+                            Customisable
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
+          )}
 
-                {isOpen && items.length === 0 && (
-                  <div className="border-t border-gray-100 bg-gray-50 px-5 py-3 text-xs text-gray-400">
-                    No items in this menu.
-                  </div>
-                )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-xs text-gray-400">
+                Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredItems.length)} of {filteredItems.length} items
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="rounded-lg border border-gray-200 p-1.5 text-gray-500 transition hover:bg-gray-50 disabled:opacity-40"
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .reduce((acc, p, idx, arr) => {
+                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push("…");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === "…" ? (
+                      <span key={`ellipsis-${i}`} className="px-1 text-xs text-gray-400">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`h-7 w-7 rounded-lg text-xs font-bold transition ${
+                          page === p
+                            ? "bg-orange-500 text-white"
+                            : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="rounded-lg border border-gray-200 p-1.5 text-gray-500 transition hover:bg-gray-50 disabled:opacity-40"
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
       )}
     </div>

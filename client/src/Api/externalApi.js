@@ -61,14 +61,13 @@ export const togglePropertyPetPoojaStatus = (propertyId, active) =>
 
 export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID }) =>
   axios.post(
-    "https://qle1yy2ydc.execute-api.ap-southeast-1.amazonaws.com/V1/mapped_restaurant_menus",
+    "http://192.168.0.135:6090/api/v1/menu/fetch",
     { restID },
     {
-      headers: {
+      params: {
         "app-key": appKey,
         "app-secret": appSecret,
         "access-token": accessToken,
-        "Content-Type": "application/json",
       },
     }
   );
