@@ -14,10 +14,11 @@ import {
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getPropertyTypes, getEventsUpdated, getDailyOffers, getGroupBookings } from "@/Api/Api";
 import { getGroupBookingHeaderByPropertyType, createGroupBookingEnquiry } from "@/Api/RestaurantApi";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -61,17 +62,50 @@ const getMediaType = (media) => {
   return (media.type || "IMAGE").toUpperCase();
 };
 
+const normalizeCtaUrl = (url = "") => {
+  const clean = String(url || "").trim();
+  if (!clean) return "";
+  if (/^(https?:|mailto:|tel:)/i.test(clean)) return clean;
+  if (clean.startsWith("//")) return `https:${clean}`;
+  if (/^(www\.)?(instagram\.com|youtube\.com|youtu\.be|facebook\.com)\//i.test(clean)) {
+    return `https://${clean.replace(/^https?:\/\//i, "")}`;
+  }
+  return clean;
+};
+
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
+  const navigate = useNavigate();
   const linkPath = item.type === "Offer" || item.type === "Event"
     ? (item.detailPath || `/cafe/${item.slug}`)
     : `/cafe/${item.slug}`;
+  const rawCtaHref =
+    item?.type === "Event"
+      ? item?.detailPath || item?.ctaLink || item?.ctaUrl || (item?.slug ? `/events/${item.slug}` : null)
+      : item?.ctaLink || item?.ctaUrl || linkPath;
+  const ctaHref = normalizeCtaUrl(rawCtaHref);
+  const isExternalCta =
+    typeof ctaHref === "string" &&
+    (/^(https?:|mailto:|tel:)/i.test(ctaHref) || /^(www\.)?(instagram\.com|youtube\.com|youtu\.be|facebook\.com)\//i.test(ctaHref));
   const mediaSrc = getMediaSrc(item?.image);
   const mediaType = getMediaType(item?.image);
+  const isEventCard = item?.type === "Event";
+
+  const handleCardClick = () => {
+    if (!isEventCard || !ctaHref) return;
+    if (isExternalCta) {
+      window.open(ctaHref, "_blank", "noopener,noreferrer");
+      return;
+    }
+    navigate(ctaHref);
+  };
 
   return (
-    <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
+    <div
+      onClick={handleCardClick}
+      className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
+    >
       <div className="relative h-full w-full overflow-hidden">
         {mediaType === "VIDEO" ? (
           <video
@@ -115,9 +149,10 @@ function ShowcaseCard({ item }) {
         </p>
         {item.ctaText && (
           <Link
-            to={item.ctaLink || linkPath}
+            to={ctaHref || linkPath}
             className="mt-4"
-            {...(item.ctaLink ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            {...(isExternalCta ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            onClick={(event) => event.stopPropagation()}
           >
             <Button className="h-auto w-full cursor-pointer rounded-lg bg-white/15 py-2.5 text-xs font-bold text-white shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black border border-white/20">
               {item.ctaText} <ExternalLink className="ml-2 h-3 w-3" />
@@ -471,7 +506,13 @@ export default function CafepageEvents({
               : null,
           date: item?.eventDate ? new Date(item.eventDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Upcoming",
           location: item?.locationName || "Cafe Venue",
-          detailPath: item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`,
+          detailPath: (() => {
+            try {
+              return buildEventDetailPath(item);
+            } catch {
+              return item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`;
+            }
+          })(),
           ctaText: item?.ctaText || "",
           ctaLink: item?.ctaLink || "",
         })).filter(i => getMediaSrc(i.image));

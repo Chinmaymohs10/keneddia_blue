@@ -122,12 +122,23 @@ function EditPropertyModal({
     p.addressUrl ? "addressUrl" : "coordinates",
   );
 
-  // ── Existing media (max 3) ─────────────────────────────────────────────────
-  const existingMedia = (listing.media || []).slice(0, 3);
+  // ── Existing media (max 3), deduped for UI ─────────────────────────────────
+  // Backend may occasionally return duplicated entries for the same media.
+  // Show only unique photos in the edit UI.
+  const existingMedia = (listing.media || [])
+    .filter((media) => media?.url)
+    .filter((media, index, arr) => {
+      const key = media.mediaId || media.url;
+      return (
+        arr.findIndex((m) => (m.mediaId || m.url) === key) === index
+      );
+    })
+    .slice(0, 3);
 
   // ── New files to replace media ─────────────────────────────────────────────
   const [newFiles, setNewFiles] = useState([]); // File[]
   const [mediaUploading, setMediaUploading] = useState(false);
+  const [replaceMediaIndex, setReplaceMediaIndex] = useState(0);
 
   const resolveTypeIds = () =>
     (p.propertyTypes || [])
@@ -265,7 +276,19 @@ function EditPropertyModal({
     const existingMediaIds = (listing.media || [])
       .map((m) => m.mediaId)
       .filter(Boolean);
-    existingMediaIds.forEach((id) => mediaFormData.append("mediaIds", id));
+
+    // Replace exactly one selected slot when editing existing media.
+    // This avoids one file being applied to all media positions.
+    const targetMediaId =
+      existingMediaIds.length > 0
+        ? existingMediaIds[Math.min(replaceMediaIndex, existingMediaIds.length - 1)]
+        : null;
+    if (targetMediaId) {
+      mediaFormData.append("mediaIds", targetMediaId);
+      // Backward compatibility if backend expects singular key
+      mediaFormData.append("mediaId", targetMediaId);
+    }
+
     newFiles.forEach((file) => mediaFormData.append("files", file));
 
     return mediaFormData;
@@ -291,6 +314,7 @@ function EditPropertyModal({
       await PropertyEdiMedia(listing.id, buildMediaFormData());
       toast.success("Media updated successfully");
       setNewFiles([]);
+      onSuccess?.();
       return true;
     } catch (err) {
       console.error(err);
@@ -1025,7 +1049,12 @@ function EditPropertyModal({
                       {existingMedia.map((media, idx) => (
                         <div
                           key={idx}
-                          className="relative rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-100"
+                          onClick={() => setReplaceMediaIndex(idx)}
+                          className={`relative rounded-xl overflow-hidden border aspect-video bg-gray-100 cursor-pointer transition-all ${
+                            replaceMediaIndex === idx
+                              ? "border-blue-500 ring-2 ring-blue-200"
+                              : "border-gray-200"
+                          }`}
                         >
                           <img
                             src={media.url}
@@ -1047,6 +1076,9 @@ function EditPropertyModal({
                         </div>
                       ))}
                     </div>
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      Replacing slot: {replaceMediaIndex + 1}
+                    </p>
                   </div>
                 )}
 

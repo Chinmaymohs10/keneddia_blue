@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { siteContent } from "@/data/siteContent";
 import { getPropertyTypes } from "@/Api/Api";
@@ -20,6 +20,7 @@ import {
 import UiCalendar from "@/components/ui/calendar";
 import { toast } from "react-hot-toast";
 import { validateGroupBookingForm } from "@/lib/validation/reservationValidation";
+import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 
 import "swiper/css";
 
@@ -65,17 +66,35 @@ const getMediaType = (media) => {
 // ── Shared Card ───────────────────────────────────────────────────────────────
 
 function ShowcaseCard({ item }) {
+  const navigate = useNavigate();
   const ctaText = item?.ctaText?.trim() || item?.ctaLabel?.trim() || "";
-  const rawCtaHref = item?.ctaLink || item?.ctaUrl || item?.detailPath || (item?.slug ? `/cafe/${item.slug}` : null);
+  const rawCtaHref =
+    item?.type === "Event"
+      ? item?.detailPath || item?.ctaLink || item?.ctaUrl || (item?.slug ? `/events/${item.slug}` : null)
+      : item?.ctaLink || item?.ctaUrl || item?.detailPath || (item?.slug ? `/cafe/${item.slug}` : null);
   const ctaHref = normalizeCtaUrl(rawCtaHref);
   const isExternalCta =
     typeof ctaHref === "string" &&
     (/^(https?:|mailto:|tel:)/i.test(ctaHref) || /^(www\.)?(instagram\.com|youtube\.com|youtu\.be|facebook\.com)\//i.test(ctaHref));
   const mediaSrc = getMediaSrc(item?.image);
   const mediaType = getMediaType(item?.image);
+  const isEventCard = item?.type === "Event";
+  const canOpenCard = Boolean(ctaHref);
+
+  const handleCardClick = () => {
+    if (!canOpenCard) return;
+    if (isExternalCta) {
+      window.open(ctaHref, "_blank", "noopener,noreferrer");
+      return;
+    }
+    navigate(ctaHref);
+  };
 
   return (
-    <div className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl">
+    <div
+      onClick={isEventCard ? handleCardClick : undefined}
+      className="group relative mx-auto flex w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] cursor-pointer flex-col overflow-hidden rounded-xl bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
+    >
       {/* Image */}
       <div className="relative h-full w-full overflow-hidden">
         {mediaType === "VIDEO" ? (
@@ -406,7 +425,13 @@ export default function CafeShowcaseSlider({
               : null,
           date: item?.eventDate ? new Date(item.eventDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "Upcoming",
           location: item?.locationName || "Cafe Venue",
-          detailPath: item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`,
+          detailPath: (() => {
+            try {
+              return buildEventDetailPath(item);
+            } catch {
+              return item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`;
+            }
+          })(),
           ctaText: item?.ctaText || item?.buttonText || "Explore Event",
           ctaLink: item?.ctaLink || item?.ctaUrl || "",
         })).filter(i => getMediaSrc(i.image));
