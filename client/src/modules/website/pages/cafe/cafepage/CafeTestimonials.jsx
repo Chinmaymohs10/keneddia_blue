@@ -105,6 +105,7 @@ const getInstagramEmbedUrl = (url = "") => {
 
 function MediaTile({ item, index, total }) {
   const [isMuted, setIsMuted] = useState(true);
+  const ytRef = useRef(null);
 
   if (!item) return null;
 
@@ -115,6 +116,16 @@ function MediaTile({ item, index, total }) {
   const isNativeVideo = item.type === "video" || isVideoFileUrl(url);
   const youtubeId = isYoutube ? getYoutubeId(url) : null;
   const instagramEmbedUrl = isInstagram ? getInstagramEmbedUrl(url) : "";
+
+  const toggleYtMute = (event) => {
+    event.stopPropagation();
+    const next = !isMuted;
+    setIsMuted(next);
+    ytRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: next ? "mute" : "unMute", args: "" }),
+      "*",
+    );
+  };
 
   return (
     <div className={`group relative overflow-hidden ${roundedClass} bg-[#E7D8CA]/70 dark:bg-[#241716]`}>
@@ -141,7 +152,8 @@ function MediaTile({ item, index, total }) {
       ) : isYoutube && youtubeId ? (
         <div className="relative h-full w-full">
           <iframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+            ref={ytRef}
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1&enablejsapi=1`}
             className="h-full w-full pointer-events-none"
             style={{ border: "none" }}
             allow="autoplay; encrypted-media"
@@ -149,25 +161,20 @@ function MediaTile({ item, index, total }) {
           />
           <button
             type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              setIsMuted((current) => !current);
-            }}
-            className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+            onClick={toggleYtMute}
+            className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 shadow-md pointer-events-auto cursor-pointer select-none isolate"
             aria-label={isMuted ? "Unmute video" : "Mute video"}
           >
-            {isMuted ? (
-              <VolumeX size={16} className="text-white" />
-            ) : (
-              <Volume2 size={16} className="text-white" />
-            )}
+            <span className="pointer-events-none">
+              {isMuted ? <VolumeX size={16} className="text-white" /> : <Volume2 size={16} className="text-white" />}
+            </span>
           </button>
         </div>
       ) : isNativeVideo ? (
         <div className="relative h-full w-full">
           <video
             src={url}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover pointer-events-none"
             autoPlay
             muted={isMuted}
             loop
@@ -180,14 +187,12 @@ function MediaTile({ item, index, total }) {
               event.stopPropagation();
               setIsMuted((current) => !current);
             }}
-            className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+            className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 shadow-md pointer-events-auto cursor-pointer select-none isolate"
             aria-label={isMuted ? "Unmute video" : "Mute video"}
           >
-            {isMuted ? (
-              <VolumeX size={16} className="text-white" />
-            ) : (
-              <Volume2 size={16} className="text-white" />
-            )}
+            <span className="pointer-events-none transition-opacity duration-150">
+              {isMuted ? <VolumeX size={16} className="text-white" /> : <Volume2 size={16} className="text-white" />}
+            </span>
           </button>
         </div>
       ) : (
@@ -277,6 +282,17 @@ function MediaGrid({ items }) {
 
 function StandaloneMedia({ media, alt, className }) {
   const [isMuted, setIsMuted] = useState(true);
+  const ytRef = useRef(null);
+
+  const toggleYtMute = (event) => {
+    event.stopPropagation();
+    const next = !isMuted;
+    setIsMuted(next);
+    ytRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: next ? "mute" : "unMute", args: "" }),
+      "*",
+    );
+  };
 
   if (!media) return null;
 
@@ -325,7 +341,8 @@ function StandaloneMedia({ media, alt, className }) {
     return (
       <div className={`${className} group relative overflow-hidden bg-black`}>
         <iframe
-          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1`}
+          ref={ytRef}
+          src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&controls=0&modestbranding=1&enablejsapi=1`}
           className="h-full w-full pointer-events-none"
           style={{ border: "none" }}
           allow="autoplay; encrypted-media"
@@ -333,18 +350,13 @@ function StandaloneMedia({ media, alt, className }) {
         />
         <button
           type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            setIsMuted((current) => !current);
-          }}
-          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+          onClick={toggleYtMute}
+          className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 shadow-md pointer-events-auto cursor-pointer select-none isolate"
           aria-label={isMuted ? "Unmute video" : "Mute video"}
         >
-          {isMuted ? (
-            <VolumeX size={16} className="text-white" />
-          ) : (
-            <Volume2 size={16} className="text-white" />
-          )}
+          <span className="pointer-events-none">
+            {isMuted ? <VolumeX size={16} className="text-white" /> : <Volume2 size={16} className="text-white" />}
+          </span>
         </button>
       </div>
     );
@@ -355,7 +367,7 @@ function StandaloneMedia({ media, alt, className }) {
       <div className={`${className} group relative overflow-hidden bg-black`}>
         <video
           src={url}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover pointer-events-none"
           autoPlay
           muted={isMuted}
           loop
@@ -364,18 +376,13 @@ function StandaloneMedia({ media, alt, className }) {
         />
         <button
           type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            setIsMuted((current) => !current);
-          }}
-          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-black/75 shadow-lg backdrop-blur-sm pointer-events-auto cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); setIsMuted((v) => !v); }}
+          className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 shadow-md pointer-events-auto cursor-pointer select-none isolate"
           aria-label={isMuted ? "Unmute video" : "Mute video"}
         >
-          {isMuted ? (
-            <VolumeX size={16} className="text-white" />
-          ) : (
-            <Volume2 size={16} className="text-white" />
-          )}
+          <span className="pointer-events-none">
+            {isMuted ? <VolumeX size={16} className="text-white" /> : <Volume2 size={16} className="text-white" />}
+          </span>
         </button>
       </div>
     );
@@ -444,14 +451,14 @@ function TestimonialCard({ item }) {
         ) : (
           <div className="h-full w-full bg-linear-to-br from-[#5F4338] to-[#A27B62]" />
         )}
-        <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
 
-        <div className="absolute left-4 top-4 flex items-center justify-between right-4">
+        <div className="pointer-events-none absolute left-4 top-4 flex items-center justify-between right-4">
           {/* <HeartsRow light /> */}
           <DateBadge date={item.date} light />
         </div>
 
-        <div className="absolute inset-x-4 bottom-4">
+        <div className="pointer-events-none absolute inset-x-4 bottom-4">
           <AuthorRow item={item} light />
         </div>
       </motion.article>
@@ -508,13 +515,13 @@ function TestimonialCard({ item }) {
           ) : (
             <div className="h-full w-full bg-linear-to-br from-[#5F4338] to-[#A27B62]" />
           )}
-          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
-          <div className="absolute left-3 top-3 flex items-center justify-between right-3">
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute left-3 top-3 flex items-center justify-between right-3">
             {/* <HeartsRow light /> */}
             <DateBadge date={item.date} light />
           </div>
           {img && (
-            <div className="absolute bottom-3 left-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md">
+            <div className="pointer-events-none absolute bottom-3 left-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md">
               {getMediaBadge(img.type)}
             </div>
           )}

@@ -264,7 +264,9 @@ export default function HotelDetail() {
       ? propertyDetail?.pageData
       : null;
   const ssrSeo =
-    propertyDetail?.propertyId === propertyIdFromUrl ? propertyDetail?.seo : null;
+    propertyDetail?.propertyId === propertyIdFromUrl
+      ? propertyDetail?.seo
+      : null;
   const [hotel, setHotel] = useState<HotelData | null>(
     ssrHotelDetail?.hotel || null,
   );
@@ -347,7 +349,10 @@ export default function HotelDetail() {
         return;
       }
 
-      const seo = await fetchPropertySeo(propertyIdFromUrl, window.location.pathname);
+      const seo = await fetchPropertySeo(
+        propertyIdFromUrl,
+        window.location.pathname,
+      );
       if (isMounted) {
         applySeoToDocument(seo);
       }
@@ -413,10 +418,7 @@ export default function HotelDetail() {
     [effectiveSelectedRoomId, rooms],
   );
 
-  const diningSectionItems = useMemo(
-    () => diningItems,
-    [diningItems],
-  );
+  const diningSectionItems = useMemo(() => diningItems, [diningItems]);
 
   useEffect(() => {
     setCurrentDiningIndex(0);
@@ -479,7 +481,9 @@ export default function HotelDetail() {
         .toLowerCase()
         .replace(/\s+/g, " ");
 
-      return policy?.isActive && normalizedPolicyName === normalizedFreeCancellation;
+      return (
+        policy?.isActive && normalizedPolicyName === normalizedFreeCancellation
+      );
     });
 
     return matchedPolicy?.name || "";
@@ -678,7 +682,6 @@ export default function HotelDetail() {
         });
         console.log("LISTING:", listing);
         console.log("TAGLINE:", listing?.tagline);
-
       } catch (err) {
         console.error("Property Fetch Error:", err);
         setError("Error loading data");
@@ -707,51 +710,51 @@ export default function HotelDetail() {
               return Number(a.roomId || 0) - Number(b.roomId || 0);
             })
             .map((r: any) => {
-            const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
-            const discountPercentage = Number(r.discount ?? 0);
-            const discountedPrice =
-              originalBasePrice > 0
-                ? Math.max(
-                    0,
-                    originalBasePrice -
-                      (originalBasePrice * discountPercentage) / 100,
-                  )
-                : 0;
-            const resolvedDiscountPercent =
-              originalBasePrice > 0 && discountPercentage > 0
-                ? Math.round(discountPercentage)
-                : 0;
+              const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
+              const discountPercentage = Number(r.discount ?? 0);
+              const discountedPrice =
+                originalBasePrice > 0
+                  ? Math.max(
+                      0,
+                      originalBasePrice -
+                        (originalBasePrice * discountPercentage) / 100,
+                    )
+                  : 0;
+              const resolvedDiscountPercent =
+                originalBasePrice > 0 && discountPercentage > 0
+                  ? Math.round(discountPercentage)
+                  : 0;
 
-            return {
-              id: r.roomId.toString(),
-              name: r.roomName || r.roomNumber,
-              type: r.roomTypeName || r.roomType,
-              description: r.description || "",
-              basePrice: discountedPrice,
-              originalPrice: originalBasePrice > 0 ? originalBasePrice : null,
-              strikePrice: originalBasePrice > 0 ? originalBasePrice : null,
-              discount: discountPercentage > 0 ? discountPercentage : null,
-              discountPercent:
-                resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
-              maxOccupancy: r.maxOccupancy || 1,
-              roomSize: r.roomSize ?? null,
-              roomSizeUnit: r.roomSizeUnit || "SQ_FT",
-              displayOrder: r.displayOrder ?? null,
-              isAvailable: r.status === "AVAILABLE",
-              amenities: r.amenitiesAndFeatures || [],
-              highlightedAmenities:
-                r.amenitiesAndFeatures?.filter((a: RoomAmenity) =>
-                  Boolean(a.showHighlight),
-                ) || [],
-              image: {
-                src:
-                  r.media?.find((item: any) => item.type === "IMAGE")?.url ||
-                  r.media?.[0]?.url ||
-                  "/images/room-placeholder.jpg",
-                alt: r.roomName,
-              },
-            };
-          })
+              return {
+                id: r.roomId.toString(),
+                name: r.roomName || r.roomNumber,
+                type: r.roomTypeName || r.roomType,
+                description: r.description || "",
+                basePrice: discountedPrice,
+                originalPrice: originalBasePrice > 0 ? originalBasePrice : null,
+                strikePrice: originalBasePrice > 0 ? originalBasePrice : null,
+                discount: discountPercentage > 0 ? discountPercentage : null,
+                discountPercent:
+                  resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
+                maxOccupancy: r.maxOccupancy || 1,
+                roomSize: r.roomSize ?? null,
+                roomSizeUnit: r.roomSizeUnit || "SQ_FT",
+                displayOrder: r.displayOrder ?? null,
+                isAvailable: r.status === "AVAILABLE",
+                amenities: r.amenitiesAndFeatures || [],
+                highlightedAmenities:
+                  r.amenitiesAndFeatures?.filter((a: RoomAmenity) =>
+                    Boolean(a.showHighlight),
+                  ) || [],
+                image: {
+                  src:
+                    r.media?.find((item: any) => item.type === "IMAGE")?.url ||
+                    r.media?.[0]?.url ||
+                    "/images/room-placeholder.jpg",
+                  alt: r.roomName,
+                },
+              };
+            })
         : [];
 
       setRooms(mappedRooms);
@@ -1021,10 +1024,7 @@ export default function HotelDetail() {
               Home
             </Link>
             <ChevronRight className="w-4 h-4" />
-            <Link
-              to="/hotels"
-              className="hotel-breadcrumb-link"
-            >
+            <Link to="/hotels" className="hotel-breadcrumb-link">
               Hotels
             </Link>
             <ChevronRight className="w-4 h-4" />
@@ -1197,16 +1197,11 @@ export default function HotelDetail() {
           <div className="hotel-page-grid">
             <div className="space-y-10">
               <section id="room-options" className="scroll-mt-32">
-                <h2 className="website-section-heading">
-                  Choose Your Room
-                </h2>
+                <h2 className="website-section-heading">Choose Your Room</h2>
                 {highlightedRoomAmenities.length > 0 && (
                   <div className="flex flex-wrap gap-3 mb-6">
                     {highlightedRoomAmenities.map((amenity) => (
-                      <span
-                        key={amenity}
-                        className="hotel-pill"
-                      >
+                      <span key={amenity} className="hotel-pill">
                         {amenity}
                       </span>
                     ))}
@@ -1266,9 +1261,7 @@ export default function HotelDetail() {
                   className="grid grid-cols-1 xl:grid-cols-2 gap-8"
                 >
                   <div className="min-w-0">
-                    <h2 className="website-section-heading">
-                      Events
-                    </h2>
+                    <h2 className="website-section-heading">Events</h2>
                     <EventSectionPropertySpecific
                       locationId={hotel.locationId}
                       locationName={hotel.city}
@@ -1277,9 +1270,7 @@ export default function HotelDetail() {
                   </div>
 
                   <div className="min-w-0">
-                    <h2 className="website-section-heading">
-                      Food & Dining
-                    </h2>
+                    <h2 className="website-section-heading">Food & Dining</h2>
 
                     {diningSectionItems.length > 0 ? (
                       <div className="relative">
@@ -1304,10 +1295,10 @@ export default function HotelDetail() {
                                   className="w-full flex-shrink-0"
                                 >
                                   <div
-                                      className={`hotel-card overflow-hidden transition-shadow duration-200 ${
-                                        restaurantPath
-                                          ? "cursor-pointer hover:shadow-md"
-                                          : ""
+                                    className={`hotel-card overflow-hidden transition-shadow duration-200 ${
+                                      restaurantPath
+                                        ? "cursor-pointer hover:shadow-md"
+                                        : ""
                                     }`}
                                     onClick={() => {
                                       if (restaurantPath)
@@ -1511,24 +1502,20 @@ export default function HotelDetail() {
                   </div>
                 </section>
               )}
-               <section id="reviews" className="hotel-section">
-                <ReviewsSection propertyId={propertyIdFromUrl} />
-              </section>
-             
+
               <section id="location" className="hotel-section">
-                <h2 className="website-section-heading">
-                  Location
-                </h2>
+                <h2 className="website-section-heading">Location</h2>
                 <PropertyMap
                   property={hotel}
                   nearbyPlaces={hotel.nearbyPlaces || []}
                 />
               </section>
+              <section id="reviews" className="hotel-section">
+                <ReviewsSection propertyId={propertyIdFromUrl} />
+              </section>
 
               <section id="policies" className="hotel-section">
-                <h2 className="website-section-heading">
-                  Guest Policies
-                </h2>
+                <h2 className="website-section-heading">Guest Policies</h2>
                 <div className="hotel-policy-panel">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <div className="space-y-4">
@@ -1577,7 +1564,10 @@ export default function HotelDetail() {
                               className="flex items-center gap-1.5"
                             >
                               <span className="h-1 w-1 shrink-0 rounded-full bg-red-500" />
-                              <span className="text-[11px] leading-tight text-foreground dark:text-foreground/85 truncate" title={p.name}>
+                              <span
+                                className="text-[11px] leading-tight text-foreground dark:text-foreground/85 truncate"
+                                title={p.name}
+                              >
                                 {p.name}
                               </span>
                             </li>
