@@ -310,16 +310,12 @@ export default function NewsDetails() {
           const filtered = formatted.filter((p: Property) => {
             const pType = p.type?.toLowerCase();
             if (targetCategory === "hotel")
-              return (
-                pType === "hotel" || pType === "resort" || pType === "villa"
-              );
+              return pType === "hotel" || pType === "resort" || pType === "villa";
             if (targetCategory === "restaurant")
-              return (
-                pType === "restaurant" ||
-                pType === "cafe" ||
-                pType === "wine & dine"
-              );
-            return true;
+              return pType === "restaurant" || pType === "wine & dine";
+            if (targetCategory === "cafe")
+              return pType === "cafe";
+            return pType === targetCategory;
           });
 
           setDynamicProperties(filtered);
