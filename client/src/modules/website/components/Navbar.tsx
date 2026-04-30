@@ -33,8 +33,11 @@ const JOIN_US_ITEMS = [
 // Quick Booking Options
 const QUICK_BOOKING_OPTIONS = [
   { label: "Book Hotel", category: "hotel" as const },
-  // { label: "Reserve Table (Dine-in)", category: "dining" as const },
-  // { label: "Takeaway / Delivery", category: "delivery" as const },
+  { label: "Reserve Restaurant", category: "restaurant" as const },
+  { label: "Reserve Cafe", category: "cafe" as const },
+];
+const DEFAULT_NON_HOME_QUICK_BOOKING_OPTIONS = [
+  { label: "Book Hotel", category: "hotel" as const },
 ];
 
 // Quick Book Option Type
@@ -154,7 +157,11 @@ export default function Navbar({
     location.pathname.startsWith("/wine-detail") ||
     location.pathname.startsWith("/wine-categories");
   const showQuickBook = showQuickBookProp !== undefined ? showQuickBookProp : isTransparentHeroRoute;
-  const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions || QUICK_BOOKING_OPTIONS;
+  const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions
+    ? quickBookOptions
+    : location.pathname === "/"
+      ? QUICK_BOOKING_OPTIONS
+      : DEFAULT_NON_HOME_QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
   const shouldUseDarkLogoOnTransparentInLightMode =
