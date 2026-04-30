@@ -147,8 +147,7 @@ const WebsiteRoutes = [
   <Route key="home" path="/" element={withRouteSuspense(<Home />)} />,
   // <Route key="home" path="/" element={withRouteSuspense(<Hotels />)} />,
   // <Route key="home" path="/" element={withRouteSuspense(<RestaurantHomepage />)} />,
-
-  // <Route path="/" element={<Navigate to="/ghaziabad/kennedia-blu-restaurant-ghaziabad-31" replace />}/>,
+  //  <Route key="home" path="/" element={withRouteSuspense(<CafeHomepage />)} />,
 
   <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
   // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
@@ -175,10 +174,10 @@ const WebsiteRoutes = [
   />,
   <Route key="cafe-homepage" path="/cafe-homepage" element={withRouteSuspense(<CafeHomepage />)} />,
   <Route key="cafe-page-preview" path="/cafe-page" element={<CafePage />} />,
-  <Route key="wine-homepage" path="/wine-homepage" element={withRouteSuspense(<WineHomepage />)} />,
-  <Route key="wine-detail" path="/wine-detail/:citySlug/:propertySlug" element={withRouteSuspense(<WinePage />)} />,
-  <Route key="wine-category-global" path="/wine-categories/:slug" element={withRouteSuspense(<WineCategoryTemplate />)} />,
-  <Route key="wine-category" path="/wine-detail/:citySlug/:propertySlug/:slug" element={withRouteSuspense(<WineCategoryTemplate />)} />,
+  // <Route key="wine-homepage" path="/wine-homepage" element={withRouteSuspense(<WineHomepage />)} />,
+  // <Route key="wine-detail" path="/wine-detail/:citySlug/:propertySlug" element={withRouteSuspense(<WinePage />)} />,
+  // <Route key="wine-category-global" path="/wine-categories/:slug" element={withRouteSuspense(<WineCategoryTemplate />)} />,
+  // <Route key="wine-category" path="/wine-detail/:citySlug/:propertySlug/:slug" element={withRouteSuspense(<WineCategoryTemplate />)} />,
 
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
 

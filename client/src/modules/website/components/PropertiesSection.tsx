@@ -60,6 +60,7 @@ const SUBTITLE_LIMIT = 120;
 // ── PROD BASE URLS ─────────────────────────────
 const HOTEL_BASE_URL = "https://hotels.kennediablu.com";
 const RESTAURANT_BASE_URL = "https://restaurants.kennediablu.com/";
+const CAFE_BASE_URL = "https://cafes.kennediablu.com/";
 
 const getPropertyUrls = (
   propertyType: string | undefined,
@@ -70,13 +71,19 @@ const getPropertyUrls = (
   const propertyPath = `${createCitySlug(
     city || propertyName,
   )}/${createHotelSlug(propertyName || city || "", propertyId)}`;
-  const isRestaurant = propertyType?.toLowerCase() === "restaurant";
-  const finalUrl = isRestaurant
-    ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
-    : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+  const pType = propertyType?.toLowerCase();
+  const isRestaurant = pType === "restaurant";
+  const isCafe = pType === "cafe";
+  const baseUrl = isCafe
+    ? CAFE_BASE_URL
+    : isRestaurant
+      ? RESTAURANT_BASE_URL
+      : HOTEL_BASE_URL;
+  const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
 
   return {
     isRestaurant,
+    isCafe,
     propertyPath,
     localPath: `/${propertyPath}`,
     finalUrl,
@@ -276,13 +283,15 @@ const CarouselItem = ({
               e.stopPropagation();
               e.preventDefault();
 
-              const isRestaurant =
-                property.propertyType?.toLowerCase() === "restaurant";
+              const _pType = property.propertyType?.toLowerCase();
               navigate(localPath);
 
-              // const finalUrl = isRestaurant
-              //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
-              //   : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+              // const _base = _pType === "cafe"
+              //   ? CAFE_BASE_URL
+              //   : _pType === "restaurant"
+              //     ? RESTAURANT_BASE_URL
+              //     : HOTEL_BASE_URL;
+              // const finalUrl = `${_base.replace(/\/$/, "")}/${propertyPath}`;
 
               // window.open(finalUrl, "_blank", "noopener,noreferrer");
             }}
@@ -434,9 +443,11 @@ export default function PropertiesSection({
   const active = filtered[activeIndex];
   const nextProperty =
     filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
-  const isRestaurant = active?.propertyType?.toLowerCase() === "restaurant";
+  const _activeType = active?.propertyType?.toLowerCase();
+  const isRestaurant = _activeType === "restaurant";
+  const isCafe = _activeType === "cafe";
   const hotelStarLabel =
-    !isRestaurant && active?.propertyRating
+    !isRestaurant && !isCafe && active?.propertyRating
       ? `${active.propertyRating} Star`
       : null;
   const activePropertyUrls = active
@@ -781,18 +792,22 @@ transition-all cursor-pointer"
                                 active.propertyId,
                               )}`;
 
+                            const pType = active.propertyType?.toLowerCase();
                             const isRestaurant =
-                              activePropertyUrls?.isRestaurant ??
-                              active.propertyType?.toLowerCase() ===
-                                "restaurant";
+                              activePropertyUrls?.isRestaurant ?? pType === "restaurant";
+                            const isCafe =
+                              activePropertyUrls?.isCafe ?? pType === "cafe";
                             navigate(
                               activePropertyUrls?.localPath ||
                                 `/${propertyPath}`,
                             );
 
-                            // const finalUrl = isRestaurant
-                            //   ? `${RESTAURANT_BASE_URL.replace(/\/$/, "")}/${propertyPath}`
-                            //   : `${HOTEL_BASE_URL.replace(/\/$/, "")}/${propertyPath}`;
+                            // const baseUrl = isCafe
+                            //   ? CAFE_BASE_URL
+                            //   : isRestaurant
+                            //     ? RESTAURANT_BASE_URL
+                            //     : HOTEL_BASE_URL;
+                            // const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
 
                             // window.open(
                             //   finalUrl,

@@ -13,22 +13,12 @@ import { ThemeToggle } from "./ThemeToggle";
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
   // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
+  // { label: "Restaurants", href: "https://restaurants.kennediablu.com",external: true },
+  // { label: "Cafes & Dining", href: "https://cafes.kennediablu.com/",external: true },
+
   { label: "Hotels & Resorts", href: "/hotels", external: true },
   { label: "Restaurants", href: "/restaurant-homepage", external: true },
-  // { label: "Restaurants", href: "https://restaurants.kennediablu.com",external: true }
-
-  // {
-  //   label: "Restaurants",
-  //   href: "/ghaziabad/kennedia-blu-restaurant-27",
-  //   external: true,
-  // },
-
-  // { label: "Restaurants", href: "https://restaurants.kennediablu.com/ghaziabad/kennedia-blu-restaurant-ghaziabad-31",external: true }
-
   { label: "Cafes & Dining", href: "/cafe-homepage", external: true },
-  // { label: "Bars & Lounges", href: "/bars" },
-  // { label: "Events & Conf.", href: "/events" },
-  // { label: "Entertainment", href: "/entertainment" },
 ];
 
 // Join Us Dropdown Items
