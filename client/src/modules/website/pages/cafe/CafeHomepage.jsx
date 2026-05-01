@@ -354,6 +354,13 @@ export default function CafeHomepage() {
               ))}
             </ul>
           )}
+          {ssr?.menuSectionHeader && (
+            <div>
+              {ssr.menuSectionHeader.heading && <h2>{ssr.menuSectionHeader.heading}</h2>}
+              {ssr.menuSectionHeader.subHeading && <h3>{ssr.menuSectionHeader.subHeading}</h3>}
+              {ssr.menuSectionHeader.description && <p>{ssr.menuSectionHeader.description}</p>}
+            </div>
+          )}
           {(ssr?.bestSellers || []).length > 0 && (
             <ul>
               {ssr.bestSellers.map((item) => (
@@ -417,6 +424,7 @@ export default function CafeHomepage() {
           <CafeBestSellers
             initialItems={ssr?.bestSellers}
             cafeTypeId={ssr?.cafeTypeId}
+            initialHeaderData={ssr?.menuSectionHeader}
           />
         </div>
         <div className="relative z-[6] shadow-sm">
