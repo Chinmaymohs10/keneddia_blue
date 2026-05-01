@@ -47,6 +47,14 @@ export default function RestaurantHomepage() {
   );
   const [loading, setLoading] = useState(!ssrRestaurantDetail);
 
+  // SSR-seeded section data
+  const ssrVerticalCards = ssrRestaurantDetail?.verticalCards || null;
+  const ssrVerticalSectionHeader = ssrRestaurantDetail?.verticalSectionHeader || null;
+  const ssrBuffetHeader = ssrRestaurantDetail?.buffetHeader || null;
+  const ssrBuffetItems = ssrRestaurantDetail?.buffetItems || null;
+  const ssrMenuItems = ssrRestaurantDetail?.menuItems || null;
+  const ssrAboutSections = ssrRestaurantDetail?.aboutSections || null;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -171,25 +179,84 @@ export default function RestaurantHomepage() {
       />
 
       <main>
-        {/* SSR: structured property data for crawlers */}
-        {propertyData && (
-          <div className="sr-only" aria-hidden="true">
-            <h1>{propertyData.propertyName || propertyData.name}</h1>
-            <p>{propertyData.city || propertyData.locationName}</p>
-            {(propertyData.fullAddress || propertyData.address) && (
-              <p>{propertyData.fullAddress || propertyData.address}</p>
-            )}
-            {(propertyData.mainHeading || propertyData.description) && (
-              <p>{propertyData.mainHeading || propertyData.description}</p>
-            )}
-            {galleryData.slice(0, 5).map((g, i) => (
-              g?.media?.url && <img key={i} src={g.media.url} alt={g.media.alt || propertyData.propertyName || ""} />
-            ))}
-            {(propertyData.media || []).slice(0, 3).map((m, i) => (
-              m?.url && <img key={`m-${i}`} src={m.url} alt={m.alt || propertyData.propertyName || ""} />
-            ))}
-          </div>
-        )}
+        {/* SSR: full structured data for crawlers */}
+        <div className="sr-only" aria-hidden="true">
+          {propertyData && (
+            <div>
+              <h1>{propertyData.propertyName || propertyData.name}</h1>
+              <p>{propertyData.city || propertyData.locationName}</p>
+              {(propertyData.fullAddress || propertyData.address) && (
+                <p>{propertyData.fullAddress || propertyData.address}</p>
+              )}
+              {(propertyData.mainHeading || propertyData.description) && (
+                <p>{propertyData.mainHeading || propertyData.description}</p>
+              )}
+              {galleryData.slice(0, 8).map((g, i) => (
+                g?.media?.url && <img key={i} src={g.media.url} alt={g.media.alt || propertyData.propertyName || ""} />
+              ))}
+              {(propertyData.media || []).slice(0, 4).map((m, i) => (
+                m?.url && <img key={`m-${i}`} src={m.url} alt={m.alt || propertyData.propertyName || ""} />
+              ))}
+            </div>
+          )}
+          {ssrVerticalSectionHeader && (
+            <div>
+              <h2>{ssrVerticalSectionHeader.headlineLine1} {ssrVerticalSectionHeader.headlineLine2}</h2>
+              {ssrVerticalSectionHeader.description && <p>{ssrVerticalSectionHeader.description}</p>}
+            </div>
+          )}
+          {(ssrVerticalCards || []).length > 0 && (
+            <ul>
+              {ssrVerticalCards.map((card) => (
+                <li key={card.id}>
+                  <h3>{card.verticalName || card.title}</h3>
+                  {card.description && <p>{card.description}</p>}
+                  {card.media?.url && <img src={card.media.url} alt={card.verticalName || card.title || ""} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {ssrBuffetHeader && (
+            <div>
+              <h2>{ssrBuffetHeader.headlinePart1} {ssrBuffetHeader.headlinePart2}</h2>
+              {ssrBuffetHeader.description && <p>{ssrBuffetHeader.description}</p>}
+            </div>
+          )}
+          {(ssrBuffetItems || []).length > 0 && (
+            <ul>
+              {ssrBuffetItems.map((item) => (
+                <li key={item.id}>
+                  <span>{item.itemName || item.name}</span>
+                  {item.image?.url && <img src={item.image.url} alt={item.itemName || ""} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssrMenuItems || []).length > 0 && (
+            <ul>
+              {ssrMenuItems.map((item) => (
+                <li key={item.id}>
+                  <h4>{item.itemName || item.name}</h4>
+                  {item.description && <p>{item.description}</p>}
+                  {item.price && <span>₹{item.price}</span>}
+                  {item.image?.url && <img src={item.image.url} alt={item.itemName || ""} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(ssrAboutSections || []).length > 0 && (
+            <div>
+              {ssrAboutSections.map((a) => (
+                <div key={a.id}>
+                  {a.heading && <h2>{a.heading}</h2>}
+                  {a.subHeading && <h3>{a.subHeading}</h3>}
+                  {a.description && <p>{a.description}</p>}
+                  {a.media?.url && <img src={a.media.url} alt={a.heading || propertyData?.propertyName || ""} />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div id="home">
           <ResturantBanner
@@ -203,12 +270,22 @@ export default function RestaurantHomepage() {
           <ResturantSubCategories
             propertyId={numericPropertyId}
             propertyData={propertyData}
+            initialVerticals={ssrVerticalCards}
+            initialHeader={ssrVerticalSectionHeader}
           />
-          <SignatureDishesAndBuffet propertyId={numericPropertyId} />
+          <SignatureDishesAndBuffet
+            propertyId={numericPropertyId}
+            initialMenuItems={ssrMenuItems}
+            initialBuffetItems={ssrBuffetItems}
+            initialBuffetHeader={ssrBuffetHeader}
+          />
         </div>
 
         <div id="about">
-          <AboutResturantPage propertyId={numericPropertyId} />
+          <AboutResturantPage
+            propertyId={numericPropertyId}
+            initialAboutSections={ssrAboutSections}
+          />
         </div>
 
         <div id="events">
@@ -218,7 +295,10 @@ export default function RestaurantHomepage() {
         <Testimonials propertyId={numericPropertyId} />
 
         <div id="gallery">
-          <ResturantGallerypage propertyId={numericPropertyId} />
+          <ResturantGallerypage
+            propertyId={numericPropertyId}
+            initialGalleryData={galleryData}
+          />
         </div>
         <div id="reservation">
           <ReservationForm propertyId={numericPropertyId} />

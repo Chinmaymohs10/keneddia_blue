@@ -227,18 +227,29 @@ function DishImage({ src, alt }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function EnhancedCulinaryCuration({ propertyId }) {
+export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems, initialBuffetItems, initialBuffetHeader }) {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
 
-  const [buffetHeader, setBuffetHeader] = useState(BUFFET_HEADER_FALLBACK);
-  const [buffetItems, setBuffetItems] = useState(BUFFET_DATA_FALLBACK);
+  const [buffetHeader, setBuffetHeader] = useState(() => {
+    if (!initialBuffetHeader) return BUFFET_HEADER_FALLBACK;
+    return {
+      headlinePart1: initialBuffetHeader.headlinePart1 || BUFFET_HEADER_FALLBACK.headlinePart1,
+      headlinePart2: initialBuffetHeader.headlinePart2 || BUFFET_HEADER_FALLBACK.headlinePart2,
+      description: initialBuffetHeader.description || BUFFET_HEADER_FALLBACK.description,
+    };
+  });
+  const [buffetItems, setBuffetItems] = useState(() => {
+    if (!initialBuffetItems?.length) return BUFFET_DATA_FALLBACK;
+    const sorted = [...initialBuffetItems].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    return sorted.length ? sorted : BUFFET_DATA_FALLBACK;
+  });
   const [offerHeader, setOfferHeader] = useState(OFFER_HEADER_FALLBACK);
 
   const [menuHeader, setMenuHeader] = useState(null);
   const [chefRemark, setChefRemark] = useState(null);
-  const [menuItems, setMenuItems] = useState([]);
-  const [menuLoading, setMenuLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState(initialMenuItems || []);
+  const [menuLoading, setMenuLoading] = useState(!initialMenuItems?.length);
   const [isMenuDescriptionExpanded, setIsMenuDescriptionExpanded] =
     useState(false);
   const [showMenuDescriptionToggle, setShowMenuDescriptionToggle] =
@@ -271,6 +282,7 @@ export default function EnhancedCulinaryCuration({ propertyId }) {
 
   useEffect(() => {
     if (!propertyId) return;
+    if (initialBuffetHeader && initialBuffetItems?.length) return;
 
     getAllBuffetSectionHeaders()
       .then((res) => {

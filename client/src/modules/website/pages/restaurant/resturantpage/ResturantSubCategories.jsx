@@ -89,13 +89,34 @@ const STATIC_HEADER = {
   },
 };
 
-export default function ResturantSubCategories({ propertyId, propertyData }) {
+export default function ResturantSubCategories({ propertyId, propertyData, initialVerticals, initialHeader }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
-  const [header, setHeader] = useState(null);
-  const [experiences, setExperiences] = useState(null);
-  const [experiencesFetched, setExperiencesFetched] = useState(false);
+  const [header, setHeader] = useState(initialHeader || null);
+  const [experiences, setExperiences] = useState(() => {
+    if (!initialVerticals?.length) return null;
+    return initialVerticals.map((card, index) => {
+      const fallback = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
+      const slug = card.verticalName?.toLowerCase().trim().replace(/\s+/g, "-");
+      return {
+        slug,
+        id: card.id,
+        title: card.verticalName || card.itemName,
+        description: card.description || "",
+        image: card.media?.url || "https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=800",
+        link: card.link || "#",
+        ctaButtonText: card.showOrderButton ? card.extraText || "Order" : null,
+        lightBgColor: card.cardBackgroundColor || null,
+        bgColor: fallback.bgColor,
+        hoverBg: fallback.hoverBg,
+        isHexColor: !!card.cardBackgroundColor,
+        heroImage: card.media?.url || "",
+        themeColor: card.cardBackgroundColor || null,
+      };
+    });
+  });
+  const [experiencesFetched, setExperiencesFetched] = useState(!!(initialVerticals?.length));
   const [isDark, setIsDark] = useState(false);
 
   const { scrollYProgress } = useScroll({
@@ -127,6 +148,7 @@ export default function ResturantSubCategories({ propertyId, propertyData }) {
   }, []);
 
   useEffect(() => {
+    if (initialVerticals?.length && initialHeader) return;
     const fetchData = async () => {
       try {
         const headerRes = await getAllVerticalSectionsHeader();
