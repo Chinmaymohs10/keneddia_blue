@@ -171,6 +171,26 @@ export default function RestaurantHomepage() {
       />
 
       <main>
+        {/* SSR: structured property data for crawlers */}
+        {propertyData && (
+          <div className="sr-only" aria-hidden="true">
+            <h1>{propertyData.propertyName || propertyData.name}</h1>
+            <p>{propertyData.city || propertyData.locationName}</p>
+            {(propertyData.fullAddress || propertyData.address) && (
+              <p>{propertyData.fullAddress || propertyData.address}</p>
+            )}
+            {(propertyData.mainHeading || propertyData.description) && (
+              <p>{propertyData.mainHeading || propertyData.description}</p>
+            )}
+            {galleryData.slice(0, 5).map((g, i) => (
+              g?.media?.url && <img key={i} src={g.media.url} alt={g.media.alt || propertyData.propertyName || ""} />
+            ))}
+            {(propertyData.media || []).slice(0, 3).map((m, i) => (
+              m?.url && <img key={`m-${i}`} src={m.url} alt={m.alt || propertyData.propertyName || ""} />
+            ))}
+          </div>
+        )}
+
         <div id="home">
           <ResturantBanner
             propertyData={propertyData}

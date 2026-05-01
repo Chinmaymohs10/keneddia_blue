@@ -23,6 +23,12 @@ function formatHtmlFallback(html) {
 }
 
 async function formatHtmlDocument(html) {
+  // For large documents (full page with React SSR output) prettier is too slow;
+  // use the fast regex fallback instead.
+  if (html.length > 100_000) {
+    return formatHtmlFallback(html);
+  }
+
   const prettier = await getPrettier();
 
   if (!prettier?.format) {
@@ -105,14 +111,15 @@ export async function render(url, template) {
         )
       : template;
 
-  const templateHtml = await formatHtmlDocument(processedTemplate);
   const initialDataScript = `<script>window.__SSR_INITIAL_DATA__=${serializeInitialData(initialData)}</script>`;
-  const rawHtml = templateHtml
+  const assembledHtml = processedTemplate
     .replace(
       /<div id="root"><\/div>/,
       `<div id="root">${appHtml}</div>`,
     )
     .replace("</body>", `${initialDataScript}</body>`);
 
-  return { html: rawHtml, appHtml, initialData };
+  const html = await formatHtmlDocument(assembledHtml);
+
+  return { html, appHtml, initialData };
 }

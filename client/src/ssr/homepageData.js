@@ -14,6 +14,7 @@ import {
   getPublicRecognitionsByAboutUsId,
   getVenturesByAboutUsId,
 } from "@/Api/Api";
+import { fetchGlobalSeo } from "@/lib/seo";
 
 const DAYS = [
   "SUNDAY",

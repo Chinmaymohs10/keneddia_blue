@@ -214,6 +214,7 @@ export default function Hotels() {
 
   useEffect(() => {
     if (!hotelTypeId) return;
+    if (initialHeroSlides.length > 0) return;
 
     const fetchHeroSections = async () => {
       setLoading(true);
@@ -239,6 +240,7 @@ export default function Hotels() {
 
   useEffect(() => {
     if (!hotelTypeId) return;
+    if (initialAboutSections.length > 0) return;
 
     const fetchAboutUsSections = async () => {
       setLoadingAbout(true);
@@ -374,9 +376,35 @@ export default function Hotels() {
         ) : (
           <section className="py-6">
             <div className="container mx-auto px-6 lg:px-12">
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                Hotel collection loads after hydration.
-              </div>
+              {(ssrHotels?.hotelCollection ?? []).length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(ssrHotels?.hotelCollection ?? []).map((hotel: any) => (
+                    <article key={hotel.id} className="rounded-xl border bg-card overflow-hidden shadow-sm">
+                      {hotel.image?.src && (
+                        <img
+                          src={hotel.image.src}
+                          alt={hotel.image.alt || hotel.name}
+                          className="w-full h-48 object-cover"
+                        />
+                      )}
+                      <div className="p-4">
+                        <h3 className="font-serif text-lg font-semibold leading-snug">{hotel.name}</h3>
+                        <p className="text-sm text-muted-foreground mt-0.5">{hotel.city}</p>
+                        {hotel.description && (
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{hotel.description}</p>
+                        )}
+                        {hotel.rating > 0 && (
+                          <p className="text-xs text-primary font-semibold mt-2">★ {hotel.rating}</p>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  Hotel collection loads after hydration.
+                </div>
+              )}
             </div>
           </section>
         )}
