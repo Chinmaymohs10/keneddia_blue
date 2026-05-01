@@ -77,7 +77,7 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }) {
+export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId, initialHeaderData }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
@@ -109,7 +109,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
           : "",
     }));
   };
-  const [headerData, setHeaderData] = useState(null);
+  const [headerData, setHeaderData] = useState(initialHeaderData || null);
 
   const [resolvedTypeId, setResolvedTypeId] = useState(cafeTypeId);
 
@@ -156,6 +156,7 @@ export default function CafeBestSellers({ initialItems, cafeTypeId, propertyId }
 
   useEffect(() => {
     if (!resolvedTypeId) return;
+    if (initialHeaderData) return;
     getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         console.log(res);

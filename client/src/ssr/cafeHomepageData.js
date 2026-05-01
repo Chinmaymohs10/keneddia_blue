@@ -15,7 +15,7 @@ import {
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 import { buildEventDetailPath } from "@/modules/website/utils/eventSlug";
 import { getCafeSectionById, getCafeSectionsByPropertyType } from "@/Api/CafeApi";
-import { getMenuItemsByTopSoldV2 } from "@/Api/RestaurantApi";
+import { getMenuItemsByTopSoldV2, getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 import cafeParisian from "@assets/generated_images/parisian_style_cafe_interior.png";
 import cafeMinimalist from "@assets/generated_images/modern_minimalist_coffee_shop.png";
 import cafeGarden from "@assets/generated_images/garden_terrace_cafe.png";
@@ -457,6 +457,7 @@ export const fetchCafeHomepageData = async () => {
     guestHeaderRes,
     guestRatingRes,
     bestSellersRes,
+    menuSectionHeaderRes,
   ] = await Promise.all([
     cafeTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(cafeTypeId), { data: [] })
@@ -476,6 +477,9 @@ export const fetchCafeHomepageData = async () => {
     fetchSafe(() => getGuestExperienceSectionHeader(), null),
     fetchSafe(() => getGuestExperineceRatingHeader(), null),
     fetchSafe(() => getMenuItemsByTopSoldV2({ topSold: true, propertyTypeId: cafeTypeId }), { data: [] }),
+    cafeTypeId
+      ? fetchSafe(() => getMenuSectionsByPropertyTypeId(cafeTypeId), { data: [] })
+      : { data: [] },
   ]);
 
   const aboutSections = await normalizeAboutSections(aboutRes, cafeTypeId);
@@ -519,5 +523,10 @@ export const fetchCafeHomepageData = async () => {
       return ratingData || null;
     })(),
     bestSellers: normalizeBestSellers(bestSellersRes?.data ?? [], cafeTypeId),
+    menuSectionHeader: (() => {
+      const raw = menuSectionHeaderRes?.data?.data || menuSectionHeaderRes?.data || menuSectionHeaderRes || [];
+      const list = Array.isArray(raw) ? raw : [];
+      return list.find((h) => h.isActive) || list[0] || null;
+    })(),
   };
 };
