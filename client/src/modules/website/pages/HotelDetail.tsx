@@ -1295,7 +1295,7 @@ export default function HotelDetail() {
                                   className="w-full flex-shrink-0"
                                 >
                                   <div
-                                    className={`hotel-card overflow-hidden transition-shadow duration-200 ${
+                                    className={`hotel-card overflow-hidden flex flex-col h-[520px] transition-shadow duration-200 ${
                                       restaurantPath
                                         ? "cursor-pointer hover:shadow-md"
                                         : ""
@@ -1378,7 +1378,7 @@ export default function HotelDetail() {
                                         </div>
                                       )}
                                     </div>
-                                    <div className="p-4 space-y-1">
+                                    <div className="p-4 space-y-1 flex-1">
                                       {restaurant.name ? (
                                         <p className="text-base font-semibold text-foreground leading-snug">
                                           {restaurant.name}
