@@ -14,7 +14,11 @@ import {
   getPropertyTypes,
   getPublicRecognitionsByAboutUsId,
 } from "@/Api/Api";
-import { getMenuItemsByTopSoldV2 } from "@/Api/RestaurantApi";
+import {
+  getMenuItemsByTopSoldV2,
+  getMenuSectionsByPropertyTypeId,
+  getGroupBookingHeaderByPropertyType,
+} from "@/Api/RestaurantApi";
 
 const fetchSafe = async (fn, fallback) => {
   try {
@@ -380,6 +384,8 @@ export const fetchRestaurantHomepageData = async () => {
     sectionHeaderRes,
     ratingHeaderRes,
     locationsRes,
+    menuSectionHeaderRes,
+    groupBookingHeaderRes,
   ] = await Promise.all([
     restaurantTypeId
       ? fetchSafe(() => getHotelHomepageHeroSection(restaurantTypeId), { data: [] })
@@ -397,6 +403,12 @@ export const fetchRestaurantHomepageData = async () => {
     fetchSafe(() => getGuestExperienceSectionHeader(), null),
     fetchSafe(() => getGuestExperineceRatingHeader(), null),
     fetchSafe(() => getAllLocations(), null),
+    restaurantTypeId
+      ? fetchSafe(() => getMenuSectionsByPropertyTypeId(restaurantTypeId), { data: [] })
+      : { data: [] },
+    restaurantTypeId
+      ? fetchSafe(() => getGroupBookingHeaderByPropertyType(restaurantTypeId), null)
+      : null,
   ]);
 
   const aboutSections = await normalizeAboutSections(aboutRes, restaurantTypeId);
@@ -421,5 +433,16 @@ export const fetchRestaurantHomepageData = async () => {
       ? ratingHeaderRes.data[0] || null
       : ratingHeaderRes?.data || null,
     locations: locationsRes ? normalizeLocations(locationsRes) : [],
+    menuSectionHeader: (() => {
+      const raw = menuSectionHeaderRes?.data?.data || menuSectionHeaderRes?.data || menuSectionHeaderRes || [];
+      const list = Array.isArray(raw) ? raw : [];
+      return list.find((h) => h.isActive) || list[0] || null;
+    })(),
+    groupBookingHeader: (() => {
+      const raw = groupBookingHeaderRes?.data || groupBookingHeaderRes;
+      if (!raw) return null;
+      const list = Array.isArray(raw) ? raw : [raw];
+      return list.filter((h) => h?.isActive).sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))[0] || null;
+    })(),
   };
 };

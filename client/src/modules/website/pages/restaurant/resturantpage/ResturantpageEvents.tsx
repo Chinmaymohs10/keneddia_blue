@@ -110,7 +110,7 @@ const normalizeEvent = (apiEvent: ApiEvent): ApiEvent => {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ResturantpageEvents({ propertyId }: PropertyProps) {
+export default function ResturantpageEvents({ propertyId, initialEventsHeader }: PropertyProps & { initialEventsHeader?: { header1: string; header2: string; description: string } | null }) {
   const [events, setEvents] = useState<ApiEvent[]>([]);
   const [groupBookings, setGroupBookings] = useState<GroupBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +120,7 @@ export default function ResturantpageEvents({ propertyId }: PropertyProps) {
     header1: string;
     header2: string;
     description: string;
-  } | null>(null);
+  } | null>(initialEventsHeader || null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(0);

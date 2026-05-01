@@ -81,7 +81,7 @@ function AnimatedCounter({ target }) {
   return <span>{count.toLocaleString()}</span>;
 }
 
-export default function RestaurantBestSellers({ initialItems, restaurantTypeId }) {
+export default function RestaurantBestSellers({ initialItems, restaurantTypeId, initialMenuSectionHeader }) {
   const ssrLoaded = Array.isArray(initialItems) && initialItems.length > 0;
   const [activeFilter, setActiveFilter] = useState("Veg");
   const [expanded, setExpanded] = useState(false);
@@ -100,7 +100,7 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
   });
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
-  const [headerData, setHeaderData] = useState(null);
+  const [headerData, setHeaderData] = useState(initialMenuSectionHeader || null);
   const [resolvedTypeId, setResolvedTypeId] = useState(restaurantTypeId);
 
   useEffect(() => {
@@ -119,6 +119,7 @@ export default function RestaurantBestSellers({ initialItems, restaurantTypeId }
 
   useEffect(() => {
     if (!resolvedTypeId) return;
+    if (initialMenuSectionHeader) return;
     getMenuSectionsByPropertyTypeId(resolvedTypeId)
       .then((res) => {
         const data = res.data?.data || res.data;

@@ -227,7 +227,7 @@ function DishImage({ src, alt }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems, initialBuffetItems, initialBuffetHeader }) {
+export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems, initialBuffetItems, initialBuffetHeader, initialOfferHeader, initialMenuHeader }) {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
 
@@ -244,9 +244,23 @@ export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems,
     const sorted = [...initialBuffetItems].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
     return sorted.length ? sorted : BUFFET_DATA_FALLBACK;
   });
-  const [offerHeader, setOfferHeader] = useState(OFFER_HEADER_FALLBACK);
+  const [offerHeader, setOfferHeader] = useState(() => {
+    if (!initialOfferHeader) return OFFER_HEADER_FALLBACK;
+    return {
+      headLine1: initialOfferHeader.headLine1 || OFFER_HEADER_FALLBACK.headLine1,
+      headLine2: initialOfferHeader.headLine2 || OFFER_HEADER_FALLBACK.headLine2,
+      description: initialOfferHeader.description || OFFER_HEADER_FALLBACK.description,
+    };
+  });
 
-  const [menuHeader, setMenuHeader] = useState(null);
+  const [menuHeader, setMenuHeader] = useState(() => {
+    if (!initialMenuHeader) return null;
+    return {
+      part1: initialMenuHeader.part1 || initialMenuHeader.menuPart1 || "",
+      part2: initialMenuHeader.part2 || initialMenuHeader.menuPart2 || "",
+      description: initialMenuHeader.description || "",
+    };
+  });
   const [chefRemark, setChefRemark] = useState(null);
   const [menuItems, setMenuItems] = useState(initialMenuItems || []);
   const [menuLoading, setMenuLoading] = useState(!initialMenuItems?.length);
@@ -316,7 +330,7 @@ export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems,
       })
       .catch(() => { });
 
-    getAllOfferHeaders()
+    if (!initialOfferHeader) getAllOfferHeaders()
       .then((res) => {
         const data = Array.isArray(res) ? res : res?.data;
         if (data?.length) {
@@ -345,6 +359,10 @@ export default function EnhancedCulinaryCuration({ propertyId, initialMenuItems,
 
   useEffect(() => {
     if (!propertyId) return;
+    if (initialMenuItems?.length && initialMenuHeader) {
+      setMenuLoading(false);
+      return;
+    }
     setMenuLoading(true);
 
     Promise.all([getMenuHeaders(), getChefRemarks(), getMenuItemsByPropertyId(propertyId)])

@@ -20,6 +20,7 @@ import ReservationForm from "./components/ReservationForm";
 import Testimonials from "./components/Testimonials";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 
 // Restaurant Navigation Items (following Hotels page pattern)
 const RESTAURANT_NAV_ITEMS = [
@@ -84,27 +85,37 @@ export default function RestaurantHomepage() {
         {/* SSR structured index: all restaurant properties visible to crawlers */}
         {(ssr?.restaurantProperties?.length ?? 0) > 0 && (
           <ul className="sr-only" aria-hidden="true">
-            {ssr.restaurantProperties.map((r) => (
-              <li key={r.id}>
-                {r.image?.src && (
-                  <img src={r.image.src} alt={r.image.alt || r.name} />
-                )}
-                <h3>{r.name}</h3>
-                <p>{r.city}{r.location ? ` — ${r.location}` : ""}</p>
-                {r.description && <p>{r.description}</p>}
-                {r.rating > 0 && <p>Rating: {r.rating}</p>}
-              </li>
-            ))}
+            {ssr.restaurantProperties.map((r) => {
+              const slug = `/${createCitySlug(r.city || r.name)}/${createHotelSlug(r.name || r.city || "restaurant", r.propertyId)}`;
+              return (
+                <li key={r.id}>
+                  <a href={slug}>
+                    {r.image?.src && (
+                      <img src={r.image.src} alt={r.image.alt || r.name} />
+                    )}
+                    <h3>{r.name}</h3>
+                    <p>{r.city}{r.location ? ` — ${r.location}` : ""}</p>
+                    {r.description && <p>{r.description}</p>}
+                    {r.rating > 0 && <p>Rating: {r.rating}</p>}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         )}
 
         <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
-        <RestaurantBestSellers initialItems={ssr?.bestSellers} restaurantTypeId={ssr?.restaurantTypeId} />
+        <RestaurantBestSellers
+          initialItems={ssr?.bestSellers}
+          restaurantTypeId={ssr?.restaurantTypeId}
+          initialMenuSectionHeader={ssr?.menuSectionHeader}
+        />
         <AboutRestaurant initialSections={ssr?.aboutSections} />
         <EventsSchedule
           initialEvents={ssr?.restaurantEvents}
           initialGroupBookings={ssr?.groupBookings}
           initialRestaurantTypeId={ssr?.restaurantTypeId}
+          initialGroupBookingHeader={ssr?.groupBookingHeader}
         />
         <RestaurantNewsSection initialNews={ssr?.restaurantNews} />
         <RestaurantGuestReviews

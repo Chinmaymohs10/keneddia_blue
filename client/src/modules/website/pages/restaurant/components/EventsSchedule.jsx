@@ -319,6 +319,7 @@ export default function EventsSchedule({
   initialEvents,
   initialGroupBookings,
   initialRestaurantTypeId,
+  initialGroupBookingHeader,
 }) {
   const ssrEvents = Array.isArray(initialEvents) && initialEvents.length > 0;
   const ssrBookings =
@@ -338,7 +339,7 @@ export default function EventsSchedule({
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [groupBookingHeader, setGroupBookingHeader] = useState(null);
+  const [groupBookingHeader, setGroupBookingHeader] = useState(initialGroupBookingHeader || null);
 
   const setField = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -469,6 +470,7 @@ export default function EventsSchedule({
 
   useEffect(() => {
     if (!restaurantTypeId) return;
+    if (initialGroupBookingHeader) return;
     getGroupBookingHeaderByPropertyType(restaurantTypeId)
       .then((res) => {
         const latestActiveRecord =

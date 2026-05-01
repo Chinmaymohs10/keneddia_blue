@@ -322,14 +322,13 @@ const FeedbackCard = ({ item }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function AutoTestimonials({ propertyId }) {
-  console.log("propertyId", propertyId);
+export default function AutoTestimonials({ propertyId, initialTestimonialHeader }) {
   const containerRef = useRef(null);
   const fileInputRef = useRef(null);
   const [testimonialHeader, setTestimonialHeader] = useState({
-    testimonialName1: "",
-    testimonialName2: "",
-    description: "",
+    testimonialName1: initialTestimonialHeader?.testimonialName1 || initialTestimonialHeader?.header1 || "",
+    testimonialName2: initialTestimonialHeader?.testimonialName2 || initialTestimonialHeader?.header2 || "",
+    description: initialTestimonialHeader?.description || "",
   });
 
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -423,7 +422,7 @@ export default function AutoTestimonials({ propertyId }) {
   };
 
   useEffect(() => {
-    fetchTestimonialHeader();
+    if (!initialTestimonialHeader) fetchTestimonialHeader();
     fetchExperiences();
     getPropertyTypes()
       .then((res) => {

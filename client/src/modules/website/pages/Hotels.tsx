@@ -21,6 +21,7 @@ import HotelHeroSection from "../components/hotel/HotelHeroSection";
 
 import { siteContent } from "@/data/siteContent";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import {
   getHotelHomepageHeroSection,
   getPropertyTypes,
@@ -378,27 +379,32 @@ export default function Hotels() {
             <div className="container mx-auto px-6 lg:px-12">
               {(ssrHotels?.hotelCollection ?? []).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(ssrHotels?.hotelCollection ?? []).map((hotel: any) => (
+                  {(ssrHotels?.hotelCollection ?? []).map((hotel: any) => {
+                    const slug = `/${createCitySlug(hotel.city || hotel.name)}/${createHotelSlug(hotel.name || hotel.city || "hotel", hotel.propertyId)}`;
+                    return (
                     <article key={hotel.id} className="rounded-xl border bg-card overflow-hidden shadow-sm">
-                      {hotel.image?.src && (
-                        <img
-                          src={hotel.image.src}
-                          alt={hotel.image.alt || hotel.name}
-                          className="w-full h-48 object-cover"
-                        />
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-serif text-lg font-semibold leading-snug">{hotel.name}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">{hotel.city}</p>
-                        {hotel.description && (
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{hotel.description}</p>
+                      <a href={slug}>
+                        {hotel.image?.src && (
+                          <img
+                            src={hotel.image.src}
+                            alt={hotel.image.alt || hotel.name}
+                            className="w-full h-48 object-cover"
+                          />
                         )}
-                        {hotel.rating > 0 && (
-                          <p className="text-xs text-primary font-semibold mt-2">★ {hotel.rating}</p>
-                        )}
-                      </div>
+                        <div className="p-4">
+                          <h3 className="font-serif text-lg font-semibold leading-snug">{hotel.name}</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">{hotel.city}</p>
+                          {hotel.description && (
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{hotel.description}</p>
+                          )}
+                          {hotel.rating > 0 && (
+                            <p className="text-xs text-primary font-semibold mt-2">★ {hotel.rating}</p>
+                          )}
+                        </div>
+                      </a>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="h-[300px] flex items-center justify-center text-muted-foreground">

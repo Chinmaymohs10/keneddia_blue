@@ -18,6 +18,11 @@ import {
   getAllBuffetItems,
   getMenuItemsByPropertyId,
   getAllRestaurantAbout,
+  getAllOfferHeaders,
+  getMenuHeaders,
+  getEventsHeaderByProperty,
+  getActiveVisualGalleriesHeader,
+  getActiveTestimonialHeaders,
 } from "@/Api/RestaurantApi";
 import { getCafeSectionsByProperty } from "@/Api/CafeApi";
 
@@ -349,6 +354,11 @@ const mapRestaurantPageData = async (parent, listing) => {
     buffetItemsRes,
     menuItemsRes,
     aboutRes,
+    offerHeadersRes,
+    menuHeadersRes,
+    eventsHeaderRes,
+    galleryHeaderRes,
+    testimonialHeaderRes,
   ] = await Promise.all([
     safeFetch(() => getGalleryByPropertyId(propertyId)),
     safeFetch(() => getAllVerticalSectionsHeader()),
@@ -357,6 +367,11 @@ const mapRestaurantPageData = async (parent, listing) => {
     safeFetch(() => getAllBuffetItems()),
     safeFetch(() => getMenuItemsByPropertyId(propertyId)),
     safeFetch(() => getAllRestaurantAbout()),
+    safeFetch(() => getAllOfferHeaders()),
+    safeFetch(() => getMenuHeaders()),
+    safeFetch(() => getEventsHeaderByProperty(propertyId)),
+    safeFetch(() => getActiveVisualGalleriesHeader()),
+    safeFetch(() => getActiveTestimonialHeaders()),
   ]);
 
   const rawGallery = galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
@@ -392,6 +407,32 @@ const mapRestaurantPageData = async (parent, listing) => {
   const aboutSections = (Array.isArray(allAbout) ? allAbout : [])
     .filter((a) => a.propertyId === propertyId && a.isActive !== false);
 
+  // Offer header — global list filtered to this property
+  const allOfferHeaders = offerHeadersRes?.data || offerHeadersRes || [];
+  const offerHeader = (Array.isArray(allOfferHeaders) ? allOfferHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) || null;
+
+  // Menu header — global list, pick active one matching property
+  const allMenuHeaders = menuHeadersRes?.data || menuHeadersRes || [];
+  const menuHeader = (Array.isArray(allMenuHeaders) ? allMenuHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) ||
+    (Array.isArray(allMenuHeaders) ? allMenuHeaders : []).find((h) => h.isActive) || null;
+
+  // Events header — property-specific
+  const eventsHeaderRaw = eventsHeaderRes?.data || eventsHeaderRes;
+  const eventsHeader = eventsHeaderRaw?.isActive ? eventsHeaderRaw : null;
+
+  // Gallery header — global list filtered to this property
+  const allGalleryHeaders = galleryHeaderRes?.data || galleryHeaderRes || [];
+  const galleryHeader = (Array.isArray(allGalleryHeaders) ? allGalleryHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) || null;
+
+  // Testimonial header
+  const allTestimonialHeaders = testimonialHeaderRes?.data || testimonialHeaderRes || [];
+  const testimonialHeader = (Array.isArray(allTestimonialHeaders) ? allTestimonialHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) ||
+    (Array.isArray(allTestimonialHeaders) ? allTestimonialHeaders : []).find((h) => h.isActive) || null;
+
   return {
     propertyData: {
       ...parent,
@@ -415,6 +456,11 @@ const mapRestaurantPageData = async (parent, listing) => {
     buffetItems,
     menuItems,
     aboutSections,
+    offerHeader,
+    menuHeader,
+    eventsHeader,
+    galleryHeader,
+    testimonialHeader,
   };
 };
 
