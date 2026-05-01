@@ -36,6 +36,9 @@ import Reservations from '@/modules/superadmin/pages/Restaurant/Reservations';
 import RestaurantOrders from '@/modules/superadmin/pages/Restaurant/Orders';
 import Kitchen from '@/modules/superadmin/pages/Restaurant/Kitchen';
 
+// Utils Module
+import Utils from '@/modules/superadmin/pages/Utils/Utils';
+
 // Wine & Dine Module
 import WineDine from '@/modules/superadmin/pages/WineDine/WineDine';
 import WineList from '@/modules/superadmin/pages/WineDine/WineList';
@@ -265,6 +268,17 @@ const SuperAdminRoutes = [
     element={
       <ProtectedRoute>
         <Kitchen />
+      </ProtectedRoute>
+    }
+  />,
+
+  // Utils Route
+  <Route
+    key="super-admin-utils"
+    path="/Utils"
+    element={
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN"]}>
+        <Utils />
       </ProtectedRoute>
     }
   />,

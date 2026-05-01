@@ -8,8 +8,7 @@ import {
   Users,
   Globe,
   Building2,
-  UtensilsCrossed,
-  Settings,
+  Wrench,
   LogOut,
   ChevronDown,
   ChevronLeft,
@@ -43,6 +42,11 @@ function Sidebar({ isOpen, onToggle }) {
         icon: Users,
         label: "Manage Users",
         path: "/ManageUsers",
+      });
+      coreItems.push({
+        icon: Wrench,
+        label: "Utils",
+        path: "/Utils",
       });
     }
 
