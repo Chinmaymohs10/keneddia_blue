@@ -25,7 +25,7 @@ const FALLBACK_DATA = [
   { id: 5, title: "Live Kitchen", cat: "3d", img: gallery5 },
 ];
 
-export default function RestaurantGalleryPage({ propertyId }) {
+export default function RestaurantGalleryPage({ propertyId, initialGalleryData }) {
   const [galleryHeader, setGalleryHeader] = useState({
     header1: "",
     header2: "",
@@ -34,8 +34,8 @@ export default function RestaurantGalleryPage({ propertyId }) {
   const containerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
   const [manualOffset, setManualOffset] = useState(0);
-  const [galleryItems, setGalleryItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [galleryItems, setGalleryItems] = useState(initialGalleryData || []);
+  const [loading, setLoading] = useState(!initialGalleryData?.length);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // --- Parallax Logic (Must be defined at top level) ---
@@ -69,6 +69,7 @@ export default function RestaurantGalleryPage({ propertyId }) {
 
   // --- Data Fetching ---
   useEffect(() => {
+    if (initialGalleryData?.length) return;
     const fetchGallery = async () => {
       try {
         setLoading(true);

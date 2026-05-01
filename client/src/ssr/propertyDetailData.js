@@ -10,7 +10,15 @@ import {
   getRoomsByPropertyId,
 } from "@/Api/Api";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
-import { getAllVerticalCards, getMenuItems } from "@/Api/RestaurantApi";
+import {
+  getAllVerticalCards,
+  getMenuItems,
+  getAllVerticalSectionsHeader,
+  getAllBuffetSectionHeaders,
+  getAllBuffetItems,
+  getMenuItemsByPropertyId,
+  getAllRestaurantAbout,
+} from "@/Api/RestaurantApi";
 
 const VERIFIED_REVIEWS_SCALE = 1000000;
 
@@ -317,10 +325,32 @@ const mapBookingPartners = (response) => {
   return list.filter((item) => item?.isActive !== false);
 };
 
+const safeFetch = async (fn) => {
+  try { return await fn(); } catch { return null; }
+};
+
 const mapRestaurantPageData = async (parent, listing) => {
-  const galleryRes = await getGalleryByPropertyId(parent.id);
-  const rawGallery =
-    galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
+  const propertyId = parent.id;
+
+  const [
+    galleryRes,
+    verticalHeadersRes,
+    verticalCardsRes,
+    buffetHeadersRes,
+    buffetItemsRes,
+    menuItemsRes,
+    aboutRes,
+  ] = await Promise.all([
+    safeFetch(() => getGalleryByPropertyId(propertyId)),
+    safeFetch(() => getAllVerticalSectionsHeader()),
+    safeFetch(() => getAllVerticalCards()),
+    safeFetch(() => getAllBuffetSectionHeaders()),
+    safeFetch(() => getAllBuffetItems()),
+    safeFetch(() => getMenuItemsByPropertyId(propertyId)),
+    safeFetch(() => getAllRestaurantAbout()),
+  ]);
+
+  const rawGallery = galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
   const galleryData = (Array.isArray(rawGallery) ? rawGallery : []).filter(
     (item) =>
       item?.isActive &&
@@ -329,27 +359,53 @@ const mapRestaurantPageData = async (parent, listing) => {
       String(item?.categoryName || "").toLowerCase() !== "3d",
   );
 
+  const allVerticalHeaders = verticalHeadersRes?.data || verticalHeadersRes || [];
+  const verticalSectionHeader = (Array.isArray(allVerticalHeaders) ? allVerticalHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) || null;
+
+  const allVerticalCards = verticalCardsRes?.data || verticalCardsRes || [];
+  const verticalCards = (Array.isArray(allVerticalCards) ? allVerticalCards : [])
+    .filter((c) => c.propertyId === propertyId && c.isActive)
+    .sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const allBuffetHeaders = buffetHeadersRes?.data || buffetHeadersRes || [];
+  const buffetHeader = (Array.isArray(allBuffetHeaders) ? allBuffetHeaders : [])
+    .find((h) => h.propertyId === propertyId && h.isActive) || null;
+
+  const allBuffetItems = buffetItemsRes?.data || buffetItemsRes || [];
+  const buffetItems = (Array.isArray(allBuffetItems) ? allBuffetItems : [])
+    .filter((item) => item.propertyId === propertyId && item.isActive !== false);
+
+  const rawMenuItems = menuItemsRes?.data || menuItemsRes || [];
+  const menuItems = Array.isArray(rawMenuItems) ? rawMenuItems : [];
+
+  const allAbout = aboutRes?.data || aboutRes || [];
+  const aboutSections = (Array.isArray(allAbout) ? allAbout : [])
+    .filter((a) => a.propertyId === propertyId && a.isActive !== false);
+
   return {
     propertyData: {
       ...parent,
       ...listing,
-      id: parent.id,
-      propertyId: parent.id,
+      id: propertyId,
+      propertyId,
       name: listing?.propertyName?.trim() || parent?.propertyName,
       description: listing?.mainHeading || "",
       location: listing?.fullAddress || parent?.address,
       city: listing?.city || parent?.locationName,
-      media:
-        listing?.media?.length > 0 ? listing.media : parent?.media || [],
+      media: listing?.media?.length > 0 ? listing.media : parent?.media || [],
       coordinates:
         parent?.latitude && parent?.longitude
-          ? {
-              lat: Number(parent.latitude),
-              lng: Number(parent.longitude),
-            }
+          ? { lat: Number(parent.latitude), lng: Number(parent.longitude) }
           : null,
     },
     galleryData,
+    verticalSectionHeader,
+    verticalCards,
+    buffetHeader,
+    buffetItems,
+    menuItems,
+    aboutSections,
   };
 };
 
@@ -473,7 +529,13 @@ export async function fetchPropertyDetailPageData(pathname) {
 
   if (!propertyId) return null;
 
-  const response = await GetAllPropertyDetails();
+  let response;
+  try {
+    response = await GetAllPropertyDetails();
+  } catch (err) {
+    console.error("SSR fetchPropertyDetailPageData: GetAllPropertyDetails failed:", err?.message || err);
+    return null;
+  }
   const rawData = response?.data || response || [];
   const matched = findPropertyById(rawData, propertyId);
 
@@ -514,7 +576,13 @@ export async function fetchPropertyCategoryPageData(pathname) {
 
   if (!propertyId) return null;
 
-  const propertyRes = await GetAllPropertyDetails();
+  let propertyRes;
+  try {
+    propertyRes = await GetAllPropertyDetails();
+  } catch (err) {
+    console.error("SSR fetchPropertyCategoryPageData: GetAllPropertyDetails failed:", err?.message || err);
+    return null;
+  }
   const rawData = propertyRes?.data || propertyRes || [];
   const matchedProperty = findPropertyById(rawData, propertyId);
 

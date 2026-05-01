@@ -80,6 +80,24 @@ export default function RestaurantHomepage() {
           <RestaurantQuickBooking />
         </div>
         <RestaurantOffers initialOffers={ssr?.restaurantOffers} />
+
+        {/* SSR structured index: all restaurant properties visible to crawlers */}
+        {(ssr?.restaurantProperties?.length ?? 0) > 0 && (
+          <ul className="sr-only" aria-hidden="true">
+            {ssr.restaurantProperties.map((r) => (
+              <li key={r.id}>
+                {r.image?.src && (
+                  <img src={r.image.src} alt={r.image.alt || r.name} />
+                )}
+                <h3>{r.name}</h3>
+                <p>{r.city}{r.location ? ` — ${r.location}` : ""}</p>
+                {r.description && <p>{r.description}</p>}
+                {r.rating > 0 && <p>Rating: {r.rating}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+
         <RestaurantProperties initialRestaurants={ssr?.restaurantProperties} />
         <RestaurantBestSellers initialItems={ssr?.bestSellers} restaurantTypeId={ssr?.restaurantTypeId} />
         <AboutRestaurant initialSections={ssr?.aboutSections} />

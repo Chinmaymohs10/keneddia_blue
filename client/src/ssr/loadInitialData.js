@@ -39,7 +39,12 @@ export async function loadInitialDataForUrl(url) {
     initialData.restaurantHomepage = await fetchRestaurantHomepageData();
   }
 
-  if (pathname === "/cafe-homepage" || pathname === "/cafe-homepage/") {
+  if (
+    pathname === "/cafe-homepage" ||
+    pathname === "/cafe-homepage/" ||
+    pathname === "/cafe-page" ||
+    pathname === "/cafe-page/"
+  ) {
     initialData.cafeHomepage = await fetchCafeHomepageData();
   }
 
@@ -71,14 +76,24 @@ export async function loadInitialDataForUrl(url) {
 
   const propertyDetailMatch = pathname.match(/^\/([^/]+)\/([^/]+-\d+)\/?$/);
   if (propertyDetailMatch) {
-    initialData.propertyDetail = await fetchPropertyDetailPageData(pathname);
+    try {
+      initialData.propertyDetail = await fetchPropertyDetailPageData(pathname);
+    } catch (err) {
+      console.error("SSR propertyDetail fetch failed:", err?.message || err);
+      initialData.propertyDetail = null;
+    }
   }
 
   const propertyCategoryMatch = pathname.match(
     /^\/([^/]+)\/([^/]+-\d+)\/([^/]+)\/?$/,
   );
   if (propertyCategoryMatch) {
-    initialData.propertyCategory = await fetchPropertyCategoryPageData(pathname);
+    try {
+      initialData.propertyCategory = await fetchPropertyCategoryPageData(pathname);
+    } catch (err) {
+      console.error("SSR propertyCategory fetch failed:", err?.message || err);
+      initialData.propertyCategory = null;
+    }
   }
 
   return initialData;

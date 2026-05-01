@@ -344,34 +344,33 @@ export default function RestaurantProperties({ initialRestaurants }) {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                 {isCenter && (
-                                  <>
-                                    <div className="absolute left-2.5 top-2.5 min-[380px]:left-3 min-[380px]:top-3 sm:left-4 sm:top-4">
-                                      <div className="flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm min-[380px]:gap-1.5 min-[380px]:px-2.5 sm:px-3 sm:py-1.5">
-                                        <Star className="h-3 w-3 fill-current text-yellow-500 min-[380px]:h-3.5 min-[380px]:w-3.5" />
-                                        <span className="text-[11px] font-bold text-gray-900 min-[380px]:text-xs">
-                                          {restaurant.rating || "N/A"}
-                                        </span>
-                                      </div>
+                                  <div className="absolute left-2.5 top-2.5 min-[380px]:left-3 min-[380px]:top-3 sm:left-4 sm:top-4">
+                                    <div className="flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm min-[380px]:gap-1.5 min-[380px]:px-2.5 sm:px-3 sm:py-1.5">
+                                      <Star className="h-3 w-3 fill-current text-yellow-500 min-[380px]:h-3.5 min-[380px]:w-3.5" />
+                                      <span className="text-[11px] font-bold text-gray-900 min-[380px]:text-xs">
+                                        {restaurant.rating || "N/A"}
+                                      </span>
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white min-[380px]:p-4 sm:p-5">
-                                      <div className="mb-1 inline-block rounded border border-white/30 bg-white/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm min-[380px]:mb-1.5 min-[380px]:px-2.5 min-[380px]:text-[10px]">
-                                        {restaurant.type}
-                                      </div>
-                                      <h3 className="mb-1 line-clamp-2 text-sm font-serif font-semibold min-[380px]:text-base sm:text-lg">
-                                        {restaurant.name}
-                                      </h3>
-                                      <div className="mb-1 flex items-center text-[11px] opacity-90 min-[380px]:mb-1.5 min-[380px]:text-xs">
-                                        <MapPin className="mr-1 h-3 w-3 shrink-0" />
-                                        <span className="line-clamp-1">
-                                          {restaurant.location}
-                                        </span>
-                                      </div>
-                                      <p className="line-clamp-2 text-[10px] leading-relaxed opacity-80 min-[380px]:text-[11px]">
-                                        {restaurant.description}
-                                      </p>
-                                    </div>
-                                  </>
+                                  </div>
                                 )}
+                                {/* Always render text in DOM for SEO; visually hidden for non-center cards */}
+                                <div className={`absolute bottom-0 left-0 right-0 p-3 text-white min-[380px]:p-4 sm:p-5 ${isCenter ? "" : "sr-only"}`}>
+                                  <div className="mb-1 inline-block rounded border border-white/30 bg-white/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm min-[380px]:mb-1.5 min-[380px]:px-2.5 min-[380px]:text-[10px]">
+                                    {restaurant.type}
+                                  </div>
+                                  <h3 className="mb-1 line-clamp-2 text-sm font-serif font-semibold min-[380px]:text-base sm:text-lg">
+                                    {restaurant.name}
+                                  </h3>
+                                  <div className="mb-1 flex items-center text-[11px] opacity-90 min-[380px]:mb-1.5 min-[380px]:text-xs">
+                                    <MapPin className="mr-1 h-3 w-3 shrink-0" />
+                                    <span className="line-clamp-1">
+                                      {restaurant.location}
+                                    </span>
+                                  </div>
+                                  <p className="line-clamp-2 text-[10px] leading-relaxed opacity-80 min-[380px]:text-[11px]">
+                                    {restaurant.description}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>

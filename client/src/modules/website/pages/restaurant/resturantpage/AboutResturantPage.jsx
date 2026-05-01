@@ -201,13 +201,26 @@ const ContactPopup = ({ isOpen, onClose, connectData }) => {
 };
 
 // --- Main Component ---
-export default function AboutResturantPage({ propertyId }) {
+export default function AboutResturantPage({ propertyId, initialAboutSections }) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
   const containerRef = useRef(null);
 
   // --- API State ---
-  const [aboutData, setAboutData] = useState(FALLBACK_ABOUT);
+  const [aboutData, setAboutData] = useState(() => {
+    if (!initialAboutSections?.length) return FALLBACK_ABOUT;
+    const matched = initialAboutSections.find((a) => a.propertyId === propertyId && a.isActive);
+    if (!matched) return FALLBACK_ABOUT;
+    return {
+      badgeLabel: matched.badgeLabel || FALLBACK_ABOUT.badgeLabel,
+      headlineLine1: matched.headlineLine1 || FALLBACK_ABOUT.headlineLine1,
+      headlineLine2: matched.headlineLine2 || FALLBACK_ABOUT.headlineLine2,
+      description: matched.description || FALLBACK_ABOUT.description,
+      openingTime: matched.openingTime || FALLBACK_ABOUT.openingTime,
+      closingTime: matched.closingTime || FALLBACK_ABOUT.closingTime,
+      days: matched.days || FALLBACK_ABOUT.days,
+    };
+  });
   const [carouselImages, setCarouselImages] = useState(FALLBACK_IMAGES);
   const [socials, setSocials] = useState(FALLBACK_SOCIALS);
   const [connectData, setConnectData] = useState(FALLBACK_CONNECT);
@@ -217,6 +230,9 @@ export default function AboutResturantPage({ propertyId }) {
     if (!propertyId) return;
 
     // 1. About content
+    if (initialAboutSections?.length) {
+      // SSR data already used; skip about fetch
+    } else
     getAllRestaurantAbout()
       .then((res) => {
         const data = Array.isArray(res) ? res : res?.data;

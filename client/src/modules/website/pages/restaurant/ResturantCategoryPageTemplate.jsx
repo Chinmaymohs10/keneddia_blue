@@ -518,6 +518,61 @@ function ResturantCategoryPageTemplate() {
       />
 
       <main>
+        {/* SSR: structured data for crawlers */}
+        <div className="sr-only" aria-hidden="true">
+          {propertyData && (
+            <div>
+              <h1>{propertyData.propertyName || propertyData.name}</h1>
+              <p>{propertyData.city || propertyData.locationName}</p>
+              {(propertyData.fullAddress || propertyData.address) && (
+                <p>{propertyData.fullAddress || propertyData.address}</p>
+              )}
+            </div>
+          )}
+          {currentCategory && (
+            <div>
+              <h2>{currentCategory.title}</h2>
+              {currentCategory.description && <p>{currentCategory.description}</p>}
+              {currentCategory.heroImage && (
+                <img src={currentCategory.heroImage} alt={currentCategory.title} />
+              )}
+            </div>
+          )}
+          {resolvedMenu.length > 0 && (
+            <ul>
+              {resolvedMenu.map((section) => (
+                <li key={section.category}>
+                  <h3>{section.category}</h3>
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item.id}>
+                        <span>{item.name}</span>
+                        {item.description && <span> — {item.description}</span>}
+                        {item.price && <span> {item.price}</span>}
+                        {item.image && <img src={item.image} alt={item.name} />}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+          {otherVerticals.length > 0 && (
+            <ul>
+              {otherVerticals.map((v) => (
+                <li key={v.id}>
+                  <span>{v.title}</span>
+                  {v.description && <span>{v.description}</span>}
+                  {v.heroImage && <img src={v.heroImage} alt={v.title} />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {galleryData.slice(0, 5).map((g, i) => (
+            g?.media?.url && <img key={i} src={g.media.url} alt={g.media.alt || currentCategory?.title || ""} />
+          ))}
+        </div>
+
         {/* Hero */}
         <CategoryHero
           content={currentCategory}
