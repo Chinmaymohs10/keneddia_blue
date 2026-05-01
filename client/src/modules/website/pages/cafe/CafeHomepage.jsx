@@ -8,6 +8,7 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
+import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import CafeHeroBanner from "./components/CafeHeroBanner";
 import PageLoader from "@/modules/website/components/PageLoader";
 import CafeProperties from "./components/CafeProperties";
@@ -343,15 +344,23 @@ export default function CafeHomepage() {
           )}
           {(ssr?.cafeProperties || []).length > 0 && (
             <ul>
-              {ssr.cafeProperties.map((cafe) => (
-                <li key={cafe.id}>
-                  <h3>{cafe.name}</h3>
-                  <p>{cafe.city}</p>
-                  {cafe.location && <p>{cafe.location}</p>}
-                  {cafe.description && <p>{cafe.description}</p>}
-                  {cafe.image?.src && <img src={cafe.image.src} alt={cafe.image.alt || cafe.name} />}
-                </li>
-              ))}
+              {ssr.cafeProperties.map((cafe) => {
+                const displayName = (cafe.name || "").toLowerCase().includes("cafe")
+                  ? cafe.name
+                  : `${cafe.name} Cafe`;
+                const slug = `/${createCitySlug(cafe.city || cafe.name)}/${createHotelSlug(displayName, cafe.propertyId)}`;
+                return (
+                  <li key={cafe.id}>
+                    <a href={slug}>
+                      <h3>{cafe.name}</h3>
+                      <p>{cafe.city}</p>
+                      {cafe.location && <p>{cafe.location}</p>}
+                      {cafe.description && <p>{cafe.description}</p>}
+                      {cafe.image?.src && <img src={cafe.image.src} alt={cafe.image.alt || cafe.name} />}
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           )}
           {ssr?.menuSectionHeader && (

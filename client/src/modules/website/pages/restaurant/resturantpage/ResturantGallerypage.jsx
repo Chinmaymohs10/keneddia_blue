@@ -25,11 +25,11 @@ const FALLBACK_DATA = [
   { id: 5, title: "Live Kitchen", cat: "3d", img: gallery5 },
 ];
 
-export default function RestaurantGalleryPage({ propertyId, initialGalleryData }) {
+export default function RestaurantGalleryPage({ propertyId, initialGalleryData, initialGalleryHeader }) {
   const [galleryHeader, setGalleryHeader] = useState({
-    header1: "",
-    header2: "",
-    description: "",
+    header1: initialGalleryHeader?.header1 || "",
+    header2: initialGalleryHeader?.header2 || "",
+    description: initialGalleryHeader?.description || "",
   });
   const containerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -68,6 +68,11 @@ export default function RestaurantGalleryPage({ propertyId, initialGalleryData }
   };
 
   // --- Data Fetching ---
+  useEffect(() => {
+    if (initialGalleryData?.length || initialGalleryHeader) return;
+    fetchGalleryHeader();
+  }, [propertyId]);
+
   useEffect(() => {
     if (initialGalleryData?.length) return;
     const fetchGallery = async () => {

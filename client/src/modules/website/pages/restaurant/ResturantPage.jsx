@@ -54,6 +54,11 @@ export default function RestaurantHomepage() {
   const ssrBuffetItems = ssrRestaurantDetail?.buffetItems || null;
   const ssrMenuItems = ssrRestaurantDetail?.menuItems || null;
   const ssrAboutSections = ssrRestaurantDetail?.aboutSections || null;
+  const ssrOfferHeader = ssrRestaurantDetail?.offerHeader || null;
+  const ssrMenuHeader = ssrRestaurantDetail?.menuHeader || null;
+  const ssrEventsHeader = ssrRestaurantDetail?.eventsHeader || null;
+  const ssrGalleryHeader = ssrRestaurantDetail?.galleryHeader || null;
+  const ssrTestimonialHeader = ssrRestaurantDetail?.testimonialHeader || null;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -278,6 +283,8 @@ export default function RestaurantHomepage() {
             initialMenuItems={ssrMenuItems}
             initialBuffetItems={ssrBuffetItems}
             initialBuffetHeader={ssrBuffetHeader}
+            initialOfferHeader={ssrOfferHeader}
+            initialMenuHeader={ssrMenuHeader}
           />
         </div>
 
@@ -289,15 +296,22 @@ export default function RestaurantHomepage() {
         </div>
 
         <div id="events">
-          <ResturantpageEvents propertyId={numericPropertyId} />
+          <ResturantpageEvents
+            propertyId={numericPropertyId}
+            initialEventsHeader={ssrEventsHeader}
+          />
         </div>
 
-        <Testimonials propertyId={numericPropertyId} />
+        <Testimonials
+          propertyId={numericPropertyId}
+          initialTestimonialHeader={ssrTestimonialHeader}
+        />
 
         <div id="gallery">
           <ResturantGallerypage
             propertyId={numericPropertyId}
             initialGalleryData={galleryData}
+            initialGalleryHeader={ssrGalleryHeader}
           />
         </div>
         <div id="reservation">
