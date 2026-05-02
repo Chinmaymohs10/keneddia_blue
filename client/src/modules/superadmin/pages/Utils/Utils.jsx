@@ -466,6 +466,7 @@ const ICON_EMPTY = {
   description: "",
   showOnHeader: false,
   showOnFooter: false,
+  showOnLightOrDark: false,
   scope: "main",
   propertyTypeId: "",
   propertyId: "",
@@ -511,6 +512,7 @@ function IconTab({ propertyTypes, properties }) {
       description: item.description || "",
       showOnHeader: item.showOnHeader || false,
       showOnFooter: item.showOnFooter || false,
+      showOnLightOrDark: item.showOnLightOrDark ?? false,
       scope: item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main",
       propertyTypeId: item.propertyTypeId || "",
       propertyId: item.propertyId || "",
@@ -545,6 +547,7 @@ function IconTab({ propertyTypes, properties }) {
       description: form.description.trim(),
       showOnHeader: form.showOnHeader,
       showOnFooter: form.showOnFooter,
+      showOnLightOrDark: form.showOnLightOrDark,
       ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
       ...(form.scope === "property" && { propertyId: form.propertyId }),
     };
@@ -790,6 +793,37 @@ function IconTab({ propertyTypes, properties }) {
                   Show on Footer
                 </label>
               </div>
+
+              {/* Dark / Light mode toggle */}
+              <FormField label="Theme Mode">
+                <div
+                  className="flex items-center justify-between px-4 py-3 rounded-xl border"
+                  style={{ borderColor: colors.border, backgroundColor: form.showOnLightOrDark ? "#1a1a1a" : colors.contentBg }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{form.showOnLightOrDark ? "🌙" : "☀️"}</span>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: form.showOnLightOrDark ? "#ffffff" : colors.textPrimary }}>
+                        {form.showOnLightOrDark ? "Dark Mode" : "Light Mode"}
+                      </p>
+                      <p className="text-xs" style={{ color: form.showOnLightOrDark ? "#a0a0a0" : colors.textSecondary }}>
+                        {form.showOnLightOrDark ? "Logo for dark backgrounds" : "Logo for light backgrounds"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, showOnLightOrDark: !p.showOnLightOrDark }))}
+                    className="relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none shrink-0"
+                    style={{ backgroundColor: form.showOnLightOrDark ? "#6366f1" : colors.border }}
+                  >
+                    <span
+                      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300"
+                      style={{ left: form.showOnLightOrDark ? "calc(100% - 1.375rem)" : "0.125rem" }}
+                    />
+                  </button>
+                </div>
+              </FormField>
               <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
