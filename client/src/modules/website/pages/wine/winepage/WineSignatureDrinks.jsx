@@ -32,12 +32,12 @@ function CategoryCard({ category, index, routeMode = "property" }) {
   const handleExplore = () => {
     const typeSlug = category.id;
     if (routeMode === "global") {
-      navigate(`/wine-categories/${typeSlug}`);
+      navigate(`/wine-categories/${typeSlug}?kind=type`);
       return;
     }
     const citySlug = (category.location || params.citySlug || "ghaziabad").toLowerCase();
     const propSlug = generateSlug(category.property || params.propertySlug || "kennedia-blu");
-    navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}`);
+    navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}?kind=type`);
   };
 
   const [errored, setErrored] = useState(false);

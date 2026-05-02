@@ -4,7 +4,7 @@ import { Building2, ChevronDown, ImageOff, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import WineBanner from "./winepage/WineBanner";
+import { DynamicWineBanner } from "./winepage/WineBanner";
 import WineSubCategories from "./winepage/WineSubCategories";
 import AboutWinePage from "./winepage/AboutWinePage";
 import WinepageEvents from "./winepage/WinepageEvents";
@@ -15,7 +15,14 @@ import WineReservationForm from "./winepage/WineReservationForm";
 import WineTopBrands from "./components/WineTopBrands";
 import { siteContent } from "@/data/siteContent";
 import WineWhatsAppButton from "./components/WineWhatsAppButton";
-import { DRINKS_DATA } from "./winepage/WineCategoryTemplate";
+import {
+  getAllWineTypes,
+  getAllWineBrands,
+  getAllWineCategories,
+  getAllWineSubCategories,
+} from "@/Api/WineApi";
+import { getAllProperties, GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
+import { generateWineCards } from "@/utils/wineDataUtils";
 
 const WINE_NAV_ITEMS = [
   { type: "link", label: "HOME", key: "home", href: "#home" },
@@ -235,61 +242,134 @@ function WineShowcaseSection({ wines, propertyName }) {
 export default function WinePage() {
   const { citySlug, propertySlug } = useParams();
   const [loaderDone, setLoaderDone] = useState(false);
-  const showcaseWines = useMemo(() => {
-    const allWines = DRINKS_DATA.filter((drink) => drink.type === "Wine");
-
-    if (!citySlug || !propertySlug) {
-      return allWines;
-    }
-
-    const propertyMatchedWines = allWines.filter(
-      (drink) =>
-        drink.location.toLowerCase() === citySlug.toLowerCase() &&
-        generateSlug(drink.property) === propertySlug.toLowerCase()
-    );
-
-    if (propertyMatchedWines.length > 0) {
-      return propertyMatchedWines;
-    }
-
-    const cityMatchedWines = allWines.filter(
-      (drink) => drink.location.toLowerCase() === citySlug.toLowerCase()
-    );
-
-    if (cityMatchedWines.length > 0) {
-      return cityMatchedWines;
-    }
-
-    return allWines;
-  }, [citySlug, propertySlug]);
-
-  const currentPropertyName =
-    showcaseWines[0]?.property ??
-    humanizeSlug(propertySlug) ??
-    siteContent.brand.name ??
-    "this property";
-
-  const showcaseDescription = useMemo(() => {
-    const exactPropertyMatch = showcaseWines.some(
-      (drink) => generateSlug(drink.property) === propertySlug?.toLowerCase()
-    );
-
-    if (exactPropertyMatch) {
-      return currentPropertyName;
-    }
-
-    if (citySlug) {
-      return `${currentPropertyName} collection`;
-    }
-
-    return currentPropertyName;
-  }, [showcaseWines, propertySlug, citySlug, currentPropertyName]);
+  const [allCards, setAllCards] = useState([]);
+  const [bannerPropertyData, setBannerPropertyData] = useState(null);
+  const [bannerGalleryData, setBannerGalleryData] = useState([]);
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const t = setTimeout(() => setLoaderDone(true), 2500);
     return () => clearTimeout(t);
   }, []);
+
+  // Fetch property details + gallery for the dynamic banner
+  useEffect(() => {
+    if (!propertySlug) { setBannerLoading(false); return; }
+    let cancelled = false;
+    async function fetchBanner() {
+      try {
+        const res = await GetAllPropertyDetails();
+        const rawData = res?.data ?? res ?? [];
+        const flattened = (Array.isArray(rawData) ? rawData : []).flatMap((item) => {
+          const parent = item.propertyResponseDTO;
+          const listings = item.propertyListingResponseDTOS || [];
+          return listings.length === 0
+            ? [{ parent, listing: null }]
+            : listings.map((listing) => ({ parent, listing }));
+        });
+        const matched = flattened.find(({ parent, listing }) =>
+          generateSlug(listing?.propertyName || parent?.propertyName || "") === propertySlug.toLowerCase()
+        );
+        if (!matched || cancelled) return;
+        const { parent, listing } = matched;
+        const combinedProperty = {
+          id: parent.id,
+          propertyId: parent.id,
+          name: listing?.propertyName?.trim() || parent.propertyName,
+          location: listing?.fullAddress || parent.address,
+          city: listing?.city || parent.locationName,
+          addressUrl: parent.addressUrl ?? null,
+          latitude: parent.latitude,
+          longitude: parent.longitude,
+          media: listing?.media?.length > 0 ? listing.media : parent.media || [],
+        };
+        if (!cancelled) setBannerPropertyData(combinedProperty);
+        // Fetch gallery in parallel
+        const galleryRes = await getGalleryByPropertyId(parent.id);
+        if (!cancelled) setBannerGalleryData(galleryRes?.data ?? []);
+      } catch (_) {
+        // fallback to static slides (handled inside DynamicWineBanner)
+      } finally {
+        if (!cancelled) setBannerLoading(false);
+      }
+    }
+    fetchBanner();
+    return () => { cancelled = true; };
+  }, [propertySlug]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchAll() {
+      try {
+        const [typesRes, brandsRes, catsRes, subCatsRes, propsRes] = await Promise.all([
+          getAllWineTypes(),
+          getAllWineBrands(),
+          getAllWineCategories(),
+          getAllWineSubCategories(),
+          getAllProperties(),
+        ]);
+        if (cancelled) return;
+        const cards = generateWineCards({
+          brands: brandsRes?.data ?? [],
+          wineTypes: typesRes?.data ?? [],
+          categories: catsRes?.data ?? [],
+          subCategories: subCatsRes?.data ?? [],
+          properties: propsRes?.data ?? [],
+        });
+        setAllCards(cards);
+      } catch (_) {}
+    }
+    fetchAll();
+    return () => { cancelled = true; };
+  }, []);
+
+  const showcaseWines = useMemo(() => {
+    if (!allCards.length) return [];
+    if (!citySlug && !propertySlug) return allCards;
+
+    // Exact match: property slug + city slug
+    const exactMatch = allCards.filter(
+      (c) =>
+        generateSlug(c.property) === propertySlug?.toLowerCase() &&
+        generateSlug(c.locationDisplay || c.location) === citySlug?.toLowerCase()
+    );
+    if (exactMatch.length) return exactMatch;
+
+    // Fallback: property slug only
+    const propMatch = allCards.filter(
+      (c) => generateSlug(c.property) === propertySlug?.toLowerCase()
+    );
+    if (propMatch.length) return propMatch;
+
+    // Fallback: same propertyId group
+    if (propertySlug) {
+      const firstBySlug = allCards.find(
+        (c) => generateSlug(c.property) === propertySlug.toLowerCase()
+      );
+      if (firstBySlug?.propertyId) {
+        const byId = allCards.filter((c) => c.propertyId === firstBySlug.propertyId);
+        if (byId.length) return byId;
+      }
+    }
+
+    return allCards;
+  }, [allCards, citySlug, propertySlug]);
+
+  const currentPropertyName =
+    showcaseWines[0]?.property ||
+    humanizeSlug(propertySlug) ||
+    siteContent.brand.name ||
+    "this property";
+
+  const showcaseDescription = useMemo(() => {
+    const exactPropertyMatch = showcaseWines.some(
+      (c) => generateSlug(c.property) === propertySlug?.toLowerCase()
+    );
+    if (exactPropertyMatch) return currentPropertyName;
+    if (citySlug) return `${currentPropertyName} collection`;
+    return currentPropertyName;
+  }, [showcaseWines, propertySlug, citySlug, currentPropertyName]);
 
   return (
     <>
@@ -303,7 +383,11 @@ export default function WinePage() {
         <main>
           {/* Banner — Full Viewport */}
           <div id="home">
-            <WineBanner />
+            <DynamicWineBanner
+              propertyData={bannerPropertyData}
+              galleryData={bannerGalleryData}
+              loading={bannerLoading}
+            />
           </div>
 
           {/* Menu / Signature Drinks */}
