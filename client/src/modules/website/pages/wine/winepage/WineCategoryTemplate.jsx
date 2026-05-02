@@ -1,5 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import {
+  getAllWineBrands,
+  getAllWineTypes,
+  getAllWineCategories,
+  getAllWineSubCategories,
+} from "@/Api/WineApi";
+import { getAllProperties } from "@/Api/Api";
+import { getPropertyLocation } from "@/utils/wineDataUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -280,9 +288,12 @@ function StarRow({ rating }) {
 }
 
 // ─── TYPE HERO ────────────────────────────────────────────────────────────────
-function TypeHero({ meta, citySlug, propertySlug }) {
+const FALLBACK_WINE_IMAGE = "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1600&q=80";
+
+function TypeHero({ meta, citySlug, propertySlug, heroImageOverride }) {
   const accent = meta.accent;
   const isGlobalPage = !citySlug || !propertySlug;
+  const heroImg = heroImageOverride || meta.heroImage || FALLBACK_WINE_IMAGE;
   return (
     <section id="hero" className="relative h-svh w-full overflow-hidden bg-[#0D0508]">
       <motion.div
@@ -291,7 +302,7 @@ function TypeHero({ meta, citySlug, propertySlug }) {
         transition={{ duration: 1.4, ease: "easeOut" }}
         className="absolute inset-0"
       >
-        <img src={meta.heroImage} alt={meta.heroAlt} className="h-full w-full object-cover" />
+        <img src={heroImg} alt={meta.heroAlt} className="h-full w-full object-cover" />
       </motion.div>
 
       {/* Overlays */}
@@ -312,17 +323,6 @@ function TypeHero({ meta, citySlug, propertySlug }) {
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <Link to="/wine-homepage" className="hover:text-white transition-colors">Wines</Link>
-              {isGlobalPage ? (
-                <>
-                  <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-                  <span className="text-white/60">Categories</span>
-                </>
-              ) : (
-                <>
-                  <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-                  <Link to={`/wine-detail/${citySlug}/${propertySlug}`} className="hover:text-white transition-colors capitalize">{citySlug}</Link>
-                </>
-              )}
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <span className="text-white/60">{meta.typeKey}</span>
             </motion.nav>
@@ -367,7 +367,8 @@ function TypeHero({ meta, citySlug, propertySlug }) {
 }
 
 // ─── BRAND HERO ───────────────────────────────────────────────────────────────
-function BrandHero({ brand, citySlug, propertySlug }) {
+function BrandHero({ brand, citySlug, propertySlug, heroImageOverride }) {
+  const heroImg = heroImageOverride || brand.heroImage || FALLBACK_WINE_IMAGE;
   return (
     <section id="hero" className="relative h-svh w-full overflow-hidden bg-[#0D0508]">
       <motion.div
@@ -376,7 +377,7 @@ function BrandHero({ brand, citySlug, propertySlug }) {
         transition={{ duration: 1.4, ease: "easeOut" }}
         className="absolute inset-0"
       >
-        <img src={brand.heroImage} alt={brand.name} className="h-full w-full object-cover" />
+        <img src={heroImg} alt={brand.name} className="h-full w-full object-cover" />
       </motion.div>
 
       {/* Overlays */}
@@ -390,7 +391,7 @@ function BrandHero({ brand, citySlug, propertySlug }) {
       <div className="relative z-10 flex h-full items-center pt-[60px]">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
           <div className="max-w-3xl">
-            {/* Breadcrumb */}
+            {/* Breadcrumb — 3 levels */}
             <motion.nav
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -401,48 +402,27 @@ function BrandHero({ brand, citySlug, propertySlug }) {
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <Link to="/wine-homepage" className="hover:text-white transition-colors">Wines</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-              <Link to={`/wine-detail/${citySlug}/${propertySlug}`} className="hover:text-white transition-colors capitalize">{citySlug}</Link>
-              <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <span className="text-white/60">{brand.name}</span>
             </motion.nav>
 
-            {/* Brand badge */}
+            {/* Brand heading */}
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="mb-6">
-              <div className="mb-3 flex items-center gap-3">
-                <div className="h-px w-10 opacity-50" style={{ background: brand.accent }} />
-                <span className="text-[10px] font-black uppercase tracking-[0.45em]" style={{ color: brand.accent }}>
-                  {brand.detail} · Est. {brand.established}
-                </span>
-              </div>
-
               <h1 className="mb-1 font-serif text-5xl font-black leading-[1.0] text-white md:text-6xl lg:text-7xl" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 {brand.name}
               </h1>
-
               <div className="mt-2 h-px w-32 opacity-60" style={{ background: `linear-gradient(to right, ${brand.accent}, transparent)` }} />
-              <p className="mt-2 text-sm uppercase tracking-[0.3em] text-white/40">{brand.subLabel}</p>
             </motion.div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.8 }}
-              className="mb-8 max-w-lg text-sm italic leading-relaxed text-white/65 md:text-base"
-            >
-              {brand.description}
-            </motion.p>
-
-            {/* Meta pills */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.7 }} className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
-                <MapPin size={11} className="text-[#D4AF37]" />
-                <span className="text-[11px] font-semibold text-white/80">{brand.origin}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-sm">
-                <Sparkles size={11} style={{ color: brand.accent }} />
-                <span className="text-[11px] font-semibold text-white/80">{brand.tagline}</span>
-              </div>
-            </motion.div>
+            {brand.description && brand.description !== "_" && (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.8 }}
+                className="mb-8 max-w-lg text-sm italic leading-relaxed text-white/65 md:text-base"
+              >
+                {brand.description}
+              </motion.p>
+            )}
           </div>
         </div>
       </div>
@@ -571,7 +551,7 @@ function FlattenedItemsSection({ items, accentColor, giOffset = 0 }) {
   );
 }
 
-function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
+function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter = false }) {
   const accent = meta.accent;
   const isGlobalPage = !citySlug || !propertySlug;
   const [searchTerm, setSearchTerm] = useState("");
@@ -580,9 +560,10 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
   const availableBrands = useMemo(() => {
+    if (hideBrandFilter) return [];
     const brandIds = Array.from(new Set(items.map((d) => d.brandId)));
     return BRANDS.filter((b) => brandIds.includes(b.id));
-  }, [items]);
+  }, [items, hideBrandFilter]);
 
   const availableLocations = useMemo(() => {
     return ["All Locations", ...Array.from(new Set(items.map((d) => d.location))).sort()];
@@ -629,28 +610,9 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            {isGlobalPage && (
-              <div className="relative min-w-[200px]">
-                <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Location</span>
-                <div className="relative">
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="flex w-full appearance-none items-center justify-between rounded-full border border-stone-200 bg-white px-5 py-2.5 pr-10 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600"
-                  >
-                    {availableLocations.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
-                </div>
-              </div>
-            )}
 
             {/* Brand Dropdown */}
-            <div className="relative min-w-[200px]">
+            {!hideBrandFilter && <div className="relative min-w-[200px]">
               <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Brand</span>
               <button
                 onClick={() => setIsBrandOpen(!isBrandOpen)}
@@ -694,7 +656,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug }) {
                   </>
                 )}
               </AnimatePresence>
-            </div>
+            </div>}
 
             {/* Search */}
             <div className="relative min-w-[260px]">
@@ -770,23 +732,6 @@ function BrandItemsSection({ items, brand }) {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            {/* Location filter */}
-            <div className="relative min-w-[200px]">
-              <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Location</span>
-              <div className="relative">
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className="flex w-full appearance-none items-center rounded-full border border-stone-200 bg-white px-5 py-2.5 pr-10 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600"
-                >
-                  {availableLocations.map((loc) => (
-                    <option key={loc} value={loc}>{loc}</option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" />
-              </div>
-            </div>
-
             {/* Category filter */}
             <div className="relative min-w-[200px]">
               <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Category</span>
@@ -1063,32 +1008,273 @@ function RelatedStrip({ currentSlug, isTypePage, citySlug, propertySlug }) {
   );
 }
 
+// ─── ACCENT COLORS (for API brands without static accent) ─────────────────────
+const API_ACCENT_COLORS = ["#d7d3cc", "#e5d4ab", "#c6a76d", "#b48a35", "#f0c15b"];
+
+// ─── API TYPE SWITCHER ────────────────────────────────────────────────────────
+function ApiTypeSwitcher({ currentId, allTypes, citySlug, propertySlug }) {
+  const navigate = useNavigate();
+  const isGlobalPage = !citySlug || !propertySlug;
+  const others = allTypes.filter((t) => t.id !== currentId);
+  if (!others.length) return null;
+
+  return (
+    <section className="relative overflow-hidden bg-[#F5F0EA] py-16 dark:bg-[#12070A]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
+      <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-10 max-w-2xl">
+          <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
+            Switch <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Category</em>
+          </h2>
+        </div>
+        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {others.map((t, i) => {
+            const accent = TYPE_ACCENTS[t.wineTypeName] || TYPE_ACCENTS.Wine;
+            const heroImg = t.media?.url || null;
+            return (
+              <motion.div
+                key={t.id}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.45 }}
+                onClick={() =>
+                  isGlobalPage
+                    ? navigate(`/wine-categories/${t.id}?kind=type`)
+                    : navigate(`/wine-detail/${citySlug}/${propertySlug}/${t.id}?kind=type`)
+                }
+                className="group relative flex min-h-[96px] cursor-pointer select-none items-center overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
+              >
+                <div className="absolute left-0 top-0 h-full w-[3px] opacity-0 transition-all duration-500 group-hover:opacity-100" style={{ background: `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` }} />
+                <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-stone-100 ring-1 ring-stone-200/80 dark:bg-zinc-900 dark:ring-white/10">
+                    {heroImg ? (
+                      <img src={heroImg} alt={t.wineTypeName} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center" style={{ background: `${accent.color}18` }}>
+                        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: accent.color }}>{t.wineTypeName?.[0]}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">{t.wineTypeName}</h3>
+                    {t.wineTypeDescription && (
+                      <p className="mt-0.5 truncate text-[10px] text-stone-400">{t.wineTypeDescription}</p>
+                    )}
+                  </div>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-transform duration-300 group-hover:translate-x-0.5" style={{ background: `linear-gradient(135deg, ${accent.dot}99, ${accent.color}99)` }}>
+                    <ChevronRight size={20} />
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `linear-gradient(90deg, ${accent.color}08 0%, transparent 45%)` }} />
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── API BRAND SWITCHER ───────────────────────────────────────────────────────
+function ApiBrandSwitcher({ currentId, allBrands, citySlug, propertySlug }) {
+  const navigate = useNavigate();
+  const isGlobalPage = !citySlug || !propertySlug;
+  const others = allBrands.filter((b) => b.id !== currentId);
+  if (!others.length) return null;
+
+  return (
+    <section className="bg-[#F0EAE2] py-14 dark:bg-[#100609]">
+      <div className="mx-auto max-w-[1400px] px-6 md:px-12">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="h-px w-10 bg-[#c9a25a]/40" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#c9a25a]">More Brands</span>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+          {others.map((b, i) => {
+            const accent = API_ACCENT_COLORS[i % API_ACCENT_COLORS.length];
+            return (
+              <motion.button
+                key={b.id}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() =>
+                  isGlobalPage
+                    ? navigate(`/wine-categories/${b.id}?kind=brand`)
+                    : navigate(`/wine-detail/${citySlug}/${propertySlug}/${b.id}?kind=brand`)
+                }
+                className="group relative overflow-hidden rounded-[1.25rem] border border-stone-200/80 bg-white/90 p-4 text-center transition-all hover:-translate-y-1 hover:shadow-lg dark:border-white/[0.07] dark:bg-[#1A0C13] cursor-pointer"
+              >
+                <div className="absolute inset-x-4 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)`, opacity: 0.7 }} />
+                {b.media?.url ? (
+                  <div className="mx-auto mb-2 h-10 w-10 overflow-hidden rounded-full">
+                    <img src={b.media.url} alt={b.name} className="h-full w-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full" style={{ background: `${accent}22` }}>
+                    <span className="text-[11px] font-black uppercase" style={{ color: accent }}>{b.name?.[0]}</span>
+                  </div>
+                )}
+                <h4 className="font-serif text-sm font-semibold text-stone-900 dark:text-white" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{b.name}</h4>
+                <div className="mx-auto my-1.5 h-px w-6" style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
+                <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: `${accent}cc` }}>{b.wineTypeName || "Brand"}</p>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function WineCategoryTemplate() {
   const { citySlug, propertySlug, slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const kind = searchParams.get("kind"); // "type" | "brand" | null
   const navigate = useNavigate();
   const isGlobalPage = !citySlug || !propertySlug;
   const backHref = isGlobalPage ? "/wine-homepage" : `/wine-detail/${citySlug}/${propertySlug}`;
 
+  // ── API state ────────────────────────────────────────────────────────────────
+  const [apiType, setApiType] = useState(null);
+  const [apiBrand, setApiBrand] = useState(null);
+  const [apiItems, setApiItems] = useState([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [allApiTypes, setAllApiTypes] = useState([]);
+  const [allApiBrands, setAllApiBrands] = useState([]);
+
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
+  useEffect(() => {
+    if (!kind || !slug) return;
+    const numericId = parseInt(slug, 10);
+    if (isNaN(numericId)) return;
+
+    let cancelled = false;
+    setApiLoading(true);
+
+    async function fetchApiData() {
+      try {
+        const [brandsRes, typesRes, catsRes, propsRes] = await Promise.all([
+          getAllWineBrands(),
+          getAllWineTypes(),
+          getAllWineCategories(),
+          getAllProperties(),
+        ]);
+        if (cancelled) return;
+
+        const brands = brandsRes?.data ?? [];
+        const types = typesRes?.data ?? [];
+        const categories = catsRes?.data ?? [];
+        const properties = propsRes?.data ?? [];
+
+        setAllApiTypes(types.filter((t) => t.active !== false));
+        setAllApiBrands(brands.filter((b) => b.active !== false));
+
+        if (kind === "type") {
+          const type = types.find((t) => t.id === numericId) ?? null;
+          setApiType(type);
+
+          const filteredBrands = brands.filter(
+            (b) => b.wineTypeId === numericId && b.active !== false
+          );
+          const items = filteredBrands.map((b, i) => ({
+            id: b.id,
+            brandId: b.id,
+            name: b.name || "_",
+            subtitle: b.description || "_",
+            type: b.wineTypeName || type?.wineTypeName || "_",
+            tag: b.wineTypeName || type?.wineTypeName || "_",
+            tasting: b.description || "_",
+            image: b.media?.url ?? null,
+            property: b.propertyName || "_",
+            location: getPropertyLocation(b.propertyId, properties) || b.propertyName || "_",
+          }));
+          setApiItems(items);
+        } else if (kind === "brand") {
+          const brand = brands.find((b) => b.id === numericId) ?? null;
+          setApiBrand(brand);
+
+          const filteredCats = categories.filter(
+            (c) => c.wineBrandId === numericId && c.active !== false
+          );
+          const items = filteredCats.map((c) => ({
+            id: c.id,
+            brandId: numericId,
+            name: c.title || "_",
+            subtitle: c.description || "_",
+            type: brand?.wineTypeName || c.wineBrandName || "_",
+            tag: c.wineBrandName || brand?.wineTypeName || "_",
+            tasting: c.description || "_",
+            image: c.media?.url ?? brand?.media?.url ?? null,
+            property: c.propertyName || brand?.propertyName || "_",
+            location: getPropertyLocation(c.propertyId, properties) || c.propertyName || "_",
+          }));
+          setApiItems(items);
+        }
+      } catch (_) {
+        // silently ignore — fallback to empty
+      } finally {
+        if (!cancelled) setApiLoading(false);
+      }
+    }
+
+    fetchApiData();
+    return () => { cancelled = true; };
+  }, [kind, slug]);
+
+  // ── Static slug resolution (backwards compat for old string slugs) ────────────
   const normalizedSlug = slug?.toLowerCase() ?? "";
-  const isTypePage = DRINK_TYPE_SLUGS.includes(normalizedSlug);
-  const typeMeta = isTypePage ? TYPE_META[normalizedSlug] : null;
-  const brand = !isTypePage ? BRANDS.find((b) => b.id === normalizedSlug) : null;
+  const isStaticTypePage = DRINK_TYPE_SLUGS.includes(normalizedSlug);
+  const staticTypeMeta = isStaticTypePage ? TYPE_META[normalizedSlug] : null;
+  const staticBrand = !isStaticTypePage ? BRANDS.find((b) => b.id === normalizedSlug) : null;
 
-  const items = useMemo(() => {
-    if (isTypePage) {
-      return DRINKS_DATA.filter((d) => d.type.toLowerCase() === typeMeta.typeKey.toLowerCase());
+  // ── Decide render mode ────────────────────────────────────────────────────────
+  const isApiMode = Boolean(kind);
+  const isTypePage = isApiMode ? kind === "type" : isStaticTypePage;
+  const typeMeta = isApiMode
+    ? {
+        label: apiType?.wineTypeName ?? "Collection",
+        tag: apiType?.wineTypeDescription ?? "",
+        description: apiType?.wineTypeDescription ?? "",
+        heroImage: null, // provided via heroImageOverride
+        heroAlt: apiType?.wineTypeName ?? "Wine",
+        accent: TYPE_ACCENTS[apiType?.wineTypeName] || TYPE_ACCENTS.Wine,
+        typeKey: apiType?.wineTypeName ?? "Collection",
+      }
+    : staticTypeMeta;
+  const brand = isApiMode
+    ? (apiBrand
+        ? {
+            id: apiBrand.id,
+            name: apiBrand.name,
+            subLabel: apiBrand.wineTypeName || "",
+            accent: API_ACCENT_COLORS[0],
+            detail: apiBrand.description || "",
+            heroImage: null, // provided via heroImageOverride
+            description: apiBrand.description || "",
+            origin: apiBrand.propertyName || "",
+            established: "",
+            tagline: "",
+          }
+        : null)
+    : staticBrand;
+
+  const staticItems = useMemo(() => {
+    if (isStaticTypePage && staticTypeMeta) {
+      return DRINKS_DATA.filter((d) => d.type.toLowerCase() === staticTypeMeta.typeKey.toLowerCase());
     }
-    if (brand) {
-      return DRINKS_DATA.filter((d) => d.brandId === brand.id);
-    }
+    if (staticBrand) return DRINKS_DATA.filter((d) => d.brandId === staticBrand.id);
     return [];
-  }, [isTypePage, typeMeta, brand]);
+  }, [isStaticTypePage, staticTypeMeta, staticBrand]);
 
-  // 404 fallback
-  if (!isTypePage && !brand) {
+  const items = isApiMode ? apiItems : staticItems;
+
+  // ── 404 fallback ──────────────────────────────────────────────────────────────
+  if (!isApiMode && !isStaticTypePage && !staticBrand) {
     return (
       <div className="min-h-screen bg-[#FAF8F4] dark:bg-[#0D0508]">
         <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
@@ -1108,17 +1294,33 @@ export default function WineCategoryTemplate() {
     );
   }
 
+  // ── Loading state while API fetches ──────────────────────────────────────────
+  if (isApiMode && apiLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0D0508]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#D4AF37]">Loading Collection</span>
+        </div>
+      </div>
+    );
+  }
+
+  const apiHeroImage = isApiMode
+    ? (kind === "type" ? apiType?.media?.url : apiBrand?.media?.url) ?? null
+    : null;
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#FAF8F4] dark:bg-[#0D0508]">
       <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
 
       <main>
         {/* Hero */}
-        {isTypePage ? (
-          <TypeHero meta={typeMeta} citySlug={citySlug} propertySlug={propertySlug} />
-        ) : (
-          <BrandHero brand={brand} citySlug={citySlug} propertySlug={propertySlug} />
-        )}
+        {isTypePage && typeMeta ? (
+          <TypeHero meta={typeMeta} citySlug={citySlug} propertySlug={propertySlug} heroImageOverride={apiHeroImage} />
+        ) : brand ? (
+          <BrandHero brand={brand} citySlug={citySlug} propertySlug={propertySlug} heroImageOverride={apiHeroImage} />
+        ) : null}
 
         {/* Back pill */}
         <div className="bg-[#FAF8F4] dark:bg-[#0D0508]">
@@ -1133,25 +1335,33 @@ export default function WineCategoryTemplate() {
         </div>
 
         {/* Items */}
-        {isTypePage ? (
-          <TypeItemsSection items={items} meta={typeMeta} citySlug={citySlug} propertySlug={propertySlug} />
-        ) : (
+        {isTypePage && typeMeta ? (
+          <TypeItemsSection
+            items={items}
+            meta={typeMeta}
+            citySlug={citySlug}
+            propertySlug={propertySlug}
+            hideBrandFilter={isApiMode}
+          />
+        ) : brand ? (
           <BrandItemsSection items={items} brand={brand} />
-        )}
+        ) : null}
 
-        {/* Category switcher — global type pages only, after the showcase */}
-        {isGlobalPage && isTypePage && (
+        {/* Category / Brand switchers */}
+        {isApiMode && kind === "type" && (
+          <ApiTypeSwitcher currentId={parseInt(slug, 10)} allTypes={allApiTypes} citySlug={citySlug} propertySlug={propertySlug} />
+        )}
+        {isApiMode && kind === "brand" && (
+          <ApiBrandSwitcher currentId={parseInt(slug, 10)} allBrands={allApiBrands} citySlug={citySlug} propertySlug={propertySlug} />
+        )}
+        {!isApiMode && isGlobalPage && isStaticTypePage && (
           <GlobalCategorySwitcher currentSlug={normalizedSlug} />
         )}
-
-        {/* Brand switcher — global brand pages only, after the showcase */}
-        {isGlobalPage && !isTypePage && brand && (
+        {!isApiMode && isGlobalPage && !isStaticTypePage && staticBrand && (
           <GlobalBrandSwitcher currentSlug={normalizedSlug} />
         )}
-
-        {/* Related strip — property pages only */}
-        {!isGlobalPage && (
-          <RelatedStrip currentSlug={normalizedSlug} isTypePage={isTypePage} citySlug={citySlug} propertySlug={propertySlug} />
+        {!isApiMode && !isGlobalPage && (
+          <RelatedStrip currentSlug={normalizedSlug} isTypePage={isStaticTypePage} citySlug={citySlug} propertySlug={propertySlug} />
         )}
       </main>
 

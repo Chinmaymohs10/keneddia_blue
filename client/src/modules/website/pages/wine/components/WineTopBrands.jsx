@@ -134,9 +134,9 @@ export default function WineTopBrands({ clickable = false, globalRoute = false }
   const handleBrandClick = (brand) => {
     if (!clickable) return;
     if (globalRoute) {
-      navigate(`/wine-categories/${brand.id}`);
+      navigate(`/wine-categories/${brand.id}?kind=brand`);
     } else {
-      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
+      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}?kind=brand`);
     }
   };
 
