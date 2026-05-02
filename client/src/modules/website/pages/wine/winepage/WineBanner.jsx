@@ -117,7 +117,7 @@ export default function WineBanner() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="mb-8 max-w-lg text-sm md:text-base italic leading-relaxed text-white/70"
             >
-              "Where every sip feels like a hug. Crafted with love, every blend at 
+              "Where every sip feels like a hug. Crafted with love, every blend at
               Kennedia is more than just a drink - it's a comforting embrace in a cup."
             </motion.p>
 
@@ -157,9 +157,8 @@ export default function WineBanner() {
           <button
             key={idx}
             onClick={() => setActiveIndex(idx)}
-            className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${
-              activeIndex === idx ? "w-12 bg-[#D4AF37]" : "w-6 bg-white/20 hover:bg-white/40"
-            }`}
+            className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${activeIndex === idx ? "w-12 bg-[#D4AF37]" : "w-6 bg-white/20 hover:bg-white/40"
+              }`}
           />
         ))}
       </div>
@@ -286,9 +285,9 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
               transition={{ delay: 0.2, duration: 0.8 }}
               className="mb-4"
             >
-              <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
+              {/* <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
                 Estate Collection
-              </span>
+              </span> */}
               <h1
                 className="font-serif text-4xl leading-[1.1] text-white md:text-5xl lg:text-6xl"
                 style={{ fontStyle: "italic", fontWeight: 900 }}
@@ -339,9 +338,8 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
             <button
               key={idx}
               onClick={() => setActiveIndex(idx)}
-              className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${
-                activeIndex === idx ? "w-12 bg-[#D4AF37]" : "w-6 bg-white/20 hover:bg-white/40"
-              }`}
+              className={`h-1 rounded-full transition-all duration-500 cursor-pointer ${activeIndex === idx ? "w-12 bg-[#D4AF37]" : "w-6 bg-white/20 hover:bg-white/40"
+                }`}
             />
           ))}
         </div>
