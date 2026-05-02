@@ -22,6 +22,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -56,8 +63,8 @@ export default function CategoryHero({
   propertyData,
 }) {
   const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
+
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [mobileIndex, setMobileIndex] = useState(0);
@@ -206,11 +213,9 @@ export default function CategoryHero({
   };
 
   const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    isBookmarked
-      ? toast("Removed from bookmark")
-      : toast.success("Added to bookmark");
+    // Bookmark functionality removed as per request
   };
+
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
@@ -407,22 +412,30 @@ export default function CategoryHero({
               </Button>
             </div>
 
-            <Button
-              variant="outline"
-              className={`rounded-full active:scale-95 transition-all ${
-                isBookmarked
-                  ? "bg-destructive/10 border-destructive text-destructive"
-                  : ""
-              }`}
-              onClick={handleBookmark}
-            >
-              <Heart
-                className={`w-4 h-4 mr-2 ${
-                  isBookmarked ? "fill-current text-destructive" : ""
-                }`}
-              />
-              {isBookmarked ? "Saved" : "Save"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="rounded-full active:scale-95 transition-all"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
+                  <p className="flex items-center gap-2 text-[11px] font-medium">
+                    <Heart size={14} className="text-primary" />
+                    <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
+                    <span className="md:hidden">Use browser menu to bookmark</span>
+                  </p>
+                </TooltipContent>
+
+
+
+              </Tooltip>
+            </TooltipProvider>
+
           </div>
         </div>
 

@@ -23,7 +23,14 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
-import { showSuccess,showError } from "@/lib/toasters/toastUtils";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface PropertyMedia {
@@ -227,8 +234,8 @@ function ResturantBanner({
   // ── UI state ──────────────────────────────────────────────────────────────
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
+
 
   const [mobileIndex, setMobileIndex] = useState(0);
   const mobileTouchStart = useRef<number | null>(null);
@@ -239,14 +246,9 @@ function ResturantBanner({
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
   useEffect(() => {
-    const bookmarks = JSON.parse(
-      localStorage.getItem("bookmarkedRestaurants") || "[]",
-    );
-
-    if (bookmarks.includes(restaurant.propertyId)) {
-      setIsBookmarked(true);
-    }
+    // Bookmark functionality removed as per request
   }, [restaurant.propertyId]);
+
 
   const socialPlatforms = [
     {
@@ -275,29 +277,8 @@ function ResturantBanner({
     },
   ];
 
-  const handleBookmark = () => {
-    const bookmarks = JSON.parse(
-      localStorage.getItem("bookmarkedRestaurants") || "[]",
-    );
+  // handleBookmark removed as per request
 
-    if (bookmarks.includes(restaurant.propertyId)) {
-      const updated = bookmarks.filter((id) => id !== restaurant.propertyId);
-
-      localStorage.setItem("bookmarkedRestaurants", JSON.stringify(updated));
-      setIsBookmarked(false);
-
-      // showSuccess("Removed from favorites");
-    } else {
-      bookmarks.push(restaurant.propertyId);
-
-      localStorage.setItem("bookmarkedRestaurants", JSON.stringify(bookmarks));
-      setIsBookmarked(true);
-
-      // showSuccess(
-      //   "Saved to favorites ❤️ — Press Ctrl + D to bookmark this page in Chrome",
-      // );
-    }
-  };
 
   const openGalleryAt = (index: number) => {
     setInitialGalleryIndex(index);
@@ -525,16 +506,31 @@ function ResturantBanner({
               </Button>
             </div>
 
-            <Button
-              variant="outline"
-              className={`rounded-full active:scale-95 transition-all ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`}
-              onClick={handleBookmark}
-            >
-              <Heart
-                className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`}
-              />
-              {isBookmarked ? "Bookmarked" : "Save"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="rounded-full active:scale-95 transition-all"
+                  >
+                    <Heart className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
+                  <p className="flex items-center gap-2 text-[11px] font-medium">
+                    <Heart size={14} className="text-primary" />
+                    <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
+                    <span className="md:hidden">Use browser menu to bookmark</span>
+                  </p>
+                </TooltipContent>
+
+
+
+
+              </Tooltip>
+            </TooltipProvider>
+
           </div>
         </div>
 

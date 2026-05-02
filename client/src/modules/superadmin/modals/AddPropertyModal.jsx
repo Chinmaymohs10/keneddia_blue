@@ -36,6 +36,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [locationInputMode, setLocationInputMode] = useState("coordinates");
+  const [errors, setErrors] = useState({});
 
   // --- STEP 1: Parent Property State ---
   const [parentData, setParentData] = useState({
@@ -170,26 +171,41 @@ function AddPropertyModal({ onClose, onSuccess }) {
   };
 
   const handleFinalSubmit = async () => {
-    if (
-      !parentData.propertyName ||
-      !parentData.propertyTypeIds ||
-      !parentData.locationId
-    ) {
-      setCurrentStep(1);
-      return toast.error("Please complete the required fields in Step 1");
-    }
-    if (!listingData.mainHeading) {
-      setCurrentStep(2);
-      return toast.error("Please complete the required fields in Step 2");
-    }
+    let hasErrors = false;
+    let stepToFocus = 0;
+    const newErrors = { ...errors };
+
+    // Validate Step 1 Mandatory Fields
+    if (!parentData.propertyName) { newErrors.propertyName = "Property Name is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+    if (!parentData.propertyTypeIds) { newErrors.propertyTypeIds = "Property Type is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+    if (!parentData.locationId) { newErrors.locationId = "Location is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+
     if (locationInputMode === "coordinates") {
-      if (!parentData.latitude || !parentData.longitude) {
-        setCurrentStep(1);
-        return toast.error("Enter both latitude and longitude");
-      }
-    } else if (!parentData.addressUrl) {
-      setCurrentStep(1);
-      return toast.error("Enter the main address URL");
+      if (!parentData.latitude) { newErrors.latitude = "Latitude is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+      if (!parentData.longitude) { newErrors.longitude = "Longitude is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+    } else {
+      if (!parentData.addressUrl) { newErrors.addressUrl = "Address URL is required"; hasErrors = true; stepToFocus = stepToFocus || 1; }
+    }
+
+    // Validate Step 2 Mandatory Fields
+    if (!listingData.mainHeading) { newErrors.mainHeading = "Listing Description is required"; hasErrors = true; stepToFocus = stepToFocus || 2; }
+
+    // Preserve existing format errors
+    if (errors.propertyName && errors.propertyName !== "Property Name is required" && errors.propertyName !== "Name should not contain numbers or special characters") {
+      // already caught by format check
+      hasErrors = true;
+      stepToFocus = stepToFocus || 1;
+    } else if (errors.propertyName === "Name should not contain numbers or special characters") {
+      hasErrors = true;
+      stepToFocus = stepToFocus || 1;
+    }
+    if (errors.mobileNumber) { hasErrors = true; stepToFocus = stepToFocus || 1; }
+    if (errors.email) { hasErrors = true; stepToFocus = stepToFocus || 1; }
+
+    if (hasErrors) {
+      setErrors(newErrors);
+      setCurrentStep(stepToFocus || 1);
+      return toast.error(`Please fix the validation errors in Step ${stepToFocus || 1}`);
     }
 
     setLoading(true);
@@ -256,9 +272,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
       if (selectedFiles.length > 0) {
         const mediaFormData = new FormData();
         mediaFormData.append("mediaType", "IMAGE");
+        mediaFormData.append("propertyListingId", newListingId);
         selectedFiles.forEach((file) => mediaFormData.append("files", file));
-        
-        await PropertyListingAddMedia(newListingId, mediaFormData);
+
+        await PropertyUploadMedia(mediaFormData);
       }
 
       toast.success("Setup Complete!", { id: toastId });
@@ -303,11 +320,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
             <button
               key={tab.id}
               onClick={() => setCurrentStep(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all border-b-2 ${
-                currentStep === tab.id
+              className={`flex items-center gap-2 px-6 py-4 text-xs font-bold uppercase tracking-widest transition-all border-b-2 ${currentStep === tab.id
                   ? "border-primary text-primary bg-white"
                   : "border-transparent text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
               style={{
                 borderBottomColor:
                   currentStep === tab.id ? colors.primary : "transparent",
@@ -330,30 +346,38 @@ function AddPropertyModal({ onClose, onSuccess }) {
 
                 <input
                   type="text"
-                  className="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.propertyName ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={parentData.propertyName}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setParentData({
                       ...parentData,
-                      propertyName: e.target.value,
-                    })
-                  }
+                      propertyName: value,
+                    });
+                    if (value && !/^[a-zA-Z\s]*$/.test(value)) {
+                      setErrors((prev) => ({ ...prev, propertyName: "Name should not contain numbers or special characters" }));
+                    } else {
+                      setErrors((prev) => ({ ...prev, propertyName: "" }));
+                    }
+                  }}
                   placeholder="Grand Palace"
                 />
+                {errors.propertyName && <p className="text-red-500 text-xs mt-1">{errors.propertyName}</p>}
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
                   Property Type <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full px-4 py-2.5 border rounded-xl"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.propertyTypeIds ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={parentData.propertyTypeIds}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setParentData({
                       ...parentData,
                       propertyTypeIds: e.target.value,
-                    })
-                  }
+                    });
+                    if (e.target.value) setErrors((prev) => ({ ...prev, propertyTypeIds: "" }));
+                  }}
                 >
                   <option value="">Select Type</option>
                   {propertyTypes.map((t) => (
@@ -362,17 +386,19 @@ function AddPropertyModal({ onClose, onSuccess }) {
                     </option>
                   ))}
                 </select>
+                {errors.propertyTypeIds && <p className="text-red-500 text-xs mt-1">{errors.propertyTypeIds}</p>}
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <select
-                  className="w-full px-4 py-2.5 border rounded-xl"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.locationId ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={parentData.locationId}
-                  onChange={(e) =>
-                    setParentData({ ...parentData, locationId: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setParentData({ ...parentData, locationId: e.target.value });
+                    if (e.target.value) setErrors((prev) => ({ ...prev, locationId: "" }));
+                  }}
                 >
                   <option value="">Select Location</option>
                   {locations.map((l) => (
@@ -381,6 +407,7 @@ function AddPropertyModal({ onClose, onSuccess }) {
                     </option>
                   ))}
                 </select>
+                {errors.locationId && <p className="text-red-500 text-xs mt-1">{errors.locationId}</p>}
               </div>
               {isHotelType && (
                 <div>
@@ -447,11 +474,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   <button
                     type="button"
                     onClick={() => handleLocationModeChange("coordinates")}
-                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                      locationInputMode === "coordinates"
+                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${locationInputMode === "coordinates"
                         ? "bg-white text-primary shadow-sm"
                         : "text-gray-500"
-                    }`}
+                      }`}
                     style={{
                       color:
                         locationInputMode === "coordinates"
@@ -464,11 +490,10 @@ function AddPropertyModal({ onClose, onSuccess }) {
                   <button
                     type="button"
                     onClick={() => handleLocationModeChange("addressUrl")}
-                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                      locationInputMode === "addressUrl"
+                    className={`rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${locationInputMode === "addressUrl"
                         ? "bg-white text-primary shadow-sm"
                         : "text-gray-500"
-                    }`}
+                      }`}
                     style={{
                       color:
                         locationInputMode === "addressUrl"
@@ -496,58 +521,64 @@ function AddPropertyModal({ onClose, onSuccess }) {
               {locationInputMode === "addressUrl" ? (
                 <div className="col-span-2">
                   <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                    Main Address URL
+                    Main Address URL <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="url"
-                    className="w-full px-4 py-2.5 border rounded-xl"
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.addressUrl ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                     value={parentData.addressUrl ?? ""}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setParentData({
                         ...parentData,
                         addressUrl: e.target.value || null,
-                      })
-                    }
+                      });
+                      if (e.target.value) setErrors((prev) => ({ ...prev, addressUrl: "" }));
+                    }}
                     placeholder="https://maps.google.com/..."
                   />
+                  {errors.addressUrl && <p className="text-red-500 text-xs mt-1">{errors.addressUrl}</p>}
                 </div>
               ) : (
                 <>
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                      Latitude
+                      Latitude <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       step="any"
-                      className="w-full px-4 py-2.5 border rounded-xl"
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.latitude ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                       value={parentData.latitude}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setParentData({
                           ...parentData,
                           latitude: e.target.value,
-                        })
-                      }
+                        });
+                        if (e.target.value) setErrors((prev) => ({ ...prev, latitude: "" }));
+                      }}
                       placeholder="e.g. 28.6139"
                     />
+                    {errors.latitude && <p className="text-red-500 text-xs mt-1">{errors.latitude}</p>}
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
-                      Longitude
+                      Longitude <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
                       step="any"
-                      className="w-full px-4 py-2.5 border rounded-xl"
+                      className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.longitude ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                       value={parentData.longitude}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setParentData({
                           ...parentData,
                           longitude: e.target.value,
-                        })
-                      }
+                        });
+                        if (e.target.value) setErrors((prev) => ({ ...prev, longitude: "" }));
+                      }}
                       placeholder="e.g. 77.2090"
                     />
+                    {errors.longitude && <p className="text-red-500 text-xs mt-1">{errors.longitude}</p>}
                   </div>
                 </>
               )}
@@ -558,16 +589,26 @@ function AddPropertyModal({ onClose, onSuccess }) {
 
                 <input
                   type="tel"
-                  className="w-full px-4 py-2.5 border rounded-xl"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.mobileNumber ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={parentData.mobileNumber}
-                  onChange={(e) =>
-                    setParentData({
-                      ...parentData,
-                      mobileNumber: e.target.value,
-                    })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d{0,10}$/.test(value)) {
+                      setParentData({
+                        ...parentData,
+                        mobileNumber: value,
+                      });
+                      if (value && value.length !== 10) {
+                        setErrors((prev) => ({ ...prev, mobileNumber: "Mobile number must be exactly 10 digits" }));
+                      } else {
+                        setErrors((prev) => ({ ...prev, mobileNumber: "" }));
+                      }
+                    }
+                  }}
+                  maxLength="10"
                   placeholder="9090800700"
                 />
+                {errors.mobileNumber && <p className="text-red-500 text-xs mt-1">{errors.mobileNumber}</p>}
               </div>
 
               <div>
@@ -577,16 +618,24 @@ function AddPropertyModal({ onClose, onSuccess }) {
 
                 <input
                   type="email"
-                  className="w-full px-4 py-2.5 border rounded-xl"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.email ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={parentData.email}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setParentData({
                       ...parentData,
-                      email: e.target.value,
-                    })
-                  }
+                      email: value,
+                    });
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (value && !emailRegex.test(value)) {
+                      setErrors((prev) => ({ ...prev, email: "Invalid email format" }));
+                    } else {
+                      setErrors((prev) => ({ ...prev, email: "" }));
+                    }
+                  }}
                   placeholder="hello@gmail.com"
                 />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
@@ -701,16 +750,18 @@ function AddPropertyModal({ onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-2.5 border rounded-xl"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 outline-none ${errors.mainHeading ? "border-red-500 focus:ring-red-500/20" : "focus:ring-primary/20"}`}
                   value={listingData.mainHeading}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setListingData({
                       ...listingData,
                       mainHeading: e.target.value,
-                    })
-                  }
+                    });
+                    if (e.target.value) setErrors((prev) => ({ ...prev, mainHeading: "" }));
+                  }}
                   placeholder="Exclusive Suite at Grand Palace"
                 />
+                {errors.mainHeading && <p className="text-red-500 text-xs mt-1">{errors.mainHeading}</p>}
               </div>
               <div className="col-span-2">
                 <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">
