@@ -14,7 +14,8 @@ import {
   getAllWineCategories,
   getAllWineSubCategories,
 } from "@/Api/WineApi";
-import { getAllProperties } from "@/Api/Api";
+import { getAllProperties, getPropertyTypes } from "@/Api/Api";
+import { getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 import {
   generateWineCards,
   buildTypeAccents,
@@ -182,17 +183,19 @@ export default function WineBestSellers() {
   const [wineTypes, setWineTypes] = useState(["All Types"]);
   const [typeAccents, setTypeAccents] = useState({});
   const [loading, setLoading] = useState(true);
+  const [headerData, setHeaderData] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
       try {
-        const [typesRes, brandsRes, catsRes, subCatsRes, propsRes] = await Promise.all([
+        const [typesRes, brandsRes, catsRes, subCatsRes, propsRes, propTypesRes] = await Promise.all([
           getAllWineTypes(),
           getAllWineBrands(),
           getAllWineCategories(),
           getAllWineSubCategories(),
           getAllProperties(),
+          getPropertyTypes(),
         ]);
         if (cancelled) return;
 
@@ -201,6 +204,15 @@ export default function WineBestSellers() {
         const categoriesData = catsRes?.data ?? [];
         const subCatsData = subCatsRes?.data ?? [];
         const propertiesData = propsRes?.data ?? [];
+        const propTypesData = propTypesRes?.data ?? [];
+
+        // Fetch Header Data
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        if (wineTypeObj) {
+          const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
+          const activeHeader = headerRes?.data?.find(h => h.isActive);
+          if (activeHeader) setHeaderData(activeHeader);
+        }
 
         const cards = generateWineCards({
           brands: brandsData,
@@ -272,16 +284,20 @@ export default function WineBestSellers() {
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#8B1A2A]/20 bg-[#8B1A2A]/[0.07] px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-[#8B1A2A] dark:border-[#C8956A]/20 dark:bg-[#C8956A]/[0.08] dark:text-[#C8956A]">
               <Sparkles className="h-3 w-3" />
-              Wine Collection
+              {headerData?.part1 || "Wine Collection"}
             </div>
             <h2 className="mb-2 font-serif text-3xl leading-[1.2] text-stone-900 md:text-[2.5rem] dark:text-stone-100">
-              Handpicked from the{" "}
-              <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">
-                world&rsquo;s finest vineyards
-              </em>
+              {headerData?.part2 || (
+                <>
+                  Handpicked from the{" "}
+                  <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">
+                    world&rsquo;s finest vineyards
+                  </em>
+                </>
+              )}
             </h2>
             <p className="max-w-md text-sm leading-relaxed text-stone-500 dark:text-stone-500">
-              A curated showcase in the same editorial card format used on the wine detail page.
+              {headerData?.description || "A curated showcase in the same editorial card format used on the wine detail page."}
             </p>
           </div>
 

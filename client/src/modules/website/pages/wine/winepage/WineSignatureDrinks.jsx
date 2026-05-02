@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ImageOff, Loader2 } from "lucide-react";
 import { getAllWineTypes } from "@/Api/WineApi";
+import { getPropertyTypes } from "@/Api/Api";
+import { getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 
 // ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
 const TYPE_ACCENTS = {
@@ -106,12 +108,17 @@ function CategoryCard({ category, index, routeMode = "property" }) {
 export function WineCategoriesSection() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [headerData, setHeaderData] = useState(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await getAllWineTypes();
-        const data = toList(res);
+        const [typesRes, propTypesRes] = await Promise.all([
+          getAllWineTypes(),
+          getPropertyTypes()
+        ]);
+        
+        const data = toList(typesRes);
         const mapped = data.filter(item => item.active).map(item => ({
           name: item.wineTypeName,
           id: item.id,
@@ -120,13 +127,23 @@ export function WineCategoriesSection() {
           location: item.propertyTypeName || ""
         }));
         setCategories(mapped);
+
+        // Header Integration
+        const propTypesData = propTypesRes?.data ?? [];
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        if (wineTypeObj) {
+          const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
+          const headers = headerRes?.data || [];
+          const match = headers.find(h => h.isActive && (h.part1?.includes("Categories") || h.part1?.includes("Explore")));
+          if (match) setHeaderData(match);
+        }
       } catch (error) {
-        console.error("Failed to fetch wine categories:", error);
+        console.error("Failed to fetch wine categories section data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCategories();
+    fetchAll();
   }, []);
 
   return (
@@ -136,10 +153,14 @@ export function WineCategoriesSection() {
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         <div className="mb-12 max-w-2xl text-center md:text-left">
           <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-            Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
+            {headerData?.part2 || (
+              <>
+                Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
+              </>
+            )}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-            Browse whiskey, wine, beers, and tasting experiences across every location. Open any category to see the full collection with filters.
+            {headerData?.description || "Browse whiskey, wine, beers, and tasting experiences across every location."}
           </p>
         </div>
 
@@ -159,15 +180,29 @@ export function WineCategoriesSection() {
   );
 }
 
-export default function WineSignatureDrinks() {
+export default function WineSignatureDrinks({ sectionHeader }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [headerData, setHeaderData] = useState(null);
+
+  // sectionHeader (from Testimonials API, renamed "Wines Menu") takes priority
+  const resolvedHeader = sectionHeader
+    ? {
+        part1: sectionHeader.testimonialName1 || sectionHeader.header1 || "",
+        part2: sectionHeader.testimonialName2 || sectionHeader.header2 || "",
+        description: sectionHeader.description || "",
+      }
+    : headerData;
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchAll = async () => {
       try {
-        const res = await getAllWineTypes();
-        const data = toList(res);
+        const [typesRes, propTypesRes] = await Promise.all([
+          getAllWineTypes(),
+          getPropertyTypes()
+        ]);
+        
+        const data = toList(typesRes);
         const mapped = data.filter(item => item.active).map(item => ({
           name: item.wineTypeName,
           id: item.id,
@@ -176,13 +211,23 @@ export default function WineSignatureDrinks() {
           location: item.propertyTypeName || ""
         }));
         setCategories(mapped);
+
+        // Header Integration
+        const propTypesData = propTypesRes?.data ?? [];
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        if (wineTypeObj) {
+          const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
+          const headers = headerRes?.data || [];
+          const match = headers.find(h => h.isActive && (h.part1?.includes("Sommelier") || h.part1?.includes("Signature")));
+          if (match) setHeaderData(match);
+        }
       } catch (error) {
-        console.error("Failed to fetch wine categories:", error);
+        console.error("Failed to fetch wine signature drinks data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCategories();
+    fetchAll();
   }, []);
 
   return (
@@ -193,12 +238,23 @@ export default function WineSignatureDrinks() {
           <div className="mb-12 max-w-2xl text-center md:text-left">
              <div className="mb-5 flex justify-center md:justify-start items-center gap-3">
                <div className="h-px w-10 bg-[#8B1A2A]/40" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">Sommelier Selection</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">
+                 {resolvedHeader?.part1 || "Sommelier Selection"}
+               </span>
                <div className="h-px w-10 bg-[#8B1A2A]/40 md:hidden" />
              </div>
              <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-               Signature <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collections</em>
+               {resolvedHeader?.part2 || (
+                 <>
+                   Signature <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Collections</em>
+                 </>
+               )}
              </h2>
+             {resolvedHeader?.description && (
+               <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+                 {resolvedHeader.description}
+               </p>
+             )}
           </div>
 
           {loading ? (

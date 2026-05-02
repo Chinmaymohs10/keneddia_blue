@@ -4,7 +4,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllWineBrands, getWineBrandsByPropertyId } from "@/Api/WineApi";
-import { GetAllPropertyDetails } from "@/Api/Api";
+import { GetAllPropertyDetails, getPropertyTypes } from "@/Api/Api";
+import { getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 import "swiper/css";
 import "swiper/css/navigation";
 
@@ -84,22 +85,31 @@ function BrandCard({ brand, onClick, clickable }) {
     </article>
   );
 }
-export default function WineTopBrands({ clickable = false, globalRoute = false }) {
+export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [headerData, setHeaderData] = useState(null);
+
+  // sectionHeader (from Events API, renamed "Brands") takes priority
+  const resolvedHeader = sectionHeader
+    ? { part1: sectionHeader.header1 || "", part2: sectionHeader.header2 || "", description: sectionHeader.description || "" }
+    : headerData;
 
   useEffect(() => {
     const fetchBrands = async () => {
       try {
+        const [brandsRes, propRes, propTypesRes] = await Promise.all([
+          globalRoute ? getAllWineBrands() : null,
+          GetAllPropertyDetails(),
+          getPropertyTypes()
+        ]);
+
         let brandsData = [];
         if (globalRoute) {
-          const res = await getAllWineBrands();
-          brandsData = toList(res);
+          brandsData = toList(brandsRes);
         } else {
-          // Try to get propertyId by slug
-          const propRes = await GetAllPropertyDetails();
           const allProps = toList(propRes);
           const currentProp = allProps.find(p => generateSlug(p.propertyName) === propertySlug);
           
@@ -122,6 +132,16 @@ export default function WineTopBrands({ clickable = false, globalRoute = false }
           logoFit: "contain",
         }));
         setBrands(mapped);
+
+        // Header Integration
+        const propTypesData = propTypesRes?.data ?? [];
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        if (wineTypeObj) {
+          const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
+          const headers = headerRes?.data || [];
+          const match = headers.find(h => h.isActive && (h.part1?.includes("Brand") || h.part1?.includes("Label")));
+          if (match) setHeaderData(match);
+        }
       } catch (error) {
         console.error("Failed to fetch wine brands:", error);
       } finally {
@@ -147,15 +167,19 @@ export default function WineTopBrands({ clickable = false, globalRoute = false }
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
         <div className="mb-6 flex flex-col items-center text-center">
           <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
-            Curated Labels
+            {resolvedHeader?.part1 || "Curated Labels"}
           </span>
           <h2
             className="text-3xl font-semibold sm:text-4xl"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
           >
-            Top Brands
+            {resolvedHeader?.part2 || "Top Brands"}
           </h2>
-         
+          {resolvedHeader?.description && (
+            <p className="mt-2 max-w-xl text-center text-xs leading-relaxed text-zinc-500 dark:text-white/60">
+              {resolvedHeader.description}
+            </p>
+          )}
           <div className="mt-2 h-px w-20 bg-gradient-to-r from-transparent via-[#c9a25a] to-transparent" />
         </div>
 

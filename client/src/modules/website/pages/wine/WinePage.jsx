@@ -21,7 +21,13 @@ import {
   getAllWineCategories,
   getAllWineSubCategories,
 } from "@/Api/WineApi";
-import { getAllProperties, GetAllPropertyDetails, getGalleryByPropertyId } from "@/Api/Api";
+import { getAllProperties, GetAllPropertyDetails, getGalleryByPropertyId, getPropertyTypes } from "@/Api/Api";
+import {
+  getMenuSectionsByPropertyTypeId,
+  getActiveTestimonialHeaders,
+  getPrimaryConversionsHeader,
+  getEventsHeaderByProperty,
+} from "@/Api/RestaurantApi";
 import { generateWineCards } from "@/utils/wineDataUtils";
 
 const WINE_NAV_ITEMS = [
@@ -175,7 +181,7 @@ function WineShowcaseCard({ wine, index }) {
   );
 }
 
-function WineShowcaseSection({ wines, propertyName }) {
+function WineShowcaseSection({ wines, propertyName, headerData }) {
   const [expanded, setExpanded] = useState(false);
   const visibleWines = expanded ? wines : wines.slice(0, 6);
   const hasMore = wines.length > 6;
@@ -200,15 +206,24 @@ function WineShowcaseSection({ wines, propertyName }) {
             <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-10 bg-[#8B1A2A]/40" />
               <span className="text-[10px] font-black uppercase tracking-[0.38em] text-[#8B1A2A]">
-                Wine Showcase
+                {headerData?.header1 || "Wine Showcase"}
               </span>
             </div>
             <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
-              Bottles available at{" "}
-              <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">{propertyName}</em>
+              {headerData?.header2 ? (
+                <>
+                  {headerData.header2}{" "}
+                  <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">{propertyName}</em>
+                </>
+              ) : (
+                <>
+                  Bottles available at{" "}
+                  <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">{propertyName}</em>
+                </>
+              )}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-              A property-specific collection in a listing format, using the same editorial card direction as the wine homepage.
+              {headerData?.description || "A property-specific collection in a listing format, using the same editorial card direction as the wine homepage."}
             </p>
           </div>
           <div className="rounded-full border border-[#8B1A2A]/15 bg-white/70 px-4 py-2 text-[11px] font-black uppercase tracking-[0.24em] text-[#8B1A2A] shadow-sm dark:border-[#C8956A]/20 dark:bg-white/5 dark:text-[#C8956A]">
@@ -246,6 +261,12 @@ export default function WinePage() {
   const [bannerPropertyData, setBannerPropertyData] = useState(null);
   const [bannerGalleryData, setBannerGalleryData] = useState([]);
   const [bannerLoading, setBannerLoading] = useState(true);
+  const [headerData, setHeaderData] = useState(null);
+  const [sectionHeaders, setSectionHeaders] = useState({
+    signatures: null,   // Wines Menu  → WineSignatureDrinks
+    collections: null,  // Collections → WineShowcaseSection
+    brands: null,       // Brands      → WineTopBrands
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -298,18 +319,66 @@ export default function WinePage() {
     return () => { cancelled = true; };
   }, [propertySlug]);
 
+  // Fetch section headers after propertyId is resolved
+  useEffect(() => {
+    const pid = bannerPropertyData?.propertyId ?? bannerPropertyData?.id;
+    if (!pid) return;
+    let cancelled = false;
+    async function fetchSectionHeaders() {
+      try {
+        const [testimonialRes, conversionRes, eventsRes] = await Promise.all([
+          getActiveTestimonialHeaders(),
+          getPrimaryConversionsHeader(),
+          getEventsHeaderByProperty(pid),
+        ]);
+        if (cancelled) return;
+
+        const testimonials = testimonialRes?.data ?? [];
+        const conversions = conversionRes?.data ?? [];
+        const eventsData = eventsRes?.data;
+
+        const signaturesHeader = testimonials
+          .filter((h) => String(h.propertyId) === String(pid) && h.isActive)
+          .sort((a, b) => b.id - a.id)[0] ?? null;
+
+        const collectionsHeader = conversions
+          .filter((h) => h.propertyId === pid && h.isActive)
+          .sort((a, b) => b.id - a.id)[0] ?? null;
+
+        const brandsHeader = Array.isArray(eventsData)
+          ? eventsData.sort((a, b) => b.id - a.id)[0] ?? null
+          : eventsData ?? null;
+
+        setSectionHeaders({ signatures: signaturesHeader, collections: collectionsHeader, brands: brandsHeader });
+      } catch (_) {}
+    }
+    fetchSectionHeaders();
+    return () => { cancelled = true; };
+  }, [bannerPropertyData]);
+
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
       try {
-        const [typesRes, brandsRes, catsRes, subCatsRes, propsRes] = await Promise.all([
+        const [typesRes, brandsRes, catsRes, subCatsRes, propsRes, propTypesRes] = await Promise.all([
           getAllWineTypes(),
           getAllWineBrands(),
           getAllWineCategories(),
           getAllWineSubCategories(),
           getAllProperties(),
+          getPropertyTypes(),
         ]);
         if (cancelled) return;
+
+        // Header Integration
+        const propTypesData = propTypesRes?.data ?? [];
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        if (wineTypeObj) {
+          const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
+          const headers = headerRes?.data || [];
+          const match = headers.find(h => h.isActive && (h.part1?.includes("Showcase") || h.part1?.includes("Collection")));
+          if (match) setHeaderData(match);
+        }
         const cards = generateWineCards({
           brands: brandsRes?.data ?? [],
           wineTypes: typesRes?.data ?? [],
@@ -390,22 +459,27 @@ export default function WinePage() {
             />
           </div>
 
-          {/* Menu / Signature Drinks */}
+          {/* Menu / Signature Drinks — Wines Menu header */}
           <div id="menu" className="bg-[#FAF8F4] dark:bg-[#0D0508]">
             <div className="dark:hidden">
               <div className="h-px bg-[#E1E1DD]/40" />
             </div>
-            <WineSignatureDrinks />
+            <WineSignatureDrinks sectionHeader={sectionHeaders.signatures} />
           </div>
 
-          <WineShowcaseSection wines={showcaseWines} propertyName={showcaseDescription} />
+          {/* Collections header */}
+          <WineShowcaseSection
+            wines={showcaseWines}
+            propertyName={showcaseDescription}
+            headerData={sectionHeaders.collections}
+          />
 
-          {/* Top Brands */}
+          {/* Top Brands — Brands header */}
           <div id="brand" className="bg-[#F0EAE2] pb-16 dark:bg-[#100609]">
             <div className="dark:hidden">
               <div className="h-px bg-[#DCD4CB]/40" />
             </div>
-            <WineTopBrands clickable={true} />
+            <WineTopBrands clickable={true} sectionHeader={sectionHeaders.brands} />
           </div>
 
           {/* Gallery */}
@@ -413,14 +487,13 @@ export default function WinePage() {
             <div className="dark:hidden">
               <div className="h-px bg-[#DED7CE]/40" />
             </div>
-            <WineGalleryPage />
+            <WineGalleryPage propertyId={bannerPropertyData?.propertyId ?? bannerPropertyData?.id ?? null} />
           </div>
         </main>
 
         <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
           <Footer />
         </div>
-
         <WineWhatsAppButton />
       </div>
     </>

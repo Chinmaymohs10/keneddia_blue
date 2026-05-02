@@ -857,7 +857,7 @@ function EventsHeaderEditor({ propertyId }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // GALLERY3D — MAIN EXPORT (tabbed layout)
 // ─────────────────────────────────────────────────────────────────────────────
-const TABS = [
+const BASE_TABS = [
   {
     key: "gallery",
     label: "3D Gallery",
@@ -884,27 +884,42 @@ const TABS = [
   },
 ];
 
+const WINE_LABEL_OVERRIDES = {
+  testimonials: "Wines Menu",
+  conversion: "Collections",
+  events: "Brands",
+};
+
 function Gallery3d({ propertyData }) {
   const propertyId = propertyData?.id ?? propertyData?.propertyId ?? "";
   const propertyType = (propertyData?.propertyType || "").toLowerCase();
+  const isWine = propertyType === "wine";
   const [activeTab, setActiveTab] = useState("gallery");
+
+  const tabs = BASE_TABS.map((tab) =>
+    isWine && WINE_LABEL_OVERRIDES[tab.key]
+      ? { ...tab, label: WINE_LABEL_OVERRIDES[tab.key] }
+      : tab
+  );
 
   return (
     <div className="space-y-4">
       {/* Page heading */}
       <div>
         <h2 className="text-base font-bold text-gray-800">
-          Gallery &amp; Testimonials
+          Gallery &amp; {isWine ? "Wine Sections" : "Testimonials"}
         </h2>
         <p className="text-xs text-gray-400 mt-0.5">
-          Manage the section headlines for the 3D visual gallery, guest
-          testimonials, primary conversion, and events
+          Manage the section headlines for the visual gallery
+          {isWine
+            ? ", wines menu, collections, and brands"
+            : ", guest testimonials, primary conversion, and events"}
         </p>
       </div>
 
       {/* Tab bar */}
       <div className="flex border-b border-gray-200">
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
