@@ -127,8 +127,7 @@ export default function Reviews() {
                     src={video.embedUrl}
                     title={video.title}
                     frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                     className="w-full h-full"
                   ></iframe>
                 </div>

@@ -318,7 +318,7 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
         isFetchingRef.current = false;
       }
     },
-    [currentTheme, slides.length],
+    [currentTheme],
   );
 
   const updateSlidesForTheme = useCallback((newTheme: "light" | "dark") => {
@@ -569,7 +569,7 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
         effect="fade"
         speed={1200}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
-        loop={true}
+        loop={slides.length > 1}
         onSwiper={setSwiperInstance}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="w-full h-full"

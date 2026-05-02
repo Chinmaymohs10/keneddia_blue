@@ -171,6 +171,20 @@ export default function OurStoryPreview({
   }, []);
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsSectionVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 1024);
     check();
     window.addEventListener("resize", check);
@@ -204,7 +218,7 @@ export default function OurStoryPreview({
           : null;
         if (match?.id) setHotelTypeId(Number(match.id));
       })
-      .catch(() => {});
+      .catch(() => { });
     fetchExperiences();
   }, []);
 
@@ -263,35 +277,31 @@ export default function OurStoryPreview({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
-        if (!isClient) {
-          return (
-            <div
-              key={idx}
-              className="relative flex h-full w-full items-center justify-center bg-black"
-            >
-              <a
-                href={m.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-white text-xs font-bold underline"
-              >
-                View on Instagram
-              </a>
-            </div>
-          );
-        }
-
         return (
           <div
             key={idx}
-            className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center group"
+            className="relative flex h-full w-full items-center justify-center bg-black overflow-hidden group"
           >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
-              <InstagramEmbed
-                url={`https://www.instagram.com/p/${id}/`}
-                width={328}
-              />
-            </div>
+            {isClient ? (
+              <div
+                key={`ig-${id}`}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]"
+              >
+                <InstagramEmbed
+                  url={`https://www.instagram.com/p/${id}/`}
+                  width={328}
+                  placeholder={
+                    <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                      <Loader2 className="animate-spin text-white/20" />
+                    </div>
+                  }
+                />
+              </div>
+            ) : (
+              <div className="text-white text-xs font-bold underline">
+                View on Instagram
+              </div>
+            )}
 
             <div className="absolute inset-0 z-0 pointer-events-none" />
 
@@ -315,13 +325,15 @@ export default function OurStoryPreview({
           <div
             key={idx}
             className="w-full h-full relative group"
-            // style={{ border: "2px solid blue" }}
+          // style={{ border: "2px solid blue" }}
           >
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1`}
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=0&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1`}
               className="w-full h-full"
               style={{ border: "none" }}
-              allow="autoplay; encrypted-media"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              loading="lazy"
+              title="YouTube video"
             />
           </div>
         );
@@ -380,9 +392,8 @@ export default function OurStoryPreview({
           {/* SCROLLING TEXT AREA */}
           <div className="relative flex-1 overflow-hidden">
             <div
-              className={`absolute top-0 left-0 w-full text-center px-2 ${
-                isLongText ? "animate-vertical-scroll" : ""
-              }`}
+              className={`absolute top-0 left-0 w-full text-center px-2 ${isLongText ? "animate-vertical-scroll" : ""
+                }`}
             >
               {item.description?.trim() ? (
                 <p className="text-white text-sm md:text-base italic leading-relaxed">
@@ -488,45 +499,47 @@ export default function OurStoryPreview({
                     <Loader2 className="animate-spin" />
                   </div>
                 ) : (
-                  <Swiper
-                    key={guestExperiences.length}
-                    modules={[Autoplay, Navigation]}
-                    spaceBetween={15}
-                    slidesPerView={1.2}
-                    breakpoints={{ 768: { slidesPerView: 3 } }}
-                    autoplay={{
-                      delay: 6000,
-                      disableOnInteraction: false,
-                      pauseOnMouseEnter: true,
-                    }}
-                    onSwiper={(s) => (swiperRef.current = s)}
-                    className="h-full w-full"
-                  >
-                    {guestExperiences.map((item) => {
-                      const allMedia = buildMediaList(item);
-                      return (
-                        <SwiperSlide key={item.id}>
-                          <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
-                            <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                              {renderMediaGrid(allMedia, item)}
-                              {allMedia.length > 0 && (
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                  {item.description?.trim() && (
-                                    <p className="text-white italic text-base line-clamp-4">
-                                      "{item.description}"
+                  isSectionVisible && (
+                    <Swiper
+                      key={guestExperiences.length}
+                      modules={[Autoplay, Navigation]}
+                      spaceBetween={15}
+                      slidesPerView={1.2}
+                      breakpoints={{ 768: { slidesPerView: 3 } }}
+                      autoplay={{
+                        delay: 6000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                      }}
+                      onSwiper={(s) => (swiperRef.current = s)}
+                      className="h-full w-full"
+                    >
+                      {guestExperiences.map((item) => {
+                        const allMedia = buildMediaList(item);
+                        return (
+                          <SwiperSlide key={item.id}>
+                            <div className="bg-background border rounded-xl overflow-hidden h-full flex flex-col group">
+                              <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                                {renderMediaGrid(allMedia, item)}
+                                {allMedia.length > 0 && (
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent p-4 flex flex-col justify-end pointer-events-none">
+                                    {item.description?.trim() && (
+                                      <p className="text-white italic text-base line-clamp-4">
+                                        "{item.description}"
+                                      </p>
+                                    )}
+                                    <p className="text-white font-bold text-sm">
+                                      {item.author}
                                     </p>
-                                  )}
-                                  <p className="text-white font-bold text-sm">
-                                    {item.author}
-                                  </p>
-                                </div>
-                              )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </SwiperSlide>
-                      );
-                    })}
-                  </Swiper>
+                          </SwiperSlide>
+                        );
+                      })}
+                    </Swiper>
+                  )
                 )}
               </AnimatePresence>
             </div>

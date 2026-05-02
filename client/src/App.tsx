@@ -55,9 +55,12 @@ function App({ initialData = {} }) {
             <GlobalSeoManager />
             <Toaster />
             <ScrollToTop />
-            <ToastContainer />
-            <WhatsAppButton />
-            {mounted && <ToastContainer />}
+            {mounted && (
+              <>
+                <ToastContainer />
+                <WhatsAppButton />
+              </>
+            )}
             <AppRoutes />
           </TooltipProvider>
         </QueryClientProvider>
