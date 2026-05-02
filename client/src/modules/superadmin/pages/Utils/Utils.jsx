@@ -87,7 +87,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
           >
             <option value="">Select property type</option>
             {propertyTypes.map((pt) => (
-              <option key={pt.id} value={pt.id}>{pt.name}</option>
+              <option key={pt.id} value={pt.id}>{pt.typeName || pt.name}</option>
             ))}
           </select>
         </FormField>
@@ -103,7 +103,7 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
           >
             <option value="">Select property</option>
             {properties.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id}>{p.propertyName}</option>
             ))}
           </select>
         </FormField>
@@ -283,11 +283,11 @@ function WhatsAppTab({ propertyTypes, properties }) {
   const scopeLabel = (item) => {
     if (item.propertyId) {
       const p = properties.find((x) => String(x.id) === String(item.propertyId));
-      return p?.name || `Property #${item.propertyId}`;
+      return p?.propertyName || `Property #${item.propertyId}`;
     }
     if (item.propertyTypeId) {
       const pt = propertyTypes.find((x) => String(x.id) === String(item.propertyTypeId));
-      return pt?.name || `Type #${item.propertyTypeId}`;
+      return pt?.typeName || pt?.name || `Type #${item.propertyTypeId}`;
     }
     return "Main Homepage";
   };
@@ -598,11 +598,11 @@ function IconTab({ propertyTypes, properties }) {
   const scopeLabel = (item) => {
     if (item.propertyId) {
       const p = properties.find((x) => String(x.id) === String(item.propertyId));
-      return p?.name || `Property #${item.propertyId}`;
+      return p?.propertyName || `Property #${item.propertyId}`;
     }
     if (item.propertyTypeId) {
       const pt = propertyTypes.find((x) => String(x.id) === String(item.propertyTypeId));
-      return pt?.name || `Type #${item.propertyTypeId}`;
+      return pt?.typeName || pt?.name || `Type #${item.propertyTypeId}`;
     }
     return "Main Homepage";
   };
@@ -864,7 +864,13 @@ function Utils() {
     Promise.all([getPropertyTypes(), GetAllPropertyDetails()])
       .then(([ptRes, pRes]) => {
         setPropertyTypes(toList(ptRes));
-        setProperties(toList(pRes));
+        const pRaw = Array.isArray(pRes) ? pRes : pRes?.data || [];
+        // normalize: each item has propertyResponseDTO.id / propertyResponseDTO.propertyName
+        const pData = pRaw.map((item) => ({
+          id: item.propertyResponseDTO?.id ?? item.id,
+          propertyName: item.propertyResponseDTO?.propertyName ?? item.propertyName ?? item.name,
+        }));
+        setProperties(pData);
       })
       .catch(() => {});
   }, []);
