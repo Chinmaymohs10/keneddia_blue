@@ -283,7 +283,13 @@ export default function WineManagement() {
     try {
       const [ptRes, pRes] = await Promise.all([getPropertyTypes(), GetAllPropertyDetails()]);
       setPropertyTypes(toList(ptRes));
-      setProperties(toList(pRes));
+      // GetAllPropertyDetails returns [{propertyResponseDTO, propertyListingResponseDTOS}]
+      // Extract the flat property object from each wrapper
+      const rawList = toList(pRes);
+      const flatProps = rawList
+        .map((item) => item.propertyResponseDTO ?? item)
+        .filter((p) => p && p.isActive === true);
+      setProperties(flatProps);
     } catch {
       showError("Failed to fetch location context");
     } finally {
