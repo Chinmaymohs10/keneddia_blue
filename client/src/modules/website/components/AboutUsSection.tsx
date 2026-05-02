@@ -132,8 +132,10 @@ export default function AboutUsSection({
   };
 
   useEffect(() => {
-    fetchAboutUs();
-  }, []);
+    if (!initialData?.aboutUsData) {
+      fetchAboutUs();
+    }
+  }, [initialData]);
 
   useEffect(() => {
     if (aboutUsData?.id) {
@@ -213,7 +215,6 @@ export default function AboutUsSection({
                       title={aboutUsData?.videoTitle || "Brand Video"}
                       className="w-full h-full object-cover"
                       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                      allowFullScreen
                       loading="eager"
                       referrerPolicy="strict-origin-when-cross-origin"
                       style={{ border: 0 }}

@@ -166,11 +166,14 @@ export async function render(url, template) {
     .replace("</body>", `${initialDataScript}</body>`);
 
   let html = assembledHtml;
+  // Skip formatting as it can introduce hydration mismatches by adding unexpected whitespace
+  /*
   try {
     html = await formatHtmlDocument(assembledHtml);
   } catch (err) {
     console.error("SSR formatHtml failed:", err?.message || err);
   }
+  */
 
   return { html, appHtml, initialData };
 }
