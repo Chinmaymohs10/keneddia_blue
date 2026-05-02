@@ -9,6 +9,7 @@ import {
   Globe,
   Building2,
   Wrench,
+  Wine,
   LogOut,
   ChevronDown,
   ChevronLeft,
@@ -47,6 +48,11 @@ function Sidebar({ isOpen, onToggle }) {
         icon: Wrench,
         label: "Utils",
         path: "/Utils",
+      });
+      coreItems.push({
+        icon: Wine,
+        label: "Wine",
+        path: "/WineManagement",
       });
     }
 

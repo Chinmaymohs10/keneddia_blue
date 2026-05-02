@@ -9,7 +9,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import AppRoutes from "./routes/index";
 import { SsrDataProvider, useSsrData } from "./ssr/SsrDataContext";
 import { applySeoToDocument, fetchGlobalSeo } from "@/lib/seo";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 function GlobalSeoManager() {
@@ -43,6 +43,9 @@ function GlobalSeoManager() {
 }
 
 function App({ initialData = {} }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <SsrDataProvider initialData={initialData}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -51,7 +54,7 @@ function App({ initialData = {} }) {
             <GlobalSeoManager />
             <Toaster />
             <ScrollToTop />
-            <ToastContainer />
+            {mounted && <ToastContainer />}
             <AppRoutes />
           </TooltipProvider>
         </QueryClientProvider>

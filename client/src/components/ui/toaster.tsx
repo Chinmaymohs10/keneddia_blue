@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -10,6 +11,9 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
 
   return (
     <ToastProvider>
