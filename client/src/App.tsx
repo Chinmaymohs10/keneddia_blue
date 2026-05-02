@@ -9,7 +9,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import AppRoutes from "./routes/index";
 import { SsrDataProvider, useSsrData } from "./ssr/SsrDataContext";
 import { applySeoToDocument, fetchGlobalSeo } from "@/lib/seo";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import WhatsAppButton from "@/modules/website/components/WhatsAppButton";
 
@@ -44,6 +44,9 @@ function GlobalSeoManager() {
 }
 
 function App({ initialData = {} }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <SsrDataProvider initialData={initialData}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -54,6 +57,7 @@ function App({ initialData = {} }) {
             <ScrollToTop />
             <ToastContainer />
             <WhatsAppButton />
+            {mounted && <ToastContainer />}
             <AppRoutes />
           </TooltipProvider>
         </QueryClientProvider>
