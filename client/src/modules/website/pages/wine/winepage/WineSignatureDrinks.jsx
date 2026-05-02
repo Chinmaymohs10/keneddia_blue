@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ImageOff } from "lucide-react";
+import { ArrowRight, ImageOff, Loader2 } from "lucide-react";
+import { getAllWineTypes } from "@/Api/WineApi";
 
 // ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
 const TYPE_ACCENTS = {
@@ -11,19 +12,20 @@ const TYPE_ACCENTS = {
   Tastings: { color: "#556B5E", dot: "#7AA088" },
 };
 
-// ─── CATEGORY DATA ──────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { name: "Whiskey", id: "whiskey", image: "https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Wine", id: "wine", image: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Beers", id: "beers", image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-  { name: "Tastings", id: "tastings", image: "https://images.unsplash.com/photo-1543158181-e6f9f6712055?w=600&q=85", property: "Kennedia Blu", location: "ghaziabad" },
-];
+const toList = (res) => {
+  const d = res?.data ?? res;
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.content)) return d.content;
+  if (Array.isArray(d?.data)) return d.data;
+  return [];
+};
 
 // ─── CATEGORY CARD ────────────────────────────────────────────────────────────
 function CategoryCard({ category, index, routeMode = "property" }) {
   const [hovered, setHovered] = useState(false);
   const accent = TYPE_ACCENTS[category.name] || TYPE_ACCENTS.Wine;
   const navigate = useNavigate();
+  const params = useParams();
 
   const generateSlug = (text) => text?.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
@@ -33,8 +35,8 @@ function CategoryCard({ category, index, routeMode = "property" }) {
       navigate(`/wine-categories/${typeSlug}`);
       return;
     }
-    const citySlug = category.location.toLowerCase();
-    const propSlug = generateSlug(category.property);
+    const citySlug = (category.location || params.citySlug || "ghaziabad").toLowerCase();
+    const propSlug = generateSlug(category.property || params.propertySlug || "kennedia-blu");
     navigate(`/wine-detail/${citySlug}/${propSlug}/${typeSlug}`);
   };
 
@@ -102,17 +104,37 @@ function CategoryCard({ category, index, routeMode = "property" }) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export function WineCategoriesSection() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getAllWineTypes();
+        const data = toList(res);
+        const mapped = data.filter(item => item.active).map(item => ({
+          name: item.wineTypeName,
+          id: item.id,
+          image: item.media?.url || "",
+          property: item.propertyName || "",
+          location: item.propertyTypeName || ""
+        }));
+        setCategories(mapped);
+      } catch (error) {
+        console.error("Failed to fetch wine categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-[#F5F0EA] pt-16 pb-20 dark:bg-[#12070A]">
       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         <div className="mb-12 max-w-2xl text-center md:text-left">
-          {/* <div className="mb-5 flex items-center justify-center gap-3 md:justify-start">
-            <div className="h-px w-10 bg-[#8B1A2A]/40" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#8B1A2A]">By Category</span>
-            <div className="h-px w-10 bg-[#8B1A2A]/40 md:hidden" />
-          </div> */}
           <h2 className="font-serif text-4xl leading-[1.1] text-stone-900 md:text-5xl dark:text-stone-100">
             Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
           </h2>
@@ -121,17 +143,48 @@ export function WineCategoriesSection() {
           </p>
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {CATEGORIES.map((category, i) => (
-            <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-[#8B1A2A]" size={40} />
+          </div>
+        ) : (
+          <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {categories.map((category, i) => (
+              <CategoryCard key={category.id} category={category} index={i} routeMode="global" />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 export default function WineSignatureDrinks() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getAllWineTypes();
+        const data = toList(res);
+        const mapped = data.filter(item => item.active).map(item => ({
+          name: item.wineTypeName,
+          id: item.id,
+          image: item.media?.url || "",
+          property: item.propertyName || "",
+          location: item.propertyTypeName || ""
+        }));
+        setCategories(mapped);
+      } catch (error) {
+        console.error("Failed to fetch wine categories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-[#FAF8F4] pt-20 pb-24 dark:bg-[#0D0508]">
        <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
@@ -148,11 +201,17 @@ export default function WineSignatureDrinks() {
              </h2>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {CATEGORIES.map((category, i) => (
-              <CategoryCard key={category.id} category={category} index={i} routeMode="property" />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin text-[#8B1A2A]" size={40} />
+            </div>
+          ) : (
+            <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {categories.map((category, i) => (
+                <CategoryCard key={category.id} category={category} index={i} routeMode="property" />
+              ))}
+            </div>
+          )}
        </div>
     </section>
   );

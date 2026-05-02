@@ -1,59 +1,31 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { useNavigate, useParams } from "react-router-dom";
-import img from "../../../../../assets/resturant_images/logo.jpg"
-import img1 from "../../../../../assets/resturant_images/download.png"
+import { getAllWineBrands, getWineBrandsByPropertyId } from "@/Api/WineApi";
+import { GetAllPropertyDetails } from "@/Api/Api";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const BRANDS = [
-  {
-    id: "hibiki",
-    name: "HIBIKI",
-    subLabel: "Suntory Whisky",
-    accent: "#d7d3cc",
-    detail: "Harmony",
-    logo: img,
-    logoFit: "contain",
-  },
-  {
-    id: "beluga",
-    name: "BELUGA",
-    subLabel: "Gold Line",
-    accent: "#e5d4ab",
-    detail: "Reserve",
-    logo: img1,
-    logoFit: "contain",
-  },
-  {
-    id: "glenmorangie",
-    name: "GLENM",
-    subLabel: "Single Malt Scotch Whisky",
-    accent: "#c6a76d",
-    detail: "Highland",
-    logo: "",
-    logoFit: "contain",
-  },
-  {
-    id: "guinness",
-    name: "GUINNESS",
-    subLabel: "Est. 1759",
-    accent: "#b48a35",
-    detail: "Dublin",
-    logo: "",
-    logoFit: "contain",
-  },
-  {
-    id: "johnnie-walker",
-    name: "JOHNNIE WALKER",
-    subLabel: "Blended Scotch Whisky",
-    accent: "#f0c15b",
-    detail: "Black Label",
-    logo: "",
-    logoFit: "contain",
-  },
-];
+const toList = (res) => {
+  const d = res?.data ?? res;
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.content)) return d.content;
+  if (Array.isArray(d?.data)) return d.data;
+  return [];
+};
+
+const generateSlug = (text) =>
+  text
+    ?.toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
+
+const ACCENT_COLORS = ["#d7d3cc", "#e5d4ab", "#c6a76d", "#b48a35", "#f0c15b"];
 
 function BrandCard({ brand, onClick, clickable }) {
   const hasLogo = Boolean(brand.logo);
@@ -115,6 +87,49 @@ function BrandCard({ brand, onClick, clickable }) {
 export default function WineTopBrands({ clickable = false, globalRoute = false }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        let brandsData = [];
+        if (globalRoute) {
+          const res = await getAllWineBrands();
+          brandsData = toList(res);
+        } else {
+          // Try to get propertyId by slug
+          const propRes = await GetAllPropertyDetails();
+          const allProps = toList(propRes);
+          const currentProp = allProps.find(p => generateSlug(p.propertyName) === propertySlug);
+          
+          if (currentProp) {
+            const res = await getWineBrandsByPropertyId(currentProp.id);
+            brandsData = toList(res);
+          } else {
+            const res = await getAllWineBrands();
+            brandsData = toList(res);
+          }
+        }
+        
+        const mapped = brandsData.filter(b => b.active).map((b, i) => ({
+          id: b.id,
+          name: b.name,
+          subLabel: b.wineTypeName || "Premium Selection",
+          accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+          detail: b.description || "Harmony",
+          logo: b.media?.url || "",
+          logoFit: "contain",
+        }));
+        setBrands(mapped);
+      } catch (error) {
+        console.error("Failed to fetch wine brands:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBrands();
+  }, [globalRoute, propertySlug]);
 
   const handleBrandClick = (brand) => {
     if (!clickable) return;
@@ -124,8 +139,6 @@ export default function WineTopBrands({ clickable = false, globalRoute = false }
       navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}`);
     }
   };
-
-
 
   return (
     <section className="relative overflow-hidden bg-[#F0EAE2] py-8 text-zinc-950 transition-colors duration-500 dark:bg-[#100609] dark:text-white md:py-10">
@@ -164,27 +177,37 @@ export default function WineTopBrands({ clickable = false, globalRoute = false }
           </button>
 
           <div className="px-6 sm:px-8 lg:px-12">
-            <Swiper
-              modules={[Navigation]}
-              navigation={{
-                prevEl: ".wine-top-brands-prev",
-                nextEl: ".wine-top-brands-next",
-              }}
-              spaceBetween={16}
-              slidesPerView={1.1}
-              breakpoints={{
-                480: { slidesPerView: 1.35, spaceBetween: 14 },
-                640: { slidesPerView: 2.1, spaceBetween: 16 },
-                900: { slidesPerView: 3, spaceBetween: 16 },
-                1200: { slidesPerView: 4.2, spaceBetween: 18 },
-              }}
-            >
-              {BRANDS.map((brand) => (
-                <SwiperSlide key={brand.id} className="h-auto">
-                  <BrandCard brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="animate-spin text-[#c9a25a]" size={32} />
+              </div>
+            ) : brands.length > 0 ? (
+              <Swiper
+                modules={[Navigation]}
+                navigation={{
+                  prevEl: ".wine-top-brands-prev",
+                  nextEl: ".wine-top-brands-next",
+                }}
+                spaceBetween={16}
+                slidesPerView={1.1}
+                breakpoints={{
+                  480: { slidesPerView: 1.35, spaceBetween: 14 },
+                  640: { slidesPerView: 2.1, spaceBetween: 16 },
+                  900: { slidesPerView: 3, spaceBetween: 16 },
+                  1200: { slidesPerView: 4.2, spaceBetween: 18 },
+                }}
+              >
+                {brands.map((brand) => (
+                  <SwiperSlide key={brand.id} className="h-auto">
+                    <BrandCard brand={brand} onClick={clickable ? () => handleBrandClick(brand) : undefined} clickable={clickable} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+              <div className="flex justify-center py-12 text-zinc-500 italic">
+                No brands available at this moment.
+              </div>
+            )}
           </div>
         </div>
       </div>
