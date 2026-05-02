@@ -21,6 +21,12 @@ import {
   Linkedin,
   MessageCircle,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -40,7 +46,6 @@ import {
   getAllDiningByPropertyId,
   getBookingChannelPartnersByPropertyId,
 } from "@/Api/Api";
-import { toast } from "react-hot-toast";
 import HotelGalleryGrid from "../components/hotel/Hotelgallerygrid";
 import { useSsrData } from "@/ssr/SsrDataContext";
 // Components
@@ -299,7 +304,6 @@ export default function HotelDetail() {
   const [datesInitialized, setDatesInitialized] = useState(false);
 
   // Feature States
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareReactions, setShowShareReactions] = useState(false);
 
   const [searchData, setSearchData] = useState({
@@ -902,12 +906,6 @@ export default function HotelDetail() {
     fetchPolicies(propertyIdFromUrl);
   }, [propertyIdFromUrl]);
 
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    isBookmarked
-      ? toast("Removed from favorites")
-      : toast.success("Added to favorites!");
-  };
 
   const openGalleryAt = (index: number) => {
     setInitialGalleryIndex(index);
@@ -1165,16 +1163,26 @@ export default function HotelDetail() {
                   <Share2 className="w-4 h-4 mr-2" /> Share
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                className={`rounded-full active:scale-95 transition-all px-6 ${isBookmarked ? "bg-destructive/10 border-destructive text-destructive" : ""}`}
-                onClick={handleBookmark}
-              >
-                <Heart
-                  className={`w-4 h-4 mr-2 ${isBookmarked ? "fill-current text-destructive" : ""}`}
-                />
-                {isBookmarked ? "Saved" : "Save"}
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="rounded-full active:scale-95 transition-all px-6"
+                    >
+                      <Heart className="w-4 h-4 mr-2" />
+                      Save
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
+                    <p className="flex items-center gap-2 text-[11px] font-medium">
+                      <Heart size={14} className="text-primary" />
+                      <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
+                      <span className="md:hidden">Use browser menu to bookmark</span>
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
