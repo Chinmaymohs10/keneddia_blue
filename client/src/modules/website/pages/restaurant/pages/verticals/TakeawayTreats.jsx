@@ -7,7 +7,7 @@ import Footer from "@/modules/website/components/Footer";
 export default function TakeawayTreats() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <Navbar propertyTypeName="Restaurant" />
       <main>
         <VerticalHero 
           title="Takeaway Treats"

@@ -323,7 +323,7 @@ export default function Hotels() {
 
       <AnimatePresence>{!isPageReady && <PageLoader />}</AnimatePresence>
 
-      <Navbar navItems={HOTEL_NAV_ITEMS} logo={siteContent.brand.logo_hotel} />
+      <Navbar navItems={HOTEL_NAV_ITEMS} logo={siteContent.brand.logo_hotel} propertyTypeName="Hotel" />
       <SpecialOfferPopup />
 
       <HotelHeroSection slides={heroSlides} loading={loading} />

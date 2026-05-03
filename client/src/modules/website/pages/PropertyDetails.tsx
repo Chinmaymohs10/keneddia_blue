@@ -82,9 +82,13 @@ export default function PropertyDetails() {
 
   const mainImage = property.media?.[0]?.url || "";
 
+  const propertyTypeName = property.propertyType
+    ? property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1).toLowerCase()
+    : undefined;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <Navbar propertyTypeName={propertyTypeName} />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-6 lg:px-12">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-8 transition-colors">

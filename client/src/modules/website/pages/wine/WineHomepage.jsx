@@ -164,7 +164,7 @@ export default function WineHomepage() {
       </AnimatePresence>
 
       <div className="min-h-screen overflow-x-hidden bg-background [scrollbar-gutter:stable]">
-        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
+        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} propertyTypeName="Wine" />
 
         <main>
           {/* Hero — full viewport */}

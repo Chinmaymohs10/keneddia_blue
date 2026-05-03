@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { siteContent } from "@/data/siteContent";
+import { useLogos } from "./LogoProvider";
 
 const footerSections = [
   {
@@ -59,6 +60,13 @@ const legalLinks = [
 
 export default function Footer() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { getFooterLogos } = useLogos();
+  const footerLogos = getFooterLogos();
+
+  const footerLightSrc = footerLogos.light?.src ?? siteContent.brand.footer.image.src;
+  const footerLightAlt = footerLogos.light?.alt ?? siteContent.brand.footer.image.alt;
+  const footerDarkSrc = footerLogos.dark?.src ?? siteContent.brand.footer.image.src;
+  const footerDarkAlt = footerLogos.dark?.alt ?? siteContent.brand.footer.image.alt;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,19 +97,16 @@ export default function Footer() {
               <div className="relative">
                 {/* Light Mode Logo */}
                 <img
-                  src={siteContent.brand.footer.image.src}
-                  alt={siteContent.brand.footer.image.alt}
-                  className="block dark:hidden h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
+                  src={footerLightSrc}
+                  alt={footerLightAlt}
+                  className="block dark:hidden h-12 md:h-20 w-60 max-w-[200px] md:max-w-[250px] object-contain"
                 />
-
                 {/* Dark Mode Logo */}
-                {siteContent.brand.logo.darkImage && (
-                  <img
-                    src={siteContent.brand.footer.image.src}
-                  alt={siteContent.brand.footer.image.alt}
-                    className="hidden dark:block h-12 md:h-20 w-[15rem] max-w-[200px] md:max-w-[250px] object-contain"
-                  />
-                )}
+                <img
+                  src={footerDarkSrc}
+                  alt={footerDarkAlt}
+                  className="hidden dark:block h-12 md:h-20 w-60 max-w-[200px] md:max-w-[250px] object-contain"
+                />
               </div>
             </Link>
 

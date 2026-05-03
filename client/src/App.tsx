@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/modules/website/components/ThemeProvider";
+import { LogoProvider } from "@/modules/website/components/LogoProvider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -50,6 +51,7 @@ function App({ initialData = {} }) {
   return (
     <SsrDataProvider initialData={initialData}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <LogoProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <GlobalSeoManager />
@@ -64,6 +66,7 @@ function App({ initialData = {} }) {
             <AppRoutes />
           </TooltipProvider>
         </QueryClientProvider>
+      </LogoProvider>
       </ThemeProvider>
     </SsrDataProvider>
   );

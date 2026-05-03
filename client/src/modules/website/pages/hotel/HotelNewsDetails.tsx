@@ -799,7 +799,7 @@ export default function HotelNewsDetails() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <Navbar propertyTypeName="Hotel" />
       <main className="pt-20 md:pt-28 pb-12 md:pb-16">
         <div className="container mx-auto px-4 md:px-6 lg:px-12">
 

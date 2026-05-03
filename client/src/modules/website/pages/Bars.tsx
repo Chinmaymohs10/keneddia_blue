@@ -121,7 +121,7 @@ export default function Bars() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar navItems={BAR_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
+      <Navbar navItems={BAR_NAV_ITEMS} logo={siteContent.brand.logo_bar} propertyTypeName="Bar" />
 
       {/* 1. HERO SECTION */}
       <section className="relative h-[85vh] w-full overflow-hidden">

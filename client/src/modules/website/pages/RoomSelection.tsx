@@ -77,7 +77,7 @@ export default function RoomSelection() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar logo={siteContent.brand.logo_hotel} />
+      <Navbar logo={siteContent.brand.logo_hotel} propertyTypeName="Hotel" />
 
       {/* Breadcrumb */}
       <div className="bg-secondary/5 border-b border-border mt-20 md:mt-24">

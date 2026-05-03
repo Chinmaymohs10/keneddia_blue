@@ -12,6 +12,9 @@ import {
   X,
   Check,
   Upload,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   createWhatsAppInfo,
@@ -149,6 +152,73 @@ function EmptyState({ label }) {
   );
 }
 
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+const PAGE_SIZES = [10, 25, 50];
+
+function Pagination({ page, totalPages, pageSize, total, onPage, onPageSize }) {
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return (
+    <div className="flex items-center justify-between px-1 pt-3 flex-wrap gap-3">
+      <div className="flex items-center gap-2 text-xs" style={{ color: colors.textSecondary }}>
+        <span>Rows per page:</span>
+        <select
+          className="border rounded-lg px-2 py-1 text-xs outline-none"
+          style={{ borderColor: colors.border, color: colors.textPrimary, backgroundColor: colors.contentBg }}
+          value={pageSize}
+          onChange={(e) => onPageSize(Number(e.target.value))}
+        >
+          {PAGE_SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <span>{start}–{end} of {total}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <button
+          disabled={page <= 1}
+          onClick={() => onPage(page - 1)}
+          className="p-1.5 rounded-lg border transition-colors disabled:opacity-40"
+          style={{ borderColor: colors.border, color: colors.textSecondary }}
+        >
+          <ChevronLeft size={15} />
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+          .reduce((acc, p, idx, arr) => {
+            if (idx > 0 && p - arr[idx - 1] > 1) acc.push("…");
+            acc.push(p);
+            return acc;
+          }, [])
+          .map((p, i) =>
+            p === "…" ? (
+              <span key={`e${i}`} className="px-1 text-xs" style={{ color: colors.textSecondary }}>…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => onPage(p)}
+                className="w-7 h-7 rounded-lg text-xs font-semibold transition-colors"
+                style={{
+                  backgroundColor: p === page ? colors.primary : "transparent",
+                  color: p === page ? "#fff" : colors.textSecondary,
+                }}
+              >
+                {p}
+              </button>
+            )
+          )}
+        <button
+          disabled={page >= totalPages}
+          onClick={() => onPage(page + 1)}
+          className="p-1.5 rounded-lg border transition-colors disabled:opacity-40"
+          style={{ borderColor: colors.border, color: colors.textSecondary }}
+        >
+          <ChevronRight size={15} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Image Upload Component ───────────────────────────────────────────────────
 
 function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
@@ -212,6 +282,15 @@ function WhatsAppTab({ propertyTypes, properties }) {
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState({});
   const [form, setForm] = useState(WA_EMPTY);
+
+  // ── Filters ──
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterScope, setFilterScope] = useState("all");
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -292,6 +371,28 @@ function WhatsAppTab({ propertyTypes, properties }) {
     return "Main Homepage";
   };
 
+  const scopeKey = (item) => item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main";
+
+  const filtered = items.filter((item) => {
+    if (filterStatus === "active" && !item.active) return false;
+    if (filterStatus === "inactive" && item.active) return false;
+    if (filterScope !== "all" && scopeKey(item) !== filterScope) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (
+        !item.title?.toLowerCase().includes(q) &&
+        !item.phoneNumber?.toLowerCase().includes(q)
+      ) return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const resetPage = () => setPage(1);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
@@ -310,85 +411,141 @@ function WhatsAppTab({ propertyTypes, properties }) {
         </button>
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: colors.textSecondary }} />
+          <input
+            className={inputCls + " pl-8"}
+            style={inputStyle}
+            placeholder="Search title or phone…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+          />
+        </div>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 120 }}
+          value={filterStatus}
+          onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 160 }}
+          value={filterScope}
+          onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Scopes</option>
+          <option value="main">Main Homepage</option>
+          <option value="propertyType">Property Type</option>
+          <option value="property">Specific Property</option>
+        </select>
+        {(search || filterStatus !== "all" || filterScope !== "all") && (
+          <button
+            onClick={() => { setSearch(""); setFilterStatus("all"); setFilterScope("all"); resetPage(); }}
+            className="text-xs px-3 py-2 rounded-lg border"
+            style={{ borderColor: colors.border, color: colors.textSecondary }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 size={28} className="animate-spin" style={{ color: colors.primary }} />
         </div>
-      ) : items.length === 0 ? (
-        <EmptyState label='Click "Add Number" to get started.' />
+      ) : filtered.length === 0 ? (
+        items.length === 0
+          ? <EmptyState label='Click "Add Number" to get started.' />
+          : <div className="py-12 text-center text-sm" style={{ color: colors.textSecondary }}>No entries match the current filters.</div>
       ) : (
-        <div
-          className="rounded-2xl border overflow-hidden"
-          style={{ borderColor: colors.border }}
-        >
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr style={{ backgroundColor: colors.mainBg }}>
-                {["Title", "Phone Number", "Scope", "Status", "Actions"].map((h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider"
-                    style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  style={{
-                    backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg,
-                    borderBottom: `1px solid ${colors.borderLight}`,
-                  }}
-                >
-                  <td className="px-5 py-4">
-                    <span className="font-medium" style={{ color: colors.textPrimary }}>{item.title}</span>
-                  </td>
-                  <td className="px-5 py-4" style={{ color: colors.textPrimary }}>{item.phoneNumber}</td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium"
-                      style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}
+        <>
+          <div
+            className="rounded-2xl border overflow-hidden"
+            style={{ borderColor: colors.border }}
+          >
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr style={{ backgroundColor: colors.mainBg }}>
+                  {["Title", "Phone Number", "Scope", "Status", "Actions"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider"
+                      style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}
                     >
-                      {scopeLabel(item)}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4"><StatusBadge active={item.active} /></td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(item)}
-                        className="p-2 rounded-lg transition-colors"
-                        style={{ color: colors.info, backgroundColor: colors.info + "12" }}
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleToggle(item)}
-                        disabled={toggling[item.id]}
-                        className="p-2 rounded-lg transition-colors"
-                        style={{
-                          color: item.active ? colors.error : colors.success,
-                          backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
-                        }}
-                        title={item.active ? "Deactivate" : "Activate"}
-                      >
-                        {toggling[item.id]
-                          ? <Loader2 size={14} className="animate-spin" />
-                          : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
-                        }
-                      </button>
-                    </div>
-                  </td>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {paginated.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    style={{
+                      backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg,
+                      borderBottom: `1px solid ${colors.borderLight}`,
+                    }}
+                  >
+                    <td className="px-5 py-4">
+                      <span className="font-medium" style={{ color: colors.textPrimary }}>{item.title}</span>
+                    </td>
+                    <td className="px-5 py-4" style={{ color: colors.textPrimary }}>{item.phoneNumber}</td>
+                    <td className="px-5 py-4">
+                      <span
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium"
+                        style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}
+                      >
+                        {scopeLabel(item)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4"><StatusBadge active={item.active} /></td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(item)}
+                          className="p-2 rounded-lg transition-colors"
+                          style={{ color: colors.info, backgroundColor: colors.info + "12" }}
+                          title="Edit"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleToggle(item)}
+                          disabled={toggling[item.id]}
+                          className="p-2 rounded-lg transition-colors"
+                          style={{
+                            color: item.active ? colors.error : colors.success,
+                            backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
+                          }}
+                          title={item.active ? "Deactivate" : "Activate"}
+                        >
+                          {toggling[item.id]
+                            ? <Loader2 size={14} className="animate-spin" />
+                            : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
+                          }
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            total={filtered.length}
+            onPage={setPage}
+            onPageSize={(s) => { setPageSize(s); resetPage(); }}
+          />
+        </>
       )}
 
       {showModal && (
@@ -481,6 +638,17 @@ function IconTab({ propertyTypes, properties }) {
   const [uploading, setUploading] = useState(false);
   const [toggling, setToggling] = useState({});
   const [form, setForm] = useState(ICON_EMPTY);
+
+  // ── Filters ──
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterScope, setFilterScope] = useState("all");
+  const [filterPlacement, setFilterPlacement] = useState("all"); // all | header | footer
+  const [filterTheme, setFilterTheme] = useState("all"); // all | light | dark
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -610,6 +778,27 @@ function IconTab({ propertyTypes, properties }) {
     return "Main Homepage";
   };
 
+  const scopeKey = (item) => item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main";
+
+  const filtered = items.filter((item) => {
+    if (filterStatus === "active" && !item.active) return false;
+    if (filterStatus === "inactive" && item.active) return false;
+    if (filterScope !== "all" && scopeKey(item) !== filterScope) return false;
+    if (filterPlacement === "header" && !item.showOnHeader) return false;
+    if (filterPlacement === "footer" && !item.showOnFooter) return false;
+    if (filterTheme === "light" && item.showOnLightOrDark !== false) return false;
+    if (filterTheme === "dark" && item.showOnLightOrDark !== true) return false;
+    if (search && !item.description?.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  const resetPage = () => setPage(1);
+  const hasFilters = search || filterStatus !== "all" || filterScope !== "all" || filterPlacement !== "all" || filterTheme !== "all";
+
   const PillToggle = ({ on, loading: l, onClick, label }) => (
     <button
       onClick={onClick}
@@ -647,97 +836,178 @@ function IconTab({ propertyTypes, properties }) {
         </button>
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[160px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: colors.textSecondary }} />
+          <input
+            className={inputCls + " pl-8"}
+            style={inputStyle}
+            placeholder="Search description…"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+          />
+        </div>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 120 }}
+          value={filterStatus}
+          onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 160 }}
+          value={filterScope}
+          onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Scopes</option>
+          <option value="main">Main Homepage</option>
+          <option value="propertyType">Property Type</option>
+          <option value="property">Specific Property</option>
+        </select>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 130 }}
+          value={filterPlacement}
+          onChange={(e) => { setFilterPlacement(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Placements</option>
+          <option value="header">Header</option>
+          <option value="footer">Footer</option>
+        </select>
+        <select
+          className={inputCls}
+          style={{ ...inputStyle, width: "auto", minWidth: 120 }}
+          value={filterTheme}
+          onChange={(e) => { setFilterTheme(e.target.value); resetPage(); }}
+        >
+          <option value="all">All Themes</option>
+          <option value="light">☀️ Light</option>
+          <option value="dark">🌙 Dark</option>
+        </select>
+        {hasFilters && (
+          <button
+            onClick={() => { setSearch(""); setFilterStatus("all"); setFilterScope("all"); setFilterPlacement("all"); setFilterTheme("all"); resetPage(); }}
+            className="text-xs px-3 py-2 rounded-lg border"
+            style={{ borderColor: colors.border, color: colors.textSecondary }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16">
           <Loader2 size={28} className="animate-spin" style={{ color: colors.primary }} />
         </div>
-      ) : items.length === 0 ? (
-        <EmptyState label='Click "Add Logo" to get started.' />
+      ) : filtered.length === 0 ? (
+        items.length === 0
+          ? <EmptyState label='Click "Add Logo" to get started.' />
+          : <div className="py-12 text-center text-sm" style={{ color: colors.textSecondary }}>No entries match the current filters.</div>
       ) : (
-        <div className="rounded-2xl border overflow-hidden" style={{ borderColor: colors.border }}>
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr style={{ backgroundColor: colors.mainBg }}>
-                {["Preview", "Scope", "Header", "Footer", "Status", "Actions"].map((h) => (
-                  <th
-                    key={h}
-                    className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider"
-                    style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, idx) => (
-                <tr
-                  key={item.id}
-                  style={{
-                    backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg,
-                    borderBottom: `1px solid ${colors.borderLight}`,
-                  }}
-                >
-                  <td className="px-5 py-4">
-                    <IconPreviewCell mediaId={item.mediaId} description={item.description} />
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="px-2.5 py-1 rounded-lg text-xs font-medium"
-                      style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}
+        <>
+          <div className="rounded-2xl border overflow-hidden" style={{ borderColor: colors.border }}>
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr style={{ backgroundColor: colors.mainBg }}>
+                  {["Preview", "Scope", "Theme", "Header", "Footer", "Status", "Actions"].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider"
+                      style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}
                     >
-                      {scopeLabel(item)}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <PillToggle
-                      on={item.showOnHeader}
-                      loading={toggling[`h_${item.id}`]}
-                      onClick={() => handleToggleHeader(item)}
-                      label="Header"
-                    />
-                  </td>
-                  <td className="px-5 py-4">
-                    <PillToggle
-                      on={item.showOnFooter}
-                      loading={toggling[`f_${item.id}`]}
-                      onClick={() => handleToggleFooter(item)}
-                      label="Footer"
-                    />
-                  </td>
-                  <td className="px-5 py-4"><StatusBadge active={item.active} /></td>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(item)}
-                        className="p-2 rounded-lg"
-                        style={{ color: colors.info, backgroundColor: colors.info + "12" }}
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleToggleActive(item)}
-                        disabled={toggling[`a_${item.id}`]}
-                        className="p-2 rounded-lg"
-                        style={{
-                          color: item.active ? colors.error : colors.success,
-                          backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
-                        }}
-                        title={item.active ? "Deactivate" : "Activate"}
-                      >
-                        {toggling[`a_${item.id}`]
-                          ? <Loader2 size={14} className="animate-spin" />
-                          : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
-                        }
-                      </button>
-                    </div>
-                  </td>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {paginated.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    style={{
+                      backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg,
+                      borderBottom: `1px solid ${colors.borderLight}`,
+                    }}
+                  >
+                    <td className="px-5 py-4">
+                      <IconPreviewCell mediaId={item.mediaId} description={item.description} />
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium"
+                        style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}
+                      >
+                        {scopeLabel(item)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm">
+                        {item.showOnLightOrDark === true ? "🌙 Dark" : item.showOnLightOrDark === false ? "☀️ Light" : "—"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <PillToggle
+                        on={item.showOnHeader}
+                        loading={toggling[`h_${item.id}`]}
+                        onClick={() => handleToggleHeader(item)}
+                        label="Header"
+                      />
+                    </td>
+                    <td className="px-5 py-4">
+                      <PillToggle
+                        on={item.showOnFooter}
+                        loading={toggling[`f_${item.id}`]}
+                        onClick={() => handleToggleFooter(item)}
+                        label="Footer"
+                      />
+                    </td>
+                    <td className="px-5 py-4"><StatusBadge active={item.active} /></td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(item)}
+                          className="p-2 rounded-lg"
+                          style={{ color: colors.info, backgroundColor: colors.info + "12" }}
+                          title="Edit"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(item)}
+                          disabled={toggling[`a_${item.id}`]}
+                          className="p-2 rounded-lg"
+                          style={{
+                            color: item.active ? colors.error : colors.success,
+                            backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
+                          }}
+                          title={item.active ? "Deactivate" : "Activate"}
+                        >
+                          {toggling[`a_${item.id}`]
+                            ? <Loader2 size={14} className="animate-spin" />
+                            : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
+                          }
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            total={filtered.length}
+            onPage={setPage}
+            onPageSize={(s) => { setPageSize(s); resetPage(); }}
+          />
+        </>
       )}
 
       {showModal && (

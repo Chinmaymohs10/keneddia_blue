@@ -155,7 +155,7 @@ export default function Cafes() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} />
+      <Navbar navItems={CAFE_NAV_ITEMS} logo={siteContent.brand.logo_cafe} propertyTypeName="Cafe" />
 
       {/* 1. HERO SECTION */}
       <section className="relative h-[80vh] w-full overflow-hidden">

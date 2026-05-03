@@ -447,7 +447,7 @@ export default function WinePage() {
       </AnimatePresence>
 
       <div className="min-h-screen overflow-x-hidden bg-background">
-        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
+        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} propertyTypeName="Wine" />
 
         <main>
           {/* Banner — Full Viewport */}

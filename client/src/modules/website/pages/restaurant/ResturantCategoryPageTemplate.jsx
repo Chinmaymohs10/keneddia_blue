@@ -487,7 +487,7 @@ function ResturantCategoryPageTemplate() {
   if (notFound || !currentCategory) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo_restaurant} />
+        <Navbar navItems={resturant_NAV_ITEMS} logo={siteContent.brand.logo_restaurant} propertyTypeName="Restaurant" />
         <div className="py-40 text-center container mx-auto px-6">
           <h2 className="text-5xl font-serif mb-6 dark:text-white">
             Category Not Found
@@ -515,6 +515,7 @@ function ResturantCategoryPageTemplate() {
       <Navbar
         navItems={resturant_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
+        propertyTypeName="Restaurant"
       />
 
       <main>

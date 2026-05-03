@@ -55,7 +55,7 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-muted/10">
-      <Navbar navItems={[]} logo={siteContent.brand.logo_hotel} />
+      <Navbar navItems={[]} logo={siteContent.brand.logo_hotel} propertyTypeName="Hotel" />
 
       <main className="container mx-auto px-4 py-24 max-w-4xl">
         <Button

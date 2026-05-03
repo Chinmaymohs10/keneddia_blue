@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, LogIn, Calendar } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
+import { useLogos } from "./LogoProvider";
 import { BookingSheet } from "./BookingSheet";
 import RestaurantBookingSheet from "./RestaurantBookingSheet";
 import CafeBookingSheet from "./CafeBookingSheet";
@@ -120,17 +121,30 @@ interface NavbarBrand {
 export default function Navbar({
   navItems = NAV_ITEMS,
   logo,
+  propertyTypeName,
   quickBookOptions,
   showQuickBook: showQuickBookProp,
 }: {
   navItems?: NavItem[];
   logo?: NavbarBrand;
+  propertyTypeName?: string | null;
   quickBookOptions?: QuickBookOption[];
   showQuickBook?: boolean;
 }) {
-  const brandLogo = logo || siteContent.brand.logo;
-  const darkLogo = (brandLogo as any).darkImage || brandLogo.image;
-  const lightLogo = brandLogo.subImage || brandLogo.image;
+  const { getHeaderLogos } = useLogos();
+
+  const dynamicLogos = getHeaderLogos(propertyTypeName ?? null);
+
+  const staticBrand = logo || siteContent.brand.logo;
+  const staticDark = (staticBrand as any).darkImage || staticBrand.image;
+  const staticLight = staticBrand.subImage || staticBrand.image;
+
+  const darkLogo = dynamicLogos.dark
+    ? dynamicLogos.dark
+    : { src: staticDark.src, alt: staticDark.alt };
+  const lightLogo = dynamicLogos.light
+    ? dynamicLogos.light
+    : { src: staticLight.src, alt: staticLight.alt };
 
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -165,9 +179,13 @@ export default function Navbar({
       : DEFAULT_NON_HOME_QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
   const transparentMode = !scrolled;
+  // When the admin has explicitly configured light/dark logos via the API, always
+  // respect those — the transparent-hero override only applies to static fallback logos
+  // (which are typically the same image for both modes).
+  const hasDynamicLogos = !!(dynamicLogos.light || dynamicLogos.dark);
   const shouldUseDarkLogoOnTransparentInLightMode =
-    isTransparentHeroRoute && transparentMode;
-  const currentLightModeLogo = shouldUseDarkLogoOnTransparentInLightMode
+    !hasDynamicLogos && isTransparentHeroRoute && transparentMode;
+  const currentLightModeLogo: { src: string; alt: string } = shouldUseDarkLogoOnTransparentInLightMode
     ? darkLogo
     : lightLogo;
   const transparentTextClass = useWhiteTextOnTransparent

@@ -393,9 +393,13 @@ export default function NewsDetails() {
 
   const relatedNews = allNews.filter((n) => n.id !== newsItem.id).slice(0, 3);
 
+  const newsPropertyTypeName = newsItem.badgeType
+    ? newsItem.badgeType.charAt(0).toUpperCase() + newsItem.badgeType.slice(1).toLowerCase()
+    : undefined;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <Navbar propertyTypeName={newsPropertyTypeName} />
       <main className="pt-24 md:pt-32 pb-16">
         <div className="container mx-auto px-4 md:px-6 lg:px-12">
           {/* Breadcrumb */}

@@ -1277,7 +1277,7 @@ export default function WineCategoryTemplate() {
   if (!isApiMode && !isStaticTypePage && !staticBrand) {
     return (
       <div className="min-h-screen bg-[#FAF8F4] dark:bg-[#0D0508]">
-        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
+        <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} propertyTypeName="Wine" />
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-6 text-center">
           <Wine size={48} className="text-stone-300" />
           <h2 className="font-serif text-4xl text-stone-800 dark:text-stone-200">Collection Not Found</h2>
@@ -1312,7 +1312,7 @@ export default function WineCategoryTemplate() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#FAF8F4] dark:bg-[#0D0508]">
-      <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} />
+      <Navbar navItems={WINE_NAV_ITEMS} logo={siteContent.brand.logo_bar} propertyTypeName="Wine" />
 
       <main>
         {/* Hero */}

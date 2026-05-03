@@ -250,6 +250,7 @@ export default function CafeHomepage() {
       <Navbar
         navItems={CAFE_NAV_ITEMS}
         logo={siteContent.brand.logo_cafe}
+        propertyTypeName="Cafe"
         showQuickBook={true}
         quickBookOptions={[{ label: "Reserve Cafe", category: "cafe" }]}
       />

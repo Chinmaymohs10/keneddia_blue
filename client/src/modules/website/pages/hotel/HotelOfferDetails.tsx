@@ -16,7 +16,7 @@ export default function HotelOfferDetails() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <Navbar propertyTypeName="Hotel" />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-6 lg:px-12">
           {/* Back Link */}
