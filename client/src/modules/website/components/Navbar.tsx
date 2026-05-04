@@ -371,9 +371,9 @@ export default function Navbar({
                 </button>
                 <div className="site-nav-quickbook-panel">
                   <div className="py-1">
-                    {effectiveQuickBookOptions.map((option, index) => (
+                    {effectiveQuickBookOptions.map((option) => (
                       <button
-                        key={index}
+                        key={option.label}
                         onClick={() => handleQuickBookOption(option)}
                         className="site-nav-quickbook-option"
                       >
@@ -605,10 +605,10 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
       className="site-nav-dropdown"
     >
       <div className="py-2">
-        {items.map((subItem, idx) =>
+        {items.map((subItem) =>
           subItem.external ? (
             <a
-              key={idx}
+              key={subItem.href}
               href={subItem.href}
               target="_blank"
               rel="noopener noreferrer"
@@ -618,7 +618,7 @@ function DropdownMenu({ items, handleHashLink }: DropdownMenuProps) {
             </a>
           ) : (
             <Link
-              key={idx}
+              key={subItem.href}
               to={subItem.href}
               onClick={(e) => handleHashLink(e, subItem.href)}
               className="site-nav-dropdown-link"
@@ -778,10 +778,10 @@ function MobileDropdown({
             transition={{ duration: 0.2 }}
             className="bg-accent/5 overflow-hidden"
           >
-            {item.items.map((subItem, idx) =>
+            {item.items.map((subItem) =>
               subItem.external ? (
                 <a
-                  key={idx}
+                  key={subItem.href}
                   href={subItem.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -790,8 +790,8 @@ function MobileDropdown({
                   {subItem.label}
                 </a>
               ) : (
-                <Link
-                  key={idx}
+                  <Link
+                    key={subItem.href}
                   to={subItem.href}
                   onClick={(e) => handleHashLink(e, subItem.href)}
                   className="site-mobile-submenu-link"
