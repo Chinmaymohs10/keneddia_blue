@@ -463,7 +463,7 @@ export default function WineManagement() {
 
   return (
     <Layout>
-      <div className="p-6 lg:p-10 flex flex-col gap-8 max-w-[1600px] mx-auto">
+      <div className="p-6 lg:p-10 flex flex-col gap-8 max-w-[1600px] mx-auto h-full overflow-y-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
