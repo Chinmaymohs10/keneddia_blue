@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import WineWhatsAppButton from "../components/WineWhatsAppButton";
 import { siteContent } from "@/data/siteContent";
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
@@ -803,11 +802,10 @@ function GlobalBrandSwitcher({ currentSlug }) {
                 transition={{ delay: i * 0.05 }}
                 onClick={() => !isActive && navigate(`/wine-categories/${b.id}`)}
                 disabled={isActive}
-                className={`group relative overflow-hidden rounded-[1.25rem] border p-5 text-center transition-all dark:border-white/[0.07] dark:bg-[#1A0C13] ${
-                  isActive
+                className={`group relative overflow-hidden rounded-[1.25rem] border p-5 text-center transition-all dark:border-white/[0.07] dark:bg-[#1A0C13] ${isActive
                     ? "border-transparent"
                     : "cursor-pointer border-stone-200/80 bg-white/90 hover:-translate-y-1 hover:shadow-lg"
-                }`}
+                  }`}
                 style={isActive ? { background: `linear-gradient(135deg, ${b.accent}22, ${b.accent}0a)`, borderColor: `${b.accent}50` } : {}}
               >
                 <div
@@ -871,11 +869,10 @@ function GlobalCategorySwitcher({ currentSlug }) {
                 onMouseEnter={() => !isActive && setHoveredSlug(slug)}
                 onMouseLeave={() => setHoveredSlug(null)}
                 onClick={() => !isActive && navigate(`/wine-categories/${slug}`)}
-                className={`group relative flex min-h-[96px] select-none items-center overflow-hidden rounded-[1.5rem] border px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 ${
-                  isActive
+                className={`group relative flex min-h-[96px] select-none items-center overflow-hidden rounded-[1.5rem] border px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 ${isActive
                     ? "border-transparent dark:border-transparent"
                     : "cursor-pointer border-stone-200/90 bg-white hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
-                }`}
+                  }`}
                 style={isActive ? { background: `linear-gradient(135deg, ${meta.accent.color}18, ${meta.accent.dot}10)`, borderColor: `${meta.accent.color}40` } : {}}
               >
                 <div
@@ -1237,30 +1234,30 @@ export default function WineCategoryTemplate() {
   const isTypePage = isApiMode ? kind === "type" : isStaticTypePage;
   const typeMeta = isApiMode
     ? {
-        label: apiType?.wineTypeName ?? "Collection",
-        tag: apiType?.wineTypeDescription ?? "",
-        description: apiType?.wineTypeDescription ?? "",
-        heroImage: null, // provided via heroImageOverride
-        heroAlt: apiType?.wineTypeName ?? "Wine",
-        accent: TYPE_ACCENTS[apiType?.wineTypeName] || TYPE_ACCENTS.Wine,
-        typeKey: apiType?.wineTypeName ?? "Collection",
-      }
+      label: apiType?.wineTypeName ?? "Collection",
+      tag: apiType?.wineTypeDescription ?? "",
+      description: apiType?.wineTypeDescription ?? "",
+      heroImage: null, // provided via heroImageOverride
+      heroAlt: apiType?.wineTypeName ?? "Wine",
+      accent: TYPE_ACCENTS[apiType?.wineTypeName] || TYPE_ACCENTS.Wine,
+      typeKey: apiType?.wineTypeName ?? "Collection",
+    }
     : staticTypeMeta;
   const brand = isApiMode
     ? (apiBrand
-        ? {
-            id: apiBrand.id,
-            name: apiBrand.name,
-            subLabel: apiBrand.wineTypeName || "",
-            accent: API_ACCENT_COLORS[0],
-            detail: apiBrand.description || "",
-            heroImage: null, // provided via heroImageOverride
-            description: apiBrand.description || "",
-            origin: apiBrand.propertyName || "",
-            established: "",
-            tagline: "",
-          }
-        : null)
+      ? {
+        id: apiBrand.id,
+        name: apiBrand.name,
+        subLabel: apiBrand.wineTypeName || "",
+        accent: API_ACCENT_COLORS[0],
+        detail: apiBrand.description || "",
+        heroImage: null, // provided via heroImageOverride
+        description: apiBrand.description || "",
+        origin: apiBrand.propertyName || "",
+        established: "",
+        tagline: "",
+      }
+      : null)
     : staticBrand;
 
   const staticItems = useMemo(() => {
@@ -1368,8 +1365,6 @@ export default function WineCategoryTemplate() {
       <div id="contact" className="bg-[#EDE7DF] dark:bg-[#0A0407]">
         <Footer />
       </div>
-
-      <WineWhatsAppButton />
     </div>
   );
 }
