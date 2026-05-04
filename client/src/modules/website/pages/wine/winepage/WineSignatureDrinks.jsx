@@ -6,13 +6,19 @@ import { getAllWineTypes } from "@/Api/WineApi";
 import { getPropertyTypes } from "@/Api/Api";
 import { getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 
-// ─── TYPE ACCENTS ─────────────────────────────────────────────────────────────
-const TYPE_ACCENTS = {
-  Whiskey: { color: "#C9922A", dot: "#D4A017" },
-  Wine: { color: "#8B1A2A", dot: "#C4485A" },
-  Beers: { color: "#B8860B", dot: "#D4B035" },
-  Tastings: { color: "#556B5E", dot: "#7AA088" },
-};
+// ─── BUTTON COLOUR PALETTE — cycles by card index ─────────────────────────────
+// Each entry: { from, to } used as CSS gradient stops for the arrow button.
+const BUTTON_PALETTE = [
+  { from: "#C9922A", to: "#D4A017" },   // amber / gold
+  { from: "#8B1A2A", to: "#C4485A" },   // burgundy / wine-red
+  { from: "#3D6B59", to: "#5C9E82" },   // forest green
+  { from: "#5A3E8E", to: "#8A6ACC" },   // deep violet
+  { from: "#2E7A8E", to: "#52B0C8" },   // teal
+  { from: "#9A6B30", to: "#C49050" },   // bronze
+  { from: "#A8456A", to: "#D4789A" },   // rose
+];
+
+const pickButtonColor = (index) => BUTTON_PALETTE[index % BUTTON_PALETTE.length];
 
 const toList = (res) => {
   const d = res?.data ?? res;
@@ -25,7 +31,7 @@ const toList = (res) => {
 // ─── CATEGORY CARD ────────────────────────────────────────────────────────────
 function CategoryCard({ category, index, routeMode = "property" }) {
   const [hovered, setHovered] = useState(false);
-  const accent = TYPE_ACCENTS[category.name] || TYPE_ACCENTS.Wine;
+  const btn = pickButtonColor(index);
   const navigate = useNavigate();
   const params = useParams();
 
@@ -57,7 +63,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
     >
       <div
         className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500"
-        style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }}
+        style={{ background: hovered ? `linear-gradient(to bottom, ${btn.from}, ${btn.to})` : "transparent" }}
       />
 
       <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
@@ -78,7 +84,10 @@ function CategoryCard({ category, index, routeMode = "property" }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">
+          <h3
+            className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 transition-colors duration-300 dark:text-stone-100"
+            style={{ color: hovered ? btn.from : undefined }}
+          >
             {category.name}
           </h3>
         </div>
@@ -86,7 +95,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
         <div
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-transform duration-300 group-hover:scale-105"
           style={{
-            background: `linear-gradient(135deg, ${accent.dot}, ${accent.color})`,
+            background: `linear-gradient(135deg, ${btn.from}, ${btn.to})`,
             transform: hovered ? "translateX(2px)" : "translateX(0px)",
           }}
         >
@@ -97,7 +106,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
-          background: `linear-gradient(90deg, ${accent.color}08 0%, transparent 45%)`,
+          background: `linear-gradient(90deg, ${btn.to}12 0%, transparent 45%)`,
         }}
       />
     </motion.div>
