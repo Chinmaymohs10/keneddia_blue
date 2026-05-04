@@ -68,63 +68,53 @@ export function generateWineCards({
   categories = [],
   subCategories = [],
   properties = [],
+  homepageOnly = false, // When true, only shows items with showOnHomepage: true
 }) {
   const typeById = Object.fromEntries(wineTypes.map((t) => [t.id, t]));
+  const brandById = Object.fromEntries(brands.map((b) => [b.id, b]));
+  const catById = Object.fromEntries(categories.map((c) => [c.id, c]));
 
-  const categoriesByBrand = categories.reduce((acc, c) => {
-    if (c.wineBrandId != null) {
-      (acc[c.wineBrandId] = acc[c.wineBrandId] || []).push(c);
-    }
-    return acc;
-  }, {});
+  // We now iterate over subcategories (products) as they are the individual items
+  return subCategories
+    .filter((s) => {
+      if (!s.active) return false;
+      if (homepageOnly && !s.showOnHomepage) return false;
+      return true;
+    })
+    .flatMap((sub) => {
+      const cat = sub.wineCategoryId ? catById[sub.wineCategoryId] : null;
+      const brand = cat?.wineBrandId ? brandById[cat.wineBrandId] : null;
+      const type = brand?.wineTypeId ? typeById[brand.wineTypeId] : null;
 
-  const subCatsByCategory = subCategories.reduce((acc, s) => {
-    if (s.wineCategoryId != null) {
-      (acc[s.wineCategoryId] = acc[s.wineCategoryId] || []).push(s);
-    }
-    return acc;
-  }, {});
+      // Determine property source (Subcategory -> Category -> Brand -> Type)
+      let sourcePropertyIds = sub.propertyIds?.length > 0 ? sub.propertyIds : (sub.propertyId ? [sub.propertyId] : []);
+      let sourcePropertyNames = sub.propertyNames?.length > 0 ? sub.propertyNames : (sub.propertyName ? [sub.propertyName] : []);
 
-  return brands
-    .filter((b) => b.active !== false)
-    .flatMap((brand) => {
-      const type = brand.wineTypeId ? typeById[brand.wineTypeId] : null;
-      const brandCategories = categoriesByBrand[brand.id] || [];
-      const firstCat = brandCategories[0] ?? null;
-      const firstSubCat = firstCat
-        ? (subCatsByCategory[firstCat.id] || [])[0] ?? null
-        : null;
-
-      // Determine the source of property data (Brand level is highest priority)
-      let sourcePropertyIds = brand.propertyIds && brand.propertyIds.length > 0 ? brand.propertyIds : (brand.propertyId ? [brand.propertyId] : []);
-      let sourcePropertyNames = brand.propertyNames && brand.propertyNames.length > 0 ? brand.propertyNames : (brand.propertyName ? [brand.propertyName] : []);
-
-      // Fallback to Category level
-      if (sourcePropertyIds.length === 0 && firstCat) {
-        sourcePropertyIds = firstCat.propertyIds && firstCat.propertyIds.length > 0 ? firstCat.propertyIds : (firstCat.propertyId ? [firstCat.propertyId] : []);
-        sourcePropertyNames = firstCat.propertyNames && firstCat.propertyNames.length > 0 ? firstCat.propertyNames : (firstCat.propertyName ? [firstCat.propertyName] : []);
+      if (sourcePropertyIds.length === 0 && cat) {
+        sourcePropertyIds = cat.propertyIds?.length > 0 ? cat.propertyIds : (cat.propertyId ? [cat.propertyId] : []);
+        sourcePropertyNames = cat.propertyNames?.length > 0 ? cat.propertyNames : (cat.propertyName ? [cat.propertyName] : []);
       }
 
-      // Fallback to Type level
+      if (sourcePropertyIds.length === 0 && brand) {
+        sourcePropertyIds = brand.propertyIds?.length > 0 ? brand.propertyIds : (brand.propertyId ? [brand.propertyId] : []);
+        sourcePropertyNames = brand.propertyNames?.length > 0 ? brand.propertyNames : (brand.propertyName ? [brand.propertyName] : []);
+      }
+
       if (sourcePropertyIds.length === 0 && type) {
-        sourcePropertyIds = type.propertyIds && type.propertyIds.length > 0 ? type.propertyIds : (type.propertyId ? [type.propertyId] : []);
-        sourcePropertyNames = type.propertyNames && type.propertyNames.length > 0 ? type.propertyNames : (type.propertyName ? [type.propertyName] : []);
+        sourcePropertyIds = type.propertyIds?.length > 0 ? type.propertyIds : (type.propertyId ? [type.propertyId] : []);
+        sourcePropertyNames = type.propertyNames?.length > 0 ? type.propertyNames : (type.propertyName ? [type.propertyName] : []);
       }
 
-      // If still no property assignments, use a single entry with nulls to create at least one card
       const activeIds = sourcePropertyIds.length > 0 ? sourcePropertyIds : [null];
 
-      const typeName = brand.wineTypeName || type?.wineTypeName || null;
-      const baseTasting = brand.description || firstSubCat?.description || firstCat?.description || "_";
-      const baseImage = pickImage(brand, typeById, brandCategories, firstSubCat, firstCat);
+      const typeName = sub.wineTypeName || brand?.wineTypeName || type?.wineTypeName || null;
+      const baseTasting = sub.description || cat?.description || brand?.description || type?.wineTypeDescription || "_";
+      
+      // Image fallback hierarchy
+      const baseImage = sub.media?.url || cat?.media?.url || brand?.media?.url || type?.media?.url || null;
 
-      // Map each property assignment to its own separate card
       return activeIds.map((pid, idx) => {
-        // Look up the specific location for this single property ID
         const resolvedLocation = pid ? getPropertyLocation(pid, properties) : null;
-        
-        // Get the specific name for this property assignment
-        // Try to use the aligned name from sourcePropertyNames, otherwise fallback to lookup
         let specificPropertyName = sourcePropertyNames[idx] || null;
         if (!specificPropertyName && pid) {
           const propObj = properties.find(p => (p.id === pid || p.propertyResponseDTO?.id === pid));
@@ -135,21 +125,22 @@ export function generateWineCards({
         const filterLocation = resolvedLocation || specificPropertyName || null;
 
         return {
-          id: `${brand.id}-${pid || 'global'}-${idx}`,
-          brandId: brand.id,
-          name: brand.name || "_",
-          subtitle: firstSubCat?.name || "",
+          id: `${sub.id}-${pid || 'global'}-${idx}`,
+          subCategoryId: sub.id,
+          brandId: brand?.id,
+          name: brand?.name || "_",
+          subtitle: sub.name || sub.title || "", // The product name
           type: typeName || "_",
           tag: typeName || "_",
           property: specificPropertyName || "_",
           location: filterLocation || "_",
           locationDisplay: resolvedLocation || specificPropertyName || "_",
           tasting: baseTasting,
-          body: firstSubCat?.description || firstCat?.description || "_",
-          category: firstCat?.title || null,
+          body: sub.description || cat?.description || "_",
+          category: cat?.title || null,
           image: baseImage,
           propertyId: pid,
-          propertyTypeId: brand.propertyTypeId ?? firstCat?.propertyTypeId ?? null,
+          propertyTypeId: sub.propertyTypeId ?? cat?.propertyTypeId ?? brand?.propertyTypeId ?? null,
         };
       });
     });

@@ -653,10 +653,11 @@ export default function WineManagement() {
     mediaId: null, previewUrl: "",
     scope: "propertyType", propertyId: "", propertyTypeId: "",
     propertyIds: [],
+    showOnHomepage: false,
   });
 
   const resetForm = () => {
-    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "", propertyIds: [] });
+    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "", propertyIds: [], showOnHomepage: false });
     setEditingItem(null);
   };
 
@@ -741,6 +742,7 @@ export default function WineManagement() {
       propertyId: item.propertyId || "",
       propertyTypeId: item.propertyTypeId || "",
       propertyIds: item.propertyIds || (item.propertyId ? [item.propertyId] : []),
+      showOnHomepage: item.showOnHomepage ?? false,
     });
     setShowModal(true);
   };
@@ -764,7 +766,11 @@ export default function WineManagement() {
     if (isType) { payload.wineTypeName = form.name.trim(); payload.wineTypeDescription = form.description.trim(); }
     else if (isBrand) { payload.name = form.name.trim(); payload.wineTypeId = form.wineTypeId; }
     else if (isCategory) { payload.title = form.title.trim(); payload.wineBrandId = form.wineBrandId; }
-    else if (isSub) { payload.name = form.title.trim(); payload.wineCategoryId = form.wineCategoryId; }
+    else if (isSub) {
+      payload.name = form.title.trim();
+      payload.wineCategoryId = form.wineCategoryId;
+      payload.showOnHomepage = form.showOnHomepage;
+    }
 
     setSaving(true);
     try {
@@ -1098,6 +1104,22 @@ export default function WineManagement() {
               )}
 
               <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} />
+
+              {activeTab === "subcategories" && (
+                <div className="flex items-center justify-between p-4 rounded-2xl border bg-gray-50/50" style={{ borderColor: colors.border }}>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textPrimary }}>Show on Homepage</span>
+                    <p className="text-[10px]" style={{ color: colors.textSecondary }}>Display this product in the Best Sellers section on the wine homepage.</p>
+                  </div>
+                  <button
+                    onClick={() => setForm(p => ({ ...p, showOnHomepage: !p.showOnHomepage }))}
+                    className="transition-colors"
+                    style={{ color: form.showOnHomepage ? colors.success : colors.textSecondary }}
+                  >
+                    {form.showOnHomepage ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="px-8 py-6 border-t flex justify-end gap-4" style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}>

@@ -222,6 +222,7 @@ export default function WineBestSellers() {
           categories: categoriesData,
           subCategories: subCatsData,
           properties: propertiesData,
+          homepageOnly: true,
         });
 
         const accents = buildTypeAccents(wineTypesData);
