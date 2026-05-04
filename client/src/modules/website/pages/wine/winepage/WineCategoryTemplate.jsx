@@ -1190,6 +1190,8 @@ function ApiBrandSwitcher({ currentId, allBrands, citySlug, propertySlug }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function WineCategoryTemplate() {
   const { citySlug, propertySlug, slug } = useParams();
@@ -1199,13 +1201,15 @@ export default function WineCategoryTemplate() {
   const isGlobalPage = !citySlug || !propertySlug;
   const backHref = isGlobalPage ? "/wine-homepage" : `/wine-detail/${citySlug}/${propertySlug}`;
 
+  const { wineCategory } = useSsrData();
+
   // ── API state ────────────────────────────────────────────────────────────────
   const [apiType, setApiType] = useState(null);
   const [apiBrand, setApiBrand] = useState(null);
   const [apiItems, setApiItems] = useState([]);
-  const [apiLoading, setApiLoading] = useState(false);
-  const [allApiTypes, setAllApiTypes] = useState([]);
-  const [allApiBrands, setAllApiBrands] = useState([]);
+  const [apiLoading, setApiLoading] = useState(!wineCategory && Boolean(kind));
+  const [allApiTypes, setAllApiTypes] = useState(wineCategory?.wineTypes || []);
+  const [allApiBrands, setAllApiBrands] = useState(wineCategory?.brands || []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
@@ -1213,6 +1217,55 @@ export default function WineCategoryTemplate() {
     if (!kind || !slug) return;
     const numericId = parseInt(slug, 10);
     if (isNaN(numericId)) return;
+
+    // If we have SSR data, we can derive the current type/brand and items immediately
+    if (wineCategory) {
+      const types = wineCategory.wineTypes || [];
+      const brands = wineCategory.brands || [];
+      const categories = wineCategory.categories || [];
+      const properties = wineCategory.properties || [];
+
+      setAllApiTypes(types.filter((t) => t.active !== false));
+      setAllApiBrands(brands.filter((b) => b.active !== false));
+
+      if (kind === "type") {
+        const type = types.find((t) => t.id === numericId) ?? null;
+        setApiType(type);
+        const filteredBrands = brands.filter((b) => b.wineTypeId === numericId && b.active !== false);
+        const items = filteredBrands.map((b) => ({
+          id: b.id,
+          brandId: b.id,
+          name: b.name || "_",
+          subtitle: b.description || "_",
+          type: b.wineTypeName || type?.wineTypeName || "_",
+          tag: b.wineTypeName || type?.wineTypeName || "_",
+          tasting: b.description || "_",
+          image: b.media?.url ?? null,
+          property: b.propertyName || "_",
+          location: getPropertyLocation(b.propertyId, properties) || b.propertyName || "_",
+        }));
+        setApiItems(items);
+      } else if (kind === "brand") {
+        const brand = brands.find((b) => b.id === numericId) ?? null;
+        setApiBrand(brand);
+        const filteredCats = categories.filter((c) => c.wineBrandId === numericId && c.active !== false);
+        const items = filteredCats.map((c) => ({
+          id: c.id,
+          brandId: numericId,
+          name: c.title || "_",
+          subtitle: c.description || "_",
+          type: brand?.wineTypeName || c.wineBrandName || "_",
+          tag: c.wineBrandName || brand?.wineTypeName || "_",
+          tasting: c.description || "_",
+          image: c.media?.url ?? brand?.media?.url ?? null,
+          property: c.propertyName || brand?.propertyName || "_",
+          location: getPropertyLocation(c.propertyId, properties) || c.propertyName || "_",
+        }));
+        setApiItems(items);
+      }
+      setApiLoading(false);
+      return;
+    }
 
     let cancelled = false;
     setApiLoading(true);
@@ -1285,7 +1338,7 @@ export default function WineCategoryTemplate() {
 
     fetchApiData();
     return () => { cancelled = true; };
-  }, [kind, slug]);
+  }, [kind, slug, wineCategory]);
 
   // ── Static slug resolution (backwards compat for old string slugs) ────────────
   const normalizedSlug = slug?.toLowerCase() ?? "";

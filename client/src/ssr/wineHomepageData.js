@@ -4,13 +4,25 @@ import {
   getHotelHomepageHeroSection,
   getPropertyTypes,
   getPublicRecognitionsByAboutUsId,
+  getAllProperties
 } from "@/Api/Api";
+import {
+  getMenuSectionsByPropertyTypeId
+} from "@/Api/RestaurantApi";
+import {
+  getAllWineTypes,
+  getAllWineBrands,
+  getAllWineCategories,
+  getAllWineSubCategories
+} from "@/Api/WineApi";
+import { generateWineCards } from "@/utils/wineDataUtils";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 
 const fetchSafe = async (fn, fallback) => {
   try {
-    return await fn();
-  } catch {
+    const res = await fn();
+    return res;
+  } catch (err) {
     return fallback;
   }
 };
@@ -151,34 +163,70 @@ export const defaultWineHomepageData = {
   heroSlides: [],
   wineAboutSections: [],
   wineNews: [],
+  headerData: null,
+  allWineData: {
+    types: [],
+    brands: [],
+    categories: [],
+    subCategories: [],
+    properties: [],
+    allCards: [],
+  },
 };
 
 export const fetchWineHomepageData = async () => {
-  const typesRes = await fetchSafe(() => getPropertyTypes(), { data: [] });
-  const types = typesRes?.data || typesRes || [];
-  const wineType = Array.isArray(types)
-    ? types.find((type) => type?.isActive && isWineType(type?.typeName))
+  const propertyTypesRes = await fetchSafe(() => getPropertyTypes(), { data: [] });
+  const propertyTypes = propertyTypesRes?.data || propertyTypesRes || [];
+  const wineType = Array.isArray(propertyTypes)
+    ? propertyTypes.find((type) => type?.isActive && isWineType(type?.typeName))
     : null;
   const wineTypeId = wineType?.id ? Number(wineType.id) : null;
 
-  const newsRes = await fetchSafe(
-    () => getAllNews({ category: "", page: 0, size: 50 }),
-    null,
-  );
-  const heroRes =
+  const [newsRes, heroRes, aboutRes, wineTypesRes, wineBrandsRes, wineCatsRes, wineSubCatsRes, propsRes] = await Promise.all([
+    fetchSafe(() => getAllNews({ category: "", page: 0, size: 50 }), null),
     wineTypeId != null
-      ? await fetchSafe(() => getHotelHomepageHeroSection(wineTypeId), { data: [] })
-      : { data: [] };
-  const aboutRes =
+      ? fetchSafe(() => getHotelHomepageHeroSection(wineTypeId), { data: [] })
+      : { data: [] },
     wineTypeId != null
-      ? await fetchSafe(() => getAboutUsByPropertyType(wineTypeId), { data: [] })
-      : { data: [] };
+      ? fetchSafe(() => getAboutUsByPropertyType(wineTypeId), { data: [] })
+      : { data: [] },
+    fetchSafe(() => getAllWineTypes(), { data: [] }),
+    fetchSafe(() => getAllWineBrands(), { data: [] }),
+    fetchSafe(() => getAllWineCategories(), { data: [] }),
+    fetchSafe(() => getAllWineSubCategories(), { data: [] }),
+    fetchSafe(() => getAllProperties(), { data: [] }),
+  ]);
+
   const wineAboutSections = await normalizeAboutSections(aboutRes);
+
+  const wineTypeObj = propertyTypes.find(t => t.typeName?.toLowerCase() === "wine");
+  let headerData = null;
+  if (wineTypeObj) {
+    const headerRes = await fetchSafe(() => getMenuSectionsByPropertyTypeId(wineTypeObj.id), { data: [] });
+    headerData = (headerRes?.data || []).find(h => h.isActive) || null;
+  }
+
+  const allCards = generateWineCards({
+    brands: wineBrandsRes?.data ?? [],
+    wineTypes: wineTypesRes?.data ?? [],
+    categories: wineCatsRes?.data ?? [],
+    subCategories: wineSubCatsRes?.data ?? [],
+    properties: propsRes?.data ?? [],
+  });
 
   return {
     wineTypeId,
     heroSlides: normalizeHeroSlides(heroRes?.data || heroRes || []),
     wineAboutSections,
     wineNews: newsRes ? normalizeNews(newsRes, wineTypeId) : [],
+    headerData,
+    allWineData: {
+      types: wineTypesRes?.data ?? [],
+      brands: wineBrandsRes?.data ?? [],
+      categories: wineCatsRes?.data ?? [],
+      subCategories: wineSubCatsRes?.data ?? [],
+      properties: propsRes?.data ?? [],
+      allCards,
+    },
   };
 };

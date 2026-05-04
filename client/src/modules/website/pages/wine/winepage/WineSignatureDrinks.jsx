@@ -120,13 +120,30 @@ function CategoryCard({ category, index, routeMode = "property" }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export function WineCategoriesSection() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [categories, setCategories] = useState(() => {
+    if (ssrData?.types) {
+      return ssrData.types.filter(item => item.active).map(item => ({
+        name: item.wineTypeName,
+        id: item.id,
+        image: item.media?.url || "",
+        property: item.propertyName || "",
+        location: item.propertyTypeName || ""
+      }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   useEffect(() => {
+    if (ssrData) return;
     const fetchAll = async () => {
       try {
         const [typesRes, propTypesRes] = await Promise.all([
@@ -160,7 +177,7 @@ export function WineCategoriesSection() {
       }
     };
     fetchAll();
-  }, []);
+  }, [ssrData]);
 
   return (
     <section className="relative overflow-hidden bg-[#F5F0EA] pt-12 pb-12 dark:bg-[#12070A]">
@@ -203,9 +220,34 @@ export function WineCategoriesSection() {
 }
 
 export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [categories, setCategories] = useState(() => {
+    if (ssrData?.types) {
+      const activePropId = Number(propertyId);
+      return ssrData.types
+        .filter(item => {
+          if (!item.active) return false;
+          if (!isNaN(activePropId)) {
+            const ids = item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : [item.propertyId];
+            return ids.map(Number).includes(activePropId);
+          }
+          return true;
+        })
+        .map((item, i) => ({
+          name: item.wineTypeName,
+          id: item.id,
+          image: item.media?.url || "",
+          property: item.propertyNames?.length > 0 ? item.propertyNames.join(", ") : (item.propertyName || ""),
+          location: item.propertyTypeName || "",
+          propertyId: item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : item.propertyId
+        }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   // sectionHeader (from Testimonials API, renamed "Wines Menu") takes priority
   const resolvedHeader = sectionHeader
@@ -217,6 +259,7 @@ export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
     : headerData;
 
   useEffect(() => {
+    if (ssrData) return;
     const fetchAll = async () => {
       try {
         const [typesRes, propTypesRes] = await Promise.all([
@@ -264,7 +307,7 @@ export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
       }
     };
     fetchAll();
-  }, []);
+  }, [ssrData, propertyId]);
 
   return (
     <section className="relative overflow-hidden bg-[#FAF8F4] pt-16 pb-16 dark:bg-[#0D0508]">

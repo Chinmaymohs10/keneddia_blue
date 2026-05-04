@@ -255,15 +255,19 @@ function WineShowcaseSection({ wines, propertyName, headerData }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 export default function WinePage() {
   const { citySlug, propertySlug } = useParams();
+  const { wineDetail } = useSsrData();
+
   const [loaderDone, setLoaderDone] = useState(false);
-  const [allCards, setAllCards] = useState([]);
-  const [bannerPropertyData, setBannerPropertyData] = useState(null);
-  const [bannerGalleryData, setBannerGalleryData] = useState([]);
-  const [bannerLoading, setBannerLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
-  const [sectionHeaders, setSectionHeaders] = useState({
+  const [allCards, setAllCards] = useState(wineDetail?.allCards || []);
+  const [bannerPropertyData, setBannerPropertyData] = useState(wineDetail?.propertyData || null);
+  const [bannerGalleryData, setBannerGalleryData] = useState(wineDetail?.galleryData || []);
+  const [bannerLoading, setBannerLoading] = useState(!wineDetail);
+  const [headerData, setHeaderData] = useState(wineDetail?.headerData || null);
+  const [sectionHeaders, setSectionHeaders] = useState(wineDetail?.sectionHeaders || {
     signatures: null,   // Wines Menu  → WineSignatureDrinks
     collections: null,  // Collections → WineShowcaseSection
     brands: null,       // Brands      → WineTopBrands
@@ -271,13 +275,13 @@ export default function WinePage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const t = setTimeout(() => setLoaderDone(true), 2500);
+    const t = setTimeout(() => setLoaderDone(true), 1500); // Shorter if SSR
     return () => clearTimeout(t);
   }, []);
 
   // Fetch property details + gallery for the dynamic banner
   useEffect(() => {
-    if (!propertySlug) { setBannerLoading(false); return; }
+    if (!propertySlug || wineDetail) { setBannerLoading(false); return; }
     let cancelled = false;
 
     // Extract ID from slug (e.g. cheers-corner-71 -> 71)
@@ -328,12 +332,12 @@ export default function WinePage() {
     }
     fetchBanner();
     return () => { cancelled = true; };
-  }, [propertySlug]);
+  }, [propertySlug, wineDetail]);
 
   // Fetch section headers after propertyId is resolved
   useEffect(() => {
     const pid = bannerPropertyData?.propertyId ?? bannerPropertyData?.id;
-    if (!pid) return;
+    if (!pid || wineDetail) return;
     let cancelled = false;
     async function fetchSectionHeaders() {
       try {
@@ -365,9 +369,10 @@ export default function WinePage() {
     }
     fetchSectionHeaders();
     return () => { cancelled = true; };
-  }, [bannerPropertyData]);
+  }, [bannerPropertyData, wineDetail]);
 
   useEffect(() => {
+    if (wineDetail) return;
     let cancelled = false;
     async function fetchAll() {
       try {
@@ -402,7 +407,7 @@ export default function WinePage() {
     }
     fetchAll();
     return () => { cancelled = true; };
-  }, []);
+  }, [wineDetail]);
 
   const showcaseWines = useMemo(() => {
     if (!allCards.length) return [];

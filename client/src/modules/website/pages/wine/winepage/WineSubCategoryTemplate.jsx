@@ -123,12 +123,22 @@ function ItemCard({ drink, index }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 export default function WineSubCategoryTemplate() {
   const { citySlug, propertySlug, slug } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [subCategory, setSubCategory] = useState(null);
-  const [allCards, setAllCards] = useState([]);
+  const { wineSubCategory } = useSsrData();
+
+  const [loading, setLoading] = useState(!wineSubCategory);
+  const [subCategory, setSubCategory] = useState(wineSubCategory?.subCategory || null);
+  const [allCards, setAllCards] = useState(() => {
+    if (wineSubCategory?.allCards) {
+      const numericId = parseInt(slug, 10);
+      return wineSubCategory.allCards.filter(c => c.subCategoryId === numericId);
+    }
+    return [];
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
 
@@ -138,6 +148,11 @@ export default function WineSubCategoryTemplate() {
     window.scrollTo(0, 0);
     const numericId = parseInt(slug, 10);
     if (isNaN(numericId)) {
+      setLoading(false);
+      return;
+    }
+
+    if (wineSubCategory) {
       setLoading(false);
       return;
     }
@@ -180,7 +195,7 @@ export default function WineSubCategoryTemplate() {
     }
     fetchData();
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [slug, wineSubCategory]);
 
   const availableLocations = useMemo(() => {
     return ["All Locations", ...Array.from(new Set(allCards.map((d) => d.locationDisplay || d.location))).sort()];

@@ -185,18 +185,41 @@ function WineCard({ wine, index, typeAccents = {} }) {
   );
 }
 
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 export default function WineBestSellers() {
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
   const [location, setLocation] = useState("All Locations");
   const [wineType, setWineType] = useState("All Types");
   const [expanded, setExpanded] = useState(false);
-  const [wines, setWines] = useState([]);
-  const [locations, setLocations] = useState(["All Locations"]);
-  const [wineTypes, setWineTypes] = useState(["All Types"]);
-  const [typeAccents, setTypeAccents] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const [wines, setWines] = useState(ssrData?.allCards || []);
+  const [locations, setLocations] = useState(() => {
+    if (ssrData?.allCards) {
+      const { locations: locs } = extractWineFilters(ssrData.allCards);
+      return locs;
+    }
+    return ["All Locations"];
+  });
+  const [wineTypes, setWineTypes] = useState(() => {
+    if (ssrData?.allCards) {
+      const { types: types_ } = extractWineFilters(ssrData.allCards);
+      return types_;
+    }
+    return ["All Types"];
+  });
+  const [typeAccents, setTypeAccents] = useState(() => {
+    if (ssrData?.types) {
+      return buildTypeAccents(ssrData.types);
+    }
+    return {};
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   useEffect(() => {
+    if (ssrData) return;
     let cancelled = false;
     async function fetchAll() {
       try {
@@ -249,7 +272,7 @@ export default function WineBestSellers() {
     }
     fetchAll();
     return () => { cancelled = true; };
-  }, []);
+  }, [ssrData]);
 
   const filtered = useMemo(() => {
     return wines.filter((wine) => {

@@ -4,6 +4,11 @@ import { fetchRestaurantHomepageData } from "@/ssr/restaurantHomepageData";
 import { fetchCafeHomepageData } from "@/ssr/cafeHomepageData";
 import { fetchWineHomepageData } from "@/ssr/wineHomepageData";
 import {
+  fetchWineDetailPageData,
+  fetchWineCategoryPageData,
+  fetchWineSubCategoryPageData,
+} from "@/ssr/wineDetailData";
+import {
   fetchEventDetailPageData,
   fetchEventsListingData,
   fetchNewsDetailPageData,
@@ -52,6 +57,31 @@ export async function loadInitialDataForUrl(url) {
     initialData.wineHomepage = await fetchWineHomepageData();
   }
 
+  // --- Wine Detail Pages ---
+  if (pathname.startsWith("/wine-detail/")) {
+    const parts = pathname.split("/").filter(Boolean);
+    // Case 1: /wine-detail/:city/:property
+    if (parts.length === 3) {
+      initialData.wineDetail = await fetchWineDetailPageData(pathname);
+    }
+    // Case 2: /wine-detail/:city/:property/sub/:slug
+    else if (parts.length === 5 && parts[3] === "sub") {
+      initialData.wineSubCategory = await fetchWineSubCategoryPageData(pathname);
+    }
+    // Case 3: /wine-detail/:city/:property/:category
+    else if (parts.length === 4) {
+      initialData.wineCategory = await fetchWineCategoryPageData(pathname);
+    }
+  }
+
+  if (pathname.startsWith("/wine-categories/")) {
+    initialData.wineCategory = await fetchWineCategoryPageData(pathname);
+  }
+
+  if (pathname.startsWith("/wine-subcategory/")) {
+    initialData.wineSubCategory = await fetchWineSubCategoryPageData(pathname);
+  }
+
   if (pathname === "/offers" || pathname === "/offers/") {
     initialData.offers = await fetchOfferListingData();
   }
@@ -75,7 +105,7 @@ export async function loadInitialDataForUrl(url) {
   }
 
   const propertyDetailMatch = pathname.match(/^\/([^/]+)\/([^/]+-\d+)\/?$/);
-  if (propertyDetailMatch) {
+  if (propertyDetailMatch && !pathname.startsWith("/wine-detail/")) {
     try {
       initialData.propertyDetail = await fetchPropertyDetailPageData(pathname);
     } catch (err) {
@@ -87,7 +117,7 @@ export async function loadInitialDataForUrl(url) {
   const propertyCategoryMatch = pathname.match(
     /^\/([^/]+)\/([^/]+-\d+)\/([^/]+)\/?$/,
   );
-  if (propertyCategoryMatch) {
+  if (propertyCategoryMatch && !pathname.startsWith("/wine-detail/")) {
     try {
       initialData.propertyCategory = await fetchPropertyCategoryPageData(pathname);
     } catch (err) {

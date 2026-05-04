@@ -86,12 +86,42 @@ function BrandCard({ brand, onClick, clickable }) {
     </article>
   );
 }
+import { useSsrData } from "@/ssr/SsrDataContext";
+
 export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [headerData, setHeaderData] = useState(null);
+  const { wineHomepage: ssr } = useSsrData();
+  const ssrData = ssr?.allWineData;
+
+  const [brands, setBrands] = useState(() => {
+    if (ssrData) {
+      const brandsData = ssrData.brands || [];
+      const currentProp = (ssrData.properties || []).find(p => generateSlug(p.propertyName) === propertySlug);
+
+      return brandsData
+        .filter(b => {
+          if (!b.active) return false;
+          if (propertySlug && currentProp && !globalRoute) {
+            const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
+            return ids.map(Number).includes(Number(currentProp.id));
+          }
+          return true;
+        })
+        .map((b, i) => ({
+          id: b.id,
+          name: b.name,
+          subLabel: b.wineTypeName || "Premium Selection",
+          accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+          detail: b.propertyNames?.length > 0 ? b.propertyNames.join(", ") : (b.description || "Harmony"),
+          logo: b.media?.url || "",
+          logoFit: "contain",
+        }));
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(!ssrData);
+  const [headerData, setHeaderData] = useState(ssr?.headerData || null);
 
   // sectionHeader (from Events API, renamed "Brands") takes priority
   const resolvedHeader = sectionHeader
@@ -99,6 +129,8 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
     : headerData;
 
   useEffect(() => {
+    if (ssrData && globalRoute) return; // Already have data for global route
+    
     const fetchBrands = async () => {
       try {
         const [brandsRes, propRes, propTypesRes] = await Promise.all([
@@ -163,7 +195,7 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
       }
     };
     fetchBrands();
-  }, [globalRoute, propertySlug]);
+  }, [globalRoute, propertySlug, ssrData]);
 
   const handleBrandClick = (brand) => {
     if (!clickable) return;

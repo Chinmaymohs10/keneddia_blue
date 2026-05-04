@@ -53,12 +53,17 @@ const isSsrRoute = (pathname) =>
   pathname === "/cafe-homepage/" ||
   pathname === "/cafe-page" ||
   pathname === "/cafe-page/" ||
+  pathname === "/wine-homepage" ||
+  pathname === "/wine-homepage/" ||
   pathname === "/offers" ||
   pathname === "/offers/" ||
   pathname === "/events" ||
   pathname === "/events/" ||
   pathname === "/news" ||
   pathname === "/news/" ||
+  pathname.startsWith("/wine-detail/") ||
+  pathname.startsWith("/wine-categories/") ||
+  pathname.startsWith("/wine-subcategory/") ||
   /^\/[^/]+\/[^/]+-\d+\/[^/]+\/?$/.test(pathname) ||
   /^\/[^/]+\/[^/]+-\d+\/?$/.test(pathname) ||
   /^\/events\/[^/]+\/?$/.test(pathname) ||
