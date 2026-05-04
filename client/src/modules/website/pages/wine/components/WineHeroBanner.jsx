@@ -428,16 +428,16 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                   : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
               }`}
             >
-              {slide.isVideo ? (
+              {slide.thumbnailIsVideo ? (
                 <video
-                  src={slide.img}
+                  src={slide.thumbnail}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   muted
                   playsInline
                 />
               ) : (
                 <img
-                  src={slide.img}
+                  src={slide.thumbnail}
                   alt={slide.title}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

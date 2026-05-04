@@ -685,7 +685,7 @@ function IconTab({ propertyTypes, properties }) {
       showOnHeader: item.showOnHeader || false,
       showOnFooter: item.showOnFooter || false,
       showOnLightOrDark: item.showOnLightOrDark ?? false,
-      scope: item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main",
+      scope: "propertyType",
       propertyTypeId: item.propertyTypeId || "",
       propertyId: item.propertyId || "",
     });

@@ -8,6 +8,15 @@ import { getPropertyTypes } from "@/Api/Api";
 export default function WhatsAppButton() {
   const location = useLocation();
   const pathname = location.pathname;
+  
+  // Do not show on superadmin pages
+  const isSuperAdmin = [
+    "/WineManagement", "/Utils", "/Properties", "/Location", 
+    "/ManageUsers", "/Seo", "/Dashboard", "/Analytics", "/Reports",
+    "/Hotel", "/Cafe", "/Restaurant", "/WineDine"
+  ].some(path => pathname.startsWith(path));
+
+  if (isSuperAdmin) return null;
 
   // 1. Fetch all WhatsApp Info
   const { data: whatsappInfos } = useQuery({
