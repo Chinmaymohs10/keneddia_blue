@@ -33,15 +33,15 @@ import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: "types",         label: "Wine Types",    icon: Wine },
-  { id: "brands",        label: "Brands",         icon: Tag },
-  { id: "categories",    label: "Categories",     icon: Layers },
-  { id: "subcategories", label: "Subcategories",  icon: Layers },
+  { id: "types", label: "Wine Types", icon: Wine },
+  { id: "brands", label: "Brands", icon: Tag },
+  { id: "categories", label: "Categories", icon: Layers },
+  { id: "subcategories", label: "Subcategories", icon: Layers },
 ];
 
 const SCOPE_OPTIONS = [
   { label: "Property Type Homepage", value: "propertyType" },
-  { label: "Specific Property",      value: "property" },
+  { label: "Specific Property", value: "property" },
 ];
 
 const toList = (res) => {
@@ -70,6 +70,16 @@ const inputStyle = { borderColor: colors.border, color: colors.textPrimary };
 
 function ScopeFields({ form, setForm, propertyTypes, properties }) {
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
+
+  const toggleProperty = (id) => {
+    const currentIds = form.propertyIds || [];
+    if (currentIds.includes(id)) {
+      set("propertyIds", currentIds.filter((pid) => pid !== id));
+    } else {
+      set("propertyIds", [...currentIds, id]);
+    }
+  };
+
   return (
     <>
       <FormField label="Scope">
@@ -92,13 +102,37 @@ function ScopeFields({ form, setForm, propertyTypes, properties }) {
       )}
 
       {form.scope === "property" && (
-        <FormField label="Property">
-          <select className={inputCls} style={inputStyle} value={form.propertyId} onChange={(e) => set("propertyId", e.target.value)}>
-            <option value="">Select property</option>
+        <FormField label="Property Selection">
+          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-3 border rounded-lg" style={{ borderColor: colors.border }}>
             {properties.map((p) => (
-              <option key={p.id} value={p.id}>{p.propertyName}</option>
+              <label key={p.id} className="flex items-center gap-3 cursor-pointer group">
+                <div
+                  className="w-5 h-5 rounded border flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: (form.propertyIds || []).includes(p.id) ? colors.primary : colors.border,
+                    backgroundColor: (form.propertyIds || []).includes(p.id) ? colors.primary : "transparent"
+                  }}
+                >
+                  {(form.propertyIds || []).includes(p.id) && <Check size={14} className="text-white" />}
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={(form.propertyIds || []).includes(p.id)}
+                    onChange={() => toggleProperty(p.id)}
+                  />
+                </div>
+                <span className="text-sm transition-colors group-hover:text-primary" style={{ color: (form.propertyIds || []).includes(p.id) ? colors.primary : colors.textPrimary }}>
+                  {p.propertyName}
+                </span>
+              </label>
             ))}
-          </select>
+            {properties.length === 0 && (
+              <p className="text-xs text-center py-4" style={{ color: colors.textSecondary }}>No properties available</p>
+            )}
+          </div>
+          <p className="text-[10px] mt-1 font-semibold" style={{ color: colors.textSecondary }}>
+            Selected: <span style={{ color: colors.primary }}>{(form.propertyIds || []).length}</span> properties
+          </p>
         </FormField>
       )}
     </>
@@ -253,6 +287,15 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
   const ptMap = useMemo(() => new Map(propertyTypes.map((pt) => [String(pt.id), pt])), [propertyTypes]);
 
   const scopeLabel = useCallback((entry) => {
+    if (entry.propertyIds && entry.propertyIds.length > 0) {
+      return {
+        icon: Building2,
+        label: entry.propertyNames?.join(", ") || `${entry.propertyIds.length} Properties`,
+        sub: "Specific Properties",
+        isMultiple: true,
+        names: entry.propertyNames || []
+      };
+    }
     if (entry.propertyId) {
       const prop = propMap.get(String(entry.propertyId));
       return { icon: Building2, label: prop?.propertyName || `Property #${entry.propertyId}`, sub: "Specific Property" };
@@ -293,7 +336,7 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
   // Collect all assigned-property entries across the full hierarchy
   const assignedProperties = useMemo(() => {
     const all = [item, ...brandList.filter((b) => b.id !== item.id), ...categoryList.filter((c) => c.id !== item.id), ...subList.filter((s) => s.id !== item.id)];
-    return all.filter((e) => e.propertyId || e.propertyTypeId).map((e) => ({
+    return all.filter((e) => (e.propertyIds && e.propertyIds.length > 0) || e.propertyId || e.propertyTypeId).map((e) => ({
       entry: e,
       scope: scopeLabel(e),
       name: e.wineTypeName || e.name || e.title || "Item",
@@ -387,9 +430,9 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
               <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textSecondary }}>Hierarchy Summary</p>
               <div className="flex flex-col gap-1.5">
                 {[
-                  { icon: Tag,    label: "Brands",        count: brandList.length,   show: brandList.length > 0 },
-                  { icon: Layers, label: "Categories",    count: categoryList.length, show: categoryList.length > 0 },
-                  { icon: Layers, label: "Subcategories", count: subList.length,      show: subList.length > 0 },
+                  { icon: Tag, label: "Brands", count: brandList.length, show: brandList.length > 0 },
+                  { icon: Layers, label: "Categories", count: categoryList.length, show: categoryList.length > 0 },
+                  { icon: Layers, label: "Subcategories", count: subList.length, show: subList.length > 0 },
                 ].filter((r) => r.show).map((row) => (
                   <div key={row.label} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ backgroundColor: colors.contentBg }}>
                     <div className="flex items-center gap-2">
@@ -408,14 +451,25 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: colors.textSecondary }}>
                   Assigned Properties <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px]" style={{ backgroundColor: colors.primary + "18", color: colors.primary }}>{assignedProperties.length}</span>
                 </p>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   {assignedProperties.map(({ entry, scope: s, name }, i) => (
-                    <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: colors.contentBg }}>
-                      <s.icon size={13} className="shrink-0 mt-0.5" style={{ color: colors.primary }} />
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold truncate" style={{ color: colors.textPrimary }}>{s.label}</p>
-                        <p className="text-[10px] truncate" style={{ color: colors.textSecondary }}>{s.sub} · {name}</p>
+                    <div key={i} className="flex flex-col gap-1 px-3 py-2.5 rounded-lg border" style={{ backgroundColor: colors.contentBg, borderColor: colors.border }}>
+                      <div className="flex items-start gap-2">
+                        <s.icon size={13} className="shrink-0 mt-0.5" style={{ color: colors.primary }} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold truncate" style={{ color: colors.textPrimary }}>{s.label}</p>
+                          <p className="text-[10px] truncate" style={{ color: colors.textSecondary }}>{s.sub} · {name}</p>
+                        </div>
                       </div>
+                      {s.isMultiple && s.names.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1 pl-5">
+                          {s.names.map((n, idx) => (
+                            <span key={idx} className="px-1.5 py-0.5 rounded bg-gray-100 text-[9px] font-medium" style={{ color: colors.textSecondary }}>
+                              {n}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -598,10 +652,11 @@ export default function WineManagement() {
     wineTypeId: "", wineBrandId: "", wineCategoryId: "",
     mediaId: null, previewUrl: "",
     scope: "propertyType", propertyId: "", propertyTypeId: "",
+    propertyIds: [],
   });
 
   const resetForm = () => {
-    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "" });
+    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "", propertyIds: [] });
     setEditingItem(null);
   };
 
@@ -682,9 +737,10 @@ export default function WineManagement() {
       wineCategoryId: item.wineCategoryId || "",
       mediaId: item.media?.mediaId || item.mediaId || null,
       previewUrl: item.media?.url || "",
-      scope: item.propertyId ? "property" : "propertyType",
+      scope: (item.propertyIds && item.propertyIds.length > 0) ? "property" : (item.propertyId ? "property" : "propertyType"),
       propertyId: item.propertyId || "",
       propertyTypeId: item.propertyTypeId || "",
+      propertyIds: item.propertyIds || (item.propertyId ? [item.propertyId] : []),
     });
     setShowModal(true);
   };
@@ -701,7 +757,7 @@ export default function WineManagement() {
     const payload = {
       description: form.description.trim(),
       mediaId: form.mediaId,
-      ...(form.scope === "property" && { propertyId: form.propertyId }),
+      ...(form.scope === "property" && { propertyIds: form.propertyIds }),
       ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
     };
 
@@ -795,9 +851,9 @@ export default function WineManagement() {
               {(() => {
                 const count = activeTab === tab.id ? null :
                   tab.id === "brands" ? brands.length :
-                  tab.id === "categories" ? categories.length :
-                  tab.id === "subcategories" ? subcategories.length :
-                  types.length;
+                    tab.id === "categories" ? categories.length :
+                      tab.id === "subcategories" ? subcategories.length :
+                        types.length;
                 return count !== null ? (
                   <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: colors.border, color: colors.textSecondary }}>{count}</span>
                 ) : null;
@@ -874,10 +930,10 @@ export default function WineManagement() {
                           <td className="px-6 py-4">
                             <div className="flex flex-col gap-0.5">
                               <span className="text-[10px] font-bold uppercase" style={{ color: colors.primary }}>
-                                {item.propertyId ? "Specific Property" : item.propertyTypeId ? "Property Type" : "Global"}
+                                {item.propertyIds?.length > 0 ? `${item.propertyIds.length} Properties` : item.propertyId ? "Specific Property" : item.propertyTypeId ? "Property Type" : "Global"}
                               </span>
                               <span className="text-xs truncate max-w-[120px]" style={{ color: colors.textSecondary }}>
-                                {item.propertyName || item.propertyTypeName || "—"}
+                                {item.propertyIds?.length > 0 ? item.propertyNames?.join(", ") : (item.propertyName || item.propertyTypeName || "—")}
                               </span>
                             </div>
                           </td>

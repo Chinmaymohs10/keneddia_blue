@@ -113,7 +113,7 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
         } else {
           const allProps = toList(propRes);
           const currentProp = allProps.find(p => generateSlug(p.propertyName) === propertySlug);
-          
+
           if (currentProp) {
             const res = await getWineBrandsByPropertyId(currentProp.id);
             brandsData = toList(res);
@@ -122,16 +122,29 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
             brandsData = toList(res);
           }
         }
+
+        const allProps = toList(propRes);
+        const currentProp = allProps.find(p => generateSlug(p.propertyResponseDTO?.propertyName || p.propertyName) === propertySlug);
+
+        const mapped = brandsData
+          .filter(b => {
+            if (!b.active) return false;
+            if (propertySlug && currentProp) {
+              const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
+              return ids.map(Number).includes(Number(currentProp.id));
+            }
+            return true;
+          })
+          .map((b, i) => ({
+            id: b.id,
+            name: b.name,
+            subLabel: b.wineTypeName || "Premium Selection",
+            accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+            detail: b.propertyNames?.length > 0 ? b.propertyNames.join(", ") : (b.description || "Harmony"),
+            logo: b.media?.url || "",
+            logoFit: "contain",
+          }));
         
-        const mapped = brandsData.filter(b => b.active).map((b, i) => ({
-          id: b.id,
-          name: b.name,
-          subLabel: b.wineTypeName || "Premium Selection",
-          accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
-          detail: b.description || "Harmony",
-          logo: b.media?.url || "",
-          logoFit: "contain",
-        }));
         setBrands(mapped);
 
         // Header Integration
@@ -154,10 +167,11 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
 
   const handleBrandClick = (brand) => {
     if (!clickable) return;
+    const targetId = brand.brandId || brand.id;
     if (globalRoute) {
-      navigate(`/wine-categories/${brand.id}?kind=brand`);
+      navigate(`/wine-categories/${targetId}?kind=brand`);
     } else {
-      navigate(`/wine-detail/${citySlug}/${propertySlug}/${brand.id}?kind=brand`);
+      navigate(`/wine-detail/${citySlug}/${propertySlug}/${targetId}?kind=brand`);
     }
   };
 

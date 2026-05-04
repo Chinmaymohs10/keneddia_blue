@@ -23,15 +23,26 @@ export function buildTypeAccents(wineTypes = []) {
 }
 
 /**
- * Given a propertyId and the full properties list (from getAllProperties),
+ * Given a propertyId (or array of propertyIds) and the full properties list,
  * return the property's location name (city / area).
- * Fallback chain: locationName → city → address → name
+ * Handles both single ID and array of IDs.
  */
 export function getPropertyLocation(propertyId, properties = []) {
   if (!propertyId || !properties.length) return null;
-  const prop = properties.find((p) => p.id === propertyId);
-  if (!prop) return null;
-  return prop.locationName || prop.city || prop.address || prop.name || null;
+  
+  const ids = Array.isArray(propertyId) ? propertyId : [propertyId];
+  const foundLocations = ids
+    .map(id => {
+      // Handle potential nested structure in properties list
+      const prop = properties.find((p) => (p.id === id || p.propertyResponseDTO?.id === id));
+      const target = prop?.propertyResponseDTO ?? prop;
+      return target?.locationName || target?.city || target?.address || target?.name || null;
+    })
+    .filter(loc => loc != null);
+
+  if (foundLocations.length === 0) return null;
+  // Return unique locations joined by comma
+  return [...new Set(foundLocations)].join(", ");
 }
 
 // Priority: subcategory image → category image → brand image → type image
@@ -76,7 +87,7 @@ export function generateWineCards({
 
   return brands
     .filter((b) => b.active !== false)
-    .map((brand) => {
+    .flatMap((brand) => {
       const type = brand.wineTypeId ? typeById[brand.wineTypeId] : null;
       const brandCategories = categoriesByBrand[brand.id] || [];
       const firstCat = brandCategories[0] ?? null;
@@ -84,51 +95,63 @@ export function generateWineCards({
         ? (subCatsByCategory[firstCat.id] || [])[0] ?? null
         : null;
 
-      // Resolve the property id to look up real location
-      const resolvedPropertyId =
-        brand.propertyId ?? firstCat?.propertyId ?? type?.propertyId ?? null;
+      // Determine the source of property data (Brand level is highest priority)
+      let sourcePropertyIds = brand.propertyIds && brand.propertyIds.length > 0 ? brand.propertyIds : (brand.propertyId ? [brand.propertyId] : []);
+      let sourcePropertyNames = brand.propertyNames && brand.propertyNames.length > 0 ? brand.propertyNames : (brand.propertyName ? [brand.propertyName] : []);
 
-      // Real location from the properties list (locationName field)
-      const resolvedLocation = getPropertyLocation(resolvedPropertyId, properties);
+      // Fallback to Category level
+      if (sourcePropertyIds.length === 0 && firstCat) {
+        sourcePropertyIds = firstCat.propertyIds && firstCat.propertyIds.length > 0 ? firstCat.propertyIds : (firstCat.propertyId ? [firstCat.propertyId] : []);
+        sourcePropertyNames = firstCat.propertyNames && firstCat.propertyNames.length > 0 ? firstCat.propertyNames : (firstCat.propertyName ? [firstCat.propertyName] : []);
+      }
 
-      // Property display name shown in the header row of the card
-      const propertyName =
-        brand.propertyName ||
-        type?.propertyName ||
-        firstCat?.propertyName ||
-        null;
+      // Fallback to Type level
+      if (sourcePropertyIds.length === 0 && type) {
+        sourcePropertyIds = type.propertyIds && type.propertyIds.length > 0 ? type.propertyIds : (type.propertyId ? [type.propertyId] : []);
+        sourcePropertyNames = type.propertyNames && type.propertyNames.length > 0 ? type.propertyNames : (type.propertyName ? [type.propertyName] : []);
+      }
 
-      // Filter key: use resolved location when available, fall back to propertyName only
-      const filterLocation = resolvedLocation || brand.propertyName || null;
+      // If still no property assignments, use a single entry with nulls to create at least one card
+      const activeIds = sourcePropertyIds.length > 0 ? sourcePropertyIds : [null];
 
       const typeName = brand.wineTypeName || type?.wineTypeName || null;
+      const baseTasting = brand.description || firstSubCat?.description || firstCat?.description || "_";
+      const baseImage = pickImage(brand, typeById, brandCategories, firstSubCat, firstCat);
 
-      return {
-        id: brand.id,
-        // Brand / distillery label
-        name: brand.name || "_",
-        // Specific product detail — subcategory uses `name` field (categories use `title`)
-        subtitle: firstSubCat?.name || "",
-        type: typeName || "_",
-        tag: typeName || "_",
-        property: propertyName || "_",
-        // location drives the filter dropdown
-        location: filterLocation || "_",
-        // locationDisplay is what shows in the MapPin badge on the card
-        locationDisplay: resolvedLocation || propertyName || "_",
-        tasting:
-          brand.description ||
-          firstSubCat?.description ||
-          firstCat?.description ||
-          "_",
-        body: firstSubCat?.description || firstCat?.description || "_",
-        // Broad category for badge — categories use `title` field
-        category: firstCat?.title || null,
-        image: pickImage(brand, typeById, brandCategories, firstSubCat, firstCat),
-        propertyId: resolvedPropertyId,
-        propertyTypeId:
-          brand.propertyTypeId ?? firstCat?.propertyTypeId ?? null,
-      };
+      // Map each property assignment to its own separate card
+      return activeIds.map((pid, idx) => {
+        // Look up the specific location for this single property ID
+        const resolvedLocation = pid ? getPropertyLocation(pid, properties) : null;
+        
+        // Get the specific name for this property assignment
+        // Try to use the aligned name from sourcePropertyNames, otherwise fallback to lookup
+        let specificPropertyName = sourcePropertyNames[idx] || null;
+        if (!specificPropertyName && pid) {
+          const propObj = properties.find(p => (p.id === pid || p.propertyResponseDTO?.id === pid));
+          const target = propObj?.propertyResponseDTO ?? propObj;
+          specificPropertyName = target?.propertyName || target?.name || null;
+        }
+
+        const filterLocation = resolvedLocation || specificPropertyName || null;
+
+        return {
+          id: `${brand.id}-${pid || 'global'}-${idx}`,
+          brandId: brand.id,
+          name: brand.name || "_",
+          subtitle: firstSubCat?.name || "",
+          type: typeName || "_",
+          tag: typeName || "_",
+          property: specificPropertyName || "_",
+          location: filterLocation || "_",
+          locationDisplay: resolvedLocation || specificPropertyName || "_",
+          tasting: baseTasting,
+          body: firstSubCat?.description || firstCat?.description || "_",
+          category: firstCat?.title || null,
+          image: baseImage,
+          propertyId: pid,
+          propertyTypeId: brand.propertyTypeId ?? firstCat?.propertyTypeId ?? null,
+        };
+      });
     });
 }
 

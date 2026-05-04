@@ -142,7 +142,7 @@ function WineShowcaseCard({ wine, index }) {
             <div className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
               <Building2 size={10} className="shrink-0 text-[#8B1A2A]" />
               <span className="truncate text-[8px] font-black uppercase tracking-[0.18em] text-[#8B1A2A]">
-                {wine.property} · {wine.location}
+                {wine.property}{wine.location && wine.location !== "_" ? ` · ${wine.location}` : ""}
               </span>
             </div>
 
@@ -173,7 +173,7 @@ function WineShowcaseCard({ wine, index }) {
           <div className="mt-4 flex justify-center">
             <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[9px] font-bold text-stone-500 dark:bg-white/5 dark:text-stone-500">
               <MapPin size={10} />
-              {wine.location}
+              {wine.locationDisplay || wine.location}
             </span>
           </div>
         </div>
@@ -414,8 +414,9 @@ export default function WinePage() {
 
     // Exact match: property slug/ID + city slug
     const exactMatch = allCards.filter((c) => {
+      const ids = Array.isArray(c.propertyId) ? c.propertyId : [c.propertyId];
       const matchProperty = !isNaN(slugId)
-        ? Number(c.propertyId) === slugId
+        ? ids.map(Number).includes(slugId)
         : generateSlug(c.property) === propertySlug?.toLowerCase();
       const matchCity = generateSlug(c.locationDisplay || c.location) === citySlug?.toLowerCase();
       return matchProperty && matchCity;
@@ -423,11 +424,12 @@ export default function WinePage() {
     if (exactMatch.length) return exactMatch;
 
     // Fallback: property slug/ID only
-    const propMatch = allCards.filter((c) =>
-      !isNaN(slugId)
-        ? Number(c.propertyId) === slugId
-        : generateSlug(c.property) === propertySlug?.toLowerCase()
-    );
+    const propMatch = allCards.filter((c) => {
+      const ids = Array.isArray(c.propertyId) ? c.propertyId : [c.propertyId];
+      return !isNaN(slugId)
+        ? ids.map(Number).includes(slugId)
+        : generateSlug(c.property) === propertySlug?.toLowerCase();
+    });
     if (propMatch.length) return propMatch;
 
     // Fallback: same propertyId group

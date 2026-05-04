@@ -45,7 +45,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
   const generateSlug = (text) => text?.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
   const handleExplore = () => {
-    const typeSlug = category.id;
+    const typeSlug = category.typeId || category.id;
     if (routeMode === "global") {
       navigate(`/wine-categories/${typeSlug}?kind=type`);
       return;
@@ -264,18 +264,20 @@ export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
             if (!item.active) return false;
             // If on a property detail page, filter by that propertyId
             if (!isNaN(activePropId)) {
-              return Number(item.propertyId) === activePropId;
+              const ids = item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : [item.propertyId];
+              return ids.map(Number).includes(activePropId);
             }
             return true;
           })
-          .map(item => ({
+          .map((item, i) => ({
             name: item.wineTypeName,
             id: item.id,
             image: item.media?.url || "",
-            property: item.propertyName || "",
+            property: item.propertyNames?.length > 0 ? item.propertyNames.join(", ") : (item.propertyName || ""),
             location: item.propertyTypeName || "",
-            propertyId: item.propertyId
+            propertyId: item.propertyIds && item.propertyIds.length > 0 ? item.propertyIds : item.propertyId
           }));
+
         setCategories(mapped);
 
         // Header Integration
