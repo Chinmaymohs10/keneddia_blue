@@ -63,22 +63,26 @@ function FormField({ label, children }) {
 const inputCls = "w-full border rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 transition-all";
 const inputStyle = { borderColor: colors.border, color: colors.textPrimary };
 
-function ScopeFields({ form, setForm, propertyTypes, properties }) {
+function ScopeFields({ form, setForm, propertyTypes, properties, allowedScopes = ["main", "propertyType", "property"] }) {
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
+  const filteredOptions = SCOPE_OPTIONS.filter((o) => allowedScopes.includes(o.value));
+
   return (
     <>
-      <FormField label="Scope">
-        <select
-          className={inputCls}
-          style={inputStyle}
-          value={form.scope}
-          onChange={(e) => set("scope", e.target.value)}
-        >
-          {SCOPE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </FormField>
+      {filteredOptions.length > 1 && (
+        <FormField label="Scope">
+          <select
+            className={inputCls}
+            style={inputStyle}
+            value={form.scope}
+            onChange={(e) => set("scope", e.target.value)}
+          >
+            {filteredOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
 
       {form.scope === "propertyType" && (
         <FormField label="Property Type *">
@@ -624,7 +628,7 @@ const ICON_EMPTY = {
   showOnHeader: false,
   showOnFooter: false,
   showOnLightOrDark: false,
-  scope: "main",
+  scope: "propertyType",
   propertyTypeId: "",
   propertyId: "",
 };
@@ -865,9 +869,7 @@ function IconTab({ propertyTypes, properties }) {
           onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
         >
           <option value="all">All Scopes</option>
-          <option value="main">Main Homepage</option>
           <option value="propertyType">Property Type</option>
-          <option value="property">Specific Property</option>
         </select>
         <select
           className={inputCls}
@@ -1094,7 +1096,13 @@ function IconTab({ propertyTypes, properties }) {
                   </button>
                 </div>
               </FormField>
-              <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} />
+              <ScopeFields
+                form={form}
+                setForm={setForm}
+                propertyTypes={propertyTypes}
+                properties={properties}
+                allowedScopes={["propertyType"]}
+              />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
               <button
