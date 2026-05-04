@@ -278,10 +278,15 @@ export default function WinePage() {
   useEffect(() => {
     if (!propertySlug) { setBannerLoading(false); return; }
     let cancelled = false;
+
+    // Extract ID from slug (e.g. cheers-corner-71 -> 71)
+    const slugParts = propertySlug.split("-");
+    const slugId = Number(slugParts[slugParts.length - 1]);
+
     async function fetchBanner() {
       try {
         const res = await GetAllPropertyDetails();
-        const rawData = res?.data ?? res ?? [];
+        const rawData = res?.data?.data ?? res?.data ?? res ?? [];
         const flattened = (Array.isArray(rawData) ? rawData : []).flatMap((item) => {
           const parent = item.propertyResponseDTO;
           const listings = item.propertyListingResponseDTOS || [];
@@ -289,9 +294,14 @@ export default function WinePage() {
             ? [{ parent, listing: null }]
             : listings.map((listing) => ({ parent, listing }));
         });
-        const matched = flattened.find(({ parent, listing }) =>
-          generateSlug(listing?.propertyName || parent?.propertyName || "") === propertySlug.toLowerCase()
-        );
+
+        const matched = flattened.find(({ parent, listing }) => {
+          if (!isNaN(slugId)) {
+            return Number(parent?.id) === slugId;
+          }
+          return generateSlug(listing?.propertyName || parent?.propertyName || "") === propertySlug.toLowerCase();
+        });
+
         if (!matched || cancelled) return;
         const { parent, listing } = matched;
         const combinedProperty = {
@@ -350,7 +360,7 @@ export default function WinePage() {
           : eventsData ?? null;
 
         setSectionHeaders({ signatures: signaturesHeader, collections: collectionsHeader, brands: brandsHeader });
-      } catch (_) {}
+      } catch (_) { }
     }
     fetchSectionHeaders();
     return () => { cancelled = true; };
@@ -387,7 +397,7 @@ export default function WinePage() {
           properties: propsRes?.data ?? [],
         });
         setAllCards(cards);
-      } catch (_) {}
+      } catch (_) { }
     }
     fetchAll();
     return () => { cancelled = true; };
@@ -397,29 +407,32 @@ export default function WinePage() {
     if (!allCards.length) return [];
     if (!citySlug && !propertySlug) return allCards;
 
-    // Exact match: property slug + city slug
-    const exactMatch = allCards.filter(
-      (c) =>
-        generateSlug(c.property) === propertySlug?.toLowerCase() &&
-        generateSlug(c.locationDisplay || c.location) === citySlug?.toLowerCase()
-    );
+    // Extract ID from slug
+    const slugParts = propertySlug?.split("-") || [];
+    const slugId = Number(slugParts[slugParts.length - 1]);
+
+    // Exact match: property slug/ID + city slug
+    const exactMatch = allCards.filter((c) => {
+      const matchProperty = !isNaN(slugId)
+        ? Number(c.propertyId) === slugId
+        : generateSlug(c.property) === propertySlug?.toLowerCase();
+      const matchCity = generateSlug(c.locationDisplay || c.location) === citySlug?.toLowerCase();
+      return matchProperty && matchCity;
+    });
     if (exactMatch.length) return exactMatch;
 
-    // Fallback: property slug only
-    const propMatch = allCards.filter(
-      (c) => generateSlug(c.property) === propertySlug?.toLowerCase()
+    // Fallback: property slug/ID only
+    const propMatch = allCards.filter((c) =>
+      !isNaN(slugId)
+        ? Number(c.propertyId) === slugId
+        : generateSlug(c.property) === propertySlug?.toLowerCase()
     );
     if (propMatch.length) return propMatch;
 
     // Fallback: same propertyId group
-    if (propertySlug) {
-      const firstBySlug = allCards.find(
-        (c) => generateSlug(c.property) === propertySlug.toLowerCase()
-      );
-      if (firstBySlug?.propertyId) {
-        const byId = allCards.filter((c) => c.propertyId === firstBySlug.propertyId);
-        if (byId.length) return byId;
-      }
+    if (!isNaN(slugId)) {
+      const byId = allCards.filter((c) => Number(c.propertyId) === slugId);
+      if (byId.length) return byId;
     }
 
     return allCards;
@@ -464,7 +477,10 @@ export default function WinePage() {
             <div className="dark:hidden">
               <div className="h-px bg-[#E1E1DD]/40" />
             </div>
-            <WineSignatureDrinks sectionHeader={sectionHeaders.signatures} />
+            <WineSignatureDrinks
+              sectionHeader={sectionHeaders.signatures}
+              propertyId={propertySlug?.split("-").pop()}
+            />
           </div>
 
           {/* Collections header */}

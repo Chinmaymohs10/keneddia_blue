@@ -77,18 +77,23 @@ const getPropertyUrls = (
   const pType = propertyType?.toLowerCase();
   const isRestaurant = pType === "restaurant";
   const isCafe = pType === "cafe";
+  const isWine = pType === "wine";
+
   const baseUrl = isCafe
     ? CAFE_BASE_URL
     : isRestaurant
       ? RESTAURANT_BASE_URL
       : HOTEL_BASE_URL;
-  const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
+
+  const localPath = isWine ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
+  const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
 
   return {
     isRestaurant,
     isCafe,
+    isWine,
     propertyPath,
-    localPath: `/${propertyPath}`,
+    localPath,
     finalUrl,
   };
 };
@@ -133,11 +138,10 @@ const CarouselItem = ({
 
   return (
     <div
-      className={`absolute inset-0 transition-all duration-1000 ${
-        isActive
-          ? "opacity-100 z-10 pointer-events-auto"
-          : "opacity-0 z-0 pointer-events-none"
-      }`}
+      className={`absolute inset-0 transition-all duration-1000 ${isActive
+        ? "opacity-100 z-10 pointer-events-auto"
+        : "opacity-0 z-0 pointer-events-none"
+        }`}
     >
       {/* Background */}
       {imageUrl ? (
@@ -168,18 +172,16 @@ const CarouselItem = ({
                 e.stopPropagation();
                 if (isTagLong) setTagExpanded(true);
               }}
-              className={`h-full pr-1 cursor-pointer ${
-                tagExpanded ? "overflow-y-auto" : "overflow-hidden"
-              }`}
+              className={`h-full pr-1 cursor-pointer ${tagExpanded ? "overflow-y-auto" : "overflow-hidden"
+                }`}
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
               }}
             >
               <p
-                className={`text-white/75 text-xs font-light italic tracking-wide leading-[20px] ${
-                  !tagExpanded ? "truncate" : ""
-                }`}
+                className={`text-white/75 text-xs font-light italic tracking-wide leading-[20px] ${!tagExpanded ? "truncate" : ""
+                  }`}
               >
                 {property.tagline}
               </p>
@@ -219,11 +221,10 @@ const CarouselItem = ({
                     e.stopPropagation();
                     onDotClick(i);
                   }}
-                  className={`text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${
-                    i === activeIndex
-                      ? "text-white border-b-2 border-white"
-                      : "text-white/35 border-b-2 border-transparent hover:text-white/60"
-                  }`}
+                  className={`text-xs font-bold tracking-widest pb-1 transition-all cursor-pointer ${i === activeIndex
+                    ? "text-white border-b-2 border-white"
+                    : "text-white/35 border-b-2 border-transparent hover:text-white/60"
+                    }`}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </button>
@@ -238,11 +239,10 @@ const CarouselItem = ({
           {subTitle && (
             <div className="mb-1">
               <div
-                className={`transition-all duration-300 ${
-                  expanded
-                    ? "h-[90px] overflow-y-auto"
-                    : "h-[42px] overflow-hidden"
-                } pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`}
+                className={`transition-all duration-300 ${expanded
+                  ? "h-[90px] overflow-y-auto"
+                  : "h-[42px] overflow-hidden"
+                  } pr-1 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent`}
               >
                 <p className="italic font-light text-sm opacity-80 leading-snug">
                   {subTitle}
@@ -318,11 +318,10 @@ const CarouselItem = ({
                     e.stopPropagation();
                     onDotClick(i);
                   }}
-                  className={`rounded-full transition-all duration-300 cursor-pointer ${
-                    i === activeIndex
-                      ? "w-5 h-2 bg-white"
-                      : "w-2 h-2 bg-white/35 hover:bg-white/60"
-                  }`}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${i === activeIndex
+                    ? "w-5 h-2 bg-white"
+                    : "w-2 h-2 bg-white/35 hover:bg-white/60"
+                    }`}
                 />
               ))}
             </div>
@@ -451,17 +450,18 @@ export default function PropertiesSection({
   const _activeType = active?.propertyType?.toLowerCase();
   const isRestaurant = _activeType === "restaurant";
   const isCafe = _activeType === "cafe";
+  const isWine = _activeType === "wine";
   const hotelStarCount =
-    !isRestaurant && !isCafe && active?.propertyRating
+    !isRestaurant && !isCafe && !isWine && active?.propertyRating
       ? Math.round(active.propertyRating)
       : 0;
   const activePropertyUrls = active
     ? getPropertyUrls(
-        active.propertyType,
-        active.city,
-        active.propertyName,
-        active.propertyId,
-      )
+      active.propertyType,
+      active.city,
+      active.propertyName,
+      active.propertyId,
+    )
     : null;
   const basePrice = active?.price ?? 0;
   const discount = active?.discountAmount ?? 0;
@@ -596,7 +596,7 @@ transition-all cursor-pointer"
                         <p className="text-base md:text-lg font-bold text-foreground">
                           {active.capacity}{" "}
                           <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                            {isRestaurant ? "Covers" : "Guests"}
+                            {isRestaurant || isWine ? "Covers" : "Guests"}
                           </span>
                         </p>
                       ) : (
@@ -605,7 +605,7 @@ transition-all cursor-pointer"
                     </div>
 
                     {/* Hotel: price | Restaurant: city */}
-                    {isRestaurant ? (
+                    {isRestaurant || isWine ? (
                       <div>
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                           Location
@@ -644,10 +644,10 @@ transition-all cursor-pointer"
                           </p>
                         )}
                       </div>
-                  )}
+                    )}
                   </div>
 
-                  {!isRestaurant && hotelStarCount > 0 && (
+                  {!isRestaurant && !isCafe && !isWine && hotelStarCount > 0 && (
                     <div>
                       <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
                         Star Property
@@ -656,11 +656,10 @@ transition-all cursor-pointer"
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                              i < hotelStarCount
-                                ? "text-yellow-400 fill-yellow-400"
-                                : "text-muted-foreground/30 fill-muted-foreground/10"
-                            }`}
+                            className={`w-3.5 h-3.5 md:w-4 md:h-4 ${i < hotelStarCount
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-muted-foreground/30 fill-muted-foreground/10"
+                              }`}
                           />
                         ))}
                         <span className="ml-1.5 text-xs font-semibold text-muted-foreground">
@@ -671,7 +670,7 @@ transition-all cursor-pointer"
                   )}
 
                   {/* Restaurant extra row: type + rating */}
-                  {isRestaurant && (
+                  {(isRestaurant || isWine) && (
                     <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 md:gap-4">
                       <div>
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 md:mb-1">
@@ -820,8 +819,8 @@ transition-all cursor-pointer"
                                 active.city || active.propertyName,
                               )}/${createHotelSlug(
                                 active.propertyName ||
-                                  active.city ||
-                                  "property",
+                                active.city ||
+                                "property",
                                 active.propertyId,
                               )}`;
 
@@ -832,7 +831,7 @@ transition-all cursor-pointer"
                               activePropertyUrls?.isCafe ?? pType === "cafe";
                             navigate(
                               activePropertyUrls?.localPath ||
-                                `/${propertyPath}`,
+                              `/${propertyPath}`,
                             );
 
                             // const baseUrl = isCafe

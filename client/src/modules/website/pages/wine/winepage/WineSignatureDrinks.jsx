@@ -180,7 +180,7 @@ export function WineCategoriesSection() {
   );
 }
 
-export default function WineSignatureDrinks({ sectionHeader }) {
+export default function WineSignatureDrinks({ sectionHeader, propertyId }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [headerData, setHeaderData] = useState(null);
@@ -203,13 +203,25 @@ export default function WineSignatureDrinks({ sectionHeader }) {
         ]);
         
         const data = toList(typesRes);
-        const mapped = data.filter(item => item.active).map(item => ({
-          name: item.wineTypeName,
-          id: item.id,
-          image: item.media?.url || "",
-          property: item.propertyName || "",
-          location: item.propertyTypeName || ""
-        }));
+        const activePropId = Number(propertyId);
+        
+        const mapped = data
+          .filter(item => {
+            if (!item.active) return false;
+            // If on a property detail page, filter by that propertyId
+            if (!isNaN(activePropId)) {
+              return Number(item.propertyId) === activePropId;
+            }
+            return true;
+          })
+          .map(item => ({
+            name: item.wineTypeName,
+            id: item.id,
+            image: item.media?.url || "",
+            property: item.propertyName || "",
+            location: item.propertyTypeName || "",
+            propertyId: item.propertyId
+          }));
         setCategories(mapped);
 
         // Header Integration
