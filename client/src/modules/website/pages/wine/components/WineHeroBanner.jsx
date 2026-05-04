@@ -146,19 +146,30 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
     return () => window.clearInterval(timer);
   }, [desktopSlides.length]);
 
-  const goToSlide = (index) => {
-    if (desktopSlides.length === 0) return;
-    setActiveIndex((index + desktopSlides.length) % desktopSlides.length);
+  const handleCtaClick = (link) => {
+    if (!link) return;
+    const url = /^https?:\/\//i.test(link) ? link : `https://${link}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const activeSlide = useMemo(
-    () => desktopSlides[activeIndex] || slides[activeIndex] || null,
-    [activeIndex, desktopSlides, slides],
-  );
-  const activeMobileSlide = useMemo(
-    () => mobileSlides[0] || activeSlide,
-    [activeSlide, mobileSlides],
-  );
+  const goToSlide = (index) => {
+    const list = desktopSlides.length > 0 ? desktopSlides : slides;
+    if (list.length === 0) return;
+    setActiveIndex((index + list.length) % list.length);
+  };
+
+  const activeSlide = useMemo(() => {
+    const list = desktopSlides.length > 0 ? desktopSlides : slides;
+    if (list.length === 0) return null;
+    return list[activeIndex % list.length];
+  }, [activeIndex, desktopSlides, slides]);
+
+  const activeMobileSlide = useMemo(() => {
+    if (mobileSlides.length > 0) {
+      return mobileSlides[activeIndex % mobileSlides.length];
+    }
+    return activeSlide;
+  }, [activeIndex, mobileSlides, activeSlide]);
 
   if (isLoading) {
     return (
@@ -184,25 +195,30 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   }
 
   return (
-    <section className="relative h-svh w-full overflow-hidden bg-background">
+    <section className="relative w-full overflow-hidden bg-background h-auto md:h-svh">
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeSlide.id}
+          key={activeSlide?.id}
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          <HeroMedia slide={activeSlide} />
+          <div className="hidden md:block h-full w-full">
+            <HeroMedia slide={activeSlide} />
+          </div>
+          <div className="md:hidden h-full w-full">
+             <HeroMedia slide={activeMobileSlide} />
+          </div>
         </motion.div>
       </AnimatePresence>
 
       <div className="absolute inset-0 hidden bg-gradient-to-r from-black/80 via-black/40 to-transparent md:block" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15 md:hidden" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/20 md:hidden" />
 
-      <div className="absolute left-0 top-1/4 hidden whitespace-nowrap text-[16rem] font-black italic text-white/[0.03] pointer-events-none md:block">
-        {activeSlide.bgTitle}
+      <div className="absolute left-4 top-1/3 whitespace-nowrap text-[10rem] font-black italic text-white/[0.03] pointer-events-none md:left-0 md:text-[16rem]">
+        {activeSlide?.bgTitle}
       </div>
 
       <div className="relative z-10 hidden h-full items-center md:flex">
@@ -240,16 +256,16 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 className="flex flex-wrap items-center gap-3"
               >
                 <button
-                  disabled={!activeSlide.ctaLink}
-                  onClick={() => { if (activeSlide.ctaLink) { const url = /^https?:\/\//i.test(activeSlide.ctaLink) ? activeSlide.ctaLink : `https://${activeSlide.ctaLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                  className={`group relative h-auto overflow-hidden rounded-full border px-6 py-2.5 text-sm font-semibold transition-all duration-500 ease-out flex items-center gap-2 ${
-                    !activeSlide.ctaLink
+                  disabled={!activeSlide?.ctaLink}
+                  onClick={() => handleCtaClick(activeSlide?.ctaLink)}
+                  className={`group relative h-auto overflow-hidden rounded-full border px-8 py-3 text-sm font-bold transition-all duration-500 ease-out flex items-center gap-2 ${
+                    !activeSlide?.ctaLink
                       ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                      : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(251,191,36,0.5)] cursor-pointer border-amber-300/40"
+                      : "bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-gray-900 shadow-[0_4px_20px_rgba(251,191,36,0.4)] hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(251,191,36,0.6)] cursor-pointer border-amber-300/40"
                   }`}
                 >
-                  {(activeMobileSlide || activeSlide)?.ctaLink && (
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                  {activeSlide?.ctaLink && (
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
@@ -262,37 +278,27 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         </div>
       </div>
 
-      <div className="relative z-10 block h-full md:hidden">
-        <div className="relative h-full w-full overflow-hidden bg-black">
-          <div className="absolute inset-0 overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`mobile-${(activeMobileSlide || activeSlide)?.id}`}
-                initial={{ opacity: 0, scale: 1.03 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.7 }}
-                className="absolute inset-0"
-              >
-                <HeroMedia slide={activeMobileSlide || activeSlide} />
-              </motion.div>
-            </AnimatePresence>
-          </div>
+      <div className="relative z-10 block md:hidden">
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ height: "calc(85vw + 64px)", minHeight: "420px", maxHeight: "600px" }}
+        >
+          {/* Media is handled by the unified background above */}
 
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-x-0 bottom-0 h-[68%] bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-black/60 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/60 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end px-4 pb-20 pt-28 text-center sm:px-6 sm:pb-24 sm:pt-32">
+          <div className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-6 text-center" style={{ top: "64px", bottom: "4rem" }}>
             {(activeMobileSlide || activeSlide)?.tag && (
               <motion.span
                 key={`m-tag-${(activeMobileSlide || activeSlide).id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="mb-3 inline-flex rounded-full bg-white/12 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/80 backdrop-blur-md"
+                className="mb-4 inline-flex rounded-full bg-white/10 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400/90 backdrop-blur-xl border border-white/10"
               >
                 {(activeMobileSlide || activeSlide).tag}
               </motion.span>
@@ -304,7 +310,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.6 }}
-                className="mb-2 max-w-[11ch] text-[1.75rem] font-serif font-semibold leading-[1.02] tracking-tight text-white drop-shadow-md sm:text-[2.15rem]"
+                className="mb-3 max-w-[15ch] text-3xl font-serif font-bold leading-[1.1] tracking-tight text-white drop-shadow-2xl sm:text-4xl"
               >
                 {(activeMobileSlide || activeSlide).title}
               </motion.h1>
@@ -316,7 +322,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
-                className="mb-5 max-w-[30ch] text-xs font-light capitalize leading-relaxed tracking-normal text-white/80 sm:text-sm"
+                className="mb-8 max-w-[34ch] text-xs font-light leading-relaxed tracking-wide text-white/70 sm:text-sm"
               >
                 {(activeMobileSlide || activeSlide).desc}
               </motion.p>
@@ -331,18 +337,18 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
               >
                   <button
                   disabled={!(activeMobileSlide || activeSlide)?.ctaLink}
-                  onClick={() => { if ((activeMobileSlide || activeSlide)?.ctaLink) { const rawLink = (activeMobileSlide || activeSlide).ctaLink; const url = /^https?:\/\//i.test(rawLink) ? rawLink : `https://${rawLink}`; window.open(url, "_blank", "noopener,noreferrer"); } }}
-                  className={`group relative inline-flex h-auto items-center gap-2 overflow-hidden rounded-full border px-5 py-2.5 text-xs font-semibold transition-all duration-500 ease-out sm:px-6 sm:text-sm ${
+                  onClick={() => handleCtaClick((activeMobileSlide || activeSlide)?.ctaLink)}
+                  className={`group relative inline-flex h-auto items-center gap-2 overflow-hidden rounded-full border px-7 py-3 text-xs font-bold transition-all duration-500 ease-out sm:px-8 sm:text-sm ${
                     !(activeMobileSlide || activeSlide)?.ctaLink
                       ? "bg-gray-400/50 text-gray-300 border-gray-500/30 cursor-not-allowed opacity-70"
-                      : "bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-gray-900 shadow-[0_4px_16px_rgba(251,191,36,0.35)] cursor-pointer border-amber-300/40"
+                      : "bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-gray-900 shadow-[0_6px_20px_rgba(251,191,36,0.45)] cursor-pointer border-amber-300/40"
                   }`}
                 >
-                  {activeSlide.ctaLink && (
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
+                  {(activeMobileSlide || activeSlide)?.ctaLink && (
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-1000 ease-out group-hover:translate-x-full" />
                   )}
                   <span className="relative z-10 flex items-center gap-2">
-                    <Calendar className="h-3.5 w-3.5" />
+                    <Calendar className="h-4 w-4" />
                     {(activeMobileSlide || activeSlide).ctaText}
                   </span>
                 </button>
@@ -350,7 +356,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
             )}
           </div>
 
-          <div className="absolute inset-x-0 bottom-4 z-20 flex items-center justify-center gap-3 px-4 sm:bottom-5">
+          <div className="absolute inset-x-0 bottom-4 z-20 flex items-center justify-center gap-3">
             <button
               onClick={() => goToSlide(activeIndex - 1)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
@@ -358,15 +364,15 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
 
-            <div className="flex items-center gap-1.5">
-              {desktopSlides.map((_, index) => (
+            <div className="flex items-center gap-2">
+              {(desktopSlides.length > 0 ? desktopSlides : slides).map((_, index) => (
                 <div
                   key={`mob-dot-${index}`}
                   onClick={() => goToSlide(index)}
-                  className={`h-[3px] cursor-pointer rounded-full transition-all duration-500 ${
-                    activeIndex === index
-                      ? "w-8 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
-                      : "w-4 bg-white/40 hover:bg-white/70"
+                  className={`h-1 cursor-pointer rounded-full transition-all duration-500 ${
+                    activeIndex % (desktopSlides.length || slides.length) === index
+                      ? "w-10 bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]"
+                      : "w-4 bg-white/20 hover:bg-white/40"
                   }`}
                 />
               ))}
@@ -428,16 +434,16 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                   : "grayscale opacity-60 hover:opacity-100 hover:grayscale-0"
               }`}
             >
-              {slide.isVideo ? (
+              {slide.thumbnailIsVideo ? (
                 <video
-                  src={slide.img}
+                  src={slide.thumbnail}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   muted
                   playsInline
                 />
               ) : (
                 <img
-                  src={slide.img}
+                  src={slide.thumbnail}
                   alt={slide.title}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />

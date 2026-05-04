@@ -5,7 +5,6 @@ import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import WineHeroBanner from "./components/WineHeroBanner";
-import WineWhatsAppButton from "./components/WineWhatsAppButton";
 import WineNewsSection from "./components/WineNewsSection";
 import { WineCategoriesSection } from "./winepage/WineSignatureDrinks";
 

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllWineBrands, getWineBrandsByPropertyId } from "@/Api/WineApi";
 import { GetAllPropertyDetails, getPropertyTypes } from "@/Api/Api";
 import { getMenuSectionsByPropertyTypeId } from "@/Api/RestaurantApi";
 import "swiper/css";
 import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const toList = (res) => {
   const d = res?.data ?? res;
@@ -186,39 +187,45 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
         <div className="relative">
           <button
             type="button"
-            className="wine-top-brands-prev absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:left-1 md:h-10 md:w-10 lg:left-0 cursor-pointer"
+            className="wine-top-brands-prev absolute -left-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-lg backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:bg-[#c9a25a] hover:text-white dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:-left-4 md:h-12 md:w-12 xl:-left-6"
             aria-label="Previous brands"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} className="md:h-6 md:w-6" />
           </button>
 
           <button
             type="button"
-            className="wine-top-brands-next absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-md backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:text-[#c9a25a] dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:right-1 md:h-10 md:w-10 lg:right-0 cursor-pointer"
+            className="wine-top-brands-next absolute -right-2 top-[40%] z-20 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-zinc-300/80 bg-white/90 text-zinc-700 shadow-lg backdrop-blur-md transition hover:border-[#c9a25a]/60 hover:bg-[#c9a25a] hover:text-white dark:border-white/15 dark:bg-white/10 dark:text-white/80 md:-right-4 md:h-12 md:w-12 xl:-right-6"
             aria-label="Next brands"
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={20} className="md:h-6 md:w-6" />
           </button>
 
-          <div className="px-6 sm:px-8 lg:px-12">
+          <div className="group/nav relative mt-4">
             {loading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="animate-spin text-[#c9a25a]" size={32} />
               </div>
             ) : brands.length > 0 ? (
               <Swiper
-                modules={[Navigation]}
+                modules={[Navigation, Autoplay, Pagination]}
                 navigation={{
                   prevEl: ".wine-top-brands-prev",
                   nextEl: ".wine-top-brands-next",
                 }}
-                spaceBetween={16}
-                slidesPerView={1.1}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                autoplay={{ delay: 3500, disableOnInteraction: false }}
+                spaceBetween={12}
+                slidesPerView={1.2}
+                className="!pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#c9a25a] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#57534e]"
                 breakpoints={{
-                  480: { slidesPerView: 1.35, spaceBetween: 14 },
-                  640: { slidesPerView: 2.1, spaceBetween: 16 },
+                  480: { slidesPerView: 1.5, spaceBetween: 14 },
+                  640: { slidesPerView: 2.2, spaceBetween: 16 },
                   900: { slidesPerView: 3, spaceBetween: 16 },
-                  1200: { slidesPerView: 4.2, spaceBetween: 18 },
+                  1200: { slidesPerView: 4.2, spaceBetween: 20 },
                 }}
               >
                 {brands.map((brand) => (

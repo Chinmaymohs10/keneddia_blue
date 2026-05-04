@@ -61,9 +61,9 @@ export default function WineAbout({ initialSections }) {
       const aboutData = aboutResponse?.data || aboutResponse;
       const activeSections = Array.isArray(aboutData)
         ? aboutData
-            .filter((item) => item?.isActive === true && item?.showOnPropertyPage === true)
-            .sort((a, b) => b.id - a.id)
-            .slice(0, 3)
+          .filter((item) => item?.isActive === true && item?.showOnPropertyPage === true)
+          .sort((a, b) => b.id - a.id)
+          .slice(0, 3)
         : [];
 
       if (activeSections.length === 0) {
@@ -128,7 +128,7 @@ export default function WineAbout({ initialSections }) {
   const recognitions = section?.recognitions?.filter((item) => item?.isActive) || [];
 
   return (
-    <section id="about" className="relative overflow-hidden bg-[#F5F0EA] px-6 py-8 transition-colors duration-500 dark:bg-[#0D0508]">
+    <section id="about" className="relative overflow-hidden bg-[#F5F0EA] px-6 py-12 transition-colors duration-500 dark:bg-[#0D0508] md:py-16">
       <div className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_22%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_22%)] dark:block" />
       <div className="container mx-auto max-w-7xl">
         {loading ? (
@@ -142,15 +142,15 @@ export default function WineAbout({ initialSections }) {
               <div className="mt-3 h-0.5 w-16 bg-primary" />
             </div>
 
-            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[45%_55%]">
+            <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[45%_55%] lg:gap-14">
               <motion.div
                 key={`about-image-${section.id}`}
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="relative"
+                className="relative mx-auto w-[90%] max-w-md lg:w-full lg:max-w-none"
               >
-                <div className="relative z-10 aspect-[4/3] overflow-hidden rounded-xl border border-zinc-200/10 shadow-2xl dark:border-white/10">
+                <div className="relative z-10 aspect-[4/3] overflow-hidden rounded-2xl border border-zinc-200/10 shadow-2xl dark:border-white/10">
                   {section.image ? (
                     <img src={section.image} alt={section.sectionTitle} className="h-full w-full object-cover" />
                   ) : (
@@ -161,8 +161,8 @@ export default function WineAbout({ initialSections }) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 </div>
 
-                <div className="absolute -bottom-4 -right-4 h-2/3 w-2/3 rounded-xl border-2 border-primary/20 -z-0" />
-                <div className="absolute -left-4 -top-4 h-1/2 w-1/2 rounded-xl bg-zinc-100/80 -z-0 dark:bg-white/5" />
+                <div className="absolute -bottom-3 -right-3 h-2/3 w-2/3 rounded-2xl border-2 border-primary/20 -z-0 sm:-bottom-4 sm:-right-4" />
+                <div className="absolute -left-3 -top-3 h-1/2 w-1/2 rounded-2xl bg-zinc-100/80 -z-0 dark:bg-white/5 sm:-left-4 sm:-top-4" />
               </motion.div>
 
               <div className="relative lg:pl-4">
@@ -180,12 +180,12 @@ export default function WineAbout({ initialSections }) {
                         <MapPin className="h-3 w-3" />
                         {section.subTitle}
                       </h3>
-                      <h2 className="mb-3 text-3xl font-serif leading-tight text-zinc-900 dark:text-white md:text-4xl">
+                      <h2 className="mb-3 font-serif text-[1.75rem] leading-tight text-zinc-900 dark:text-white md:text-4xl">
                         {section.sectionTitle}
                       </h2>
                     </div>
 
-                    <p className="text-base font-light leading-relaxed text-zinc-500 dark:text-white/60">{section.description}</p>
+                    <p className="text-sm font-light leading-relaxed text-zinc-500 dark:text-white/60 md:text-base">{section.description}</p>
 
                     {recognitions.length > 0 && (() => {
                       const availabilityItem = recognitions.find((r) =>
@@ -206,11 +206,11 @@ export default function WineAbout({ initialSections }) {
                       return (
                         <div className="space-y-4 border-t border-zinc-200 pt-4 dark:border-white/10">
                           {hasSpecial && (
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
                               {availabilityItem && (
                                 <div className="flex flex-col gap-1.5">
                                   <div className="flex items-center gap-1.5">
-                                    <Clock className="h-3 w-3 text-zinc-400 dark:text-white/40" />
+                                    <Clock className="h-3 w-3 text-primary" />
                                     <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40">
                                       {availabilityItem.value}
                                     </span>
@@ -228,7 +228,7 @@ export default function WineAbout({ initialSections }) {
                               {contactItem && (
                                 <div className="flex flex-col gap-1.5">
                                   <div className="flex items-center gap-1.5">
-                                    <Phone className="h-3 w-3 text-zinc-400 dark:text-white/40" />
+                                    {/* <Phone className="h-3 w-3 text-zinc-400 dark:text-white/40" /> */}
                                     <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-zinc-400 dark:text-white/40">
                                       {contactItem.value}
                                     </span>
@@ -255,7 +255,7 @@ export default function WineAbout({ initialSections }) {
 
                           {standardItems.length > 0 && (
                             <>
-                              <div className="flex flex-wrap gap-x-10 gap-y-3">
+                              <div className="flex flex-wrap gap-x-6 gap-y-4 md:gap-x-10">
                                 {standardItems.map((item, index) => (
                                   <button
                                     key={item.id}
@@ -270,7 +270,7 @@ export default function WineAbout({ initialSections }) {
                                           animate={{ opacity: 1, y: 0 }}
                                           exit={{ opacity: 0, y: -6 }}
                                           transition={{ duration: 0.35 }}
-                                          className="text-2xl font-serif font-bold leading-none text-primary md:text-3xl"
+                                          className="font-serif text-[1.35rem] font-bold leading-none text-primary md:text-3xl"
                                         >
                                           {item.value}
                                         </motion.span>
@@ -279,18 +279,17 @@ export default function WineAbout({ initialSections }) {
                                           key={`inactive-${item.id}`}
                                           initial={{ opacity: 0 }}
                                           animate={{ opacity: 1 }}
-                                          className="text-2xl font-serif font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl"
+                                          className="font-serif text-[1.35rem] font-bold leading-none text-zinc-900/40 transition-colors group-hover:text-zinc-900/60 dark:text-white/40 dark:group-hover:text-white/60 md:text-3xl"
                                         >
                                           {item.value}
                                         </motion.span>
                                       )}
                                     </AnimatePresence>
                                     <span
-                                      className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                                        index === currentRecognitionIndex
+                                      className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${index === currentRecognitionIndex
                                           ? "text-zinc-500 dark:text-white/60"
                                           : "text-zinc-400 group-hover:text-zinc-500 dark:text-white/30 dark:group-hover:text-white/50"
-                                      }`}
+                                        }`}
                                     >
                                       {item.title}
                                     </span>
@@ -321,9 +320,8 @@ export default function WineAbout({ initialSections }) {
                       <button
                         key={item.id}
                         onClick={() => setCurrentIndex(idx)}
-                        className={`h-1 rounded-full transition-all duration-300 ${
-                          idx === currentIndex ? "w-6 bg-primary" : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"
-                        }`}
+                        className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? "w-6 bg-primary" : "w-3 bg-zinc-200 hover:bg-primary/50 dark:bg-white/10"
+                          }`}
                       />
                     ))}
                   </div>

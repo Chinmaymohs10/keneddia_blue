@@ -86,7 +86,7 @@ export default function WineBanner() {
             >
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
-              <Link to="/wine-homepage" className="hover:text-white transition-colors">Wines</Link>
+              <Link to="/wine-homepage" className="hover:text-white transition-colors">Liquors</Link>
               <ChevronRight className="h-2.5 w-2.5 opacity-50" />
               <span className="text-white/60">Properties</span>
             </motion.nav>

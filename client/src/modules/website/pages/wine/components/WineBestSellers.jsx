@@ -71,7 +71,7 @@ function FilterSelect({ value, options, onChange, label }) {
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-9 w-full min-w-[148px] cursor-pointer appearance-none rounded-xl border border-stone-200 bg-white pl-3 pr-8 text-[12px] font-semibold text-stone-800 shadow-sm outline-none transition-all focus:border-stone-400 dark:border-white/10 dark:bg-[#1A0C12] dark:text-stone-200 dark:focus:border-white/20"
+          className="h-9 w-full min-w-0 sm:min-w-[148px] cursor-pointer appearance-none rounded-xl border border-stone-200 bg-white pl-3 pr-8 text-[12px] font-semibold text-stone-800 shadow-sm outline-none transition-all focus:border-stone-400 dark:border-white/10 dark:bg-[#1A0C12] dark:text-stone-200 dark:focus:border-white/20"
         >
           {options.map((option) => (
             <option key={option} value={option}>
@@ -105,23 +105,23 @@ function WineCard({ wine, index, typeAccents = {} }) {
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.45, delay: index * 0.04 }}
       onClick={handleExplore}
-      className="group relative flex min-h-[288px] cursor-pointer overflow-hidden rounded-[2rem] border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(120,71,35,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(120,71,35,0.14)] dark:border-white/10 dark:bg-[#1A0C12]"
+      className="group relative flex cursor-pointer overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(120,71,35,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(120,71,35,0.14)] dark:border-white/10 dark:bg-[#1A0C12]"
     >
-      <div className="flex h-full w-full overflow-hidden">
-        <div className="relative w-[38%] min-w-[150px] overflow-hidden">
+      <div className="flex h-full w-full flex-col overflow-hidden sm:flex-row sm:min-h-[288px]">
+        <div className="relative h-[190px] w-full shrink-0 overflow-hidden sm:h-auto sm:w-[38%] sm:min-w-[150px]">
           <WineImage
             src={wine.image}
             alt={wine.name}
             className="h-full w-full transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/80 dark:to-[#1A0C12]/80" />
+          <div className="absolute inset-0 bg-gradient-to-b sm:bg-gradient-to-r from-transparent via-transparent to-white/90 dark:to-[#1A0C12]/90" />
           <div
             className="absolute left-4 top-4 h-2.5 w-2.5 rounded-full shadow-sm"
             style={{ backgroundColor: accent.dot }}
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-5 text-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-5 py-6 text-center sm:px-4 sm:py-5">
           <div className="mb-3 flex flex-col items-center gap-2">
             <div className="flex max-w-full items-start gap-1.5">
               <Building2 size={10} className="mt-[2px] shrink-0" style={{ color: accent.color }} />
@@ -301,7 +301,7 @@ export default function WineBestSellers() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-end">
             <FilterSelect
               label="Location"
               value={location}
@@ -309,7 +309,7 @@ export default function WineBestSellers() {
               onChange={setLocation}
             />
             <FilterSelect
-              label="Wine Type"
+              label="Liquor Type"
               value={wineType}
               options={wineTypes}
               onChange={setWineType}

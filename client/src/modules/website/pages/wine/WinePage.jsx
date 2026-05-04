@@ -14,7 +14,6 @@ import WineGalleryPage from "./winepage/WineGalleryPage";
 import WineReservationForm from "./winepage/WineReservationForm";
 import WineTopBrands from "./components/WineTopBrands";
 import { siteContent } from "@/data/siteContent";
-import WineWhatsAppButton from "./components/WineWhatsAppButton";
 import {
   getAllWineTypes,
   getAllWineBrands,

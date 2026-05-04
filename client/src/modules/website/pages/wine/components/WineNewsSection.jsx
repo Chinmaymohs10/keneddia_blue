@@ -9,11 +9,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { getAllNews, getPropertyTypes } from "@/Api/Api";
 import { buildNewsDetailPath } from "@/modules/website/utils/newsSlug";
 
 import "swiper/css";
+import "swiper/css/pagination";
 
 const normalize = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
@@ -176,10 +177,10 @@ export default function WineNewsSection({ initialNews }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/news" className="hidden items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5 md:flex">
+            <Link to="/news" className="hidden items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5 sm:flex">
               View All <ArrowUpRight className="h-4 w-4" />
             </Link>
-            <div className="flex gap-2">
+            <div className="hidden sm:flex gap-2">
               <button onClick={() => swiperRef.current?.slidePrev()} className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-foreground transition-all hover:bg-primary hover:text-primary-foreground" aria-label="Previous">
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -196,11 +197,12 @@ export default function WineNewsSection({ initialNews }) {
           </div>
         ) : (
           <Swiper
-            modules={[Autoplay, Navigation]}
+            modules={[Autoplay, Navigation, Pagination]}
             spaceBetween={24}
             slidesPerView={1}
             loop={newsItems.length > 3}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
+            pagination={{ clickable: true, dynamicBullets: true }}
             breakpoints={{
               640: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
@@ -208,7 +210,7 @@ export default function WineNewsSection({ initialNews }) {
             onSwiper={(swiper) => {
               swiperRef.current = swiper;
             }}
-            className="w-full pb-4"
+            className="w-full !pb-10 [--swiper-pagination-color:#8B1A2A] dark:[--swiper-pagination-color:#c9a25a] [--swiper-pagination-bullet-inactive-color:#a8a29e] dark:[--swiper-pagination-bullet-inactive-color:#ffffff] dark:[--swiper-pagination-bullet-inactive-opacity:0.3]"
           >
             {newsItems.map((item) => (
               <SwiperSlide key={item.id} className="!h-auto">
