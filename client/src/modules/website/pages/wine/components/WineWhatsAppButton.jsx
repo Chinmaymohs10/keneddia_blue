@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-
-const WHATSAPP_NUMBER = "919999999999";
+import { useWhatsAppInfo } from "@/hooks/useWhatsAppInfo";
 
 export default function WineWhatsAppButton() {
   const [hovered, setHovered] = useState(false);
+  const { info, phoneNumber } = useWhatsAppInfo({ propertyTypeName: "Wine" });
+
+  if (!phoneNumber) return null;
+
+  const cleanNumber = phoneNumber.replace(/\s+/g, "");
+  const message = info?.description || "Hi! I'd like to enquire about your wine collection. Could you share more details and availability?";
+  const title = info?.title || "Ask about our wines";
+
   return (
     <div
       className="fixed bottom-8 right-8 z-[999] flex items-center justify-end"
@@ -21,7 +28,7 @@ export default function WineWhatsAppButton() {
             className="mr-3 overflow-hidden rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-2xl dark:border-white/10 dark:bg-[#1A0C12]"
           >
             <p className="text-[12px] font-black text-stone-900 dark:text-stone-100">
-              Ask about our wines
+              {title}
             </p>
             <p className="mt-0.5 text-[10px] text-stone-400 dark:text-stone-500">
               Tap to chat on WhatsApp
@@ -30,7 +37,7 @@ export default function WineWhatsAppButton() {
         )}
       </AnimatePresence>
       <motion.a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi! I'd like to enquire about your wine collection. Could you share more details and availability?")}`}
+        href={`https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`}
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.1 }}

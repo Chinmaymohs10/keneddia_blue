@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useWhatsAppInfo } from "@/hooks/useWhatsAppInfo";
 import {
   motion,
   useScroll,
@@ -206,6 +207,8 @@ export default function AboutResturantPage({ propertyId, initialAboutSections })
   const [imgIndex, setImgIndex] = useState(0);
   const containerRef = useRef(null);
 
+  const { phoneNumber: waPhone } = useWhatsAppInfo({ propertyId, propertyTypeName: "Restaurant" });
+
   // --- API State ---
   const [aboutData, setAboutData] = useState(() => {
     if (!initialAboutSections?.length) return FALLBACK_ABOUT;
@@ -331,7 +334,7 @@ export default function AboutResturantPage({ propertyId, initialAboutSections })
       <ContactPopup
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
-        connectData={connectData}
+        connectData={{ ...connectData, whatsappContact: waPhone || connectData.whatsappContact }}
       />
 
       {/* DECORATIVE BACKGROUND TEXT */}

@@ -50,6 +50,12 @@ export default defineConfig({
 
   },
 
+  ssr: {
+
+    noExternal: ["swiper"],
+
+  },
+
   // Root folder for development
 
   root: path.resolve(__dirname, "client"),
