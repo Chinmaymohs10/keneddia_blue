@@ -40,7 +40,7 @@ const TABS = [
 ];
 
 const SCOPE_OPTIONS = [
-  { label: "Property Type Homepage", value: "propertyType" },
+  { label: "Property Type", value: "propertyType" },
   { label: "Specific Property", value: "property" },
 ];
 
@@ -302,7 +302,7 @@ const DetailModal = memo(function DetailModal({ item, tab, types, brands, catego
     }
     if (entry.propertyTypeId) {
       const pt = ptMap.get(String(entry.propertyTypeId));
-      return { icon: Globe, label: pt?.typeName || pt?.name || `Type #${entry.propertyTypeId}`, sub: "Property Type Homepage" };
+      return { icon: Globe, label: pt?.typeName || pt?.name || `Type #${entry.propertyTypeId}`, sub: "Property Type" };
     }
     return { icon: Globe, label: "Global / Unassigned", sub: "" };
   }, [propMap, ptMap]);
@@ -681,10 +681,10 @@ export default function WineManagement() {
     setDataLoading(true);
     try {
       const [t, b, c, s] = await Promise.all([getAllWineTypes(), getAllWineBrands(), getAllWineCategories(), getAllWineSubCategories()]);
-      setTypes(toList(t));
-      setBrands(toList(b));
-      setCategories(toList(c));
-      setSubcategories(toList(s));
+      setTypes(toList(t).sort((a, b) => (b.id || 0) - (a.id || 0)));
+      setBrands(toList(b).sort((a, b) => (b.id || 0) - (a.id || 0)));
+      setCategories(toList(c).sort((a, b) => (b.id || 0) - (a.id || 0)));
+      setSubcategories(toList(s).sort((a, b) => (b.id || 0) - (a.id || 0)));
     } catch {
       showError("Failed to fetch wine data");
     } finally {
