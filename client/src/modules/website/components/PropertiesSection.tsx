@@ -712,18 +712,18 @@ transition-all cursor-pointer"
                   {(active.openingTime || active.closingTime) && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary/20 border border-border/50">
                       <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                      <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 text-xs font-semibold text-foreground">
                         {active.openingTime && (
-                          <span>{active.openingTime}</span>
+                          <span><span className="text-muted-foreground font-medium mr-1">Opening Hour:</span>{active.openingTime}</span>
                         )}
                         {active.openingTime && active.closingTime && (
-                          <span className="text-muted-foreground">–</span>
+                          <span className="hidden md:inline text-muted-foreground">|</span>
                         )}
                         {active.closingTime && (
-                          <span>{active.closingTime}</span>
+                          <span><span className="text-muted-foreground font-medium mr-1">Closing Hour:</span>{active.closingTime}</span>
                         )}
                       </div>
-                      <span className="text-[10px] text-muted-foreground ml-auto">Hours</span>
+                      {/* <span className="text-[10px] text-muted-foreground ml-auto">Hours</span> */}
                     </div>
                   )}
 
