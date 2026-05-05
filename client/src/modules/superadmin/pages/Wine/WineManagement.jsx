@@ -648,7 +648,7 @@ export default function WineManagement() {
   const [toggling, setToggling] = useState({});
 
   const [form, setForm] = useState({
-    name: "", title: "", description: "",
+    name: "", title: "", description: "", tag: "",
     wineTypeId: "", wineBrandId: "", wineCategoryId: "",
     mediaId: null, previewUrl: "",
     scope: "propertyType", propertyId: "", propertyTypeId: "",
@@ -657,7 +657,7 @@ export default function WineManagement() {
   });
 
   const resetForm = () => {
-    setForm({ name: "", title: "", description: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "", propertyIds: [], showOnHomepage: false });
+    setForm({ name: "", title: "", description: "", tag: "", wineTypeId: "", wineBrandId: "", wineCategoryId: "", mediaId: null, previewUrl: "", scope: "propertyType", propertyId: "", propertyTypeId: "", propertyIds: [], showOnHomepage: false });
     setEditingItem(null);
   };
 
@@ -733,6 +733,7 @@ export default function WineManagement() {
       name: item.name || item.wineTypeName || "",
       title: item.title || item.name || "",
       description: item.description || item.wineTypeDescription || "",
+      tag: item.tags || "",
       wineTypeId: item.wineTypeId || "",
       wineBrandId: item.wineBrandId || "",
       wineCategoryId: item.wineCategoryId || "",
@@ -764,7 +765,7 @@ export default function WineManagement() {
     };
 
     if (isType) { payload.wineTypeName = form.name.trim(); payload.wineTypeDescription = form.description.trim(); }
-    else if (isBrand) { payload.name = form.name.trim(); payload.wineTypeId = form.wineTypeId; }
+    else if (isBrand) { payload.name = form.name.trim(); payload.wineTypeId = form.wineTypeId; payload.tags = form.tag.trim() || null; }
     else if (isCategory) { payload.title = form.title.trim(); payload.wineBrandId = form.wineBrandId; }
     else if (isSub) {
       payload.name = form.title.trim();
@@ -1069,6 +1070,12 @@ export default function WineManagement() {
               ) : (
                 <FormField label="Title *">
                   <input className={inputCls} style={inputStyle} value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Enter title" />
+                </FormField>
+              )}
+
+              {activeTab === "brands" && (
+                <FormField label="Tag">
+                  <input className={inputCls} style={inputStyle} value={form.tag} onChange={(e) => setForm((p) => ({ ...p, tag: e.target.value }))} placeholder="e.g. Indian Wines · Red · White" />
                 </FormField>
               )}
 
