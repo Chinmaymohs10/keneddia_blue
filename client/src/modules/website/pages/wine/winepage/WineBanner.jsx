@@ -12,6 +12,7 @@ import {
   Linkedin,
   Twitter,
   Loader2,
+  Clock,
 } from "lucide-react";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { Wine_GALLERY_ITEMS, Wine_GALLERY_MEDIA } from "./WineGalleryData";
@@ -213,6 +214,27 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
     return null;
   }, [propertyData]);
 
+  const openingTime = propertyData?.openingTime ?? propertyData?.propertyResponseDTO?.openingTime ?? null;
+  const closingTime = propertyData?.closingTime ?? propertyData?.propertyResponseDTO?.closingTime ?? null;
+
+  const formatTime = (t) => {
+    if (!t) return null;
+    const [h, m] = t.split(":").map(Number);
+    if (isNaN(h)) return t;
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+  };
+
+  const hoursLabel = useMemo(() => {
+    const open = formatTime(openingTime);
+    const close = formatTime(closingTime);
+    if (open && close) return `${open} – ${close}`;
+    if (open) return `Opens ${open}`;
+    if (close) return `Closes ${close}`;
+    return null;
+  }, [openingTime, closingTime]);
+
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -261,7 +283,7 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full items-center pt-[100px] md:pt-[120px]">
+      <div className="relative z-10 flex h-full items-end pb-20 pt-[80px] md:items-center md:pb-0 md:pt-[90px]">
         <div className="container mx-auto px-6 md:px-12 lg:px-24">
           <div className="max-w-2xl">
             {/* Breadcrumb */}
@@ -285,9 +307,6 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
               transition={{ delay: 0.2, duration: 0.8 }}
               className="mb-4"
             >
-              {/* <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
-                Estate Collection
-              </span> */}
               <h1
                 className="font-serif text-4xl leading-[1.1] text-white md:text-5xl lg:text-6xl"
                 style={{ fontStyle: "italic", fontWeight: 900 }}
@@ -297,35 +316,62 @@ export function DynamicWineBanner({ propertyData, galleryData = [], loading = fa
               </h1>
             </motion.div>
 
-            {/* Location + CTA */}
+            {/* Main Heading */}
+            {propertyData?.mainHeading && (
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.7 }}
+                className="mb-6 max-w-lg line-clamp-3 text-sm italic leading-relaxed text-white/65 md:text-base"
+              >
+                {propertyData.mainHeading}
+              </motion.p>
+            )}
+
+            {/* Hours — line 1 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6, duration: 0.7 }}
-              className="flex flex-wrap items-center gap-5"
+              transition={{ delay: 0.55, duration: 0.7 }}
+              className="flex flex-col gap-3"
             >
-              {(city || address) && (
+              {hoursLabel && (
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
-                    <MapPin className="h-3.5 w-3.5 text-[#D4AF37]" />
+                    <Clock className="h-3.5 w-3.5 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-widest text-white/30">Location</p>
-                    <p className="text-xs font-semibold text-white/90">{city || address}</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-white/30">Hours</p>
+                    <p className="text-xs font-semibold text-white/90">{hoursLabel}</p>
                   </div>
                 </div>
               )}
 
-              {mapsLink && (
-                <a
-                  href={mapsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-2 rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black transition-all hover:scale-105 hover:bg-white"
-                >
-                  Navigate to Estate <Navigation className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-                </a>
-              )}
+              {/* Location + Navigate — line 2 */}
+              <div className="flex flex-wrap items-center gap-4">
+                {(city || address) && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
+                      <MapPin className="h-3.5 w-3.5 text-[#D4AF37]" />
+                    </div>
+                    <div>
+                      <p className="text-[8px] font-black uppercase tracking-widest text-white/30">Location</p>
+                      <p className="text-xs font-semibold text-white/90">{city || address}</p>
+                    </div>
+                  </div>
+                )}
+
+                {mapsLink && (
+                  <a
+                    href={mapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2 rounded-full bg-[#D4AF37] px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-black transition-all hover:scale-105 hover:bg-white"
+                  >
+                    Navigate to Estate <Navigation className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                  </a>
+                )}
+              </div>
             </motion.div>
           </div>
         </div>

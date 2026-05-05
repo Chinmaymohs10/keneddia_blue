@@ -71,9 +71,15 @@ export async function fetchWineDetailPageData(pathname) {
     id: propertyId,
     propertyId,
     name: listing?.propertyName?.trim() || parent.propertyName,
+    mainHeading: listing?.mainHeading ?? null,
     location: listing?.fullAddress || parent.address,
     city: listing?.city || parent.locationName,
+    addressUrl: parent.addressUrl ?? null,
+    latitude: parent.latitude,
+    longitude: parent.longitude,
     media: listing?.media?.length > 0 ? listing.media : parent.media || [],
+    openingTime: parent.openingTime ?? null,
+    closingTime: parent.closingTime ?? null,
   };
 
   const [galleryRes, testimonialRes, conversionRes, eventsRes, wineTypeHeaderRes] = await Promise.all([

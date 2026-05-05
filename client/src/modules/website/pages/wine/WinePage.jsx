@@ -313,12 +313,15 @@ export default function WinePage() {
           id: parent.id,
           propertyId: parent.id,
           name: listing?.propertyName?.trim() || parent.propertyName,
+          mainHeading: listing?.mainHeading ?? null,
           location: listing?.fullAddress || parent.address,
           city: listing?.city || parent.locationName,
           addressUrl: parent.addressUrl ?? null,
           latitude: parent.latitude,
           longitude: parent.longitude,
           media: listing?.media?.length > 0 ? listing.media : parent.media || [],
+          openingTime: parent.openingTime ?? null,
+          closingTime: parent.closingTime ?? null,
         };
         if (!cancelled) setBannerPropertyData(combinedProperty);
         // Fetch gallery in parallel
