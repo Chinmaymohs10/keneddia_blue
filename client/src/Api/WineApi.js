@@ -67,3 +67,19 @@ export const getWineSubCategoriesByPropertyTypeId = (propertyTypeId) => API.get(
 export const getWineSubCategoriesByCategoryId = (categoryId) => API.get(`api/v1/wine-subcategory/wine-category/${categoryId}`);
 export const updateWineSubCategory = (id, data) => API.put(`api/v1/wine-subcategory/${id}`, data);
 export const toggleWineSubCategoryStatus = (id, active) => API.patch(`api/v1/wine-subcategory/${id}`, null, { params: { active } });
+
+// ─────────────────────────────
+// WINE MASTER (HEADERS)
+// ─────────────────────────────
+export const createWineMaster = (data) => API.post("api/v1/wine-master/create", data);
+export const getAllWineMasters = () => API.get("api/v1/wine-master/all");
+export const getWineMasterById = (id) => API.get(`api/v1/wine-master/${id}`);
+export const getWineMastersByBrandId = (brandId) => API.get(`api/v1/wine-master/wine-brand/${brandId}`);
+export const getWineMastersByTypeId = (typeId) => API.get(`api/v1/wine-master/wine-type/${typeId}`);
+export const getWineMastersByCategoryId = (categoryId) => API.get(`api/v1/wine-master/wine-category/${categoryId}`);
+export const getWineMastersBySubCategoryId = (subCategoryId) => API.get(`api/v1/wine-master/wine-subcategory/${subCategoryId}`);
+export const getWineMastersByPropertyTypeId = (propertyTypeId) => API.get(`api/v1/wine-master/property-type/${propertyTypeId}`);
+export const updateWineMaster = (id, data) => API.put(`api/v1/wine-master/${id}`, data);
+export const deleteWineMaster = (id) => API.delete(`api/v1/wine-master/${id}`);
+export const toggleWineMasterStatus = (id, active) => API.patch(`api/v1/wine-master/${id}`, null, { params: { active } });
+
