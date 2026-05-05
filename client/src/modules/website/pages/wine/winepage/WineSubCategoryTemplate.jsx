@@ -49,44 +49,52 @@ function ImgWithFallback({ src, alt, className }) {
 }
 
 function ItemCard({ drink, index }) {
-  const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
   const accent = DEFAULT_ACCENT;
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: Math.min(index * 0.06, 0.3), duration: 0.55 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="group relative flex min-h-[266px] overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/[0.07] dark:bg-[#1A0C13]"
-    >
-      <div className="absolute left-0 top-0 h-full w-[3px] transition-all duration-500" style={{ background: hovered ? `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` : "transparent" }} />
+  const handleExplore = () => {
+    const cSlug = generateSlug(drink.locationDisplay || drink.location);
+    const pSlug = generateSlug(drink.property);
+    navigate(`/wine-detail/${cSlug}/${pSlug}`);
+  };
 
-      <div className="flex h-full w-full overflow-hidden">
-        <div className="relative w-[40%] shrink-0 overflow-hidden">
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.3) }}
+      onClick={handleExplore}
+      className="group relative flex cursor-pointer overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white shadow-[0_20px_50px_rgba(120,71,35,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(120,71,35,0.14)] dark:border-white/10 dark:bg-[#1A0C12]"
+    >
+      <div className="flex h-full w-full flex-col overflow-hidden sm:flex-row sm:min-h-[288px]">
+        <div className="relative h-[190px] w-full shrink-0 overflow-hidden sm:h-auto sm:w-[38%] sm:min-w-[150px]">
           <ImgWithFallback
             src={drink.image}
             alt={drink.name}
-            className={`h-full w-full transition-transform duration-700 ${hovered ? "scale-[1.06]" : "scale-100"}`}
+            className="h-full w-full transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/80 dark:to-[#1A0C13]/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/90 sm:bg-gradient-to-r dark:to-[#1A0C12]/90" />
           <div className="absolute left-4 top-4 h-2.5 w-2.5 rounded-full shadow-sm" style={{ backgroundColor: accent.dot }} />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-5 text-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-5 py-6 text-center sm:px-4 sm:py-5">
           <div className="mb-3 flex flex-col items-center gap-2">
-            <div className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
-              <Building2 size={10} className="shrink-0" style={{ color: accent.color }} />
-              <span className="truncate text-[8px] font-black uppercase tracking-[0.18em]" style={{ color: accent.color }}>
-                {drink.property} · {drink.location}
+            <div className="flex max-w-full items-start gap-1.5">
+              <Building2 size={10} className="mt-[2px] shrink-0" style={{ color: accent.color }} />
+              <span
+                className="line-clamp-2 text-[8px] font-black uppercase leading-[1.5] tracking-[0.18em]"
+                style={{ color: accent.color }}
+              >
+                {drink.property}{drink.location && drink.location !== "_" ? ` · ${drink.location}` : ""}
               </span>
             </div>
 
             <div className="flex flex-col items-center gap-1">
-              <h3 className="font-serif text-[1.4rem] leading-tight text-stone-900 dark:text-stone-100">{drink.name}</h3>
-              {drink.subtitle && <p className="text-[11px] italic text-stone-400">{drink.subtitle}</p>}
+              <h3 className="font-serif text-[1.4rem] leading-tight text-stone-950 dark:text-stone-100">{drink.name}</h3>
+              {drink.subtitle && (
+                <p className="text-[11px] font-medium italic text-stone-400">{drink.subtitle}</p>
+              )}
             </div>
           </div>
 
@@ -95,7 +103,7 @@ function ItemCard({ drink, index }) {
               className="rounded-lg px-3 py-1 text-[8px] font-black uppercase tracking-widest"
               style={{
                 color: accent.color,
-                backgroundColor: accent.bg || accent.light,
+                backgroundColor: accent.light,
                 border: `1px solid ${accent.color}30`,
               }}
             >
@@ -117,7 +125,7 @@ function ItemCard({ drink, index }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
 
