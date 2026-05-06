@@ -125,12 +125,12 @@ const VERTICALS = [
 ];
 
 const CITIES = [
-  { city: "Pondicherry", year: "2015", tag: "Flagship", grad: "from-[#7c5c2e] to-[#0A2357]" },
-  { city: "Bengaluru", year: "2018", tag: "Urban", grad: "from-[#1a4f2a] to-[#0A2357]" },
-  { city: "Mumbai", year: "2020", tag: "Skyline", grad: "from-[#4a2d8a] to-[#0A2357]" },
-  { city: "Jaipur", year: "2022", tag: "Heritage", grad: "from-[#8a2d2d] to-[#0A2357]" },
-  { city: "Goa", year: "2023", tag: "Coastal", grad: "from-[#1a5a6a] to-[#0A2357]" },
-  { city: "Dubai", year: "2025", tag: "Global", grad: "from-[#6a4a1a] to-[#0A2357]" },
+  { city: "Pondicherry", year: "2015", tag: "Flagship", image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?q=80&w=1600" },
+  { city: "Bengaluru", year: "2018", tag: "Urban", image: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?q=80&w=1600" },
+  { city: "Mumbai", year: "2020", tag: "Skyline", image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66?q=80&w=1600" },
+  { city: "Jaipur", year: "2022", tag: "Heritage", image: "https://images.unsplash.com/photo-1477587458883-47145ed94245?q=80&w=1600" },
+  { city: "Goa", year: "2023", tag: "Coastal", image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=1600" },
+  { city: "Dubai", year: "2025", tag: "Global", image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600" },
 ];
 
 const MARQUEE_ITEMS = [
@@ -712,11 +712,11 @@ function StatItem({ target, suffix, label, active }: { target: number; suffix: s
         : raw;
 
   return (
-    <div className="text-center">
-      <div className="text-5xl md:text-6xl font-serif mb-2 text-[#0A2357] dark:text-white">
-        {display}{suffix}
+    <div className="text-center px-6 flex flex-col items-center justify-center">
+      <div className="text-5xl md:text-7xl font-serif mb-4 font-light tracking-tight text-white drop-shadow-md">
+        {display}<span style={{ color: ORANGE }}>{suffix}</span>
       </div>
-      <div className="text-[10px] uppercase tracking-[0.3em] font-semibold text-gray-400 dark:text-white/35">
+      <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] font-semibold text-white/50">
         {label}
       </div>
     </div>
@@ -735,8 +735,9 @@ function StatsStrip() {
   ];
 
   return (
-    <div ref={ref} className="py-20 px-6 bg-white dark:bg-[#0d0d10] border-y border-gray-200 dark:border-white/8">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
+    <div ref={ref} className="py-24 px-6 bg-[#0A2357] dark:bg-black text-white relative overflow-hidden">
+      <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }} />
+      <div className="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-y-16 gap-x-10 md:divide-x md:divide-white/10 relative z-10">
         {stats.map((s, i) => <StatItem key={i} {...s} active={inView} />)}
       </div>
     </div>
@@ -845,9 +846,13 @@ function TeamCard({ member }: { member: typeof TEAM[0] }) {
   );
 }
 
-// ─── VERTICALS ACCORDION ──────────────────────────────────────────────────────
+// ─── VERTICALS (ACCORDION) ───────────────────────────────────────────────────
 function VerticalsSection() {
-  const [open, setOpen] = useState<number | null>(null);
+  const [open, setOpen] = useState<number[]>(VERTICALS.map((_, i) => i));
+
+  const toggle = (i: number) => {
+    setOpen((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
+  };
 
   return (
     <section className="py-32 px-6 bg-white dark:bg-[#111114]">
@@ -866,70 +871,73 @@ function VerticalsSection() {
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-white/8 border-y border-gray-200 dark:border-white/8">
-          {VERTICALS.map((v, i) => (
-            <div key={i}>
-              <button
-                onClick={() => setOpen(open === i ? null : i)}
-                className="w-full text-left py-7 flex items-center gap-6 group"
-              >
-                <span className="text-sm font-mono w-8 shrink-0 text-gray-400 dark:text-white/35">{v.no}</span>
-                <span
-                  className="text-3xl md:text-4xl font-serif flex-1 transition-colors duration-300 text-[#0A2357] dark:text-white"
-                  style={{ color: open === i ? ORANGE : undefined }}
+          {VERTICALS.map((v, i) => {
+            const isOpen = open.includes(i);
+            return (
+              <div key={i}>
+                <button
+                  onClick={() => toggle(i)}
+                  className="w-full text-left py-7 flex items-center gap-6 group"
                 >
-                  {v.name}
-                </span>
-                <span className="text-xs uppercase tracking-widest hidden md:block shrink-0 text-gray-400 dark:text-white/35">
-                  {v.stat}
-                </span>
-                <motion.div
-                  animate={{ rotate: open === i ? 45 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300"
-                  style={{
-                    borderColor: open === i ? ORANGE : undefined,
-                    background: open === i ? ORANGE : "transparent",
-                    color: open === i ? "#fff" : undefined,
-                  }}
-                >
-                  <Plus className="w-4 h-4" />
-                </motion.div>
-              </button>
-
-              <AnimatePresence initial={false}>
-                {open === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="overflow-hidden"
+                  <span className="text-sm font-mono w-8 shrink-0 text-gray-400 dark:text-white/35">{v.no}</span>
+                  <span
+                    className="text-3xl md:text-4xl font-serif flex-1 transition-colors duration-300 text-[#0A2357] dark:text-white"
+                    style={{ color: isOpen ? ORANGE : undefined }}
                   >
-                    <div className="pb-10 pl-14 flex flex-col md:flex-row gap-10 items-start">
-                      <div className="flex-1">
-                        <p className="text-lg font-light leading-relaxed max-w-xl mb-3 text-gray-600 dark:text-white/55">
-                          {v.desc}
-                        </p>
-                        <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: ORANGE }}>
-                          {v.stat}
-                        </span>
-                      </div>
-                      <div className="w-full md:w-[380px] h-52 rounded-2xl overflow-hidden shrink-0">
-                        <motion.img
-                          initial={{ scale: 1.08 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.6 }}
-                          src={v.image}
-                          alt={v.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
+                    {v.name}
+                  </span>
+                  <span className="text-xs uppercase tracking-widest hidden md:block shrink-0 text-gray-400 dark:text-white/35">
+                    {v.stat}
+                  </span>
+                  <motion.div
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-10 h-10 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300"
+                    style={{
+                      borderColor: isOpen ? ORANGE : undefined,
+                      background: isOpen ? ORANGE : "transparent",
+                      color: isOpen ? "#fff" : undefined,
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
                   </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pb-10 pl-14 flex flex-col md:flex-row gap-10 items-start">
+                        <div className="flex-1">
+                          <p className="text-lg font-light leading-relaxed max-w-xl mb-3 text-gray-600 dark:text-white/55">
+                            {v.desc}
+                          </p>
+                          <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: ORANGE }}>
+                            {v.stat}
+                          </span>
+                        </div>
+                        <div className="w-full md:w-[380px] h-52 rounded-2xl overflow-hidden shrink-0">
+                          <motion.img
+                            initial={{ scale: 1.08 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.6 }}
+                            src={v.image}
+                            alt={v.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -942,41 +950,53 @@ function ExpansionScroll() {
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start end", "end start"] });
   const x = useTransform(scrollYProgress, [0, 1], ["8%", "-35%"]);
   const smoothX = useSpring(x, { stiffness: 55, damping: 18 });
+  const imageParallax = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
 
   return (
-    // Always navy — intentional brand colour regardless of theme
-    <section ref={containerRef} className="py-32 overflow-hidden bg-[#0A2357]">
+    <section ref={containerRef} className="py-32 overflow-hidden bg-[#faf9f6] dark:bg-[#0d0d10]">
       <div className="px-6 mb-16 max-w-[1400px] mx-auto">
         <span
-          className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-3 py-1 rounded-full"
+          className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-4 py-2 rounded-full mb-8 inline-block"
           style={{ color: ORANGE, borderColor: `${ORANGE}40`, background: `${ORANGE}08` }}
         >
           Expansion
         </span>
-        <h2 className="text-5xl md:text-6xl font-serif mt-4 leading-tight text-white">
+        <h2 className="text-5xl md:text-6xl font-serif mt-4 leading-tight text-[#0A2357] dark:text-white">
           Six cities.{" "}
           <span className="italic" style={{ color: ORANGE }}>One soul.</span>
         </h2>
       </div>
 
-      <div className="overflow-visible">
-        <motion.div style={{ x: smoothX }} className="flex gap-5 px-6 w-max">
+      <div className="overflow-visible mt-16">
+        <motion.div style={{ x: smoothX }} className="flex gap-6 px-6 w-max">
           {CITIES.map((c, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -10 }}
               transition={{ duration: 0.3 }}
-              className={`relative w-[300px] md:w-[380px] h-[460px] rounded-3xl overflow-hidden shrink-0 bg-linear-to-br ${c.grad} group`}
+              className="relative w-[300px] md:w-[380px] h-[460px] rounded-3xl overflow-hidden shrink-0 group shadow-lg border border-black/5 dark:border-white/5"
             >
-              <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
-              <div className="absolute top-6 right-8 text-[90px] font-serif text-white/[0.06] leading-none select-none">
+              {/* Parallax Image */}
+              <div className="absolute inset-0 overflow-hidden">
+                <motion.img
+                  style={{ x: imageParallax }}
+                  src={c.image}
+                  alt={c.city}
+                  className="absolute inset-0 w-[130%] h-full max-w-none object-cover origin-center transition-transform duration-1000 group-hover:scale-105"
+                />
+              </div>
+
+              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
+
+              <div className="absolute top-6 right-8 text-[90px] font-serif text-white/[0.12] leading-none select-none drop-shadow-md">
                 {String(i + 1).padStart(2, "0")}
               </div>
+
               <div className="absolute bottom-0 left-0 right-0 p-8">
-                <div className="text-white/40 text-xs uppercase tracking-[0.3em] mb-2">{c.year}</div>
-                <div className="text-white font-serif text-4xl mb-3">{c.city}</div>
+                <div className="text-white/50 text-xs uppercase tracking-[0.3em] mb-2 font-semibold">{c.year}</div>
+                <div className="text-white font-serif text-4xl mb-4 drop-shadow-lg">{c.city}</div>
                 <span
-                  className="inline-block text-[10px] uppercase tracking-widest font-semibold border px-3 py-1 rounded-full"
+                  className="inline-block text-[10px] uppercase tracking-widest font-semibold border px-3 py-1 rounded-full bg-white/10 backdrop-blur-md"
                   style={{ color: ORANGE, borderColor: `${ORANGE}50` }}
                 >
                   {c.tag}
@@ -1043,14 +1063,14 @@ export default function Journey() {
       <Navbar />
       <HorizontalStoryHero />
       <Marquee />
+      <TeamSection />
       <StickyChapters />
       <PullQuote />
-      <StatsStrip />
-      <TeamSection />
+      {/* <StatsStrip /> */}
       <VerticalsSection />
       <ExpansionScroll />
-      <Marquee />
-      <ClosingCTA />
+      {/* <Marquee /> */}
+      {/* <ClosingCTA /> */}
       <Footer />
     </div>
   );
