@@ -51,8 +51,13 @@ function Sidebar({ isOpen, onToggle }) {
       });
       coreItems.push({
         icon: Wine,
-        label: "Wine",
-        path: "/WineManagement",
+        label: "Wine Management",
+        path: "#",
+        hasSubmenu: true,
+        submenu: [
+          { name: "Manage Hierarchy", path: "/WineManagement" },
+          { name: "Liquor Page Headers", path: "/WineHeaders" },
+        ],
       });
     }
 

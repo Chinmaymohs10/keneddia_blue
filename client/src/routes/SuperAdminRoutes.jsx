@@ -41,6 +41,7 @@ import Utils from '@/modules/superadmin/pages/Utils/Utils';
 
 // Wine Management
 import WineManagement from '@/modules/superadmin/pages/Wine/WineManagement';
+import WineHeaders from '@/modules/superadmin/pages/Wine/WineHeaders';
 
 // Wine & Dine Module
 import WineDine from '@/modules/superadmin/pages/WineDine/WineDine';
@@ -291,6 +292,15 @@ const SuperAdminRoutes = [
     element={
       <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <WineManagement />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="super-admin-wine-headers"
+    path="/WineHeaders"
+    element={
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
+        <WineHeaders />
       </ProtectedRoute>
     }
   />,
