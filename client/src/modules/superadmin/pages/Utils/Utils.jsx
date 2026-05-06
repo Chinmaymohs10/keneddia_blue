@@ -640,67 +640,22 @@ const ICON_EMPTY = {
   propertyId: "",
 };
 
-function IconTab({ propertyTypes, properties }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
+// Footer-specific empty form — global scope, footer forced true
+const FOOTER_ICON_EMPTY = {
+  mediaId: null,
+  previewUrl: "",
+  description: "",
+  showOnHeader: false,
+  showOnFooter: true,
+  showOnLightOrDark: false, // false = light, true = dark
+};
+
+// ── Shared upload + save logic hook ──────────────────────────────────────────
+function useIconShared(fetchFn) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [toggling, setToggling] = useState({});
-  const [form, setForm] = useState(ICON_EMPTY);
 
-  // ── Filters ──
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterScope, setFilterScope] = useState("all");
-  const [filterPlacement, setFilterPlacement] = useState("all"); // all | header | footer
-  const [filterTheme, setFilterTheme] = useState("all"); // all | light | dark
-
-  // ── Pagination ──
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const fetch = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = toList(await getAllIconUploads());
-      setItems(data.sort((a, b) => (b.id || 0) - (a.id || 0)));
-    } catch {
-      showError("Failed to fetch icon uploads");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetch(); }, [fetch]);
-
-  const openAdd = () => { setEditing(null); setForm(ICON_EMPTY); setShowModal(true); };
-
-  const openEdit = async (item) => {
-    setEditing(item);
-    let previewUrl = "";
-    if (item.mediaId) {
-      try {
-        const res = await getMediaById(item.mediaId);
-        previewUrl = res?.data?.url || res?.data?.data?.url || "";
-      } catch { /* no preview */ }
-    }
-    setForm({
-      mediaId: item.mediaId || null,
-      previewUrl,
-      description: item.description || "",
-      showOnHeader: item.showOnHeader || false,
-      showOnFooter: item.showOnFooter || false,
-      showOnLightOrDark: item.showOnLightOrDark ?? false,
-      scope: item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main",
-      propertyTypeId: item.propertyTypeId || "",
-      propertyId: item.propertyId || "",
-    });
-    setShowModal(true);
-  };
-
-  const handleUpload = async (file) => {
+  const handleUpload = async (file, setForm) => {
     setUploading(true);
     try {
       const fd = new FormData();
@@ -717,32 +672,109 @@ function IconTab({ propertyTypes, properties }) {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (form, editing, extraValidate) => {
     if (!form.mediaId) return showError("Please upload an image");
-    if (form.scope === "propertyType" && !form.propertyTypeId) return showError("Select a property type");
-    if (form.scope === "property" && !form.propertyId) return showError("Select a property");
+    if (extraValidate) { const err = extraValidate(); if (err) return showError(err); }
 
     const payload = {
       mediaId: form.mediaId,
-      description: form.description.trim(),
+      description: (form.description || "").trim(),
       showOnHeader: form.showOnHeader,
       showOnFooter: form.showOnFooter,
       showOnLightOrDark: form.showOnLightOrDark,
-      ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
-      ...(form.scope === "property" && { propertyId: form.propertyId }),
+      ...(form.propertyTypeId ? { propertyTypeId: form.propertyTypeId } : {}),
+      ...(form.propertyId ? { propertyId: form.propertyId } : {}),
     };
 
     setSaving(true);
     try {
       editing ? await updateIconUpload(editing.id, payload) : await createIconUpload(payload);
       showSuccess(editing ? "Updated successfully" : "Created successfully");
-      setShowModal(false);
-      fetch();
+      fetchFn();
+      return true;
     } catch (e) {
       showError(e?.response?.data?.message || "Save failed");
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  return { saving, uploading, handleUpload, handleSave };
+}
+
+// ── Theme toggle pill ─────────────────────────────────────────────────────────
+function ThemeTogglePill({ value, onChange }) {
+  return (
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-xl border"
+      style={{ borderColor: colors.border, backgroundColor: value ? "#1a1a1a" : colors.contentBg }}
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-base">{value ? "🌙" : "☀️"}</span>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: value ? "#ffffff" : colors.textPrimary }}>
+            {value ? "Dark Mode" : "Light Mode"}
+          </p>
+          <p className="text-xs" style={{ color: value ? "#a0a0a0" : colors.textSecondary }}>
+            {value ? "Logo for dark backgrounds" : "Logo for light backgrounds"}
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(!value)}
+        className="relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none shrink-0"
+        style={{ backgroundColor: value ? "#6366f1" : colors.border }}
+      >
+        <span
+          className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300"
+          style={{ left: value ? "calc(100% - 1.375rem)" : "0.125rem" }}
+        />
+      </button>
+    </div>
+  );
+}
+
+// ── Footer Logo Sub-tab ───────────────────────────────────────────────────────
+// Max 2 global footer logos: one light-mode, one dark-mode. No scope selector.
+function FooterLogoTab({ allItems, fetchAll }) {
+  // Filter: showOnFooter=true AND globally scoped (no propertyId / propertyTypeId)
+  const footerItems = allItems.filter(
+    (i) => i.showOnFooter && !i.propertyId && !i.propertyTypeId
+  );
+  const lightItem = footerItems.find((i) => i.showOnLightOrDark === false);
+  const darkItem  = footerItems.find((i) => i.showOnLightOrDark === true);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ ...FOOTER_ICON_EMPTY });
+  const [toggling, setToggling] = useState({});
+  const { saving, uploading, handleUpload, handleSave } = useIconShared(fetchAll);
+
+  const openAdd = (isDark) => {
+    setEditing(null);
+    setForm({ ...FOOTER_ICON_EMPTY, showOnLightOrDark: isDark });
+    setShowModal(true);
+  };
+
+  const openEdit = async (item) => {
+    setEditing(item);
+    let previewUrl = "";
+    if (item.mediaId) {
+      try {
+        const res = await getMediaById(item.mediaId);
+        previewUrl = res?.data?.url || res?.data?.data?.url || "";
+      } catch { /* ignore */ }
+    }
+    setForm({
+      ...FOOTER_ICON_EMPTY,
+      mediaId: item.mediaId || null,
+      previewUrl,
+      description: item.description || "",
+      showOnLightOrDark: item.showOnLightOrDark ?? false,
+    });
+    setShowModal(true);
   };
 
   const handleToggleActive = async (item) => {
@@ -751,7 +783,264 @@ function IconTab({ propertyTypes, properties }) {
     try {
       await toggleIconUploadStatus(item.id, !item.active);
       showSuccess(item.active ? "Deactivated" : "Activated");
-      fetch();
+      fetchAll();
+    } catch { showError("Failed"); }
+    finally { setToggling((p) => ({ ...p, [key]: false })); }
+  };
+
+  const onSave = async () => {
+    const ok = await handleSave(form, editing);
+    if (ok) setShowModal(false);
+  };
+
+  // Slot card — shows existing logo or an "Add" button
+  const SlotCard = ({ item, isDark, label }) => {
+    const canAdd = !item;
+    return (
+      <div
+        className="flex-1 rounded-2xl border-2 border-dashed overflow-hidden"
+        style={{ borderColor: item ? colors.border : colors.border, minHeight: 180 }}
+      >
+        <div
+          className="p-4 border-b flex items-center gap-2"
+          style={{
+            borderColor: colors.border,
+            backgroundColor: isDark ? "#111" : colors.mainBg,
+          }}
+        >
+          <span className="text-base">{isDark ? "🌙" : "☀️"}</span>
+          <span
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: isDark ? "#aaa" : colors.textSecondary }}
+          >
+            {label}
+          </span>
+          {item && <StatusBadge active={item.active} />}
+        </div>
+
+        {item ? (
+          <div className="p-4 flex flex-col gap-3">
+            <IconPreviewCell mediaId={item.mediaId} description={item.description} large />
+            <p className="text-xs" style={{ color: colors.textSecondary }}>
+              Global scope · applies to all pages universally
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => openEdit(item)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+                style={{ borderColor: colors.info, color: colors.info, backgroundColor: colors.info + "12" }}
+              >
+                <Edit2 size={12} /> Replace
+              </button>
+              <button
+                onClick={() => handleToggleActive(item)}
+                disabled={toggling[`a_${item.id}`]}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+                style={{
+                  borderColor: item.active ? colors.error : colors.success,
+                  color: item.active ? colors.error : colors.success,
+                  backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
+                }}
+              >
+                {toggling[`a_${item.id}`]
+                  ? <Loader2 size={11} className="animate-spin" />
+                  : item.active ? <ToggleRight size={12} /> : <ToggleLeft size={12} />
+                }
+                {item.active ? "Deactivate" : "Activate"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => openAdd(isDark)}
+            className="w-full h-full flex flex-col items-center justify-center gap-2 py-8 transition-colors hover:bg-gray-50"
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: colors.primary + "18" }}
+            >
+              <Plus size={18} style={{ color: colors.primary }} />
+            </div>
+            <span className="text-sm font-medium" style={{ color: colors.primary }}>
+              Add {label}
+            </span>
+            <span className="text-xs" style={{ color: colors.textSecondary }}>
+              Applies globally to all pages
+            </span>
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <h3 className="text-base font-semibold" style={{ color: colors.textPrimary }}>Footer Logos</h3>
+        <p className="text-sm mt-0.5" style={{ color: colors.textSecondary }}>
+          Maximum 2 logos — one for light mode, one for dark mode. Both are globally scoped and apply to all pages.
+        </p>
+      </div>
+
+      {/* 2-slot visual layout */}
+      <div className="flex gap-4 flex-col sm:flex-row">
+        <SlotCard item={lightItem} isDark={false} label="Light Mode Logo" />
+        <SlotCard item={darkItem}  isDark={true}  label="Dark Mode Logo"  />
+      </div>
+
+      {/* Info note */}
+      <div
+        className="flex items-start gap-3 px-4 py-3 rounded-xl text-xs"
+        style={{ backgroundColor: colors.info + "10", color: colors.info, border: `1px solid ${colors.info}30` }}
+      >
+        <span className="mt-0.5 shrink-0">ℹ️</span>
+        <span>
+          Footer logos are <strong>global</strong> — no property or property type is attached. They appear in the footer across every page of the site.
+          You cannot add more than one logo per theme mode.
+        </span>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" style={{ backgroundColor: colors.contentBg }}>
+            <div className="flex items-center justify-between px-6 py-5 border-b sticky top-0" style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}>
+              <h3 className="font-bold text-base" style={{ color: colors.textPrimary }}>
+                {editing ? "Replace Footer Logo" : `Add ${form.showOnLightOrDark ? "Dark" : "Light"} Mode Footer Logo`}
+              </h3>
+              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg" style={{ color: colors.textSecondary }}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-6 flex flex-col gap-4">
+              {/* Theme badge — read-only when adding (slot is pre-determined) */}
+              <div
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
+                style={{ backgroundColor: form.showOnLightOrDark ? "#111" : colors.mainBg, color: form.showOnLightOrDark ? "#fff" : colors.textPrimary }}
+              >
+                <span>{form.showOnLightOrDark ? "🌙" : "☀️"}</span>
+                {form.showOnLightOrDark ? "Dark Mode Footer Logo" : "Light Mode Footer Logo"}
+                <span className="ml-auto text-xs opacity-50">Global · all pages</span>
+              </div>
+
+              <FormField label="Logo Image *">
+                <ImageUpload
+                  mediaId={form.mediaId}
+                  previewUrl={form.previewUrl}
+                  onUpload={(file) => handleUpload(file, setForm)}
+                  uploading={uploading}
+                />
+              </FormField>
+
+              <FormField label="Description">
+                <textarea
+                  className={inputCls + " resize-none"}
+                  style={inputStyle}
+                  rows={2}
+                  value={form.description}
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Optional label"
+                />
+              </FormField>
+
+              {/* Allow theme change only while editing (replacing existing) */}
+              {editing && (
+                <FormField label="Theme Mode">
+                  <ThemeTogglePill
+                    value={form.showOnLightOrDark}
+                    onChange={(v) => setForm((p) => ({ ...p, showOnLightOrDark: v }))}
+                  />
+                </FormField>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-xl text-sm border font-medium"
+                style={{ borderColor: colors.border, color: colors.textSecondary }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onSave}
+                disabled={saving || uploading}
+                className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white"
+                style={{ backgroundColor: colors.primary, opacity: saving || uploading ? 0.7 : 1 }}
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {editing ? "Update" : "Add Logo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Header Logo Sub-tab ───────────────────────────────────────────────────────
+function HeaderLogoTab({ allItems, fetchAll, propertyTypes, properties }) {
+  // Show all non-footer items (or items marked showOnHeader)
+  const headerItems = allItems.filter((i) => !i.showOnFooter);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(ICON_EMPTY);
+  const [toggling, setToggling] = useState({});
+  const { saving, uploading, handleUpload, handleSave } = useIconShared(fetchAll);
+
+  // ── Filters ──
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterScope, setFilterScope] = useState("all");
+  const [filterTheme, setFilterTheme] = useState("all");
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const openAdd = () => { setEditing(null); setForm({ ...ICON_EMPTY }); setShowModal(true); };
+
+  const openEdit = async (item) => {
+    setEditing(item);
+    let previewUrl = "";
+    if (item.mediaId) {
+      try {
+        const res = await getMediaById(item.mediaId);
+        previewUrl = res?.data?.url || res?.data?.data?.url || "";
+      } catch { /* ignore */ }
+    }
+    setForm({
+      mediaId: item.mediaId || null,
+      previewUrl,
+      description: item.description || "",
+      showOnHeader: item.showOnHeader || false,
+      showOnFooter: false, // header items never toggle footer here
+      showOnLightOrDark: item.showOnLightOrDark ?? false,
+      scope: item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main",
+      propertyTypeId: item.propertyTypeId || "",
+      propertyId: item.propertyId || "",
+    });
+    setShowModal(true);
+  };
+
+  const onSave = async () => {
+    const extraValidate = () => {
+      if (form.scope === "propertyType" && !form.propertyTypeId) return "Select a property type";
+      if (form.scope === "property" && !form.propertyId) return "Select a property";
+      return null;
+    };
+    const ok = await handleSave(form, editing, extraValidate);
+    if (ok) setShowModal(false);
+  };
+
+  const handleToggleActive = async (item) => {
+    const key = `a_${item.id}`;
+    setToggling((p) => ({ ...p, [key]: true }));
+    try {
+      await toggleIconUploadStatus(item.id, !item.active);
+      showSuccess(item.active ? "Deactivated" : "Activated");
+      fetchAll();
     } catch { showError("Failed"); }
     finally { setToggling((p) => ({ ...p, [key]: false })); }
   };
@@ -762,18 +1051,7 @@ function IconTab({ propertyTypes, properties }) {
     try {
       await toggleIconUploadHeaderStatus(item.id, !item.showOnHeader);
       showSuccess(`Header ${!item.showOnHeader ? "enabled" : "disabled"}`);
-      fetch();
-    } catch { showError("Failed"); }
-    finally { setToggling((p) => ({ ...p, [key]: false })); }
-  };
-
-  const handleToggleFooter = async (item) => {
-    const key = `f_${item.id}`;
-    setToggling((p) => ({ ...p, [key]: true }));
-    try {
-      await toggleIconUploadFooterStatus(item.id, !item.showOnFooter);
-      showSuccess(`Footer ${!item.showOnFooter ? "enabled" : "disabled"}`);
-      fetch();
+      fetchAll();
     } catch { showError("Failed"); }
     finally { setToggling((p) => ({ ...p, [key]: false })); }
   };
@@ -787,17 +1065,14 @@ function IconTab({ propertyTypes, properties }) {
       const pt = propertyTypes.find((x) => String(x.id) === String(item.propertyTypeId));
       return pt?.typeName || pt?.name || `Type #${item.propertyTypeId}`;
     }
-    return "Homepage";
+    return "Global";
   };
-
   const scopeKey = (item) => item.propertyId ? "property" : item.propertyTypeId ? "propertyType" : "main";
 
-  const filtered = items.filter((item) => {
+  const filtered = headerItems.filter((item) => {
     if (filterStatus === "active" && !item.active) return false;
     if (filterStatus === "inactive" && item.active) return false;
     if (filterScope !== "all" && scopeKey(item) !== filterScope) return false;
-    if (filterPlacement === "header" && !item.showOnHeader) return false;
-    if (filterPlacement === "footer" && !item.showOnFooter) return false;
     if (filterTheme === "light" && item.showOnLightOrDark !== false) return false;
     if (filterTheme === "dark" && item.showOnLightOrDark !== true) return false;
     if (search && !item.description?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -807,9 +1082,8 @@ function IconTab({ propertyTypes, properties }) {
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
-
   const resetPage = () => setPage(1);
-  const hasFilters = search || filterStatus !== "all" || filterScope !== "all" || filterPlacement !== "all" || filterTheme !== "all";
+  const hasFilters = search || filterStatus !== "all" || filterScope !== "all" || filterTheme !== "all";
 
   const PillToggle = ({ on, loading: l, onClick, label }) => (
     <button
@@ -822,10 +1096,7 @@ function IconTab({ propertyTypes, properties }) {
         backgroundColor: on ? colors.success + "12" : "transparent",
       }}
     >
-      {l
-        ? <Loader2 size={11} className="animate-spin" />
-        : on ? <ToggleRight size={13} /> : <ToggleLeft size={13} />
-      }
+      {l ? <Loader2 size={11} className="animate-spin" /> : on ? <ToggleRight size={13} /> : <ToggleLeft size={13} />}
       {label}
     </button>
   );
@@ -834,9 +1105,9 @@ function IconTab({ propertyTypes, properties }) {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold" style={{ color: colors.textPrimary }}>Logo / Icon Uploads</h3>
+          <h3 className="text-base font-semibold" style={{ color: colors.textPrimary }}>Header Logos / Icons</h3>
           <p className="text-sm mt-0.5" style={{ color: colors.textSecondary }}>
-            Manage logos and icons displayed in headers and footers.
+            Manage logos shown in site headers. Can be scoped to a property type or specific property.
           </p>
         </div>
         <button
@@ -860,49 +1131,25 @@ function IconTab({ propertyTypes, properties }) {
             onChange={(e) => { setSearch(e.target.value); resetPage(); }}
           />
         </div>
-        <select
-          className={inputCls}
-          style={{ ...inputStyle, width: "auto", minWidth: 120 }}
-          value={filterStatus}
-          onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}
-        >
+        <select className={inputCls} style={{ ...inputStyle, width: "auto", minWidth: 120 }} value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); resetPage(); }}>
           <option value="all">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <select
-          className={inputCls}
-          style={{ ...inputStyle, width: "auto", minWidth: 160 }}
-          value={filterScope}
-          onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}
-        >
+        <select className={inputCls} style={{ ...inputStyle, width: "auto", minWidth: 150 }} value={filterScope} onChange={(e) => { setFilterScope(e.target.value); resetPage(); }}>
           <option value="all">All Scopes</option>
-          <option value="main">Homepage</option>
+          <option value="main">Global</option>
           <option value="propertyType">Property Type</option>
+          <option value="property">Specific Property</option>
         </select>
-        <select
-          className={inputCls}
-          style={{ ...inputStyle, width: "auto", minWidth: 130 }}
-          value={filterPlacement}
-          onChange={(e) => { setFilterPlacement(e.target.value); resetPage(); }}
-        >
-          <option value="all">All Placements</option>
-          <option value="header">Header</option>
-          <option value="footer">Footer</option>
-        </select>
-        <select
-          className={inputCls}
-          style={{ ...inputStyle, width: "auto", minWidth: 120 }}
-          value={filterTheme}
-          onChange={(e) => { setFilterTheme(e.target.value); resetPage(); }}
-        >
+        <select className={inputCls} style={{ ...inputStyle, width: "auto", minWidth: 120 }} value={filterTheme} onChange={(e) => { setFilterTheme(e.target.value); resetPage(); }}>
           <option value="all">All Themes</option>
           <option value="light">☀️ Light</option>
           <option value="dark">🌙 Dark</option>
         </select>
         {hasFilters && (
           <button
-            onClick={() => { setSearch(""); setFilterStatus("all"); setFilterScope("all"); setFilterPlacement("all"); setFilterTheme("all"); resetPage(); }}
+            onClick={() => { setSearch(""); setFilterStatus("all"); setFilterScope("all"); setFilterTheme("all"); resetPage(); }}
             className="text-xs px-3 py-2 rounded-lg border"
             style={{ borderColor: colors.border, color: colors.textSecondary }}
           >
@@ -911,12 +1158,8 @@ function IconTab({ propertyTypes, properties }) {
         )}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={28} className="animate-spin" style={{ color: colors.primary }} />
-        </div>
-      ) : filtered.length === 0 ? (
-        items.length === 0
+      {filtered.length === 0 ? (
+        headerItems.length === 0
           ? <EmptyState label='Click "Add Logo" to get started.' />
           : <div className="py-12 text-center text-sm" style={{ color: colors.textSecondary }}>No entries match the current filters.</div>
       ) : (
@@ -925,12 +1168,8 @@ function IconTab({ propertyTypes, properties }) {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr style={{ backgroundColor: colors.mainBg }}>
-                  {["Preview", "Scope", "Theme", "Header", "Footer", "Status", "Actions"].map((h) => (
-                    <th
-                      key={h}
-                      className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider"
-                      style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}
-                    >
+                  {["Preview", "Scope", "Theme", "Header", "Status", "Actions"].map((h) => (
+                    <th key={h} className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.textSecondary, borderBottom: `1px solid ${colors.border}` }}>
                       {h}
                     </th>
                   ))}
@@ -938,70 +1177,33 @@ function IconTab({ propertyTypes, properties }) {
               </thead>
               <tbody>
                 {paginated.map((item, idx) => (
-                  <tr
-                    key={item.id}
-                    style={{
-                      backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg,
-                      borderBottom: `1px solid ${colors.borderLight}`,
-                    }}
-                  >
+                  <tr key={item.id} style={{ backgroundColor: idx % 2 === 0 ? colors.contentBg : colors.previewBg, borderBottom: `1px solid ${colors.borderLight}` }}>
+                    <td className="px-5 py-4"><IconPreviewCell mediaId={item.mediaId} description={item.description} /></td>
                     <td className="px-5 py-4">
-                      <IconPreviewCell mediaId={item.mediaId} description={item.description} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className="px-2.5 py-1 rounded-lg text-xs font-medium"
-                        style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}
-                      >
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium" style={{ backgroundColor: colors.mainBg, color: colors.textSecondary }}>
                         {scopeLabel(item)}
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-sm">
-                        {item.showOnLightOrDark === true ? "🌙 Dark" : item.showOnLightOrDark === false ? "☀️ Light" : "—"}
-                      </span>
+                      <span className="text-sm">{item.showOnLightOrDark === true ? "🌙 Dark" : "☀️ Light"}</span>
                     </td>
                     <td className="px-5 py-4">
-                      <PillToggle
-                        on={item.showOnHeader}
-                        loading={toggling[`h_${item.id}`]}
-                        onClick={() => handleToggleHeader(item)}
-                        label="Header"
-                      />
-                    </td>
-                    <td className="px-5 py-4">
-                      <PillToggle
-                        on={item.showOnFooter}
-                        loading={toggling[`f_${item.id}`]}
-                        onClick={() => handleToggleFooter(item)}
-                        label="Footer"
-                      />
+                      <PillToggle on={item.showOnHeader} loading={toggling[`h_${item.id}`]} onClick={() => handleToggleHeader(item)} label="Header" />
                     </td>
                     <td className="px-5 py-4"><StatusBadge active={item.active} /></td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="p-2 rounded-lg"
-                          style={{ color: colors.info, backgroundColor: colors.info + "12" }}
-                          title="Edit"
-                        >
+                        <button onClick={() => openEdit(item)} className="p-2 rounded-lg" style={{ color: colors.info, backgroundColor: colors.info + "12" }} title="Edit">
                           <Edit2 size={14} />
                         </button>
                         <button
                           onClick={() => handleToggleActive(item)}
                           disabled={toggling[`a_${item.id}`]}
                           className="p-2 rounded-lg"
-                          style={{
-                            color: item.active ? colors.error : colors.success,
-                            backgroundColor: item.active ? colors.error + "12" : colors.success + "12",
-                          }}
+                          style={{ color: item.active ? colors.error : colors.success, backgroundColor: item.active ? colors.error + "12" : colors.success + "12" }}
                           title={item.active ? "Deactivate" : "Activate"}
                         >
-                          {toggling[`a_${item.id}`]
-                            ? <Loader2 size={14} className="animate-spin" />
-                            : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />
-                          }
+                          {toggling[`a_${item.id}`] ? <Loader2 size={14} className="animate-spin" /> : item.active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                         </button>
                       </div>
                     </td>
@@ -1010,23 +1212,17 @@ function IconTab({ propertyTypes, properties }) {
               </tbody>
             </table>
           </div>
-          <Pagination
-            page={safePage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            total={filtered.length}
-            onPage={setPage}
-            onPageSize={(s) => { setPageSize(s); resetPage(); }}
-          />
+          <Pagination page={safePage} totalPages={totalPages} pageSize={pageSize} total={filtered.length} onPage={setPage} onPageSize={(s) => { setPageSize(s); resetPage(); }} />
         </>
       )}
 
+      {/* Add / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" style={{ backgroundColor: colors.contentBg }}>
             <div className="flex items-center justify-between px-6 py-5 border-b sticky top-0" style={{ borderColor: colors.border, backgroundColor: colors.contentBg }}>
               <h3 className="font-bold text-base" style={{ color: colors.textPrimary }}>
-                {editing ? "Edit Logo / Icon" : "Add Logo / Icon"}
+                {editing ? "Edit Header Logo / Icon" : "Add Header Logo / Icon"}
               </h3>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg" style={{ color: colors.textSecondary }}>
                 <X size={18} />
@@ -1034,12 +1230,7 @@ function IconTab({ propertyTypes, properties }) {
             </div>
             <div className="p-6 flex flex-col gap-4">
               <FormField label="Logo Image *">
-                <ImageUpload
-                  mediaId={form.mediaId}
-                  previewUrl={form.previewUrl}
-                  onUpload={handleUpload}
-                  uploading={uploading}
-                />
+                <ImageUpload mediaId={form.mediaId} previewUrl={form.previewUrl} onUpload={(f) => handleUpload(f, setForm)} uploading={uploading} />
               </FormField>
               <FormField label="Description">
                 <textarea
@@ -1051,10 +1242,8 @@ function IconTab({ propertyTypes, properties }) {
                   placeholder="Optional label or description"
                 />
               </FormField>
-              <div
-                className="flex items-center gap-6 px-4 py-3 rounded-xl"
-                style={{ backgroundColor: colors.mainBg }}
-              >
+              {/* Header toggle only — no footer toggle here */}
+              <div className="flex items-center gap-6 px-4 py-3 rounded-xl" style={{ backgroundColor: colors.mainBg }}>
                 <label className="flex items-center gap-2.5 cursor-pointer text-sm font-medium" style={{ color: colors.textPrimary }}>
                   <input
                     type="checkbox"
@@ -1064,65 +1253,18 @@ function IconTab({ propertyTypes, properties }) {
                   />
                   Show on Header
                 </label>
-                <label className="flex items-center gap-2.5 cursor-pointer text-sm font-medium" style={{ color: colors.textPrimary }}>
-                  <input
-                    type="checkbox"
-                    checked={form.showOnFooter}
-                    onChange={(e) => setForm((p) => ({ ...p, showOnFooter: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-orange-500"
-                  />
-                  Show on Footer
-                </label>
               </div>
-
-              {/* Dark / Light mode toggle */}
               <FormField label="Theme Mode">
-                <div
-                  className="flex items-center justify-between px-4 py-3 rounded-xl border"
-                  style={{ borderColor: colors.border, backgroundColor: form.showOnLightOrDark ? "#1a1a1a" : colors.contentBg }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{form.showOnLightOrDark ? "🌙" : "☀️"}</span>
-                    <div>
-                      <p className="text-sm font-semibold" style={{ color: form.showOnLightOrDark ? "#ffffff" : colors.textPrimary }}>
-                        {form.showOnLightOrDark ? "Dark Mode" : "Light Mode"}
-                      </p>
-                      <p className="text-xs" style={{ color: form.showOnLightOrDark ? "#a0a0a0" : colors.textSecondary }}>
-                        {form.showOnLightOrDark ? "Logo for dark backgrounds" : "Logo for light backgrounds"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, showOnLightOrDark: !p.showOnLightOrDark }))}
-                    className="relative w-12 h-6 rounded-full transition-all duration-300 focus:outline-none shrink-0"
-                    style={{ backgroundColor: form.showOnLightOrDark ? "#6366f1" : colors.border }}
-                  >
-                    <span
-                      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300"
-                      style={{ left: form.showOnLightOrDark ? "calc(100% - 1.375rem)" : "0.125rem" }}
-                    />
-                  </button>
-                </div>
+                <ThemeTogglePill value={form.showOnLightOrDark} onChange={(v) => setForm((p) => ({ ...p, showOnLightOrDark: v }))} />
               </FormField>
-              <ScopeFields
-                form={form}
-                setForm={setForm}
-                propertyTypes={propertyTypes}
-                properties={properties}
-                allowedScopes={["main", "propertyType"]}
-              />
+              <ScopeFields form={form} setForm={setForm} propertyTypes={propertyTypes} properties={properties} allowedScopes={["main", "propertyType", "property"]} />
             </div>
             <div className="flex justify-end gap-3 px-6 py-4 border-t" style={{ borderColor: colors.border }}>
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-xl text-sm border font-medium"
-                style={{ borderColor: colors.border, color: colors.textSecondary }}
-              >
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm border font-medium" style={{ borderColor: colors.border, color: colors.textSecondary }}>
                 Cancel
               </button>
               <button
-                onClick={handleSave}
+                onClick={onSave}
                 disabled={saving || uploading}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white"
                 style={{ backgroundColor: colors.primary, opacity: saving || uploading ? 0.7 : 1 }}
@@ -1138,8 +1280,68 @@ function IconTab({ propertyTypes, properties }) {
   );
 }
 
+// ── IconTab shell — sub-tabs: Header | Footer ─────────────────────────────────
+function IconTab({ propertyTypes, properties }) {
+  const [allItems, setAllItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [subTab, setSubTab] = useState("header"); // "header" | "footer"
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = toList(await getAllIconUploads());
+      setAllItems(data.sort((a, b) => (b.id || 0) - (a.id || 0)));
+    } catch {
+      showError("Failed to fetch icon uploads");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const SUB_TABS = [
+    { key: "header", label: "Header Logos" },
+    { key: "footer", label: "Footer Logos" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Sub-tab switcher */}
+      <div className="flex gap-1 border-b" style={{ borderColor: colors.border }}>
+        {SUB_TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setSubTab(key)}
+            className="px-5 py-2.5 text-sm font-semibold relative transition-colors"
+            style={{ color: subTab === key ? colors.primary : colors.textSecondary }}
+          >
+            {label}
+            {subTab === key && (
+              <span
+                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t"
+                style={{ backgroundColor: colors.primary }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 size={28} className="animate-spin" style={{ color: colors.primary }} />
+        </div>
+      ) : subTab === "header" ? (
+        <HeaderLogoTab allItems={allItems} fetchAll={fetchAll} propertyTypes={propertyTypes} properties={properties} />
+      ) : (
+        <FooterLogoTab allItems={allItems} fetchAll={fetchAll} />
+      )}
+    </div>
+  );
+}
+
 // Lazy image preview in table rows — fetches URL only when needed
-function IconPreviewCell({ mediaId, description }) {
+function IconPreviewCell({ mediaId, description, large = false }) {
   const [url, setUrl] = useState(null);
 
   useEffect(() => {
@@ -1149,19 +1351,21 @@ function IconPreviewCell({ mediaId, description }) {
       .catch(() => {});
   }, [mediaId]);
 
+  const size = large ? "w-full h-28" : "w-10 h-10";
+
   return (
-    <div className="flex items-center gap-3">
+    <div className={`flex ${large ? "flex-col" : "items-center"} gap-2`}>
       <div
-        className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border"
+        className={`${size} rounded-lg overflow-hidden flex items-center justify-center shrink-0 border`}
         style={{ borderColor: colors.border, backgroundColor: colors.mainBg }}
       >
         {url
-          ? <img src={url} alt="icon" className="w-full h-full object-contain" />
-          : <Image size={16} style={{ color: colors.textSecondary }} />
+          ? <img src={url} alt="icon" className="w-full h-full object-contain p-2" />
+          : <Image size={large ? 28 : 16} style={{ color: colors.textSecondary }} />
         }
       </div>
       {description && (
-        <span className="text-xs truncate max-w-[120px]" style={{ color: colors.textSecondary }}>
+        <span className={`text-xs truncate ${large ? "" : "max-w-[120px]"}`} style={{ color: colors.textSecondary }}>
           {description}
         </span>
       )}

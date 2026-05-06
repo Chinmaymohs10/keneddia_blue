@@ -470,7 +470,7 @@ export default function EventsListing() {
                 <div
                   className={
                     viewMode === "card"
-                      ? "grid min-h-[420px] grid-cols-1 gap-6 justify-items-center md:grid-cols-2 xl:grid-cols-3"
+                      ? "grid min-h-[420px] grid-cols-2 gap-4 md:gap-6 justify-items-center"
                       : "flex min-h-[420px] flex-col gap-6"
                   }
                 >
@@ -482,7 +482,7 @@ export default function EventsListing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
+                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-9/16" : "flex-col md:flex-row h-auto md:min-h-64"}`}
                       >
                         <EventMedia
                           event={event}
@@ -513,7 +513,7 @@ export default function EventsListing() {
                               to={buildEventDetailPath(event)}
                               className="mt-6 flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all"
                             >
-                              {event.ctaText} <ArrowRight size={14} />
+                              {activeTab === "past" ? "Explore Now" : event.ctaText} <ArrowRight size={14} />
                             </Link>
                           )}
                         </div>
