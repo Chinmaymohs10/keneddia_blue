@@ -15,10 +15,9 @@ const footerSections = [
   {
     title: "About Us",
     links: [
-      { label: "Our Story", href: "/about" },
-      { label: "Leadership Team", href: "/leadership" },
-      { label: "Vision & Mission", href: "/vision" },
       { label: "Our Journey", href: "/journey" },
+      { label: "Legal Disclaimer", href: "/legal-disclaimer" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
     ],
   },
   {
@@ -28,17 +27,13 @@ const footerSections = [
       { label: "Cafes & Dining", href: "/cafes" },
       { label: "Bars & Lounges", href: "/bars" },
       { label: "Events & Conferences", href: "/events" },
-      { label: "Wellness & Spa", href: "/wellness" },
     ],
   },
   {
-    title: "Quick Links",
+    title: "Support",
     links: [
-      { label: "Kennedia Blu Foundation", href: "/foundation" },
-      { label: "Investors", href: "/investors" },
-      { label: "Newsroom", href: "/news" },
-      { label: "Careers", href: "/careers" },
       { label: "Contact Us", href: "/contact" },
+      { label: "Newsroom", href: "/news" },
     ],
   },
 ];
@@ -52,10 +47,9 @@ const socialLinks = [
 ];
 
 const legalLinks = [
-  { label: "Legal Disclaimer", href: "/legal" },
-  { label: "Privacy Notice", href: "/privacy" },
+  { label: "Legal Disclaimer", href: "/legal-disclaimer" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
   { label: "Terms & Conditions", href: "/terms" },
-  { label: "Cookie Policy", href: "/cookies" },
 ];
 
 export default function Footer() {
@@ -78,9 +72,6 @@ export default function Footer() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault(); // Prevent navigation for now
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -93,7 +84,7 @@ export default function Footer() {
         <div className="footer-grid">
           {/* Brand Column */}
           <div className="footer-brand">
-            <Link to="/" onClick={handleLinkClick} className="inline-block">
+            <Link to="/" className="inline-block">
               <div className="relative">
                 {/* Light Mode Logo */}
                 <img
@@ -116,7 +107,6 @@ export default function Footer() {
                 <a
                   key={social.label}
                   href={social.href}
-                  onClick={handleLinkClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
@@ -139,7 +129,6 @@ export default function Footer() {
                   <li key={linkIndex}>
                     <Link
                       to={link.href}
-                      onClick={handleLinkClick}
                       className="footer-link"
                     >
                       {link.label}
@@ -168,7 +157,6 @@ export default function Footer() {
                 <Link
                   key={index}
                   to={link.href}
-                  onClick={handleLinkClick}
                   className="footer-meta-text"
                 >
                   {link.label}

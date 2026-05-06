@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { showSuccess, showWarning, showError } from "@/lib/toasters/toastUtils";
@@ -265,7 +266,7 @@ export default function HotelDetail() {
   const propertyIdFromUrl = Number(propertyId || slugTail) || null;
   const ssrHotelDetail =
     propertyDetail?.propertyType === "hotel" &&
-    propertyDetail?.propertyId === propertyIdFromUrl
+      propertyDetail?.propertyId === propertyIdFromUrl
       ? propertyDetail?.pageData
       : null;
   const ssrSeo =
@@ -305,6 +306,7 @@ export default function HotelDetail() {
 
   // Feature States
   const [showShareReactions, setShowShareReactions] = useState(false);
+  const [showBookmarkMessage, setShowBookmarkMessage] = useState(false);
 
   const [searchData, setSearchData] = useState({
     checkIn: null as Date | null,
@@ -448,16 +450,16 @@ export default function HotelDetail() {
     ? activeDiningItem.mediaSlides
     : activeDiningItem?.image
       ? [
-          {
-            mediaId: null,
-            type: "IMAGE",
-            url: activeDiningItem.image,
-            fileName: null,
-            alt: activeDiningItem.name || null,
-            width: null,
-            height: null,
-          },
-        ]
+        {
+          mediaId: null,
+          type: "IMAGE",
+          url: activeDiningItem.image,
+          fileName: null,
+          alt: activeDiningItem.name || null,
+          width: null,
+          height: null,
+        },
+      ]
       : [];
 
   useEffect(() => {
@@ -562,11 +564,11 @@ export default function HotelDetail() {
         .sort((a, b) => {
           const distA = Math.sqrt(
             Math.pow(a.coordinates.lat - lat, 2) +
-              Math.pow(a.coordinates.lng - lng, 2),
+            Math.pow(a.coordinates.lng - lng, 2),
           );
           const distB = Math.sqrt(
             Math.pow(b.coordinates.lat - lat, 2) +
-              Math.pow(b.coordinates.lng - lng, 2),
+            Math.pow(b.coordinates.lng - lng, 2),
           );
           return distA - distB;
         })
@@ -677,9 +679,9 @@ export default function HotelDetail() {
           nearbyPlaces:
             parent.nearbyLocations?.length > 0
               ? parent.nearbyLocations.map((n: any) => ({
-                  name: n.nearbyLocationName,
-                  googleMapLink: n.googleMapLink,
-                }))
+                name: n.nearbyLocationName,
+                googleMapLink: n.googleMapLink,
+              }))
               : dynamicNearby.length > 0
                 ? dynamicNearby
                 : [],
@@ -702,63 +704,63 @@ export default function HotelDetail() {
       const res = await getRoomsByPropertyId(propId);
       const mappedRooms = Array.isArray(res?.data)
         ? [...res.data]
-            .sort((a: any, b: any) => {
-              const orderA = Number.isFinite(Number(a.displayOrder))
-                ? Number(a.displayOrder)
-                : Number.MAX_SAFE_INTEGER;
-              const orderB = Number.isFinite(Number(b.displayOrder))
-                ? Number(b.displayOrder)
-                : Number.MAX_SAFE_INTEGER;
+          .sort((a: any, b: any) => {
+            const orderA = Number.isFinite(Number(a.displayOrder))
+              ? Number(a.displayOrder)
+              : Number.MAX_SAFE_INTEGER;
+            const orderB = Number.isFinite(Number(b.displayOrder))
+              ? Number(b.displayOrder)
+              : Number.MAX_SAFE_INTEGER;
 
-              if (orderA !== orderB) return orderA - orderB;
-              return Number(a.roomId || 0) - Number(b.roomId || 0);
-            })
-            .map((r: any) => {
-              const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
-              const discountPercentage = Number(r.discount ?? 0);
-              const discountedPrice =
-                originalBasePrice > 0
-                  ? Math.max(
-                      0,
-                      originalBasePrice -
-                        (originalBasePrice * discountPercentage) / 100,
-                    )
-                  : 0;
-              const resolvedDiscountPercent =
-                originalBasePrice > 0 && discountPercentage > 0
-                  ? Math.round(discountPercentage)
-                  : 0;
+            if (orderA !== orderB) return orderA - orderB;
+            return Number(a.roomId || 0) - Number(b.roomId || 0);
+          })
+          .map((r: any) => {
+            const originalBasePrice = Number(r.basePrice ?? r.price ?? 0);
+            const discountPercentage = Number(r.discount ?? 0);
+            const discountedPrice =
+              originalBasePrice > 0
+                ? Math.max(
+                  0,
+                  originalBasePrice -
+                  (originalBasePrice * discountPercentage) / 100,
+                )
+                : 0;
+            const resolvedDiscountPercent =
+              originalBasePrice > 0 && discountPercentage > 0
+                ? Math.round(discountPercentage)
+                : 0;
 
-              return {
-                id: r.roomId.toString(),
-                name: r.roomName || r.roomNumber,
-                type: r.roomTypeName || r.roomType,
-                description: r.description || "",
-                basePrice: discountedPrice,
-                originalPrice: originalBasePrice > 0 ? originalBasePrice : null,
-                strikePrice: originalBasePrice > 0 ? originalBasePrice : null,
-                discount: discountPercentage > 0 ? discountPercentage : null,
-                discountPercent:
-                  resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
-                maxOccupancy: r.maxOccupancy || 1,
-                roomSize: r.roomSize ?? null,
-                roomSizeUnit: r.roomSizeUnit || "SQ_FT",
-                displayOrder: r.displayOrder ?? null,
-                isAvailable: r.status === "AVAILABLE",
-                amenities: r.amenitiesAndFeatures || [],
-                highlightedAmenities:
-                  r.amenitiesAndFeatures?.filter((a: RoomAmenity) =>
-                    Boolean(a.showHighlight),
-                  ) || [],
-                image: {
-                  src:
-                    r.media?.find((item: any) => item.type === "IMAGE")?.url ||
-                    r.media?.[0]?.url ||
-                    "/images/room-placeholder.jpg",
-                  alt: r.roomName,
-                },
-              };
-            })
+            return {
+              id: r.roomId.toString(),
+              name: r.roomName || r.roomNumber,
+              type: r.roomTypeName || r.roomType,
+              description: r.description || "",
+              basePrice: discountedPrice,
+              originalPrice: originalBasePrice > 0 ? originalBasePrice : null,
+              strikePrice: originalBasePrice > 0 ? originalBasePrice : null,
+              discount: discountPercentage > 0 ? discountPercentage : null,
+              discountPercent:
+                resolvedDiscountPercent > 0 ? resolvedDiscountPercent : null,
+              maxOccupancy: r.maxOccupancy || 1,
+              roomSize: r.roomSize ?? null,
+              roomSizeUnit: r.roomSizeUnit || "SQ_FT",
+              displayOrder: r.displayOrder ?? null,
+              isAvailable: r.status === "AVAILABLE",
+              amenities: r.amenitiesAndFeatures || [],
+              highlightedAmenities:
+                r.amenitiesAndFeatures?.filter((a: RoomAmenity) =>
+                  Boolean(a.showHighlight),
+                ) || [],
+              image: {
+                src:
+                  r.media?.find((item: any) => item.type === "IMAGE")?.url ||
+                  r.media?.[0]?.url ||
+                  "/images/room-placeholder.jpg",
+                alt: r.roomName,
+              },
+            };
+          })
         : [];
 
       setRooms(mappedRooms);
@@ -823,16 +825,16 @@ export default function HotelDetail() {
         baseItems.map(async (item: Restaurant) => {
           const ownSlides = item.image
             ? [
-                {
-                  mediaId: null,
-                  type: "IMAGE",
-                  url: item.image,
-                  fileName: null,
-                  alt: item.name || null,
-                  width: null,
-                  height: null,
-                },
-              ]
+              {
+                mediaId: null,
+                type: "IMAGE",
+                url: item.image,
+                fileName: null,
+                alt: item.name || null,
+                width: null,
+                height: null,
+              },
+            ]
             : [];
 
           if (!item.attachRestaurantId) {
@@ -884,10 +886,10 @@ export default function HotelDetail() {
         setHotel((currentHotel) =>
           currentHotel
             ? {
-                ...currentHotel,
-                checkIn: matched.checkInTime || currentHotel.checkIn,
-                checkOut: matched.checkOutTime || currentHotel.checkOut,
-              }
+              ...currentHotel,
+              checkIn: matched.checkInTime || currentHotel.checkIn,
+              checkOut: matched.checkOutTime || currentHotel.checkOut,
+            }
             : currentHotel,
         );
       }
@@ -910,6 +912,28 @@ export default function HotelDetail() {
   const openGalleryAt = (index: number) => {
     setInitialGalleryIndex(index);
     setIsGalleryOpen(true);
+  };
+
+  const handleBookmark = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const message = isMobile
+      ? "Use browser menu to bookmark"
+      : "Press Ctrl + D to bookmark";
+
+    toast(message, {
+      icon: "🔖",
+      style: {
+        borderRadius: "10px",
+        background: "#18181b",
+        color: "#fff",
+        fontSize: "12px",
+      },
+    });
+
+    setShowBookmarkMessage(true);
+    setTimeout(() => {
+      setShowBookmarkMessage(false);
+    }, 3000);
   };
 
   const handleSearchDataChange = (data: typeof searchData) => {
@@ -1163,26 +1187,35 @@ export default function HotelDetail() {
                   <Share2 className="w-4 h-4 mr-2" /> Share
                 </Button>
               </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="rounded-full active:scale-95 transition-all px-6"
+              <div className="relative">
+                <AnimatePresence>
+                  {showBookmarkMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: -60, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2 z-50 backdrop-blur-md whitespace-nowrap"
                     >
-                      <Heart className="w-4 h-4 mr-2" />
-                      Save
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
-                    <p className="flex items-center gap-2 text-[11px] font-medium">
-                      <Heart size={14} className="text-primary" />
-                      <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
-                      <span className="md:hidden">Use browser menu to bookmark</span>
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      <Heart size={14} className="text-primary fill-primary" />
+                      <p className="text-[11px] font-bold text-zinc-800 dark:text-white">
+                        {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+                          ? "Use browser menu to bookmark"
+                          : "Press Ctrl + D to bookmark"}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <Button
+                  variant="outline"
+                  className="rounded-full active:scale-95 transition-all px-6"
+                  onClick={handleBookmark}
+                  onMouseEnter={() => setShowBookmarkMessage(true)}
+                  onMouseLeave={() => setShowBookmarkMessage(false)}
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Save
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -1293,8 +1326,8 @@ export default function HotelDetail() {
                               const restaurantPath =
                                 restaurant.attachRestaurantId
                                   ? restaurantPaths[
-                                      String(restaurant.attachRestaurantId)
-                                    ]
+                                  String(restaurant.attachRestaurantId)
+                                  ]
                                   : null;
 
                               return (
@@ -1303,11 +1336,10 @@ export default function HotelDetail() {
                                   className="w-full flex-shrink-0"
                                 >
                                   <div
-                                    className={`hotel-card overflow-hidden flex flex-col h-[520px] transition-shadow duration-200 ${
-                                      restaurantPath
+                                    className={`hotel-card overflow-hidden flex flex-col h-[520px] transition-shadow duration-200 ${restaurantPath
                                         ? "cursor-pointer hover:shadow-md"
                                         : ""
-                                    }`}
+                                      }`}
                                     onClick={() => {
                                       if (restaurantPath)
                                         navigate(restaurantPath);
@@ -1373,12 +1405,11 @@ export default function HotelDetail() {
                                                     idx,
                                                   );
                                                 }}
-                                                className={`h-1.5 rounded-full transition-all ${
-                                                  currentDiningMediaIndex ===
-                                                  idx
+                                                className={`h-1.5 rounded-full transition-all ${currentDiningMediaIndex ===
+                                                    idx
                                                     ? "w-5 bg-white"
                                                     : "w-1.5 bg-white/55 hover:bg-white/80"
-                                                }`}
+                                                  }`}
                                                 aria-label={`Show dining media ${idx + 1}`}
                                               />
                                             ),
@@ -1398,7 +1429,7 @@ export default function HotelDetail() {
                                         </p>
                                       ) : null}
                                       {restaurant.description &&
-                                      restaurant.description !==
+                                        restaurant.description !==
                                         restaurant.cuisine ? (
                                         <p className="text-sm text-muted-foreground/90">
                                           {restaurant.description}
@@ -1465,11 +1496,10 @@ export default function HotelDetail() {
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentDiningIndex(idx)}
-                                  className={`h-1.5 rounded-full transition-all ${
-                                    currentDiningIndex === idx
+                                  className={`h-1.5 rounded-full transition-all ${currentDiningIndex === idx
                                       ? "bg-primary w-5"
                                       : "bg-border hover:bg-muted-foreground w-1.5"
-                                  }`}
+                                    }`}
                                   aria-label={`Go to dining slide ${idx + 1}`}
                                 />
                               ))}
