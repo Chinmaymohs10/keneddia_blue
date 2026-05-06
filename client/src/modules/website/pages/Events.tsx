@@ -470,7 +470,7 @@ export default function EventsListing() {
                 <div
                   className={
                     viewMode === "card"
-                      ? "grid min-h-[420px] grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+                      ? "grid min-h-[420px] grid-cols-1 gap-6 justify-items-center md:grid-cols-2 xl:grid-cols-3"
                       : "flex min-h-[420px] flex-col gap-6"
                   }
                 >
@@ -482,14 +482,16 @@ export default function EventsListing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col h-[520px]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
+                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
                       >
                         <EventMedia
                           event={event}
                           isListView={viewMode === "list"}
                         />
 
-                        <div className="p-6 flex flex-col flex-1 justify-between">
+                        <div
+                          className={`${viewMode === "card" ? "p-4" : "p-6"} flex flex-col flex-1 justify-between`}
+                        >
                           <div>
                             <div className="flex items-center gap-2 text-primary text-[10px] font-bold uppercase mb-2">
                               <Calendar size={12} />{" "}
@@ -501,7 +503,7 @@ export default function EventsListing() {
                               {event.title}
                             </h3>
                             {event.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
+                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1.5 leading-relaxed">
                                 {event.description}
                               </p>
                             )}
