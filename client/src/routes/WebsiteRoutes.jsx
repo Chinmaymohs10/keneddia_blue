@@ -29,6 +29,9 @@ import SpicyDarbar from "@/modules/website/pages/restaurant/pages/verticals/Spic
 import TakeawayTreats from "@/modules/website/pages/restaurant/pages/verticals/TakeawayTreats";
 import { GetAllPropertyDetails } from "@/Api/Api";
 import { useSsrData } from "@/ssr/SsrDataContext";
+import PrivacyPolicy from "@/modules/website/pages/PrivacyPolicy";
+import Journey from "@/modules/website/pages/Journey";
+import LegalDisclaimer from "@/modules/website/pages/LegalDisclaimer";
 
 // Lazy-loaded homepage routes — Suspense shows PageLoader while JS chunk loads
 const Home = lazy(() => import("@/modules/website/pages/Home"));
@@ -60,15 +63,15 @@ function PropertyDetailRoute() {
   const slugTail = propertySlug?.split("-").pop() || "";
   const resolvedPropertyId = Number(propertyId || slugTail) || null;
   const isSlugCafe = propertySlug?.toLowerCase().includes("cafe");
-  const isSlugRestaurant = 
-    propertySlug?.toLowerCase().includes("restaurant") || 
+  const isSlugRestaurant =
+    propertySlug?.toLowerCase().includes("restaurant") ||
     propertySlug?.toLowerCase().includes("resturant");
 
   const ssrResolvedType =
     propertyDetail?.propertyId === resolvedPropertyId &&
-    (propertyDetail?.propertyType === "restaurant" ||
-      propertyDetail?.propertyType === "cafe" ||
-      propertyDetail?.propertyType === "hotel")
+      (propertyDetail?.propertyType === "restaurant" ||
+        propertyDetail?.propertyType === "cafe" ||
+        propertyDetail?.propertyType === "hotel")
       ? (isSlugCafe ? "cafe" : isSlugRestaurant ? "restaurant" : propertyDetail.propertyType)
       : null;
   const [resolvedType, setResolvedType] = useState(ssrResolvedType);
@@ -144,29 +147,19 @@ function PropertyDetailRoute() {
   return resolvedType === "cafe" ? <CafePage /> : resolvedType === "restaurant" ? <ResturantPage /> : <HotelDetail />;
 }
 
+import ContactUs from "@/modules/website/pages/ContactUs";
+
 const WebsiteRoutes = [
   <Route key="home" path="/" element={withRouteSuspense(<Home />)} />,
-  // <Route key="home" path="/" element={withRouteSuspense(<Hotels />)} />,
-  // <Route key="home" path="/" element={withRouteSuspense(<RestaurantHomepage />)} />,
-  //  <Route key="home" path="/" element={withRouteSuspense(<CafeHomepage />)} />,
-
   <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
-  // <Route key="hotel-detail" path="/hotels/:city/:propertyId" element={<HotelDetail />} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
-  // <Route key="hotel-detail" path="/hotels/:propertyId" element={<HotelDetail />} />,
-
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={withRouteSuspense(<RoomSelection />)} />,
-  // <Route key="cafes" path="/cafes" element={<Cafes />} />,
-  // <Route key="bars" path="/bars" element={<Bars />} />,
   <Route key="events" path="/events" element={<Events />} />,
   <Route key="offers" path="/offers" element={<OfferListing />} />,
-  // OfferListing
   <Route key="entertainment" path="/entertainment" element={<Entertainment />} />,
   <Route key="about" path="/about" element={<About />} />,
   <Route key="reviews" path="/reviews" element={<Reviews />} />,
   <Route key="login" path="/login" element={<Login />} />,
-  // <Route key="careers" path="/careers" element={<Careers />} />,
-
   <Route key="restaurant-homepage" path="/restaurant-homepage" element={withRouteSuspense(<RestaurantHomepage />)} />,
   <Route
     key="resturant-homepage-legacy"
@@ -181,31 +174,24 @@ const WebsiteRoutes = [
   <Route key="wine-category" path="/wine-detail/:citySlug/:propertySlug/:slug" element={withRouteSuspense(<WineCategoryTemplate />)} />,
   <Route key="wine-subcategory-global" path="/wine-subcategory/:slug" element={withRouteSuspense(<WineSubCategoryTemplate />)} />,
   <Route key="wine-subcategory" path="/wine-detail/:citySlug/:propertySlug/sub/:slug" element={withRouteSuspense(<WineSubCategoryTemplate />)} />,
-
   <Route key="resturant-detail-legacy" path="/resturant/:propertyId" element={withRouteSuspense(<ResturantPage />)} />,
-
-  // Restaurant Sub-Verticals
-  <Route path="/:citySlug/:propertySlug/:categoryType" element={<ResturantCategoryPageTemplate />}/>,
-
+  <Route path="/:citySlug/:propertySlug/:categoryType" element={<ResturantCategoryPageTemplate />} />,
   <Route key="restaurant-italian" path="/restaurant/italian" element={<Italian />} />,
   <Route key="restaurant-lounge" path="/restaurant/luxury-lounge" element={<LuxuryLounge />} />,
   <Route key="restaurant-spicy-darbar" path="/restaurant/spicy-darbar" element={<SpicyDarbar />} />,
   <Route key="restaurant-takeaway" path="/restaurant/takeaway" element={<TakeawayTreats />} />,
-
-  // Detail Pages
   <Route key="offer-details" path="/offers/:id" element={<OfferDetails />} />,
   <Route key="property-details" path="/properties/:id" element={<PropertyDetails />} />,
   <Route key="event-details" path="/events/:eventSlug" element={<EventDetails />} />,
-
-  // News
   <Route key="news-listing" path="/news" element={<NewsListing />} />,
   <Route key="news-details" path="/news/:newsSlug" element={<NewsDetails />} />,
-
-  // Hotel Detail Pages
   <Route key="hotel-news-details" path="/hotel/news/:slug" element={<HotelNewsDetails />} />,
   <Route key="hotel-offer-details" path="/hotel/offers/:id" element={<HotelOfferDetails />} />,
   <Route key="checkout" path="/checkout" element={<Checkout />} />,
-
+  <Route key="privacy-policy" path="/privacy-policy" element={<PrivacyPolicy />} />,
+  <Route key="journey" path="/journey" element={<Journey />} />,
+  <Route key="legal-disclaimer" path="/legal-disclaimer" element={<LegalDisclaimer />} />,
+  <Route key="contact" path="/contact" element={<ContactUs />} />,
   <Route key="not-found" path="*" element={<NotFound />} />,
 ];
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -34,6 +35,7 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [showShare, setShowShare] = useState(false);
+  const [showBookmarkMessage, setShowBookmarkMessage] = useState(false);
   const [activeThumb, setActiveThumb] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -89,6 +91,28 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
     setInitialGalleryIndex(i);
     setIsAutoPlaying(false);
     setTimeout(() => setIsAutoPlaying(true), 8000);
+  };
+
+  const handleBookmark = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const message = isMobile
+      ? "Use browser menu to bookmark"
+      : "Press Ctrl + D to bookmark";
+
+    toast(message, {
+      icon: "🔖",
+      style: {
+        borderRadius: "10px",
+        background: "#18181b",
+        color: "#fff",
+        fontSize: "12px",
+      },
+    });
+
+    setShowBookmarkMessage(true);
+    setTimeout(() => {
+      setShowBookmarkMessage(false);
+    }, 3000);
   };
 
   const socialPlatforms = [
@@ -473,25 +497,34 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               </button>
             </div>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15 cursor-pointer"
+            <div className="relative">
+              <AnimatePresence>
+                {showBookmarkMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                    animate={{ opacity: 1, y: -52, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.9 }}
+                    className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-800 shadow-xl rounded-full px-4 py-2 flex items-center gap-2 z-50 whitespace-nowrap"
                   >
-                    <Heart className="w-3.5 h-3.5" />
-                    Save
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
-                  <p className="flex items-center gap-2 text-[11px] font-medium">
-                    <Heart size={14} className="text-primary" />
-                    <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
-                    <span className="md:hidden">Use browser menu to bookmark</span>
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    <Heart size={14} className="text-primary fill-primary" />
+                    <p className="text-[10px] font-bold text-zinc-800 dark:text-white">
+                      {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+                        ? "Use browser menu to bookmark"
+                        : "Press Ctrl + D to bookmark"}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15 cursor-pointer"
+                onClick={handleBookmark}
+                onMouseEnter={() => setShowBookmarkMessage(true)}
+                onMouseLeave={() => setShowBookmarkMessage(false)}
+              >
+                <Heart className="w-3.5 h-3.5" />
+                Save
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -522,25 +555,30 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
             <button className="flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]">
               <Share2 className="w-3 h-3" /> Share
             </button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className="flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
+            <div className="relative">
+              <AnimatePresence>
+                {showBookmarkMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                    animate={{ opacity: 1, y: -45, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.9 }}
+                    className="absolute right-0 bg-white dark:bg-zinc-800 shadow-xl rounded-full px-4 py-1.5 flex items-center gap-2 z-50 whitespace-nowrap"
                   >
-                    <Heart className="w-3 h-3" />
-                    Save
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
-                  <p className="flex items-center gap-2 text-[11px] font-medium">
-                    <Heart size={14} className="text-primary" />
-                    <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
-                    <span className="md:hidden">Use browser menu to bookmark</span>
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    <Heart size={12} className="text-primary fill-primary" />
+                    <p className="text-[10px] font-bold text-zinc-800 dark:text-white">
+                      Use browser menu
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                className="flex cursor-pointer items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-[#e8d8c4]/70 dark:bg-white/10 text-[#3d1f00] dark:text-[#e8d0b0]"
+                onClick={handleBookmark}
+              >
+                <Heart className="w-3 h-3" />
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>

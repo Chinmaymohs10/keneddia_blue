@@ -235,6 +235,7 @@ function ResturantBanner({
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [initialGalleryIndex, setInitialGalleryIndex] = useState(0);
   const [showShareReactions, setShowShareReactions] = useState(false);
+  const [showBookmarkMessage, setShowBookmarkMessage] = useState(false);
 
 
   const [mobileIndex, setMobileIndex] = useState(0);
@@ -277,7 +278,27 @@ function ResturantBanner({
     },
   ];
 
-  // handleBookmark removed as per request
+  const handleBookmark = () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const message = isMobile 
+      ? "Use browser menu to bookmark" 
+      : "Press Ctrl + D to bookmark";
+    
+    toast(message, {
+      icon: "🔖",
+      style: {
+        borderRadius: "10px",
+        background: "#18181b",
+        color: "#fff",
+        fontSize: "12px",
+      },
+    });
+
+    setShowBookmarkMessage(true);
+    setTimeout(() => {
+      setShowBookmarkMessage(false);
+    }, 3000);
+  };
 
 
   const openGalleryAt = (index: number) => {
@@ -506,30 +527,35 @@ function ResturantBanner({
               </Button>
             </div>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="rounded-full active:scale-95 transition-all"
+            <div className="relative">
+              <AnimatePresence>
+                {showBookmarkMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: -60, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-4 py-2.5 flex items-center gap-2 z-50 backdrop-blur-md whitespace-nowrap"
                   >
-                    <Heart className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-zinc-900 text-white border-none shadow-xl px-4 py-2">
-                  <p className="flex items-center gap-2 text-[11px] font-medium">
-                    <Heart size={14} className="text-primary" />
-                    <span className="hidden md:inline">Press Ctrl + D to bookmark</span>
-                    <span className="md:hidden">Use browser menu to bookmark</span>
-                  </p>
-                </TooltipContent>
-
-
-
-
-              </Tooltip>
-            </TooltipProvider>
+                    <Heart size={14} className="text-primary fill-primary" />
+                    <p className="text-[11px] font-bold text-zinc-800 dark:text-white">
+                      {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) 
+                        ? "Use browser menu to bookmark" 
+                        : "Press Ctrl + D to bookmark"}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <Button
+                variant="outline"
+                className="rounded-full active:scale-95 transition-all"
+                onClick={handleBookmark}
+                onMouseEnter={() => setShowBookmarkMessage(true)}
+                onMouseLeave={() => setShowBookmarkMessage(false)}
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            </div>
 
           </div>
         </div>

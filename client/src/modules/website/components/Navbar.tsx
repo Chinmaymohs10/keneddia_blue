@@ -170,7 +170,10 @@ export default function Navbar({
     location.pathname === "/wine-homepage" ||
     location.pathname === "/cafe-homepage" ||
     location.pathname.startsWith("/wine-detail") ||
-    location.pathname.startsWith("/wine-categories");
+    location.pathname.startsWith("/wine-categories") ||
+    location.pathname.startsWith("/privacy-policy") ||
+    location.pathname.startsWith("/legal-disclaimer");
+
   const showQuickBook = showQuickBookProp !== undefined ? showQuickBookProp : isTransparentHeroRoute;
   const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions
     ? quickBookOptions
@@ -790,8 +793,8 @@ function MobileDropdown({
                   {subItem.label}
                 </a>
               ) : (
-                  <Link
-                    key={subItem.href}
+                <Link
+                  key={subItem.href}
                   to={subItem.href}
                   onClick={(e) => handleHashLink(e, subItem.href)}
                   className="site-mobile-submenu-link"
