@@ -151,6 +151,11 @@ import ContactUs from "@/modules/website/pages/ContactUs";
 
 const WebsiteRoutes = [
   <Route key="home" path="/" element={withRouteSuspense(<Home />)} />,
+  // <Route key="home" path="/" element={withRouteSuspense(<Hotels />)} />,
+  // <Route key="home" path="/" element={withRouteSuspense(<RestaurantHomepage />)} />,
+  // <Route key="home" path="/" element={withRouteSuspense(<CafeHomepage />)} />,
+  // <Route key="home" path="/" element={withRouteSuspense(<WineHomepage />)} />,
+
   <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={withRouteSuspense(<RoomSelection />)} />,

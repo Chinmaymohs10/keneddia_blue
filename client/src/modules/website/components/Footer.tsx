@@ -15,9 +15,15 @@ const footerSections = [
   {
     title: "About Us",
     links: [
-      { label: "Our Journey", href: "/journey" },
-      { label: "Legal Disclaimer", href: "/legal-disclaimer" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Our Journey",
+        //  href: "/journey" 
+        },
+      { label: "Legal Disclaimer", 
+        // href: "/legal-disclaimer"
+       },
+      { label: "Privacy Policy", 
+        // href: "/privacy-policy"
+       },
     ],
   },
   {
@@ -32,7 +38,9 @@ const footerSections = [
   {
     title: "Support",
     links: [
-      { label: "Contact Us", href: "/contact" },
+      { label: "Contact Us",
+        //  href: "/contact" 
+        },
       { label: "Newsroom", href: "/news" },
     ],
   },

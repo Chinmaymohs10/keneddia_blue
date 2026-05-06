@@ -56,7 +56,7 @@ function Sidebar({ isOpen, onToggle }) {
         hasSubmenu: true,
         submenu: [
           { name: "Manage Hierarchy", path: "/WineManagement" },
-          { name: "Liquor Page Headers", path: "/WineHeaders" },
+          // { name: "Liquor Page Headers", path: "/WineHeaders" },
         ],
       });
     }

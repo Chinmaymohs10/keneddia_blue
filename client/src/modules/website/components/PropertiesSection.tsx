@@ -61,9 +61,10 @@ interface ApiProperty {
 
 const SUBTITLE_LIMIT = 120;
 // ── PROD BASE URLS ─────────────────────────────
-const HOTEL_BASE_URL = "https://hotels.kennediablu.com";
+const HOTEL_BASE_URL      = "https://hotels.kennediablu.com";
 const RESTAURANT_BASE_URL = "https://restaurants.kennediablu.com/";
-const CAFE_BASE_URL = "https://cafes.kennediablu.com/";
+const CAFE_BASE_URL       = "https://cafes.kennediablu.com/";
+const WINE_BASE_URL       = "https://onenight.kennediablu.com/";
 
 const getPropertyUrls = (
   propertyType: string | undefined,
@@ -83,7 +84,9 @@ const getPropertyUrls = (
     ? CAFE_BASE_URL
     : isRestaurant
       ? RESTAURANT_BASE_URL
-      : HOTEL_BASE_URL;
+      : isWine
+        ? WINE_BASE_URL
+        : HOTEL_BASE_URL;
 
   const localPath = isWine ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
   const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
@@ -293,7 +296,9 @@ const CarouselItem = ({
               //   ? CAFE_BASE_URL
               //   : _pType === "restaurant"
               //     ? RESTAURANT_BASE_URL
-              //     : HOTEL_BASE_URL;
+              //     : _pType === "wine"
+              //       ? WINE_BASE_URL
+              //       : HOTEL_BASE_URL;
               // const finalUrl = `${_base.replace(/\/$/, "")}/${propertyPath}`;
 
               // window.open(finalUrl, "_blank", "noopener,noreferrer");
@@ -838,7 +843,9 @@ transition-all cursor-pointer"
                             //   ? CAFE_BASE_URL
                             //   : isRestaurant
                             //     ? RESTAURANT_BASE_URL
-                            //     : HOTEL_BASE_URL;
+                            //     : isWine
+                            //       ? WINE_BASE_URL
+                            //       : HOTEL_BASE_URL;
                             // const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
 
                             // window.open(
