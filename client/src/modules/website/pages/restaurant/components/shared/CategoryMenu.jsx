@@ -46,56 +46,82 @@ export default function CategoryMenu({
 
   // ── Fetch thumbnails — keep all active ones, filter by verticalId at match time ──
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyId) {
+      console.warn("[CategoryMenu] ⚠️ No propertyId — skipping thumbnail fetch");
+      return;
+    }
+    console.log("[CategoryMenu] 🔍 Fetching thumbnails for propertyId:", propertyId, "| verticalId:", verticalId);
     (async () => {
       try {
         const res = await getAllMenuThumbnails(propertyId);
+        console.log("[CategoryMenu] 📦 Raw API response:", res);
         const data = res?.data || [];
-        // Only keep active thumbnails — do NOT filter by root propertyId here
-        // because the API returns inconsistent/null propertyIds at the root level.
-        // Vertical-level filtering happens in getThumbsForTab via verticalCardResponseDTO.id
+        console.log("[CategoryMenu] 📋 Total records in data:", data.length);
         const active = Array.isArray(data) ? data.filter((t) => t.active === true) : [];
+        console.log("[CategoryMenu] ✅ Active thumbnails:", active.length, active);
         setThumbnails(active);
-      } catch {
-        // non-fatal
+      } catch (err) {
+        console.error("[CategoryMenu] ❌ Thumbnail fetch error:", err);
       }
     })();
   }, [propertyId]);
 
-  // ── Thumbnail matching ────────────────────────────────────────────────────
-  // Strict rules:
-  //   1. Only show thumbnails where verticalCardResponseDTO.id === verticalId
-  //   2. Within that, prefer matching itemTypeId of the current tab
-  //   3. If no match at all → return [] → left column hidden, no static fallback
-  //   4. 1 thumbnail shown per 3 menu items (ceil(itemCount / 3))
+  // ── Thumbnail matching — mirrors CafeSignatureDrinks.getDisplayThumbs ──────
   const getThumbsForTab = (tabIndex) => {
     const section = menu[tabIndex];
-    if (!section || !verticalId) return [];
+    if (!section) return [];
 
     const sectionTypeId = section.itemTypeId ?? section.items?.[0]?.typeId ?? null;
     const itemCount = section.items?.length || 0;
     const thumbsNeeded = Math.ceil(itemCount / 3);
 
-    // All thumbnails strictly belonging to this vertical
-    const verticalThumbs = thumbnails.filter(
-      (t) => Number(t.verticalCardResponseDTO?.id) === Number(verticalId),
-    );
+    console.log(`[CategoryMenu] 🗂️ Tab[${tabIndex}] "${section.category}" | itemCount:${itemCount} | thumbsNeeded:${thumbsNeeded} | sectionTypeId:${sectionTypeId}`);
+    console.log(`[CategoryMenu] 🗃️ All thumbnails in state (${thumbnails.length}):`, thumbnails);
 
-    // Nothing for this vertical — show nothing
-    if (!verticalThumbs.length) return [];
-
-    // Prefer type-specific match within the vertical
-    const typeMatched = sectionTypeId !== null
-      ? verticalThumbs.filter((t) => Number(t.itemTypeId) === Number(sectionTypeId))
+    // Prefer vertical-scoped match, fall back to property-level
+    const verticalThumbs = verticalId
+      ? thumbnails.filter(
+          (t) =>
+            Number(t.verticalCardResponseDTO?.id ?? t.verticalCardId) ===
+            Number(verticalId),
+        )
       : [];
 
-    const pool = typeMatched.length > 0 ? typeMatched : verticalThumbs;
+    console.log(`[CategoryMenu] 🎯 verticalId:${verticalId} → verticalThumbs matched:`, verticalThumbs.length, verticalThumbs);
 
-    // Cycle through pool to fill thumbsNeeded slots
+    const propertyThumbs = thumbnails.filter(
+      (t) =>
+        Number(t.propertyId ?? t.propertyResponseDTO?.id) === Number(propertyId),
+    );
+
+    console.log(`[CategoryMenu] 🏠 propertyId:${propertyId} → propertyThumbs matched:`, propertyThumbs.length, propertyThumbs);
+
+    const scopedThumbs = verticalThumbs.length > 0 ? verticalThumbs : propertyThumbs;
+    console.log(`[CategoryMenu] 📌 Using scope: ${verticalThumbs.length > 0 ? "VERTICAL" : "PROPERTY"} (${scopedThumbs.length} thumbs)`);
+
+    if (!scopedThumbs.length) {
+      console.warn("[CategoryMenu] ⚠️ No scoped thumbnails found — left column will be hidden");
+      return [];
+    }
+
+    // Prefer type-specific match within the scope
+    const typeMatched =
+      sectionTypeId !== null
+        ? scopedThumbs.filter(
+            (t) => Number(t.itemTypeId) === Number(sectionTypeId),
+          )
+        : [];
+
+    console.log(`[CategoryMenu] 🔎 typeMatched (itemTypeId=${sectionTypeId}):`, typeMatched.length);
+
+    const pool = typeMatched.length > 0 ? typeMatched : scopedThumbs;
+    console.log(`[CategoryMenu] 🎲 Final pool size: ${pool.length} | thumbsNeeded: ${thumbsNeeded}`);
+
     const result = [];
     for (let i = 0; i < thumbsNeeded; i++) {
       result.push(pool[i % pool.length]);
     }
+    console.log(`[CategoryMenu] 🖼️ Returning ${result.length} thumbnail(s):`, result);
     return result;
   };
 
@@ -291,12 +317,12 @@ export default function CategoryMenu({
                     return (
                       <div
                         key={i}
-                        className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-black"
+                        className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-zinc-100 dark:border-white/5 bg-zinc-100 dark:bg-zinc-900"
                       >
                         {vid ? (
                           <video
                             src={url}
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover"
                             autoPlay
                             loop
                             muted
@@ -306,7 +332,7 @@ export default function CategoryMenu({
                           <img
                             src={url}
                             alt={thumb.tag}
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover"
                           />
                         )}
 
