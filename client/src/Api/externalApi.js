@@ -77,3 +77,28 @@ export const savePetPoojaOrder = ({ appKey, appSecret, accessToken, orderinfo })
     "https://47pfzh5sf2.execute-api.ap-southeast-1.amazonaws.com/V1/save_order",
     { "app-key": appKey, "app-secret": appSecret, "access-token": accessToken, orderinfo }
   );
+
+// ─── FOOD DELIVERY LINKS ──────────────────────────────────────────────────────
+export const createFoodDeliveryLink = (data) =>
+  API.post("api/v1/food-delivery-links/create", data);
+
+export const getAllFoodDeliveryLinks = () =>
+  API.get("api/v1/food-delivery-links");
+
+export const getFoodDeliveryLinkById = (id) =>
+  API.get(`api/v1/food-delivery-links/${id}`);
+
+export const updateFoodDeliveryLink = (id, data) =>
+  API.put(`api/v1/food-delivery-links/${id}`, data);
+
+export const toggleFoodDeliveryLinkActive = (id, active) =>
+  API.patch(`api/v1/food-delivery-links/${id}/active`, null, { params: { active } });
+
+export const toggleFoodDeliveryZomato = (id, active) =>
+  API.patch(`api/v1/food-delivery-links/${id}/zomato`, null, { params: { active } });
+
+export const toggleFoodDeliverySwiggy = (id, active) =>
+  API.patch(`api/v1/food-delivery-links/${id}/swiggy`, null, { params: { active } });
+
+export const filterFoodDeliveryLinks = (params = {}) =>
+  API.get("api/v1/food-delivery-links/filter", { params });

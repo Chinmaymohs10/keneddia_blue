@@ -41,6 +41,7 @@ import CommentReviewsTab from "./tabs/CommentReviewsTab";
 import CafeStoryTab from "./tabs/cafe/CafeStoryTab";
 import CafeAbout from "./tabs/cafe/CafeAbout";
 import PetPoojaConfigTab from "./tabs/resturant/PetPoojaConfigTab";
+import FoodDeliveryTab from "./tabs/resturant/FoodDeliveryTab";
 
 // Import Modals
 import AddEditOverviewModal from "./modals/AddEditOverviewModal";
@@ -223,7 +224,7 @@ const PropertyDetail = ({ property, onBack }) => {
     Restaurant: [
       "overview",
       "config",
-      // "pet pooja",  
+      // "pet pooja",
       "gallery",
       "verticals",
       "buffet section",
@@ -236,6 +237,7 @@ const PropertyDetail = ({ property, onBack }) => {
       // "group bookings",
       "Header items",
       "enquiries",
+      "food delivery",
       // "comment reviews",
     ],
   };
@@ -397,6 +399,12 @@ const PropertyDetail = ({ property, onBack }) => {
       case "pet pooja":
         return (
           <PetPoojaConfigTab
+            propertyData={currentPropertyInfo}
+          />
+        );
+      case "food delivery":
+        return (
+          <FoodDeliveryTab
             propertyData={currentPropertyInfo}
           />
         );
