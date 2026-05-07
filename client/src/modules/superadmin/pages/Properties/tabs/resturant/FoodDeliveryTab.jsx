@@ -278,10 +278,12 @@ export default function FoodDeliveryTab({ propertyData }) {
               <div className="border-t border-gray-100" />
               <div className="flex flex-wrap gap-5">
                 {[
-                  { key: "isActive",       label: "Overall Active" },
-                  { key: "isZomatoActive", label: "Zomato Active" },
-                  { key: "isSwiggyActive", label: "Swiggy Active" },
-                ].map(({ key, label }) => (
+                  { key: "isActive",       label: "Overall Active", showOnCreate: true  },
+                  { key: "isZomatoActive", label: "Zomato Active",  showOnCreate: false },
+                  { key: "isSwiggyActive", label: "Swiggy Active",  showOnCreate: false },
+                ]
+                  .filter(({ showOnCreate }) => record || showOnCreate)
+                  .map(({ key, label }) => (
                   <label key={key} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
