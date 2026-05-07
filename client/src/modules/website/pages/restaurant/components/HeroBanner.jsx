@@ -208,9 +208,9 @@ export default function HeroBanner({ initialSlides, onReady }) {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
         <div className="relative z-10 flex flex-col items-center gap-3 text-center px-6">
           <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
-            No Preview Available
+            No Image Available
           </div>
-          <p className="text-sm text-white/25">Hero section has no active slides configured.</p>
+          <p className="text-sm text-white/25">No hero image is configured for this section.</p>
         </div>
       </section>
     );
@@ -224,7 +224,7 @@ export default function HeroBanner({ initialSlides, onReady }) {
         <div className="absolute inset-0 hidden items-center justify-center bg-neutral-900 md:flex">
           <div className="text-center px-6">
             <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/40">
-              No Preview
+              No Image Available
             </div>
           </div>
         </div>
@@ -308,12 +308,12 @@ export default function HeroBanner({ initialSlides, onReady }) {
       )}
 
       {!activeMobileSlide ? (
-        <div
-          className="relative z-10 flex md:hidden w-full overflow-hidden bg-neutral-900 items-center justify-center h-full"
+        <div className="relative z-10 flex w-full items-center justify-center overflow-hidden bg-neutral-900 md:hidden"
+          style={{ height: "calc(75vw + 64px)", minHeight: "320px", maxHeight: "500px" }}
         >
           <div className="text-center px-6">
             <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/40 inline-block">
-              No Preview
+              No Image Available
             </div>
           </div>
         </div>

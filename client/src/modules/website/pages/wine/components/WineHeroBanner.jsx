@@ -67,6 +67,7 @@ const HeroMedia = ({ slide }) => {
 
 export default function WineHeroBanner({ initialSlides, onReady }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const onReadyCalled = useRef(false);
   const ssrLoaded = Array.isArray(initialSlides) && initialSlides.length > 0;
   const [slides, setSlides] = useState(ssrLoaded ? initialSlides : []);
@@ -146,6 +147,16 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
     return () => window.clearInterval(timer);
   }, [desktopSlides.length]);
 
+  useEffect(() => {
+    if (mobileSlides.length <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setMobileActiveIndex((current) => (current + 1) % mobileSlides.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [mobileSlides.length]);
+
   const handleCtaClick = (link) => {
     if (!link) return;
     const url = /^https?:\/\//i.test(link) ? link : `https://${link}`;
@@ -158,6 +169,11 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
     setActiveIndex((index + list.length) % list.length);
   };
 
+  const goToMobileSlide = (index) => {
+    if (mobileSlides.length === 0) return;
+    setMobileActiveIndex((index + mobileSlides.length) % mobileSlides.length);
+  };
+
   const activeSlide = useMemo(() => {
     const list = desktopSlides.length > 0 ? desktopSlides : slides;
     if (list.length === 0) return null;
@@ -165,11 +181,9 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   }, [activeIndex, desktopSlides, slides]);
 
   const activeMobileSlide = useMemo(() => {
-    if (mobileSlides.length > 0) {
-      return mobileSlides[activeIndex % mobileSlides.length];
-    }
-    return activeSlide;
-  }, [activeIndex, mobileSlides, activeSlide]);
+    if (mobileSlides.length === 0) return null;
+    return mobileSlides[mobileActiveIndex % mobileSlides.length];
+  }, [mobileActiveIndex, mobileSlides]);
 
   if (isLoading) {
     return (
@@ -207,9 +221,6 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
         >
           <div className="hidden md:block h-full w-full">
             <HeroMedia slide={activeSlide} />
-          </div>
-          <div className="md:hidden h-full w-full">
-             <HeroMedia slide={activeMobileSlide} />
           </div>
         </motion.div>
       </AnimatePresence>
@@ -279,17 +290,40 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
       </div>
 
       <div className="relative z-10 block md:hidden">
-        <div
-          className="relative w-full overflow-hidden"
-          style={{ height: "calc(85vw + 64px)", minHeight: "420px", maxHeight: "600px" }}
-        >
-          {/* Media is handled by the unified background above */}
-
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+        {!activeMobileSlide ? (
+          <div
+            className="relative z-10 flex w-full items-center justify-center overflow-hidden bg-neutral-900"
+            style={{ height: "calc(85vw + 64px)", minHeight: "420px", maxHeight: "600px" }}
+          >
+            <div className="text-center px-6">
+              <div className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/40 inline-block">
+                No Image Available
+              </div>
+            </div>
           </div>
+        ) : (
+          <div
+            className="relative w-full overflow-hidden"
+            style={{ height: "calc(85vw + 64px)", minHeight: "420px", maxHeight: "600px" }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`mobile-${activeMobileSlide.id}`}
+                initial={{ opacity: 0, scale: 1.03 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7 }}
+                className="absolute inset-0"
+              >
+                <HeroMedia slide={activeMobileSlide} />
+              </motion.div>
+            </AnimatePresence>
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/60 to-transparent" />
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+            </div>
+
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-black/60 to-transparent" />
 
           <div className="absolute inset-x-0 z-20 flex flex-col items-center justify-center px-6 text-center" style={{ top: "64px", bottom: "4rem" }}>
             {(activeMobileSlide || activeSlide)?.tag && (
@@ -356,36 +390,37 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
             )}
           </div>
 
-          <div className="absolute inset-x-0 bottom-4 z-20 flex items-center justify-center gap-3">
-            <button
-              onClick={() => goToSlide(activeIndex - 1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
+            <div className="absolute inset-x-0 bottom-4 z-20 flex items-center justify-center gap-3">
+              <button
+                onClick={() => goToMobileSlide(mobileActiveIndex - 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
 
-            <div className="flex items-center gap-2">
-              {(desktopSlides.length > 0 ? desktopSlides : slides).map((_, index) => (
-                <div
-                  key={`mob-dot-${index}`}
-                  onClick={() => goToSlide(index)}
-                  className={`h-1 cursor-pointer rounded-full transition-all duration-500 ${
-                    activeIndex % (desktopSlides.length || slides.length) === index
-                      ? "w-10 bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]"
-                      : "w-4 bg-white/20 hover:bg-white/40"
-                  }`}
-                />
-              ))}
+              <div className="flex items-center gap-2">
+                {mobileSlides.map((_, index) => (
+                  <div
+                    key={`mob-dot-${index}`}
+                    onClick={() => goToMobileSlide(index)}
+                    className={`h-1 cursor-pointer rounded-full transition-all duration-500 ${
+                      mobileActiveIndex === index
+                        ? "w-10 bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]"
+                        : "w-4 bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() => goToMobileSlide(mobileActiveIndex + 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
             </div>
-
-            <button
-              onClick={() => goToSlide(activeIndex + 1)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="absolute bottom-30 right-4 z-20 hidden max-w-[calc(100vw-2rem)] flex-col items-end gap-4 md:flex md:right-8 lg:right-12">
