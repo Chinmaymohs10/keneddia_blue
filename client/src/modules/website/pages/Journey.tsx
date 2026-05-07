@@ -38,15 +38,15 @@ const CHAPTERS = [
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600",
     accentColor: "#0A2357",
   },
-  {
-    index: "03",
-    year: "2018",
-    label: "Growing Roots",
-    headline: "200 people.\nOne question.",
-    body: "The team grew — but the hiring rule never changed: do you believe in the dignity of service? A second property in Bengaluru's Indiranagar opened and sold out within weeks. We stopped counting beds and started counting moments.",
-    image: "https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1600",
-    accentColor: "#1a6b40",
-  },
+  // {
+  //   index: "03",
+  //   year: "2018",
+  //   label: "Growing Roots",
+  //   headline: "200 people.\nOne question.",
+  //   body: "The team grew — but the hiring rule never changed: do you believe in the dignity of service? A second property in Bengaluru's Indiranagar opened and sold out within weeks. We stopped counting beds and started counting moments.",
+  //   image: "https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1600",
+  //   accentColor: "#1a6b40",
+  // },
   {
     index: "04",
     year: "2022",
@@ -99,28 +99,44 @@ const VERTICALS = [
     name: "Hotels & Resorts",
     stat: "5 Properties · 400+ Rooms",
     desc: "Handcrafted stays that feel personal. Every property is designed around its city's soul — not copied from a brand manual.",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200",
+    properties: [
+      { name: "Kennedia Blu — Pondicherry", slug: "kennedia-blu-pondicherry", image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200" },
+      { name: "Kennedia Urban — Bengaluru", slug: "kennedia-urban-bengaluru", image: "https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1200" },
+      { name: "Kennedia Skyline — Mumbai", slug: "kennedia-skyline-mumbai", image: "https://images.unsplash.com/photo-1455587734955-081b22074882?q=80&w=1200" },
+      { name: "Kennedia Heritage — Jaipur", slug: "kennedia-heritage-jaipur", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200" },
+    ],
   },
   {
     no: "02",
     name: "Restaurants & Cafés",
     stat: "12 Outlets · 3 Cuisines",
     desc: "From beachside patisseries to rooftop omakase, our F&B arm tells stories through every plate — seasonal, local, obsessive.",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
+    properties: [
+      { name: "The Napkin — Pondicherry", slug: "the-napkin-pondicherry", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200" },
+      { name: "Omakase Rooftop — Mumbai", slug: "omakase-rooftop-mumbai", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200" },
+      { name: "Patisserie Bleu — Goa", slug: "patisserie-bleu-goa", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1200" },
+    ],
   },
   {
     no: "03",
     name: "Events & MICE",
     stat: "800+ Events / Year",
     desc: "Intimate proposals to 1,200-delegate summits. Our events team treats every occasion as unrepeatable — because it is.",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200",
+    properties: [
+      { name: "Grand Ballroom — Bengaluru", slug: "grand-ballroom-bengaluru", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1200" },
+      { name: "Pavilion — Jaipur", slug: "pavilion-jaipur", image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=1200" },
+    ],
   },
   {
     no: "04",
     name: "Wellness & Spa",
     stat: "3 Spas · Ayurvedic Roots",
     desc: "Where ancient practice meets modern precision. Guests arrive exhausted and leave, for the first time in months, genuinely present.",
-    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200",
+    properties: [
+      { name: "Ananda Spa — Pondicherry", slug: "ananda-spa-pondicherry", image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1200" },
+      { name: "Ritual — Goa", slug: "ritual-goa", image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200" },
+      { name: "Praana Wellness — Jaipur", slug: "praana-wellness-jaipur", image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=1200" },
+    ],
   },
 ];
 
@@ -156,7 +172,7 @@ function Marquee() {
       <motion.div style={{ x }} className="flex whitespace-nowrap w-max">
         {items.map((item, i) => (
           <span key={i} style={{ width: ITEM_W }} className="inline-flex items-center gap-4 px-8">
-            <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-gray-400 dark:text-white/30">
+            <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-gray-600 dark:text-white/30">
               {item}
             </span>
             <span className="text-base leading-none" style={{ color: ORANGE }}>·</span>
@@ -180,18 +196,18 @@ const HERO_CARDS = [
     text: "We opened our doors with an obsessive commitment to remembering every guest's name. The rest followed.",
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600",
   },
-  {
-    title: "Growing Roots",
-    subtitle: "Bengaluru & Beyond",
-    text: "We stopped counting beds and started curating moments. Every space we build is a sentence worth reading.",
-    image: "https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1600",
-  },
-  {
-    title: "The Legacy",
-    subtitle: "A Brand Becomes a Movement",
-    text: "A Michelin-recognized kitchen. Fifteen industry awards. A thousand small moments that became a legacy.",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600",
-  }
+  // {
+  //   title: "Growing Roots",
+  //   subtitle: "Bengaluru & Beyond",
+  //   text: "We stopped counting beds and started curating moments. Every space we build is a sentence worth reading.",
+  //   image: "https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=1600",
+  // },
+  // {
+  //   title: "The Legacy",
+  //   subtitle: "A Brand Becomes a Movement",
+  //   text: "A Michelin-recognized kitchen. Fifteen industry awards. A thousand small moments that became a legacy.",
+  //   image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1600",
+  // }
 ];
 
 // ─── HORIZONTAL STORY HERO ────────────────────────────────────────────────────
@@ -200,8 +216,12 @@ function HorizontalStoryHero() {
   const targetRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
 
-  // 5 panels (1 intro + 4 cards) → travel 80% of total width
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-80%"]);
+  const totalPanels = 1 + HERO_CARDS.length;
+  // x % is relative to the track's own width (totalPanels × 100vw)
+  // so travelling (totalPanels-1) panels = (totalPanels-1)/totalPanels × 100 %
+  const travelPct = `${((totalPanels - 1) / totalPanels) * 100}%`;
+
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", `-${travelPct}`]);
   const smoothX = useSpring(x, { stiffness: 55, damping: 20 });
 
   // Orange progress line at bottom
@@ -211,13 +231,13 @@ function HorizontalStoryHero() {
   const [panelIdx, setPanelIdx] = useState(0);
   useEffect(() => {
     const unsub = scrollYProgress.on("change", (v) => {
-      setPanelIdx(Math.min(Math.floor(v * 5), 4));
+      setPanelIdx(Math.min(Math.floor(v * totalPanels), totalPanels - 1));
     });
     return unsub;
-  }, [scrollYProgress]);
+  }, [scrollYProgress, totalPanels]);
 
   return (
-    <section ref={targetRef} className="relative h-[500vh]">
+    <section ref={targetRef} style={{ height: `${totalPanels * 100}vh` }} className="relative">
       {/* ── Sticky viewport ── */}
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#faf9f6] dark:bg-black">
 
@@ -229,7 +249,7 @@ function HorizontalStoryHero() {
 
         {/* Panel indicator dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: totalPanels }).map((_, i) => (
             <motion.div
               key={i}
               animate={{ width: i === panelIdx ? 24 : 6, opacity: i === panelIdx ? 1 : 0.3 }}
@@ -239,11 +259,11 @@ function HorizontalStoryHero() {
           ))}
         </div>
 
-        {/* Horizontal track */}
-        <motion.div style={{ x: smoothX }} className="flex w-[500%] h-full">
+        {/* Horizontal track — width scales with panel count */}
+        <motion.div style={{ x: smoothX, width: `${totalPanels * 100}%` }} className="flex h-full">
 
           {/* ── PANEL 0: Intro ── */}
-          <div className="w-[20%] h-full relative shrink-0 flex">
+          <div className="h-full relative shrink-0 flex" style={{ width: `${100 / totalPanels}%` }}>
             {/* Left column — pure dark, typographic */}
             <div className="w-1/2 h-full flex flex-col justify-center px-16 lg:px-24 relative z-10 bg-[#faf9f6] dark:bg-black">
               {/* Ghosted "01" watermark */}
@@ -295,7 +315,7 @@ function HorizontalStoryHero() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.9 }}
-                className="text-[#0A2357]/45 dark:text-white/45 text-base font-light leading-relaxed max-w-xs"
+                className="text-[#0A2357]/70 dark:text-white/45 text-base font-light leading-relaxed max-w-xs"
               >
                 A decade of stories. Scroll right to unfold each chapter.
               </motion.p>
@@ -310,9 +330,9 @@ function HorizontalStoryHero() {
                 <motion.div
                   animate={{ x: [0, 10, 0] }}
                   transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-                  className="flex items-center gap-2 text-[#0A2357]/30 dark:text-white/30"
+                  className="flex items-center gap-2 text-[#0A2357]/55 dark:text-white/30"
                 >
-                  <div className="h-px w-8 bg-[#0A2357]/25 dark:bg-white/25" />
+                  <div className="h-px w-8 bg-[#0A2357]/50 dark:bg-white/25" />
                   <span className="text-[10px] uppercase tracking-[0.3em]">Scroll</span>
                   <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
                     <path d="M0 6h14M9 1l5 5-5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -336,8 +356,8 @@ function HorizontalStoryHero() {
               </div>
               {/* Year tag */}
               <div className="absolute top-12 right-12 text-right z-10">
-                <div className="text-[#0A2357]/40 dark:text-white/20 text-[10px] uppercase tracking-[0.4em]">Since</div>
-                <div className="text-[#0A2357]/80 dark:text-white/60 font-serif text-3xl">2012</div>
+                <div className="text-[#0A2357]/65 dark:text-white/20 text-[10px] uppercase tracking-[0.4em]">Since</div>
+                <div className="text-[#0A2357] dark:text-white/60 font-serif text-3xl">2012</div>
               </div>
             </div>
           </div>
@@ -346,7 +366,7 @@ function HorizontalStoryHero() {
           {HERO_CARDS.map((card, i) => {
             const isEven = i % 2 === 0;
             return (
-              <div key={i} className="w-[20%] h-full relative shrink-0 flex overflow-hidden bg-[#faf9f6] dark:bg-black">
+              <div key={i} className="h-full relative shrink-0 flex overflow-hidden bg-[#faf9f6] dark:bg-black" style={{ width: `${100 / totalPanels}%` }}>
 
                 {/* Image side */}
                 <div
@@ -364,34 +384,25 @@ function HorizontalStoryHero() {
                     whileHover={{ scale: 1.04 }}
                     transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                   />
-                  {/* Subtle dark edge fade toward text */}
-                  <div
-                    className={`absolute inset-0 ${isEven
-                      ? "bg-gradient-to-r from-transparent via-transparent to-[#faf9f6] dark:to-black"
-                      : "bg-gradient-to-l from-transparent via-transparent to-[#faf9f6] dark:to-black"
-                      }`}
-                  />
                   {/* Grain texture */}
                   <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
                     style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }}
                   />
                 </div>
 
-                {/* Vertical orange accent line at diagonal edge */}
+                {/* Text side — orange accent line lives here as first child so text content renders above it */}
                 <div
-                  className="absolute top-0 bottom-0 w-[2px] z-20"
-                  style={{
-                    left: isEven ? "calc(58% - 1px)" : undefined,
-                    right: isEven ? undefined : "calc(58% - 1px)",
-                    background: `linear-gradient(to bottom, transparent 5%, ${ORANGE} 30%, ${ORANGE} 70%, transparent 95%)`,
-                  }}
-                />
-
-                {/* Text side */}
-                <div
-                  className={`absolute top-0 bottom-0 w-[45%] flex flex-col justify-center z-10 ${isEven ? "right-0 pl-4 pr-12 lg:pr-20" : "left-0 pr-4 pl-12 lg:pl-20"
+                  className={`absolute top-0 bottom-0 w-[45%] flex flex-col justify-center z-10 bg-[#faf9f6] dark:bg-black ${isEven ? "right-0 pl-4 pr-12 lg:pr-20" : "left-0 pr-4 pl-12 lg:pl-20"
                     }`}
                 >
+                  {/* Orange accent line at the inner edge — rendered first, behind all text */}
+                  <div
+                    className="absolute top-0 bottom-0 w-[2px] pointer-events-none"
+                    style={{
+                      [isEven ? "left" : "right"]: 0,
+                      background: `linear-gradient(to bottom, transparent 5%, ${ORANGE} 30%, ${ORANGE} 70%, transparent 95%)`,
+                    }}
+                  />
                   {/* Ghost chapter number */}
                   <div
                     className="absolute text-[18vw] font-serif text-[#0A2357]/[0.04] dark:text-white/[0.04] leading-none select-none pointer-events-none"
@@ -426,20 +437,20 @@ function HorizontalStoryHero() {
                   {/* Rule */}
                   <div className="flex items-center gap-4 mb-6">
                     <div className="h-px flex-1 max-w-[40px]" style={{ background: ORANGE }} />
-                    <div className="text-[9px] uppercase tracking-[0.4em] text-[#0A2357]/30 dark:text-white/30 font-semibold">
+                    <div className="text-[9px] uppercase tracking-[0.4em] text-[#0A2357]/60 dark:text-white/30 font-semibold">
                       {card.subtitle.split("·")[0]?.trim() || card.subtitle}
                     </div>
                   </div>
 
                   {/* Body */}
-                  <p className="text-[#0A2357]/50 dark:text-white/50 font-light leading-relaxed text-sm lg:text-base max-w-[280px]">
+                  <p className="text-[#0A2357]/75 dark:text-white/50 font-light leading-relaxed text-sm lg:text-base max-w-[280px]">
                     {card.text}
                   </p>
 
                   {/* Bottom meta */}
                   <div className="mt-10 flex items-center gap-3">
-                    <div className="w-6 h-px bg-[#0A2357]/20 dark:bg-white/20" />
-                    <span className="text-[10px] uppercase tracking-[0.3em] text-[#0A2357]/20 dark:text-white/20">
+                    <div className="w-6 h-px bg-[#0A2357]/45 dark:bg-white/20" />
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-[#0A2357]/50 dark:text-white/20">
                       {i + 1} of {HERO_CARDS.length}
                     </span>
                   </div>
@@ -661,26 +672,125 @@ function StickyChapters() {
 // ─── PULL QUOTE ───────────────────────────────────────────────────────────────
 function PullQuote() {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px" });
+  const inView = useInView(ref, { once: true, margin: "-5% 0px" });
 
   return (
-    <div ref={ref} className="py-32 px-6 overflow-hidden bg-white dark:bg-[#111114]">
-      <div className="max-w-5xl mx-auto text-center">
+    <div ref={ref} className="overflow-hidden bg-white dark:bg-[#111114] px-6 md:px-10 lg:px-16 py-4">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 lg:gap-10 items-stretch">
+
+        {/* Left — quote + content */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={inView ? { opacity: 1, scale: 1 } : {}}
+          className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-14 bg-white dark:bg-[#111114] relative"
+          initial={{ opacity: 0, x: -40 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="text-[100px] leading-none font-serif select-none -mb-6" style={{ color: `${ORANGE}22` }}>
+          {/* Role tag */}
+          <motion.span
+            className="inline-block text-[10px] uppercase tracking-[0.4em] font-semibold border px-3 py-1.5 rounded-full mb-5 self-start"
+            style={{ color: ORANGE, borderColor: `${ORANGE}40`, background: `${ORANGE}08` }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Founder's Voice
+          </motion.span>
+
+          {/* Quote mark */}
+          <motion.div
+            className="text-[72px] leading-none font-serif select-none -mb-2"
+            style={{ color: `${ORANGE}30` }}
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.25 }}
+          >
             "
-          </div>
-          <p className="text-3xl md:text-5xl font-serif leading-[1.2] mb-8 italic text-[#0A2357] dark:text-white">
+          </motion.div>
+
+          {/* Main quote */}
+          <motion.p
+            className="text-2xl md:text-3xl lg:text-4xl font-serif leading-[1.25] mb-5 italic text-[#0A2357] dark:text-white"
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
             We don't build hotels. We build the places people come back to.
-          </p>
-          <div className="w-10 h-0.5 mx-auto mb-6 rounded-full" style={{ background: ORANGE }} />
-          <p className="text-sm uppercase tracking-[0.3em] font-semibold text-gray-400 dark:text-white/35">
-            Arjun Mehta · Co-Founder
-          </p>
+          </motion.p>
+
+          {/* Orange rule */}
+          <motion.div
+            className="w-10 h-0.5 mb-5 rounded-full"
+            style={{ background: ORANGE }}
+            initial={{ scaleX: 0 }}
+            animate={inView ? { scaleX: 1 } : {}}
+            transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {/* Thoughts */}
+          <motion.p
+            className="text-gray-500 dark:text-white/50 font-light leading-relaxed text-sm max-w-lg mb-6"
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.6 }}
+          >
+            From a napkin sketch on the shores of Pondicherry to five properties across India, every decision has been guided by one belief — that hospitality, at its finest, is an act of love.
+          </motion.p>
+
+          {/* Attribution */}
+          <motion.div
+            className="flex items-center gap-3"
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.7, delay: 0.72 }}
+          >
+            <div className="w-6 h-px" style={{ background: ORANGE }} />
+            <span className="text-xs uppercase tracking-[0.3em] font-semibold text-gray-400 dark:text-white/35">
+              {TEAM[0].name} · Co-Founder, 2012
+            </span>
+          </motion.div>
+        </motion.div>
+
+        {/* Right — portrait image */}
+        <motion.div
+          className="relative overflow-hidden min-h-[320px] lg:min-h-0 rounded-2xl"
+          initial={{ opacity: 0, x: 40 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        >
+          <motion.img
+            src={TEAM[0].image}
+            alt={TEAM[0].name}
+            className="w-full h-full object-cover object-top"
+            initial={{ scale: 1.1 }}
+            animate={inView ? { scale: 1 } : {}}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A2357]/80 via-[#0A2357]/10 to-transparent" />
+
+          {/* Orange left accent line */}
+          <motion.div
+            className="absolute left-0 top-0 bottom-0 w-[3px]"
+            initial={{ scaleY: 0 }}
+            animate={inView ? { scaleY: 1 } : {}}
+            transition={{ duration: 0.9, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{ background: `linear-gradient(to bottom, transparent, ${ORANGE} 30%, ${ORANGE} 70%, transparent)`, transformOrigin: "top" }}
+          />
+
+          {/* Name / role */}
+          <motion.div
+            className="absolute bottom-6 left-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.7 }}
+          >
+            <div className="text-white font-serif text-2xl leading-tight mb-1 drop-shadow-lg">{TEAM[0].name}</div>
+            <span
+              className="inline-block text-[9px] uppercase tracking-[0.3em] font-semibold border px-2.5 py-1 rounded-full backdrop-blur-sm bg-white/10"
+              style={{ color: ORANGE, borderColor: `${ORANGE}60` }}
+            >
+              {TEAM[0].role}
+            </span>
+          </motion.div>
         </motion.div>
       </div>
     </div>
@@ -747,106 +857,239 @@ function StatsStrip() {
 // ─── TEAM ─────────────────────────────────────────────────────────────────────
 function TeamSection() {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10% 0px" });
+  const inView = useInView(ref, { once: true, margin: "-8% 0px" });
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const col1 = [...TEAM, ...TEAM, ...TEAM];
-  const col2 = [...TEAM].reverse().concat([...TEAM].reverse()).concat([...TEAM].reverse());
+  const offsets = ["md:translate-y-0", "md:translate-y-6", "md:translate-y-3", "md:-translate-y-3"];
 
   return (
-    <section className="py-24 lg:py-40 px-6 bg-[#faf9f6] dark:bg-[#0d0d10] relative">
-      <style>{`
-        @keyframes scrollUp {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-50%); }
-        }
-        @keyframes scrollDown {
-          0% { transform: translateY(-50%); }
-          100% { transform: translateY(0); }
-        }
-        .animate-scroll-up {
-          animation: scrollUp 15s linear infinite;
-        }
-        .animate-scroll-down {
-          animation: scrollDown 15s linear infinite;
-        }
-        .pause-on-hover:hover .animate-scroll-up,
-        .pause-on-hover:hover .animate-scroll-down {
-          animation-play-state: paused;
-        }
-      `}</style>
+    <section ref={ref} className="py-14 lg:py-20 px-6 bg-[#faf9f6] dark:bg-[#0d0d10] relative overflow-hidden">
+      {/* Background watermark */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[28vw] font-serif text-[#0A2357]/[0.025] dark:text-white/[0.025] leading-none select-none pointer-events-none">
+        K
+      </div>
 
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
-
-        {/* Left: Sticky Context */}
-        <div className="lg:col-span-5 flex flex-col">
-          <div className="sticky top-1/3 flex flex-col items-start">
-            <span
-              className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-4 py-2 rounded-full mb-8"
+      <div className="max-w-[1400px] mx-auto">
+        {/* Header */}
+        <div className="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div>
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6 }}
+              className="inline-block text-[10px] uppercase tracking-[0.35em] font-semibold border px-4 py-2 rounded-full mb-6"
               style={{ color: ORANGE, borderColor: `${ORANGE}40`, background: `${ORANGE}08` }}
             >
-              The Team
-            </span>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif leading-[1.05] text-[#0A2357] dark:text-white mb-8">
+              The People
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="text-5xl md:text-6xl lg:text-7xl font-serif leading-[1.05] text-[#0A2357] dark:text-white"
+            >
               The people who<br />refused{" "}
               <span className="italic" style={{ color: ORANGE }}>ordinary.</span>
-            </h2>
-            <p className="max-w-sm font-light leading-relaxed text-lg text-gray-500 dark:text-white/45">
-              Behind every room, every meal, every perfect moment — there are people who obsess over details so guests never have to. Their contributions transform simple stays into legendary experiences.
-            </p>
+            </motion.h2>
           </div>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.25 }}
+            className="max-w-xs font-light leading-relaxed text-base text-gray-500 dark:text-white/45 lg:text-right"
+          >
+            Behind every room, every meal, every perfect moment — obsessives who turn details into memories.
+          </motion.p>
         </div>
 
-        {/* Right: Dual Auto-Scroll Marquee */}
-        <div ref={ref} className="lg:col-span-7 h-[70vh] min-h-[600px] md:h-[80vh] relative overflow-hidden flex gap-4 md:gap-6 pause-on-hover [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]">
-
-          {/* Column 1: Up */}
-          <div className="flex-1 flex flex-col gap-4 md:gap-6 animate-scroll-up pt-[50%]">
-            {col1.map((member, i) => (
-              <TeamCard key={`up-${i}`} member={member} />
-            ))}
-          </div>
-
-          {/* Column 2: Down */}
-          <div className="flex-1 flex flex-col gap-4 md:gap-6 animate-scroll-down pb-[50%]">
-            {col2.map((member, i) => (
-              <TeamCard key={`down-${i}`} member={member} />
-            ))}
-          </div>
-
+        {/* Staggered grid — all 4 visible at once */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 items-start">
+          {TEAM.map((member, i) => (
+            <motion.div
+              key={i}
+              className={`${offsets[i]} relative group cursor-pointer`}
+              initial={{ opacity: 0, y: 40 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.15 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              onMouseEnter={() => setActiveIdx(i)}
+              onMouseLeave={() => setActiveIdx(null)}
+            >
+              <TeamCard member={member} isActive={activeIdx === i} index={i} />
+            </motion.div>
+          ))}
         </div>
+
+        {/* Bottom counter strip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-8 pt-6 border-t border-gray-200 dark:border-white/8 flex items-center justify-between"
+        >
+          <span className="text-[10px] uppercase tracking-[0.35em] text-gray-400 dark:text-white/30">
+            {TEAM.length} Leaders · Building the Kennedia Vision
+          </span>
+          <div className="flex gap-2">
+            {TEAM.map((_, i) => (
+              <motion.div
+                key={i}
+                className="h-[2px] rounded-full"
+                animate={{ width: activeIdx === i ? 28 : 8, background: activeIdx === i ? ORANGE : "#9ca3af" }}
+                transition={{ duration: 0.3 }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function TeamCard({ member }: { member: typeof TEAM[0] }) {
+function TeamCard({ member, isActive, index }: { member: typeof TEAM[0]; isActive: boolean; index: number }) {
+  const heights = ["aspect-[3/4]", "aspect-[4/5]", "aspect-[3/4]", "aspect-[4/5]"];
   return (
-    <div className="relative group bg-white dark:bg-[#151518] rounded-2xl overflow-hidden shadow-sm border border-black/5 dark:border-white/5 flex flex-col shrink-0">
-      <div className="aspect-[4/5] md:aspect-[3/4] relative overflow-hidden">
-        <img
+    <div className="relative overflow-hidden rounded-2xl shadow-md border border-black/5 dark:border-white/5 bg-white dark:bg-[#151518]">
+      <div className={`${heights[index]} relative overflow-hidden`}>
+        <motion.img
           src={member.image}
           alt={member.name}
-          className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
+          className="w-full h-full object-cover object-top"
+          animate={{ scale: isActive ? 1.06 : 1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         />
-        <div className="absolute inset-0 bg-linear-to-t from-[#0A2357]/90 dark:from-black/90 via-black/20 to-transparent" />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A2357]/90 via-[#0A2357]/20 to-transparent" />
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <div className="text-white font-serif text-2xl md:text-3xl leading-tight mb-2 drop-shadow-md">{member.name}</div>
-          <div className="text-[10px] md:text-xs uppercase tracking-widest font-semibold" style={{ color: ORANGE }}>
-            {member.role}
-          </div>
+        {/* Orange accent line on hover */}
+        <motion.div
+          className="absolute left-0 bottom-0 w-[3px]"
+          animate={{ height: isActive ? "100%" : "40%" }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: `linear-gradient(to top, ${ORANGE}, transparent)` }}
+        />
+
+        {/* Name / role — always visible */}
+        <div className="absolute bottom-0 left-0 right-0 p-5">
+          <motion.div
+            animate={{ y: isActive ? -8 : 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="text-white font-serif text-xl md:text-2xl leading-tight mb-1 drop-shadow-md">{member.name}</div>
+            <div className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: ORANGE }}>
+              {member.role}
+            </div>
+          </motion.div>
+
+          {/* Quote — slides up on hover */}
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: isActive ? 1 : 0, height: isActive ? "auto" : 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <p className="text-white/80 font-serif italic text-sm leading-relaxed mt-3 border-t border-white/20 pt-3">
+              "{member.quote}"
+            </p>
+          </motion.div>
         </div>
-      </div>
-      <div className="p-6 md:p-8 border-t border-gray-100 dark:border-white/5">
-        <p className="text-[#0A2357]/70 dark:text-white/60 font-serif italic text-base md:text-lg leading-relaxed">
-          "{member.quote}"
-        </p>
       </div>
     </div>
   );
 }
 
 // ─── VERTICALS (ACCORDION) ───────────────────────────────────────────────────
+function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["properties"] }) {
+  const [active, setActive] = useState(0);
+  const total = properties.length;
+
+  const prev = () => setActive((a) => (a - 1 + total) % total);
+  const next = () => setActive((a) => (a + 1) % total);
+
+  return (
+    <div className="w-full md:w-[420px] shrink-0 relative">
+      {/* Card */}
+      <div className="relative h-52 rounded-2xl overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={active}
+            src={properties[active].image}
+            alt={properties[active].name}
+            className="absolute inset-0 w-full h-full object-cover"
+            initial={{ opacity: 0, scale: 1.06 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </AnimatePresence>
+
+        {/* Dark gradient for label legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+
+        {/* Property name — clickable */}
+        <AnimatePresence mode="wait">
+          <motion.a
+            key={`label-${active}`}
+            href={`/properties/${properties[active].slug}`}
+            onClick={(e) => e.preventDefault()}
+            className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between group/link"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.35 }}
+          >
+            <div>
+              <div className="text-white font-serif text-lg leading-tight drop-shadow-md group-hover/link:underline decoration-[#FF8C00] underline-offset-4 transition-all">
+                {properties[active].name}
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.3em] mt-1" style={{ color: ORANGE }}>
+                View Property →
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-white/60 group-hover/link:text-[#FF8C00] transition-colors" />
+          </motion.a>
+        </AnimatePresence>
+
+        {/* Prev / Next arrows */}
+        {total > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#FF8C00] transition-colors duration-200"
+            >
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-[#FF8C00] transition-colors duration-200"
+            >
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Dot indicators + count */}
+      {total > 1 && (
+        <div className="flex items-center gap-3 mt-3 px-1">
+          <div className="flex gap-1.5">
+            {properties.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
+                className="h-[2px] rounded-full transition-all duration-300"
+                style={{ width: i === active ? 20 : 6, background: i === active ? ORANGE : "#d1d5db" }}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-white/30 ml-auto">
+            {String(active + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function VerticalsSection() {
   const [open, setOpen] = useState<number[]>(VERTICALS.map((_, i) => i));
 
@@ -855,9 +1098,9 @@ function VerticalsSection() {
   };
 
   return (
-    <section className="py-32 px-6 bg-white dark:bg-[#111114]">
+    <section className="py-16 px-6 bg-white dark:bg-[#111114]">
       <div className="max-w-[1400px] mx-auto">
-        <div className="mb-16">
+        <div className="mb-8">
           <span
             className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-3 py-1 rounded-full"
             style={{ color: ORANGE, borderColor: `${ORANGE}40`, background: `${ORANGE}08` }}
@@ -877,7 +1120,7 @@ function VerticalsSection() {
               <div key={i}>
                 <button
                   onClick={() => toggle(i)}
-                  className="w-full text-left py-7 flex items-center gap-6 group"
+                  className="w-full text-left py-5 flex items-center gap-6 group"
                 >
                   <span className="text-sm font-mono w-8 shrink-0 text-gray-400 dark:text-white/35">{v.no}</span>
                   <span
@@ -912,7 +1155,7 @@ function VerticalsSection() {
                       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="pb-10 pl-14 flex flex-col md:flex-row gap-10 items-start">
+                      <div className="pb-6 pl-14 flex flex-col md:flex-row gap-8 items-start">
                         <div className="flex-1">
                           <p className="text-lg font-light leading-relaxed max-w-xl mb-3 text-gray-600 dark:text-white/55">
                             {v.desc}
@@ -921,16 +1164,7 @@ function VerticalsSection() {
                             {v.stat}
                           </span>
                         </div>
-                        <div className="w-full md:w-[380px] h-52 rounded-2xl overflow-hidden shrink-0">
-                          <motion.img
-                            initial={{ scale: 1.08 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.6 }}
-                            src={v.image}
-                            alt={v.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <PropertyCarousel properties={v.properties} />
                       </div>
                     </motion.div>
                   )}
@@ -950,57 +1184,59 @@ function ExpansionScroll() {
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start end", "end start"] });
   const x = useTransform(scrollYProgress, [0, 1], ["8%", "-35%"]);
   const smoothX = useSpring(x, { stiffness: 55, damping: 18 });
-  const imageParallax = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
 
   return (
-    <section ref={containerRef} className="py-32 overflow-hidden bg-[#faf9f6] dark:bg-[#0d0d10]">
-      <div className="px-6 mb-16 max-w-[1400px] mx-auto">
+    <section ref={containerRef} className="py-16 overflow-hidden bg-[#faf9f6] dark:bg-[#0d0d10]">
+      {/* Section label */}
+      <div className="px-6 mb-8 max-w-[1400px] mx-auto flex items-center justify-between">
         <span
-          className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-4 py-2 rounded-full mb-8 inline-block"
+          className="text-[10px] uppercase tracking-[0.35em] font-semibold border px-4 py-2 rounded-full"
           style={{ color: ORANGE, borderColor: `${ORANGE}40`, background: `${ORANGE}08` }}
         >
-          Expansion
+          Availability
         </span>
-        <h2 className="text-5xl md:text-6xl font-serif mt-4 leading-tight text-[#0A2357] dark:text-white">
-          Six cities.{" "}
-          <span className="italic" style={{ color: ORANGE }}>One soul.</span>
-        </h2>
+        <span className="text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-white/30">
+          {CITIES.length} Locations
+        </span>
       </div>
 
-      <div className="overflow-visible mt-16">
-        <motion.div style={{ x: smoothX }} className="flex gap-6 px-6 w-max">
+      {/* Scrolling text cards */}
+      <div className="overflow-visible">
+        <motion.div style={{ x: smoothX }} className="flex gap-4 px-6 w-max">
           {CITIES.map((c, i) => (
             <motion.div
               key={i}
-              whileHover={{ y: -10 }}
+              whileHover={{ y: -6 }}
               transition={{ duration: 0.3 }}
-              className="relative w-[300px] md:w-[380px] h-[460px] rounded-3xl overflow-hidden shrink-0 group shadow-lg border border-black/5 dark:border-white/5"
+              className="w-[220px] md:w-[260px] shrink-0 group cursor-pointer"
             >
-              {/* Parallax Image */}
-              <div className="absolute inset-0 overflow-hidden">
-                <motion.img
-                  style={{ x: imageParallax }}
-                  src={c.image}
-                  alt={c.city}
-                  className="absolute inset-0 w-[130%] h-full max-w-none object-cover origin-center transition-transform duration-1000 group-hover:scale-105"
-                />
-              </div>
-
-              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
-
-              <div className="absolute top-6 right-8 text-[90px] font-serif text-white/[0.12] leading-none select-none drop-shadow-md">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <div className="text-white/50 text-xs uppercase tracking-[0.3em] mb-2 font-semibold">{c.year}</div>
-                <div className="text-white font-serif text-4xl mb-4 drop-shadow-lg">{c.city}</div>
-                <span
-                  className="inline-block text-[10px] uppercase tracking-widest font-semibold border px-3 py-1 rounded-full bg-white/10 backdrop-blur-md"
-                  style={{ color: ORANGE, borderColor: `${ORANGE}50` }}
-                >
-                  {c.tag}
+              {/* Card */}
+              <div
+                className="rounded-2xl border border-gray-200 dark:border-white/8 bg-white dark:bg-[#151518] px-6 py-7 flex flex-col gap-4 transition-all duration-300 group-hover:border-[#FF8C00]/40 group-hover:shadow-md"
+              >
+                {/* Index row */}
+                <span className="text-[10px] font-mono text-gray-300 dark:text-white/20">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
+
+                {/* City name */}
+                <div className="font-serif text-3xl md:text-4xl leading-none text-[#0A2357] dark:text-white group-hover:text-[#FF8C00] transition-colors duration-300">
+                  {c.city}
+                </div>
+
+                {/* Divider */}
+                <div className="h-px w-8" style={{ background: ORANGE }} />
+
+                {/* Arrow */}
+                <div className="flex justify-end">
+                  <motion.div
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: i * 0.2 }}
+                    className="text-gray-300 dark:text-white/20 group-hover:text-[#FF8C00] transition-colors duration-300"
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                  </motion.div>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -1063,14 +1299,11 @@ export default function Journey() {
       <Navbar />
       <HorizontalStoryHero />
       <Marquee />
+      <PullQuote />
       <TeamSection />
       <StickyChapters />
-      <PullQuote />
-      {/* <StatsStrip /> */}
       <VerticalsSection />
       <ExpansionScroll />
-      {/* <Marquee /> */}
-      {/* <ClosingCTA /> */}
       <Footer />
     </div>
   );

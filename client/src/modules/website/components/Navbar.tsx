@@ -170,7 +170,7 @@ export default function Navbar({
     location.pathname === "/resturant-homepage" ||
     location.pathname === "/wine-homepage" ||
     location.pathname === "/cafe-homepage" ||
-    location.pathname === "/journey" ||
+    // location.pathname === "/journey" ||
     location.pathname.startsWith("/wine-detail") ||
     location.pathname.startsWith("/wine-categories") ||
     location.pathname.startsWith("/privacy-policy") ||
