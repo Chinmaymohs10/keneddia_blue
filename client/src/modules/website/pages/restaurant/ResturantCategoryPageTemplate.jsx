@@ -327,6 +327,7 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
 
   const prev = () => setActiveIndex((index) => (index - 1 + total) % total);
   const next = () => setActiveIndex((index) => (index + 1) % total);
+  const activeOfferHasMedia = Boolean(activeOffer?.image?.src);
 
   const positionStyles = {
     center: { zIndex: 30, scale: 1, x: "0%", opacity: 1 },
@@ -474,13 +475,13 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                         loop
                         playsInline
                       />
-                    ) : (
+                    ) : offer.image?.src ? (
                       <img
                         src={offer.image?.src}
                         alt={offer.image?.alt || offer.title}
                         className="w-full h-full object-cover"
                       />
-                    )}
+                    ) : null}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
                   </motion.div>
                 );
@@ -497,13 +498,13 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                   loop
                   playsInline
                 />
-              ) : (
+              ) : activeOfferHasMedia ? (
                 <img
                   src={activeOffer.image?.src}
                   className="w-full h-full object-cover rounded-3xl"
                   alt={activeOffer.image?.alt || activeOffer.title}
                 />
-              )}
+              ) : null}
             </div>
 
             {total > 1 ? (

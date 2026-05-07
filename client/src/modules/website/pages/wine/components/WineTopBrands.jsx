@@ -88,7 +88,7 @@ function BrandCard({ brand, onClick, clickable }) {
 }
 import { useSsrData } from "@/ssr/SsrDataContext";
 
-export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader }) {
+export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader, masterHeader = null }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
   const { wineHomepage: ssr } = useSsrData();
@@ -122,11 +122,16 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
   });
   const [loading, setLoading] = useState(!ssrData);
   const [headerData, setHeaderData] = useState(ssr?.headerData || null);
-
   // sectionHeader (from Events API, renamed "Brands") takes priority
   const resolvedHeader = sectionHeader
     ? { part1: sectionHeader.header1 || "", part2: sectionHeader.header2 || "", description: sectionHeader.description || "" }
-    : headerData;
+    : masterHeader
+      ? {
+          part1: masterHeader.wineTypeName || "",
+          part2: masterHeader.tags || "",
+          description: masterHeader.description || "",
+        }
+      : headerData;
 
   useEffect(() => {
     if (ssrData && globalRoute) return; // Already have data for global route
@@ -212,18 +217,20 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.04),transparent_28%)] dark:bg-[radial-gradient(circle_at_top,rgba(193,154,83,0.18),transparent_30%),radial-gradient(circle_at_bottom,rgba(255,255,255,0.06),transparent_28%)]" />
 
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
-            {resolvedHeader?.part1 || "Curated Labels"}
-          </span>
+        <div className="mb-6 flex flex-col items-start text-left">
+          {resolvedHeader?.part1 && (
+            <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
+              {resolvedHeader.part1}
+            </span>
+          )}
           <h2
             className="text-3xl font-semibold sm:text-4xl"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
           >
-            {resolvedHeader?.part2 || "Top Brands"}
+            {resolvedHeader?.part2}
           </h2>
           {resolvedHeader?.description && (
-            <p className="mt-2 max-w-xl text-center text-xs leading-relaxed text-zinc-500 dark:text-white/60">
+            <p className="mt-2 max-w-xl text-xs leading-relaxed text-zinc-500 dark:text-white/60">
               {resolvedHeader.description}
             </p>
           )}

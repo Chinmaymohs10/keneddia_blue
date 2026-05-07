@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { colors } from "@/lib/colors/colors";
 import Layout from "@/modules/layout/Layout";
 import {
-  Wine, Plus, Edit2, Loader2, X, Check, Trash2, Tag, Layers, Search, Globe, ChevronRight
+  Wine, Plus, Edit2, Loader2, X, Check, Trash2, Tag, Layers, Search, Globe, ChevronRight, ChevronDown
 } from "lucide-react";
 import {
   getAllWineMasters, createWineMaster, updateWineMaster, deleteWineMaster,
@@ -36,6 +36,10 @@ const inputStyle = (hasError) => ({
   color: colors.textPrimary,
   backgroundColor: colors.contentBg 
 });
+const ENTRY_NAME_OPTIONS = [
+  { label: "Category", value: "category_header" },
+  { label: "Brands", value: "brands_header" },
+];
 
 export default function WineHeaders() {
   const [masters, setMasters] = useState([]);
@@ -44,6 +48,7 @@ export default function WineHeaders() {
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+  const [showHierarchyScoping, setShowHierarchyScoping] = useState(false);
 
   // Context data
   const [types, setTypes] = useState([]);
@@ -101,6 +106,17 @@ export default function WineHeaders() {
     }
   }, [types, form.wineTypeId]);
 
+  useEffect(() => {
+    if (propertyTypes.length > 0 && !form.propertyTypeId) {
+      const winePropertyType = propertyTypes.find(
+        (pt) => String(pt.typeName || pt.name || "").trim().toUpperCase() === "WINE",
+      );
+      if (winePropertyType) {
+        setForm((prev) => ({ ...prev, propertyTypeId: String(winePropertyType.id) }));
+      }
+    }
+  }, [propertyTypes, form.propertyTypeId]);
+
   const filteredMasters = useMemo(() => {
     const s = search.toLowerCase();
     return masters.filter(m =>
@@ -116,15 +132,26 @@ export default function WineHeaders() {
 
     setSaving(true);
     try {
+      const hierarchyPayload = showHierarchyScoping
+        ? {
+            wineTypeId: form.wineTypeId || null,
+            wineBrandId: form.wineBrandId || null,
+            wineCategoryId: form.wineCategoryId || null,
+            wineSubCategoryId: form.wineSubCategoryId || null,
+          }
+        : {
+            wineTypeId: null,
+            wineBrandId: null,
+            wineCategoryId: null,
+            wineSubCategoryId: null,
+          };
+
       const payload = { 
         ...form,
         name: form.name.trim(),
         description: form.description.trim(),
         tags: form.tags.trim(),
-        wineTypeId: form.wineTypeId || null,
-        wineBrandId: form.wineBrandId || null,
-        wineCategoryId: form.wineCategoryId || null,
-        wineSubCategoryId: form.wineSubCategoryId || null,
+        ...hierarchyPayload,
         propertyTypeId: form.propertyTypeId || null,
       };
 
@@ -161,6 +188,7 @@ export default function WineHeaders() {
       propertyTypeId: "", isActive: true,
       scopingLevel: "TYPE"
     });
+    setShowHierarchyScoping(false);
     setEditingItem(null);
   };
 
@@ -189,6 +217,9 @@ export default function WineHeaders() {
       isActive: item.isActive ?? true,
       scopingLevel: level,
     });
+    setShowHierarchyScoping(
+      Boolean(item.wineTypeId || item.wineBrandId || item.wineCategoryId || item.wineSubCategoryId),
+    );
     setShowModal(true);
   };
 
@@ -196,6 +227,13 @@ export default function WineHeaders() {
   const availableBrands = brands.filter(b => !form.wineTypeId || String(b.wineTypeId) === String(form.wineTypeId));
   const availableCategories = categories.filter(c => !form.wineBrandId || String(c.wineBrandId) === String(form.wineBrandId));
   const availableSubCategories = subcategories.filter(s => !form.wineCategoryId || String(s.wineCategoryId) === String(form.wineCategoryId));
+  const winePropertyTypes = useMemo(
+    () =>
+      propertyTypes.filter(
+        (pt) => String(pt.typeName || pt.name || "").trim().toUpperCase() === "WINE",
+      ),
+    [propertyTypes],
+  );
 
   return (
     <Layout>
@@ -370,14 +408,22 @@ export default function WineHeaders() {
               <div className="flex-1 overflow-y-auto p-10 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField label="Entry Name">
-                    <input
-                      type="text"
+                    <select
                       className={inputCls}
                       style={inputStyle(!form.name && saving)}
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Classic Cocktails"
-                    />
+                    >
+                      <option value="">Select Homepage Header Section</option>
+                      {ENTRY_NAME_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] font-bold text-gray-400">
+                      Stored as a fixed key for wine homepage section headers.
+                    </p>
                   </FormField>
                   <FormField label="Tags (comma separated)">
                     <input
@@ -401,113 +447,133 @@ export default function WineHeaders() {
                   />
                 </FormField>
 
-                <div className="bg-gray-50 rounded-[32px] p-8 space-y-8 border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10 shadow-inner">
-                      <Layers size={20} className="text-primary" style={{ color: colors.primary }} />
+                <div className="bg-gray-50 rounded-[32px] border border-gray-100 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowHierarchyScoping((prev) => !prev)}
+                    className="w-full flex items-center justify-between gap-4 p-8 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10 shadow-inner">
+                        <Layers size={20} className="text-primary" style={{ color: colors.primary }} />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Hierarchy Scoping</h3>
+                        <p className="text-[10px] font-bold text-gray-400">
+                          Optional. Keep this closed for wine homepage header entries.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Hierarchy Scoping</h3>
-                      <p className="text-[10px] font-bold text-gray-400">Select where this header should be anchored</p>
+                    <ChevronDown
+                      size={18}
+                      className={`text-gray-500 transition-transform ${showHierarchyScoping ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {showHierarchyScoping && (
+                    <div className="px-8 pb-8 border-t border-gray-100">
+                      <div className="pt-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <FormField label="Scoping Target">
+                          <select
+                            className={inputCls}
+                            style={inputStyle()}
+                            value={form.scopingLevel}
+                            onChange={(e) => setForm({
+                              ...form,
+                              scopingLevel: e.target.value,
+                              wineBrandId: "",
+                              wineCategoryId: "",
+                              wineSubCategoryId: "",
+                            })}
+                          >
+                            <option value="TYPE">By Wine Type</option>
+                            <option value="BRAND">By Wine Brand</option>
+                            <option value="CATEGORY">By Wine Category</option>
+                            <option value="SUBCATEGORY">By Wine SubCategory</option>
+                          </select>
+                        </FormField>
+
+                        <div className="hidden md:block" />
+
+                        {form.scopingLevel === "TYPE" && (
+                          <FormField label="Wine Type">
+                            <select
+                              className={inputCls}
+                              style={{ ...inputStyle(), cursor: "not-allowed", opacity: 0.7 }}
+                              value={form.wineTypeId}
+                              disabled={true}
+                            >
+                              <option value="">Select Wine Type</option>
+                              {types.map((t) => <option key={t.id} value={t.id}>{t.wineTypeName}</option>)}
+                            </select>
+                            <p className="text-[9px] font-bold text-primary mt-1">LOCKED TO WINE</p>
+                          </FormField>
+                        )}
+
+                        {form.scopingLevel === "BRAND" && (
+                          <FormField label="Wine Brand">
+                            <select
+                              className={inputCls}
+                              style={inputStyle()}
+                              value={form.wineBrandId}
+                              onChange={(e) => setForm({ ...form, wineBrandId: e.target.value })}
+                            >
+                              <option value="">Select Brand</option>
+                              {availableBrands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                          </FormField>
+                        )}
+
+                        {form.scopingLevel === "CATEGORY" && (
+                          <FormField label="Wine Category">
+                            <select
+                              className={inputCls}
+                              style={inputStyle()}
+                              value={form.wineCategoryId}
+                              onChange={(e) => setForm({ ...form, wineCategoryId: e.target.value })}
+                            >
+                              <option value="">Select Category</option>
+                              {availableCategories.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+                            </select>
+                          </FormField>
+                        )}
+
+                        {form.scopingLevel === "SUBCATEGORY" && (
+                          <FormField label="Wine SubCategory">
+                            <select
+                              className={inputCls}
+                              style={inputStyle()}
+                              value={form.wineSubCategoryId}
+                              onChange={(e) => setForm({ ...form, wineSubCategoryId: e.target.value })}
+                            >
+                              <option value="">Select SubCategory</option>
+                              {availableSubCategories.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}
+                            </select>
+                          </FormField>
+                        )}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <FormField label="Scoping Target">
-                      <select
-                        className={inputCls}
-                        style={inputStyle()}
-                        value={form.scopingLevel}
-                        onChange={(e) => setForm({ 
-                          ...form, 
-                          scopingLevel: e.target.value, 
-                          wineBrandId: "", 
-                          wineCategoryId: "", 
-                          wineSubCategoryId: "" 
-                          // wineTypeId is preserved as it's locked
-                        })}
-                      >
-                        <option value="TYPE">By Wine Type</option>
-                        <option value="BRAND">By Wine Brand</option>
-                        <option value="CATEGORY">By Wine Category</option>
-                        <option value="SUBCATEGORY">By Wine SubCategory</option>
-                      </select>
-                    </FormField>
-
-                    {/* Spacing or secondary field can go here */}
-                    <div className="hidden md:block" />
-
-                    {/* Dynamic Fields - Only show the SELECTED target field */}
-                    {form.scopingLevel === "TYPE" && (
-                      <FormField label="Wine Type">
-                        <select
-                          className={inputCls}
-                          style={{ ...inputStyle(!form.wineTypeId && saving), cursor: 'not-allowed', opacity: 0.7 }}
-                          value={form.wineTypeId}
-                          disabled={true} // Locked as requested
-                        >
-                          <option value="">Select Wine Type</option>
-                          {types.map(t => <option key={t.id} value={t.id}>{t.wineTypeName}</option>)}
-                        </select>
-                        <p className="text-[9px] font-bold text-primary mt-1">LOCKED TO WINE MANAGEMENT</p>
-                      </FormField>
-                    )}
-
-                    {form.scopingLevel === "BRAND" && (
-                      <FormField label="Wine Brand">
-                        <select
-                          className={inputCls}
-                          style={inputStyle(!form.wineBrandId && saving)}
-                          value={form.wineBrandId}
-                          onChange={(e) => setForm({ ...form, wineBrandId: e.target.value })}
-                        >
-                          <option value="">Select Brand</option>
-                          {availableBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                        </select>
-                      </FormField>
-                    )}
-
-                    {form.scopingLevel === "CATEGORY" && (
-                      <FormField label="Wine Category">
-                        <select
-                          className={inputCls}
-                          style={inputStyle(!form.wineCategoryId && saving)}
-                          value={form.wineCategoryId}
-                          onChange={(e) => setForm({ ...form, wineCategoryId: e.target.value })}
-                        >
-                          <option value="">Select Category</option>
-                          {availableCategories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                        </select>
-                      </FormField>
-                    )}
-
-                    {form.scopingLevel === "SUBCATEGORY" && (
-                      <FormField label="Wine SubCategory">
-                        <select
-                          className={inputCls}
-                          style={inputStyle(!form.wineSubCategoryId && saving)}
-                          value={form.wineSubCategoryId}
-                          onChange={(e) => setForm({ ...form, wineSubCategoryId: e.target.value })}
-                        >
-                          <option value="">Select SubCategory</option>
-                          {availableSubCategories.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-                        </select>
-                      </FormField>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField label="Property Type Scoping">
                     <select
                       className={inputCls}
-                      style={inputStyle()}
+                      style={{ ...inputStyle(), cursor: "not-allowed", opacity: 0.8 }}
                       value={form.propertyTypeId}
                       onChange={(e) => setForm({ ...form, propertyTypeId: e.target.value })}
                     >
-                      <option value="">Global (All Property Types)</option>
-                      {propertyTypes.map(pt => <option key={pt.id} value={pt.id}>{pt.typeName || pt.name}</option>)}
+                      <option value="">Select Wine Property Type</option>
+                      {winePropertyTypes.map((pt) => (
+                        <option key={pt.id} value={pt.id}>
+                          {pt.typeName || pt.name}
+                        </option>
+                      ))}
                     </select>
+                    <p className="text-[10px] font-bold text-gray-400">
+                      Only the wine property type is available here.
+                    </p>
                   </FormField>
                   <FormField label="Visibility Status">
                       <div className="flex items-center gap-6 mt-2">

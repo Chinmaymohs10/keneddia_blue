@@ -585,7 +585,16 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("All");
   const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("All Locations");
+
+  const availableCategories = useMemo(() => {
+    const cats = Array.from(
+      new Set(items.map((d) => d.category || d.tag).filter(Boolean))
+    ).sort();
+    return cats;
+  }, [items]);
 
   const availableBrands = useMemo(() => {
     if (hideBrandFilter) return [];
@@ -613,6 +622,9 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
     if (selectedBrand !== "All") {
       result = result.filter((d) => d.brandId === selectedBrand);
     }
+    if (selectedCategory !== "All") {
+      result = result.filter((d) => (d.category || d.tag) === selectedCategory);
+    }
     if (isGlobalPage && selectedLocation !== "All Locations") {
       result = result.filter((d) => d.location === selectedLocation);
     }
@@ -627,7 +639,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
       );
     }
     return result;
-  }, [items, selectedBrand, searchTerm, isGlobalPage, selectedLocation]);
+  }, [items, selectedBrand, selectedCategory, searchTerm, isGlobalPage, selectedLocation]);
 
   return (
     <section id="collection" className="relative overflow-hidden bg-[#FAF8F4] pt-4 pb-20 dark:bg-[#0D0508]">
@@ -655,7 +667,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
             {!hideBrandFilter && <div className="relative min-w-[200px]">
               <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Brand</span>
               <button
-                onClick={() => setIsBrandOpen(!isBrandOpen)}
+                onClick={() => { setIsBrandOpen(!isBrandOpen); setIsCategoryOpen(false); }}
                 className="flex w-full items-center justify-between rounded-full border border-stone-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600 cursor-pointer"
               >
                 <span>{selectedBrand === "All" ? "All Brands" : availableBrands.find(b => b.id === selectedBrand)?.name}</span>
@@ -675,8 +687,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
                       <div className="max-h-[240px] overflow-y-auto py-2">
                         <button
                           onClick={() => { setSelectedBrand("All"); setIsBrandOpen(false); }}
-                          className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === "All" ? "text-[#D4AF37]" : "text-stone-500 dark:text-stone-400"
-                            }`}
+                          className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === "All" ? "text-[#D4AF37]" : "text-stone-500 dark:text-stone-400"}`}
                         >
                           All Brands
                         </button>
@@ -684,8 +695,7 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
                           <button
                             key={b.id}
                             onClick={() => { setSelectedBrand(b.id); setIsBrandOpen(false); }}
-                            className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === b.id ? "text-amber-600" : "text-stone-500 dark:text-stone-400"
-                              }`}
+                            className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedBrand === b.id ? "text-amber-600" : "text-stone-500 dark:text-stone-400"}`}
                             style={selectedBrand === b.id ? { color: b.accent } : {}}
                           >
                             {b.name}
@@ -697,6 +707,53 @@ function TypeItemsSection({ items, meta, citySlug, propertySlug, hideBrandFilter
                 )}
               </AnimatePresence>
             </div>}
+
+            {/* Category Dropdown */}
+            {availableCategories.length > 0 && (
+              <div className="relative min-w-[200px]">
+                <span className="mb-1.5 block text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">Filter by Category</span>
+                <button
+                  onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsBrandOpen(false); }}
+                  className="flex w-full items-center justify-between rounded-full border border-stone-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-stone-800 transition-all hover:border-[#D4AF37] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:border-amber-600 cursor-pointer"
+                >
+                  <span>{selectedCategory === "All" ? "All Categories" : selectedCategory}</span>
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isCategoryOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                        className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#1A0C13]"
+                      >
+                        <div className="max-h-[240px] overflow-y-auto py-2">
+                          <button
+                            onClick={() => { setSelectedCategory("All"); setIsCategoryOpen(false); }}
+                            className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedCategory === "All" ? "text-[#D4AF37]" : "text-stone-500 dark:text-stone-400"}`}
+                          >
+                            All Categories
+                          </button>
+                          {availableCategories.map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => { setSelectedCategory(cat); setIsCategoryOpen(false); }}
+                              className={`flex w-full items-center px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-stone-50 dark:hover:bg-white/5 cursor-pointer ${selectedCategory === cat ? "text-amber-600" : "text-stone-500 dark:text-stone-400"}`}
+                              style={selectedCategory === cat ? { color: accent.color } : {}}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* Search */}
             <div className="relative min-w-[260px]">
