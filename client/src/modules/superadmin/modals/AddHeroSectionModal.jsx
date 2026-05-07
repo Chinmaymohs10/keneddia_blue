@@ -99,6 +99,8 @@ function AddHeroSectionModal({
     propertyTypeId: null,
   });
 
+  const [changedViewFlag, setChangedViewFlag] = useState(null); // "homepage" | "mobile" | null
+
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(false);
 
@@ -230,6 +232,7 @@ function AddHeroSectionModal({
 
   // 4. Edit Data Population
   useEffect(() => {
+    setChangedViewFlag(null);
     if (editData && isOpen) {
       setFormData({
         mainTitle: editData.mainTitle || "",
@@ -1129,14 +1132,15 @@ function AddHeroSectionModal({
                   </span>
                 </label>
 
-                <label className={`flex items-center gap-2 group ${editData?.active ? "cursor-pointer" : "cursor-not-allowed opacity-40"}`}>
+                <label className={`flex items-center gap-2 group ${editData?.active && changedViewFlag !== "mobile" ? "cursor-pointer" : "cursor-not-allowed opacity-40"}`}>
                   <input
                     type="checkbox"
                     checked={formData.showOnHomepage}
-                    disabled={!editData?.active}
-                    onChange={(e) =>
-                      handleInputChange("showOnHomepage", e.target.checked)
-                    }
+                    disabled={!editData?.active || changedViewFlag === "mobile"}
+                    onChange={(e) => {
+                      handleInputChange("showOnHomepage", e.target.checked);
+                      setChangedViewFlag(e.target.checked !== (editData?.showOnHomepage ?? false) ? "homepage" : null);
+                    }}
                     className="w-4 h-4 rounded accent-primary disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
@@ -1144,14 +1148,15 @@ function AddHeroSectionModal({
                   </span>
                 </label>
 
-                <label className={`flex items-center gap-2 group ${editData?.active ? "cursor-pointer" : "cursor-not-allowed opacity-40"}`}>
+                <label className={`flex items-center gap-2 group ${editData?.active && changedViewFlag !== "homepage" ? "cursor-pointer" : "cursor-not-allowed opacity-40"}`}>
                   <input
                     type="checkbox"
                     checked={formData.showOnMobilePage}
-                    disabled={!editData?.active}
-                    onChange={(e) =>
-                      handleInputChange("showOnMobilePage", e.target.checked)
-                    }
+                    disabled={!editData?.active || changedViewFlag === "homepage"}
+                    onChange={(e) => {
+                      handleInputChange("showOnMobilePage", e.target.checked);
+                      setChangedViewFlag(e.target.checked !== (editData?.showOnMobilePage ?? false) ? "mobile" : null);
+                    }}
                     className="w-4 h-4 rounded accent-primary disabled:cursor-not-allowed"
                   />
                   <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">
