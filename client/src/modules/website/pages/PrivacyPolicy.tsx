@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Building2, MapPin, Mail, Phone, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Building2, MapPin, Mail, Phone, ChevronRight } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
+import { getAllPolicyPages } from "@/Api/policypagesapi";
 
 const RESPONSE_BODY = {
   mainTitle: "Privacy Policy",
@@ -174,24 +175,61 @@ const SECTIONS = [
 ];
 
 export default function PrivacyPolicy() {
-  const responseSections =
-    RESPONSE_BODY.sections.length > 0
-      ? RESPONSE_BODY.sections
-          .filter((section) => section.active)
-          .sort((a, b) => a.sequence - b.sequence)
-          .map((section, index) => ({
-            id: `response-${index + 1}`,
-            num: String(index + 1).padStart(2, "0"),
-            title: section.title,
-            intro: "",
-            items: [{ text: section.description }],
-            callout: section.highlightText || "",
-          }))
-      : SECTIONS;
-
+  const [policyData, setPolicyData] = useState<any>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const fetchPolicyPage = async () => {
+      try {
+        const res = await getAllPolicyPages();
+        const data = res?.data;
+        const allItems = Array.isArray(data) ? data : data ? [data] : [];
+        const privacyItem = allItems
+          .filter((item) => item?.showOnPrivacyPolicy === true)
+          .sort((a, b) => (b?.id || 0) - (a?.id || 0))[0] || allItems[0];
+        setPolicyData(privacyItem || null);
+      } catch (error) {
+        console.error("Failed to fetch privacy policy page", error);
+        setPolicyData(null);
+      }
+    };
+
+    fetchPolicyPage();
+  }, []);
+
+  const sourceSections =
+    Array.isArray(policyData?.sections) && policyData.sections.length > 0
+      ? policyData.sections
+      : RESPONSE_BODY.sections.length > 0
+        ? RESPONSE_BODY.sections
+        : SECTIONS;
+
+  const responseSections = sourceSections
+    .filter((section) => section?.active !== false)
+    .sort((a, b) => (a?.sequence || 0) - (b?.sequence || 0))
+    .map((section, index) => ({
+      id: section?.id ? `response-${section.id}` : `response-${index + 1}`,
+      num: String(index + 1).padStart(2, "0"),
+      title: section?.title || `Section ${index + 1}`,
+      intro: "",
+      items: [{ text: section?.description || "" }],
+      callout: section?.highlightTextDescription || section?.highlightText || "",
+    }));
+
+  const titleWords = (policyData?.mainTitle || "").trim().split(/\s+/).filter(Boolean);
+  const heroTitle = titleWords[0] || "Privacy";
+  const heroHighlight =
+    policyData?.highlightTextDescription ||
+    titleWords.slice(1).join(" ") ||
+    "Matters";
+  const heroDescription =
+    policyData?.mainDescription ||
+    "How we protect, manage, and value your data at Kennedia Blu. Our commitment to transparency starts here.";
+  const effectiveDate = policyData?.effectiveDate || "2025-01-01";
+  const lastUpdated = policyData?.lastUpdated || "2025-04-01";
+  const version = policyData?.version || "2.1";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -253,7 +291,7 @@ export default function PrivacyPolicy() {
       <Navbar />
 
       {/* Hero Header - Enhanced with Visible Image */}
-      <section className="relative min-h-[60vh] pt-32 pb-20 flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
         {/* Background Layer */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white dark:to-[#0A0A0A] z-10" />
@@ -267,7 +305,7 @@ export default function PrivacyPolicy() {
           <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-navy/30 rounded-full blur-[100px] animate-pulse" />
         </div>
 
-        <div className="container mx-auto px-6 relative z-20 text-center">
+        <div className="container mx-auto px-4 sm:px-6 relative z-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -275,19 +313,18 @@ export default function PrivacyPolicy() {
           >
            
             
-            <h1 className="text-5xl md:text-8xl font-serif text-white mb-6 leading-[0.9]">
-              Privacy <br />
-              <span className="text-primary italic font-light drop-shadow-lg">Matters</span>
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-serif text-white mb-5 md:mb-6 leading-[0.95] md:leading-[0.9]">
+              {heroTitle} <br />
+              <span className="text-primary italic font-light drop-shadow-lg">{heroHighlight}</span>
             </h1>
             
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-lg md:text-xl text-white font-medium leading-relaxed max-w-2xl mx-auto mb-10 drop-shadow-md"
+              className="text-base sm:text-lg md:text-xl text-white font-medium leading-relaxed max-w-2xl mx-auto mb-8 md:mb-10 drop-shadow-md px-2 sm:px-0"
             >
-              How we protect, manage, and value your data at Kennedia Blu. 
-              Our commitment to transparency starts here.
+              {heroDescription}
             </motion.p>
 
             <motion.div
@@ -297,18 +334,18 @@ export default function PrivacyPolicy() {
               className="h-1 bg-primary mx-auto mb-10"
             />
             
-            <div className="flex flex-wrap justify-center gap-8 text-sm text-white/50 font-medium">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-6 md:gap-8 text-xs sm:text-sm text-white/90 dark:text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                Effective: Jan 1, 2025
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Effective: {effectiveDate}
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                Updated: April 2025
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Updated: {lastUpdated}
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                Version: 2.1
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Version: {version}
               </span>
             </div>
           </motion.div>
@@ -316,9 +353,30 @@ export default function PrivacyPolicy() {
       </section>
 
       {/* Main Content Area */}
-      <section className="py-20 px-6">
+      <section className="py-14 md:py-20 px-4 sm:px-6">
         <div className="container mx-auto max-w-[1400px]">
-          <div className="flex flex-col lg:flex-row gap-16">
+          <div className="flex flex-col lg:flex-row gap-10 md:gap-16">
+            <div className="lg:hidden">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+                Table of Contents
+              </p>
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {responseSections.map((sec, i) => (
+                  <button
+                    key={`mobile-${sec.id}`}
+                    onClick={() => scrollToSection(i)}
+                    className={`shrink-0 flex items-center gap-2 text-left px-3 py-2 rounded-lg transition-all duration-300 ${
+                      activeIdx === i
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "text-gray-500 border border-gray-200 dark:border-white/10"
+                    }`}
+                  >
+                    <span className="text-[10px] font-bold">{sec.num}</span>
+                    <span className="text-xs font-medium whitespace-nowrap">{sec.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
             
             {/* Sidebar Navigation - Sticky */}
             <aside className="lg:w-1/4 hidden lg:block">
@@ -345,7 +403,7 @@ export default function PrivacyPolicy() {
             </aside>
 
             {/* Content Sections */}
-            <main className="lg:w-3/4 space-y-24 pb-32">
+            <main className="lg:w-3/4 space-y-14 md:space-y-24 pb-16 md:pb-32">
               {responseSections.map((sec, i) => (
                 <div
                   key={sec.id}
@@ -358,11 +416,11 @@ export default function PrivacyPolicy() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
                   >
-                    <div className="flex items-center gap-4 mb-8">
+                    <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                       <span className="text-3xl md:text-4xl font-serif text-primary/20 dark:text-primary/10">
                         {sec.num}
                       </span>
-                      <h2 className="text-2xl md:text-3xl font-serif text-navy dark:text-white">{sec.title}</h2>
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-serif text-navy dark:text-white">{sec.title}</h2>
                     </div>
 
                     {sec.body && sec.body.map((para, pIdx) => (
@@ -372,11 +430,11 @@ export default function PrivacyPolicy() {
                     ))}
 
                     {sec.items && (
-                      <div className="grid grid-cols-1 gap-4 my-8">
+                      <div className="grid grid-cols-1 gap-3 md:gap-4 my-6 md:my-8">
                         {sec.items.map((item, itemIdx) => (
                           <div 
                             key={itemIdx}
-                            className="p-6 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/20 transition-all duration-300"
+                            className="p-4 sm:p-5 md:p-6 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/20 transition-all duration-300"
                           >
                             <div className="w-1.5 h-1.5 rounded-full bg-primary mb-4" />
                             <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -388,7 +446,7 @@ export default function PrivacyPolicy() {
                     )}
 
                     {sec.callout && (
-                      <div className="p-6 rounded-2xl bg-primary/5 border-l-4 border-primary mt-8">
+                      <div className="p-4 sm:p-5 md:p-6 rounded-2xl bg-primary/5 border-l-4 border-primary mt-6 md:mt-8">
                         <p className="text-gray-700 dark:text-gray-300 italic text-sm leading-relaxed">
                           {sec.callout}
                         </p>

@@ -1,191 +1,266 @@
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { AlertTriangle, Info, Gavel, Scale, ShieldCheck, Globe, CheckCircle2, FileText, ExternalLink } from "lucide-react";
 
-const disclaimers = [
-  {
-    icon: Info,
-    title: "Accuracy of Information",
-    content: "While we strive to keep the information on this website accurate and up-to-date, we make no representations or warranties of any kind about the completeness, accuracy, or reliability of the information, products, or services contained on the website. Any reliance you place on such information is therefore strictly at your own risk.",
-    tags: ["Reliability", "Accuracy"]
-  },
-  {
-    icon: AlertTriangle,
-    title: "Limitation of Liability",
-    content: "Kennedia Blu shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use our website or services. This includes, without limitation, loss of data or profit arising out of the use or performance of this platform, even if we have been advised of the possibility of such damages.",
-    tags: ["Liability", "Protection"]
-  },
-  {
-    icon: Gavel,
-    title: "External Links",
-    content: "Our website may contain links to third-party websites. These links are provided for your convenience and to provide further information. They do not signify that we endorse the website(s). We have no responsibility for the content of the linked website(s) or for any loss or damage that may arise from your use of them.",
-    tags: ["Third-Party", "Links"]
-  },
-  {
-    icon: Scale,
-    title: "Governing Law",
-    content: "The use of this website and any dispute arising out of such use is subject to the laws of the jurisdiction in which our corporate headquarters is located. Any legal action or proceeding related to this website shall be brought exclusively in a court of competent jurisdiction within that territory.",
-    tags: ["Legal", "Jurisdiction"]
-  }
-];
+const RESPONSE_BODY = {
+  mainTitle: "Legal Disclaimer",
+  effectiveDate: "2025-01-01",
+  lastUpdated: "2025-04-15",
+  version: "2.1",
+  sections: [
+    {
+      title: "Accuracy of Information",
+      description:
+        "While we strive to keep website information accurate and up to date, we make no warranties regarding completeness, reliability, or accuracy. Any reliance you place on this information is strictly at your own risk.",
+      highlightText:
+        "Content is provided for general information purposes and may be updated without prior notice.",
+      active: true,
+      sequence: 1,
+    },
+    {
+      title: "Limitation of Liability",
+      description:
+        "Kennedia Blu is not liable for direct, indirect, incidental, or consequential damages arising from use, inability to use, or performance issues of this website or related services, including loss of data or profit.",
+      highlightText:
+        "By using this platform, you accept that service use is at your own discretion and risk.",
+      active: true,
+      sequence: 2,
+    },
+    {
+      title: "External Links",
+      description:
+        "Our site may include links to third-party websites for convenience and reference. These links do not imply endorsement, and we are not responsible for external content, practices, or losses resulting from third-party use.",
+      highlightText:
+        "Please review the terms and privacy practices of every external platform you visit.",
+      active: true,
+      sequence: 3,
+    },
+    {
+      title: "Governing Law",
+      description:
+        "Use of this website and any disputes arising from such use are governed by the laws of the jurisdiction of Kennedia Blu's headquarters. Legal proceedings must be filed in courts with appropriate jurisdiction in that territory.",
+      highlightText:
+        "Continued use of this website confirms your acceptance of applicable legal jurisdiction.",
+      active: true,
+      sequence: 4,
+    },
+  ],
+};
 
 export default function LegalDisclaimer() {
+  const responseSections = RESPONSE_BODY.sections
+    .filter((section) => section.active)
+    .sort((a, b) => a.sequence - b.sequence)
+    .map((section, index) => ({
+      id: `response-${index + 1}`,
+      num: String(index + 1).padStart(2, "0"),
+      title: section.title,
+      items: [{ text: section.description }],
+      callout: section.highlightText || "",
+    }));
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+      if (window.scrollY < 400) {
+        setActiveIdx(0);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: "-20% 0px -60% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = sectionRefs.current.findIndex((ref) => ref === entry.target);
+          if (index !== -1) {
+            setActiveIdx(index);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    sectionRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToSection = (i: number) => {
+    const target = sectionRefs.current[i];
+    if (target) {
+      const offset = 100;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = target.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-[#1a1a1a] dark:text-gray-100 selection:bg-primary/20 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans">
       <Navbar />
 
-      {/* Hero Section - Immersive Design */}
-      <section className="relative min-h-[70vh] pt-32 pb-20 flex items-center justify-center overflow-hidden">
-        {/* Background Layer */}
+      <section className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A2357]/60 via-[#0A2357]/40 to-white dark:to-[#0A0A0A] z-10" />
-          <img 
-            src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2000" 
-            alt="Legal Authority" 
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white dark:to-[#0A0A0A] z-10" />
+          <img
+            src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=2000"
+            alt="Legal Authority"
             className="w-full h-full object-cover"
           />
+          <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] bg-navy/30 rounded-full blur-[100px] animate-pulse" />
         </div>
 
-        <div className="container mx-auto max-w-[1400px] px-6 relative z-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-20 h-20 bg-primary rounded-3xl flex items-center justify-center text-white mb-10 shadow-2xl shadow-primary/30 mx-auto relative z-10"
-          >
-            <Gavel className="w-10 h-10" />
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-8xl font-serif text-white mb-8 leading-tight drop-shadow-md"
-          >
-            Legal <br />
-            <span className="text-primary italic font-light">Disclaimer</span>
-          </motion.h1>
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: "120px" }}
-            transition={{ delay: 0.3 }}
-            className="h-1.5 bg-primary mb-12 mx-auto rounded-full"
-          />
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl md:text-2xl text-white font-medium leading-relaxed max-w-4xl mx-auto drop-shadow-lg"
-          >
-            Essential information regarding the terms of use, liabilities, and legal boundaries of the Kennedia Blu digital platform.
-          </motion.p>
-        </div>
-      </section>
+        <div className="container mx-auto px-4 sm:px-6 relative z-20 text-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-serif text-white mb-5 md:mb-6 leading-[0.95] md:leading-[0.9]">
+              Legal <br />
+              <span className="text-primary italic font-light drop-shadow-lg">Disclaimer</span>
+            </h1>
 
-      {/* Intro Statement Section */}
-      <section className="py-24 px-6 relative z-10 -mt-10">
-        <div className="container mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white dark:bg-[#111] p-12 rounded-[3rem] shadow-2xl dark:shadow-none border border-gray-100 dark:border-white/5 text-center"
-          >
-            <div className="flex justify-center gap-4 mb-8">
-              <CheckCircle2 className="text-primary w-8 h-8" />
-              <FileText className="text-primary w-8 h-8" />
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-base sm:text-lg md:text-xl text-white font-medium leading-relaxed max-w-2xl mx-auto mb-8 md:mb-10 drop-shadow-md px-2 sm:px-0"
+            >
+              Terms, liabilities, and legal boundaries that apply when using Kennedia Blu digital platforms.
+            </motion.p>
+
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "100px" }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="h-1 bg-primary mx-auto mb-10"
+            />
+
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-6 md:gap-8 text-xs sm:text-sm text-white/90 dark:text-white font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Effective: Jan 1, 2025
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Updated: April 2025
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />
+                Version: 2.1
+              </span>
             </div>
-            <h2 className="text-3xl font-serif text-[#0A2357] dark:text-white mb-6">Agreement to Terms</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 font-light leading-relaxed">
-              By accessing and using this website, you acknowledge that you have read, understood, and agreed to be bound by the terms and provisions outlined in this Legal Disclaimer. If you do not agree to these terms, please refrain from using our services.
-            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Main Content Grid */}
-      <section className="py-32 px-6">
+      <section className="py-14 md:py-20 px-4 sm:px-6">
         <div className="container mx-auto max-w-[1400px]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {disclaimers.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group relative"
-              >
-                <div className="flex flex-col md:flex-row gap-8 items-start p-10 rounded-[3rem] bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/30 dark:hover:border-primary/20 hover:bg-white dark:hover:bg-white/[0.07] hover:shadow-2xl transition-all duration-500 h-full">
-                  <div className="flex-shrink-0 w-20 h-20 rounded-2xl bg-white dark:bg-white/10 group-hover:bg-primary flex items-center justify-center text-primary group-hover:text-white transition-all duration-500 shadow-sm border border-gray-100 dark:border-white/10">
-                    <item.icon className="w-10 h-10" />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {item.tags.map((tag, tIdx) => (
-                        <span key={tIdx} className="text-[10px] font-bold uppercase tracking-widest text-primary/60 bg-primary/5 px-2 py-0.5 rounded">
-                          {tag}
-                        </span>
+          <div className="flex flex-col lg:flex-row gap-10 md:gap-16">
+            <div className="lg:hidden">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
+                Table of Contents
+              </p>
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                {responseSections.map((sec, i) => (
+                  <button
+                    key={`mobile-${sec.id}`}
+                    onClick={() => scrollToSection(i)}
+                    className={`shrink-0 flex items-center gap-2 text-left px-3 py-2 rounded-lg transition-all duration-300 ${
+                      activeIdx === i
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "text-gray-500 border border-gray-200 dark:border-white/10"
+                    }`}
+                  >
+                    <span className="text-[10px] font-bold">{sec.num}</span>
+                    <span className="text-xs font-medium whitespace-nowrap">{sec.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <aside className="lg:w-1/4 hidden lg:block">
+              <div className="sticky top-32 space-y-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">Table of Contents</p>
+                {responseSections.map((sec, i) => (
+                  <button
+                    key={sec.id}
+                    onClick={() => scrollToSection(i)}
+                    className={`group flex items-center gap-4 w-full text-left p-3 rounded-xl transition-all duration-300 ${
+                      activeIdx === i
+                        ? "bg-primary/5 text-primary shadow-sm"
+                        : "text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <span className={`text-[10px] font-bold ${activeIdx === i ? "text-primary" : "text-gray-300 dark:text-gray-700"}`}>
+                      {sec.num}
+                    </span>
+                    <span className="text-sm font-medium flex-1 truncate">{sec.title}</span>
+                    <ChevronRight
+                      className={`w-4 h-4 transition-transform duration-300 ${activeIdx === i ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0"}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <main className="lg:w-3/4 space-y-14 md:space-y-24 pb-16 md:pb-32">
+              {responseSections.map((sec, i) => (
+                <div key={sec.id} ref={(el) => (sectionRefs.current[i] = el)} className="scroll-mt-32">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
+                      <span className="text-3xl md:text-4xl font-serif text-primary/20 dark:text-primary/10">{sec.num}</span>
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-serif text-navy dark:text-white">{sec.title}</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:gap-4 my-6 md:my-8">
+                      {sec.items.map((item, itemIdx) => (
+                        <div
+                          key={itemIdx}
+                          className="p-4 sm:p-5 md:p-6 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-primary/20 transition-all duration-300"
+                        >
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary mb-4" />
+                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{item.text}</p>
+                        </div>
                       ))}
                     </div>
-                    <h3 className="text-3xl font-serif text-[#0A2357] dark:text-white mb-6 group-hover:text-primary transition-colors duration-300">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg font-light">
-                      {item.content}
-                    </p>
-                  </div>
+
+                    {sec.callout && (
+                      <div className="p-4 sm:p-5 md:p-6 rounded-2xl bg-primary/5 border-l-4 border-primary mt-6 md:mt-8">
+                        <p className="text-gray-700 dark:text-gray-300 italic text-sm leading-relaxed">{sec.callout}</p>
+                      </div>
+                    )}
+                  </motion.div>
                 </div>
-                {/* Subtle Decorative Number */}
-                <div className="absolute top-10 right-10 text-9xl font-serif text-gray-200 dark:text-white/5 opacity-10 group-hover:opacity-20 select-none pointer-events-none transition-opacity duration-500">
-                  {index + 1}
-                </div>
-              </motion.div>
-            ))}
+              ))}
+            </main>
           </div>
-
-          {/* Call to Action / Final Note */}
-          {/* <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-32 p-16 rounded-[4rem] bg-[#0A2357] dark:bg-primary/10 text-white relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary opacity-20 blur-[100px] -mr-32 -mt-32" />
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-              <div className="max-w-2xl">
-                <h3 className="text-4xl font-serif mb-6">Need Legal Clarification?</h3>
-                <p className="text-white/70 text-lg font-light leading-relaxed">
-                  If you have any questions regarding this disclaimer or our terms of service, please do not hesitate to contact our legal department. We are here to ensure complete transparency.
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-5 bg-primary text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 flex items-center gap-3 whitespace-nowrap"
-              >
-                Contact Legal <ExternalLink size={18} />
-              </motion.button>
-            </div>
-          </motion.div> */}
-
-          {/* Footer Note */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mt-20 p-12 border-t border-gray-100 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-8"
-          >
-            <div className="flex items-center gap-6 text-gray-300 dark:text-gray-700">
-              <ShieldCheck className="w-10 h-10" />
-              <Globe className="w-10 h-10" />
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest mb-2">Last Modified</p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 font-medium italic">
-                Kennedia Blu reserves the right to modify these terms at any time. <br className="hidden md:block" />
-                Updated: April 15, 2025.
-              </p>
-            </div>
-          </motion.div>
         </div>
       </section>
 

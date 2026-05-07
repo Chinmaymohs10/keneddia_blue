@@ -16,13 +16,13 @@ const footerSections = [
     title: "About Us",
     links: [
       { label: "Our Journey",
-        //  href: "/journey" 
+         href: "/journey" 
         },
       { label: "Legal Disclaimer", 
-        // href: "/legal-disclaimer"
+        href: "/legal-disclaimer"
        },
       { label: "Privacy Policy", 
-        // href: "/privacy-policy"
+        href: "/privacy-policy"
        },
     ],
   },
