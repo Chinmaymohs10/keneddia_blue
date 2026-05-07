@@ -1147,7 +1147,7 @@ function ApiBrandSwitcher({ currentId, allBrands, citySlug, propertySlug }) {
           <div className="h-px w-10 bg-[#c9a25a]/40" />
           <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#c9a25a]">More Brands</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {others.map((b, i) => {
             const accentColor = API_ACCENT_COLORS[i % API_ACCENT_COLORS.length];
             const accent = { color: accentColor, dot: accentColor + "dd" };
@@ -1163,32 +1163,38 @@ function ApiBrandSwitcher({ currentId, allBrands, citySlug, propertySlug }) {
                     ? navigate(`/wine-categories/${b.id}?kind=brand`)
                     : navigate(`/wine-detail/${citySlug}/${propertySlug}/${b.id}?kind=brand`)
                 }
-                className="group relative flex min-h-[96px] cursor-pointer select-none items-center overflow-hidden rounded-[1.5rem] border border-stone-200/90 bg-white px-4 py-4 shadow-[0_14px_40px_-28px_rgba(66,28,35,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_60px_-34px_rgba(66,28,35,0.45)] dark:border-white/[0.07] dark:bg-[#1A0C13]"
+                className="group relative h-full cursor-pointer overflow-hidden rounded-[1rem] border border-zinc-200/80 bg-white/90 px-3 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-zinc-300 dark:border-white/10 dark:bg-[#14090d]/90 dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] dark:hover:border-white/20"
               >
-                <div className="absolute left-0 top-0 h-full w-[3px] opacity-0 transition-all duration-500 group-hover:opacity-100" style={{ background: `linear-gradient(to bottom, ${accent.dot}, ${accent.color})` }} />
+                <div
+                  className="absolute inset-x-4 top-0 h-px opacity-80"
+                  style={{ background: `linear-gradient(90deg, transparent, ${accent.color}, transparent)` }}
+                />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),transparent_56%)] opacity-60 transition-opacity duration-500 group-hover:opacity-80 dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_52%)] dark:opacity-0 dark:group-hover:opacity-100" />
 
-                <div className="relative z-10 flex min-w-0 flex-1 items-center gap-4">
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-stone-100 ring-1 ring-stone-200/80 dark:bg-zinc-900 dark:ring-white/10">
+                <div className="relative flex h-full min-h-[160px] flex-col items-center justify-center text-center">
+                  <span className="mb-2 text-[0.55rem] uppercase tracking-[0.4em]" style={{ color: `${accent.color}cc` }}>
+                    {b.tags || ""}
+                  </span>
+
+                  <div className="mb-2 flex h-16 w-full items-center justify-center px-2">
                     {b.media?.url ? (
-                      <img src={b.media.url} alt={b.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <img src={b.media.url} alt={b.name} className="h-full w-full object-contain object-center" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center" style={{ background: `${accent.color}18` }}>
-                        <span className="text-[11px] font-black uppercase" style={{ color: accent.color }}>{b.name?.[0]}</span>
-                      </div>
+                      <h3 className="text-[1.4rem] font-semibold tracking-[0.08em] text-zinc-950 dark:text-white sm:text-[1.6rem]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                        {b.name}
+                      </h3>
                     )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 dark:text-stone-100">{b.name}</h3>
-                    <p className="mt-0.5 truncate text-[10px] text-stone-400 uppercase tracking-widest">{b.wineTypeName || "Brand"}</p>
-                  </div>
+                  <div className="my-2 h-px w-10" style={{ background: `linear-gradient(90deg, transparent, ${accent.color}, transparent)` }} />
 
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 group-hover:scale-105" style={{ background: `linear-gradient(135deg, ${accent.dot}, ${accent.color})`, transform: "translateX(0px)" }}>
-                    <ArrowRight size={20} />
-                  </div>
+                  <p className="text-[0.68rem] uppercase tracking-[0.28em]" style={{ color: `${accent.color}dd` }}>
+                    {b.wineTypeName || "Brand"}
+                  </p>
+                  <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.24em] text-zinc-600 dark:text-white/70">
+                    {b.name}
+                  </p>
                 </div>
-
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: `linear-gradient(90deg, ${accent.color}08 0%, transparent 45%)` }} />
               </motion.div>
             );
           })}

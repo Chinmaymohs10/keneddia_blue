@@ -27,6 +27,7 @@ const resturant_NAV_ITEMS = [
   { type: "link", label: "HOME", href: "/" },
   { type: "link", label: "MENU", href: "#menu" },
   { type: "link", label: "CONTACT", href: "#contact" },
+  { type: "link", label: "RESERVATION", href: "#ReservationForm" },
 ];
 
 const generateSlug = (name) => name?.toLowerCase().trim().replace(/\s+/g, "-");
@@ -516,6 +517,8 @@ function ResturantCategoryPageTemplate() {
         navItems={resturant_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
         propertyTypeName="Restaurant"
+        showQuickBook={true}
+        quickBookOptions={[{ label: "Reserve Restaurant", href: "#ReservationForm" }]}
       />
 
       <main>

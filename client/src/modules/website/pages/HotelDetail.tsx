@@ -1209,8 +1209,6 @@ export default function HotelDetail() {
                   variant="outline"
                   className="rounded-full active:scale-95 transition-all px-6"
                   onClick={handleBookmark}
-                  onMouseEnter={() => setShowBookmarkMessage(true)}
-                  onMouseLeave={() => setShowBookmarkMessage(false)}
                 >
                   <Heart className="w-4 h-4 mr-2" />
                   Save

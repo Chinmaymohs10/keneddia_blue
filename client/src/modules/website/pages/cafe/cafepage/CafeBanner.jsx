@@ -518,8 +518,6 @@ export default function CafeBanner({ propertyData, galleryData, loading }) {
               <button
                 className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-black transition-all active:scale-95 text-[#3d1f00] dark:text-[#e8d0b0] bg-[#e8d8c4]/60 dark:bg-white/10 border border-[#c4a882]/40 dark:border-white/15 hover:bg-[#dcc9af]/80 dark:hover:bg-white/15 cursor-pointer"
                 onClick={handleBookmark}
-                onMouseEnter={() => setShowBookmarkMessage(true)}
-                onMouseLeave={() => setShowBookmarkMessage(false)}
               >
                 <Heart className="w-3.5 h-3.5" />
                 Save

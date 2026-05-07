@@ -24,12 +24,6 @@ import { Button } from "@/components/ui/button";
 import GalleryModal from "@/modules/website/components/hotel-detail/GalleryModal";
 import { toast } from "react-hot-toast";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -549,8 +543,6 @@ function ResturantBanner({
                 variant="outline"
                 className="rounded-full active:scale-95 transition-all"
                 onClick={handleBookmark}
-                onMouseEnter={() => setShowBookmarkMessage(true)}
-                onMouseLeave={() => setShowBookmarkMessage(false)}
               >
                 <Heart className="w-4 h-4 mr-2" />
                 Save

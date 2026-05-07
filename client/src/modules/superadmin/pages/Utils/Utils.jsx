@@ -334,6 +334,7 @@ function WhatsAppTab({ propertyTypes, properties }) {
       phoneNumber: form.phoneNumber.trim(),
       title: form.title.trim(),
       description: form.description.trim(),
+      ...(!editing && { active: true }),
       ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
       ...(form.scope === "property" && { propertyId: form.propertyId }),
     };
@@ -682,6 +683,7 @@ function useIconShared(fetchFn) {
       showOnHeader: form.showOnHeader,
       showOnFooter: form.showOnFooter,
       showOnLightOrDark: form.showOnLightOrDark,
+      ...(!editing && { active: true }),
       ...(form.propertyTypeId ? { propertyTypeId: form.propertyTypeId } : {}),
       ...(form.propertyId ? { propertyId: form.propertyId } : {}),
     };

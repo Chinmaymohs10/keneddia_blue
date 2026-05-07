@@ -25,7 +25,6 @@ const CAFE_NAV_ITEMS = [
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "SHOWCASE", key: "showcase", href: "#showcase" },
   { type: "link", label: "NEWS", key: "news", href: "#news" },
-  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
 ];
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -251,8 +250,6 @@ export default function CafeHomepage() {
         navItems={CAFE_NAV_ITEMS}
         logo={siteContent.brand.logo_cafe}
         propertyTypeName="Cafe"
-        showQuickBook={true}
-        quickBookOptions={[{ label: "Reserve Cafe", category: "cafe" }]}
       />
      {/* {isInsecureOrigin && (
         <div className="relative z-[190] border-y border-amber-500/30 bg-amber-50/95 px-4 py-3 text-amber-950 shadow-sm">
