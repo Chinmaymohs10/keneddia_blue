@@ -88,7 +88,7 @@ export default function RestaurantHomepage() {
           <ul className="sr-only" aria-hidden="true">
             {ssr.restaurantProperties.map((r) => {
               const slug = `/${createCitySlug(r.city || r.name)}/${createHotelSlug(r.name || r.city || "restaurant", r.propertyId)}`;
-              return (
+              return ( 
                 <li key={r.id}>
                   <a href={slug}>
                     {r.image?.src && (
