@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { colors } from "@/lib/colors/colors";
 import Layout from '@/modules/layout/Layout';
-import { Image, List, Quote, Users } from 'lucide-react';
+import { Image, List, Quote, Users, BookOpen } from 'lucide-react';
 import JourneyHeroSection from '../tabPages/OurJourneyTabs/JourneyHeroSection';
 import JourneyMarquee from '../tabPages/OurJourneyTabs/JourneyMarquee';
 import JourneyPullQuote from '../tabPages/OurJourneyTabs/JourneyPullQuote';
 import JourneyTeamSection from '../tabPages/OurJourneyTabs/JourneyTeamSection';
+import JourneyStickyChapters from '../tabPages/OurJourneyTabs/JourneyStickyChapters';
 
 const tabs = [
   { id: 'hero', label: 'Story Hero', icon: Image, component: JourneyHeroSection, description: 'Hero cards shown on the journey page' },
   { id: 'marquee', label: 'Marquee', icon: List, component: JourneyMarquee, description: 'Scrolling stats & highlights strip' },
   { id: 'pullquote', label: 'Pull Quote', icon: Quote, component: JourneyPullQuote, description: "Founder's featured quote section" },
   { id: 'team', label: 'Team Section', icon: Users, component: JourneyTeamSection, description: 'Leadership & team member cards' },
+  { id: 'chapters', label: 'Sticky Chapters', icon: BookOpen, component: JourneyStickyChapters, description: 'Scroll-linked historical milestones' },
 ];
 
 function OurJourney() {
