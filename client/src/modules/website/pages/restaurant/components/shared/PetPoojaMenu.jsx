@@ -95,6 +95,7 @@ export default function PetPoojaMenu({
   const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const [deliveryLinks, setDeliveryLinks] = useState({ swiggy: "", zomato: "" });
+  const [openDeliveryItemId, setOpenDeliveryItemId] = useState(null);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -329,62 +330,6 @@ export default function PetPoojaMenu({
           </div>
 
           <div className="flex items-center gap-3 relative">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowDeliveryOptions((prev) => !prev)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-200 dark:border-white/10 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all shadow-sm"
-              >
-                <Truck className="w-4 h-4 text-primary" />
-                Delivery
-              </button>
-
-              <AnimatePresence>
-                {showDeliveryOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    className="absolute right-0 top-[calc(100%+0.75rem)] z-20 flex gap-2 rounded-2xl border border-zinc-100 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-zinc-900"
-                  >
-                    {[
-                      {
-                        label: "Swiggy",
-                        href: deliveryLinks.swiggy,
-                        className: "bg-[#FC8019]",
-                      },
-                      {
-                        label: "Zomato",
-                        href: deliveryLinks.zomato,
-                        className: "bg-[#E23744]",
-                      },
-                    ].map((platform) =>
-                      platform.href ? (
-                        <a
-                          key={platform.label}
-                          href={platform.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`${platform.className} inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-transform hover:scale-105`}
-                        >
-                          {platform.label} <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      ) : (
-                        <button
-                          key={platform.label}
-                          type="button"
-                          disabled
-                          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed"
-                        >
-                          {platform.label}
-                        </button>
-                      ),
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             <button
               type="button"
               onClick={handleTakeawayOpen}
@@ -502,18 +447,79 @@ export default function PetPoojaMenu({
                           )}
 
                           {!outOfStock && (
-                            <button
-                              type="button"
-                              onClick={() => toggleTakeawaySelection(item)}
-                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 ${
-                                isItemSelected(item.itemid)
-                                  ? "bg-primary text-white"
-                                  : "bg-primary/10 hover:bg-primary text-primary hover:text-white"
-                              }`}
-                            >
-                              <ShoppingBag size={12} />
-                              {isItemSelected(item.itemid) ? "Selected" : "Select"}
-                            </button>
+                            <div className="flex items-center gap-2">
+                              {/* Order Online button with Swiggy/Zomato hover popup */}
+                              {(deliveryLinks.swiggy || deliveryLinks.zomato) && (
+                                <div
+                                  className="relative"
+                                  onMouseEnter={() => setOpenDeliveryItemId(item.itemid)}
+                                  onMouseLeave={() => setOpenDeliveryItemId(null)}
+                                >
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all"
+                                  >
+                                    <Truck size={12} />
+                                    Order Online
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {openDeliveryItemId === item.itemid && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute bottom-[calc(100%+0.5rem)] right-0 z-30 flex gap-2 rounded-2xl border border-zinc-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-2 shadow-2xl whitespace-nowrap"
+                                      >
+                                        {deliveryLinks.swiggy ? (
+                                          <a
+                                            href={deliveryLinks.swiggy}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#FC8019] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white transition-transform hover:scale-105"
+                                          >
+                                            Swiggy <ExternalLink size={10} />
+                                          </a>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-not-allowed">
+                                            Swiggy
+                                          </span>
+                                        )}
+                                        {deliveryLinks.zomato ? (
+                                          <a
+                                            href={deliveryLinks.zomato}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#E23744] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white transition-transform hover:scale-105"
+                                          >
+                                            Zomato <ExternalLink size={10} />
+                                          </a>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-not-allowed">
+                                            Zomato
+                                          </span>
+                                        )}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              )}
+
+                              {/* Takeaway select button */}
+                              <button
+                                type="button"
+                                onClick={() => toggleTakeawaySelection(item)}
+                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 ${
+                                  isItemSelected(item.itemid)
+                                    ? "bg-primary text-white"
+                                    : "bg-primary/10 hover:bg-primary text-primary hover:text-white"
+                                }`}
+                              >
+                                <ShoppingBag size={12} />
+                                {isItemSelected(item.itemid) ? "Selected" : "Select"}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>

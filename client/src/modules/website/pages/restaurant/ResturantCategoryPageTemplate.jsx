@@ -362,19 +362,26 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
             </nav>
 
             <div className="space-y-5 text-left max-w-xl">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">
-                  <Sparkles size={12} className="animate-pulse" />
-                  {propertyData?.propertyName || propertyData?.name || "Restaurant"}
-                </span>
-              </div>
-
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight leading-tight text-zinc-900 dark:text-white">
-                {currentCategory?.title?.split(" ")[0] || "Restaurant"}{" "}
-                <span className="italic text-primary">
-                  {currentCategory?.title?.split(" ").slice(1).join(" ") || "Offers"}
-                </span>
+                {(() => {
+                  const name = propertyData?.propertyName || propertyData?.name || "Restaurant";
+                  const words = name.trim().split(" ");
+                  return words.length === 1 ? (
+                    <span className="italic text-primary">{name}</span>
+                  ) : (
+                    <>
+                      {words.slice(0, -1).join(" ")}{" "}
+                      <span className="italic text-primary">{words[words.length - 1]}</span>
+                    </>
+                  );
+                })()}
               </h1>
+
+              {(propertyData?.description || propertyData?.mainHeading) && (
+                <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-400 leading-relaxed font-light max-w-lg">
+                  {propertyData.description || propertyData.mainHeading}
+                </p>
+              )}
 
               <div className="space-y-3">
                 {location ? (
@@ -462,14 +469,14 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                     key={offer.id || index}
                     animate={positionStyles[pos]}
                     transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className={`absolute inset-0 m-auto w-[78%] lg:w-[70%] h-[92%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 ${
+                    className={`absolute inset-0 m-auto w-[78%] lg:w-[70%] h-[92%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 bg-zinc-100 dark:bg-zinc-900 ${
                       pos === "center" ? "pointer-events-auto" : "pointer-events-none"
                     }`}
                   >
                     {offer.image?.type === "VIDEO" ? (
                       <video
                         src={offer.image.src}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         autoPlay
                         muted
                         loop
@@ -479,20 +486,20 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                       <img
                         src={offer.image?.src}
                         alt={offer.image?.alt || offer.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
                   </motion.div>
                 );
               })}
             </div>
 
-            <div className="md:hidden w-full h-full px-4">
+            <div className="md:hidden w-full h-full px-4 bg-zinc-100 dark:bg-zinc-900 rounded-3xl">
               {activeOffer.image?.type === "VIDEO" ? (
                 <video
                   src={activeOffer.image.src}
-                  className="w-full h-full object-cover rounded-3xl"
+                  className="w-full h-full object-contain rounded-3xl"
                   autoPlay
                   muted
                   loop
@@ -501,7 +508,7 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
               ) : activeOfferHasMedia ? (
                 <img
                   src={activeOffer.image?.src}
-                  className="w-full h-full object-cover rounded-3xl"
+                  className="w-full h-full object-contain rounded-3xl"
                   alt={activeOffer.image?.alt || activeOffer.title}
                 />
               ) : null}
@@ -623,6 +630,34 @@ function ResturantCategoryPageTemplate() {
     setPetpoojaItems([]);
     setPetpoojaLoading(false);
   }, [categoryType]);
+
+  // Always sync showOrderButton from API — SSR data may not have it,
+  // causing isPetPoojaVertical to be false even for PetPooja verticals.
+  useEffect(() => {
+    if (!propertyId || !normalizedSlug) return;
+    // Skip if already known (non-SSR path sets it correctly)
+    if (!ssrCategoryData && currentCategory?.showOrderButton !== undefined) return;
+
+    getAllVerticalCards()
+      .then((cardsRes) => {
+        const cards = cardsRes?.data || cardsRes || [];
+        const card = cards.find(
+          (c) =>
+            String(c.propertyId) === String(propertyId) &&
+            c.isActive &&
+            generateSlug(c.verticalName) === normalizedSlug,
+        );
+        if (card) {
+          console.log("[ResturantCategoryPage] ✅ Synced showOrderButton:", card.showOrderButton, "| vertical:", card.verticalName);
+          setCurrentCategory((prev) =>
+            prev ? { ...prev, showOrderButton: !!card.showOrderButton, id: prev.id || card.id } : prev,
+          );
+        } else {
+          console.warn("[ResturantCategoryPage] ⚠️ Could not find vertical card for slug:", normalizedSlug);
+        }
+      })
+      .catch((err) => console.error("[ResturantCategoryPage] showOrderButton sync error:", err));
+  }, [propertyId, normalizedSlug]);
 
   // Fetch PetPooja menu — only when the vertical has showOrderButton enabled
   useEffect(() => {
@@ -989,13 +1024,38 @@ function ResturantCategoryPageTemplate() {
           {isPetPoojaVertical ? (
             petpoojaLoading ? (
               <section className="py-16 bg-white dark:bg-[#050505]">
-                <div className="container mx-auto px-6 max-w-[1200px] space-y-4">
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50 animate-pulse"
-                    />
-                  ))}
+                <div className="container mx-auto px-6 max-w-[1200px]">
+                  {/* Header skeleton */}
+                  <div className="flex items-center justify-between mb-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                      <div className="w-40 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                      <div className="w-12 h-4 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                      <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                    </div>
+                  </div>
+                  {/* Tab chips skeleton */}
+                  <div className="flex gap-3 pb-8 overflow-hidden">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse shrink-0" style={{ width: `${80 + i * 20}px` }} />
+                    ))}
+                  </div>
+                  {/* Menu item rows skeleton */}
+                  <div className="space-y-3">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50">
+                        <div className="w-20 h-20 rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse w-1/3" />
+                          <div className="h-3 rounded-lg bg-zinc-100 dark:bg-zinc-700 animate-pulse w-2/3" />
+                          <div className="h-3 rounded-lg bg-zinc-100 dark:bg-zinc-700 animate-pulse w-1/4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             ) : hasPetPoojaMenu ? (
