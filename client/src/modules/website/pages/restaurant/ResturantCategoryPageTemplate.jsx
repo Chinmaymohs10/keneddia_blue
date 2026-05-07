@@ -602,6 +602,7 @@ function ResturantCategoryPageTemplate() {
   );
   const [petpoojaCategories, setPetpoojaCategories] = useState([]);
   const [petpoojaItems, setPetpoojaItems] = useState([]);
+  const [petpoojaLoading, setPetpoojaLoading] = useState(false);
   const [propertyOffers, setPropertyOffers] = useState([]);
   const [loading, setLoading] = useState(ssrCategoryData ? false : true);
   const [notFound, setNotFound] = useState(ssrCategoryData?.notFound || false);
@@ -617,22 +618,20 @@ function ResturantCategoryPageTemplate() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Reset PetPooja data when switching verticals so stale data doesn't flash
+    setPetpoojaCategories([]);
+    setPetpoojaItems([]);
+    setPetpoojaLoading(false);
   }, [categoryType]);
 
-  // Fetch PetPooja menu — always re-checks showOrderButton live from API
-  // so SSR-cached currentCategory (which may lack the field) is not a problem
+  // Fetch PetPooja menu — only when the vertical has showOrderButton enabled
   useEffect(() => {
-    if (!currentCategory?.id || !propertyId) return;
+    if (!currentCategory?.id || !propertyId || !currentCategory?.showOrderButton) return;
 
     let cancelled = false;
     const fetchPetPooja = async () => {
+      setPetpoojaLoading(true);
       try {
-        // Re-fetch the vertical card to get a fresh showOrderButton value
-        const cardsRes = await getAllVerticalCards();
-        const cards = cardsRes?.data || cardsRes || [];
-        const thisCard = cards.find((c) => c.id === currentCategory.id);
-        if (!thisCard?.showOrderButton || cancelled) return;
-
         const credRes = await getPropertyPetPoojaByPropertyId(propertyId);
         const creds = credRes?.data?.data ?? credRes?.data ?? credRes ?? null;
         if (!creds?.active || cancelled) return;
@@ -649,12 +648,14 @@ function ResturantCategoryPageTemplate() {
         setPetpoojaItems(raw?.items ?? []);
       } catch (err) {
         console.error("[PetPooja] fetch error:", err);
+      } finally {
+        if (!cancelled) setPetpoojaLoading(false);
       }
     };
 
     fetchPetPooja();
     return () => { cancelled = true; };
-  }, [currentCategory?.id, propertyId]);
+  }, [currentCategory?.id, currentCategory?.showOrderButton, propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -740,31 +741,31 @@ function ResturantCategoryPageTemplate() {
       setNotFound(false);
 
       try {
-        /* ─────────────────────────────────────────────
-         0️⃣ Fetch Property Details
-        ───────────────────────────────────────────── */
-        const propertyRes = await GetAllPropertyDetails();
-        const rawData = propertyRes?.data || propertyRes;
+        // Fetch property details, vertical cards, and menu in parallel
+        const [propertyRes, cardsRes, menuRes] = await Promise.all([
+          GetAllPropertyDetails(),
+          getAllVerticalCards(),
+          getMenuItemsByPropertyId(propertyId),
+        ]);
 
+        /* ─── Property Details ─── */
+        const rawData = propertyRes?.data || propertyRes;
         const flattened = (Array.isArray(rawData) ? rawData : []).flatMap(
           (item) => {
             const parent = item.propertyResponseDTO;
             const listings = item.propertyListingResponseDTOS || [];
-
             return listings.length === 0
               ? [{ parent, listing: null }]
               : listings.map((l) => ({ parent, listing: l }));
           },
         );
-
         const matchedProperty = flattened.find(
           (m) => Number(m.parent.id) === Number(propertyId),
         );
-
+        let combinedProperty = null;
         if (matchedProperty) {
           const { parent, listing } = matchedProperty;
-
-          const combinedProperty = {
+          combinedProperty = {
             ...parent,
             ...listing,
             id: parent.id,
@@ -773,10 +774,8 @@ function ResturantCategoryPageTemplate() {
             description: listing?.mainHeading || "",
             location: listing?.fullAddress || parent.address,
             city: listing?.city || parent.locationName,
-            media:
-              listing?.media?.length > 0 ? listing.media : parent.media || [],
+            media: listing?.media?.length > 0 ? listing.media : parent.media || [],
           };
-
           setPropertyData(combinedProperty);
           setCitySlug(
             createCitySlug(
@@ -787,22 +786,15 @@ function ResturantCategoryPageTemplate() {
           );
         }
 
-        /* ─────────────────────────────────────────────
-         1️⃣ Vertical Cards
-        ───────────────────────────────────────────── */
-        const cardsRes = await getAllVerticalCards();
+        /* ─── Vertical Cards ─── */
         const cards = cardsRes?.data || cardsRes || [];
-
         const filtered = cards
-          .filter(
-            (c) => String(c.propertyId) === String(propertyId) && c.isActive,
-          )
+          .filter((c) => String(c.propertyId) === String(propertyId) && c.isActive)
           .sort((a, b) => a.displayOrder - b.displayOrder);
 
         const mapped = filtered.map((card, index) => {
           const slug = generateSlug(card.verticalName);
           const fallback = CARD_BG_COLORS[index % CARD_BG_COLORS.length];
-
           return {
             slug,
             id: card.id,
@@ -812,7 +804,6 @@ function ResturantCategoryPageTemplate() {
             link: card.link || "",
             showOrderButton: !!card.showOrderButton,
             ctaButtonText: card.showOrderButton ? card.extraText || "" : null,
-            // Keep hex for light mode usage
             lightBgColor: card.cardBackgroundColor || null,
             bgColor: fallback.bgColor,
             hoverBg: fallback.hoverBg,
@@ -823,7 +814,6 @@ function ResturantCategoryPageTemplate() {
         });
 
         const matched = mapped.find((m) => m.slug === normalizedSlug);
-
         if (!matched) {
           setNotFound(true);
         } else {
@@ -831,33 +821,19 @@ function ResturantCategoryPageTemplate() {
           setOtherVerticals(mapped.filter((m) => m.slug !== normalizedSlug));
         }
 
-        /* ─────────────────────────────────────────────
-         2️⃣ Menu Items
-        ───────────────────────────────────────────── */
-        const menuRes = await getMenuItemsByPropertyId(propertyId);
+        /* ─── Menu Items ─── */
         const allItems = menuRes?.data || menuRes || [];
+        setApiMenuItems(allItems.filter((i) => i.status !== false));
 
-        const propItems = allItems.filter(
-          (i) => i.status !== false,
-        );
-
-        setApiMenuItems(propItems);
-
-        /* ─────────────────────────────────────────────
-         3️⃣ Gallery
-        ───────────────────────────────────────────── */
+        /* ─── Gallery (depends on matched vertical) ─── */
         if (matched) {
           const galleryRes = await searchGallery({
-            propertyId: propertyId,
+            propertyId,
             verticalId: matched.id,
           });
-
           const rawGallery =
             galleryRes?.data?.content || galleryRes?.data || galleryRes || [];
-
-          const normalizedGallery = (
-            Array.isArray(rawGallery) ? rawGallery : []
-          )
+          const normalizedGallery = (Array.isArray(rawGallery) ? rawGallery : [])
             .filter((g) => g.isActive && g.media?.url)
             .map((g) => ({
               id: g.id,
@@ -872,7 +848,6 @@ function ResturantCategoryPageTemplate() {
               categoryName: g.categoryName ?? null,
               displayOrder: g.displayOrder ?? 999,
             }));
-
           setGalleryData(normalizedGallery);
         }
 
@@ -921,6 +896,7 @@ function ResturantCategoryPageTemplate() {
   }
 
   const resolvedMenu = buildMenuFromApi(apiMenuItems, currentCategory.id);
+  const isPetPoojaVertical = !!currentCategory.showOrderButton;
   const hasPetPoojaMenu = petpoojaCategories.length > 0;
 
   /* ── Page ── */
@@ -990,8 +966,8 @@ function ResturantCategoryPageTemplate() {
           ))}
         </div>
 
-        {/* Hero */}
-        {hasPetPoojaMenu ? (
+        {/* Hero — decided by showOrderButton (stable from first render, no flicker) */}
+        {isPetPoojaVertical ? (
           <PropertyOffersHero
             offers={propertyOffers}
             currentCategory={currentCategory}
@@ -1010,14 +986,31 @@ function ResturantCategoryPageTemplate() {
 
         {/* Menu */}
         <div id="menu">
-          {hasPetPoojaMenu ? (
-            <PetPoojaMenu
-              categories={petpoojaCategories}
-              items={petpoojaItems}
-              propertyId={propertyId}
-              propertyData={propertyData}
-              themeColor={currentCategory.themeColor}
-            />
+          {isPetPoojaVertical ? (
+            petpoojaLoading ? (
+              <section className="py-16 bg-white dark:bg-[#050505]">
+                <div className="container mx-auto px-6 max-w-[1200px] space-y-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-20 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50 animate-pulse"
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : hasPetPoojaMenu ? (
+              <PetPoojaMenu
+                categories={petpoojaCategories}
+                items={petpoojaItems}
+                propertyId={propertyId}
+                propertyData={propertyData}
+                themeColor={currentCategory.themeColor}
+              />
+            ) : (
+              <div className="py-20 text-center text-muted-foreground">
+                Menu coming soon for this vertical.
+              </div>
+            )
           ) : resolvedMenu.length > 0 ? (
             <CategoryMenu
               menu={resolvedMenu}
