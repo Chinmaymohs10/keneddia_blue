@@ -760,6 +760,7 @@ export default function WineManagement() {
     const payload = {
       description: form.description.trim(),
       mediaId: form.mediaId,
+      ...(!editingItem && { active: true }),
       ...(form.scope === "property" && { propertyIds: form.propertyIds }),
       ...(form.scope === "propertyType" && { propertyTypeId: form.propertyTypeId }),
     };

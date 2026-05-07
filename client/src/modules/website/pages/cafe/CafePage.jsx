@@ -20,6 +20,7 @@ const CAFE_NAV_ITEMS = [
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
+  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
 ];
 
 export default function CafePage() {

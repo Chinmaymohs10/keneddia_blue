@@ -24,6 +24,7 @@ const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "MENU", key: "menu", href: "#menu" },
   { type: "link", label: "ABOUT", key: "about", href: "#about" },
   { type: "link", label: "GALLERY", key: "gallery", href: "#gallery" },
+  { type: "link", label: "RESERVATION", key: "reservation", href: "#reservation" },
 ];
 
 export default function RestaurantHomepage() {
@@ -180,8 +181,6 @@ export default function RestaurantHomepage() {
         navItems={RESTAURANT_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
         propertyTypeName="Restaurant"
-        showQuickBook={true}
-        quickBookOptions={[{ label: "Reserve Restaurant", href: "#reservation" }]}
       />
 
       <main>
