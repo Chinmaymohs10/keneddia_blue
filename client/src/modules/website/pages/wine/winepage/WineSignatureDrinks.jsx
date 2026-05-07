@@ -204,25 +204,21 @@ export function WineCategoriesSection({ masterHeader = null }) {
       <div className="pointer-events-none absolute inset-0 opacity-[0.02]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`, backgroundSize: "128px" }} />
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
-        <div className="mb-10 flex flex-col items-center text-center md:mb-14 md:items-start md:text-left">
+        <div className="mb-10 flex flex-col items-start text-left md:mb-14">
           <div className="mb-4 flex items-center gap-3">
             <div className="h-[1px] w-8 bg-[#8B1A2A]/40 md:w-12" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#8B1A2A]">
-              {getMasterEyebrow(masterHeader, "Categories")}
+              {masterHeader?.wineTypeName || headerData?.part1 || "Wine"}
             </span>
           </div>
           <h2 className="font-serif text-3xl font-medium leading-[1.2] text-stone-900 md:text-5xl dark:text-stone-100">
-            {masterHeader ? (
-              getMasterHeading(masterHeader, "Explore by Categories")
-            ) : headerData?.part2 || (
-              <>
-                Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
-              </>
-            )}
+            {masterHeader?.tags || headerData?.part2 || "Explore by Categories"}
           </h2>
-          <p className="mt-4 max-w-xl text-xs leading-relaxed text-stone-500 md:text-sm dark:text-stone-400">
-            {masterHeader?.description || headerData?.description || "Browse whiskey, wine, beers, and tasting experiences across every location."}
-          </p>
+          {(masterHeader?.description || headerData?.description) && (
+            <p className="mt-4 max-w-xl text-xs leading-relaxed text-stone-500 md:text-sm dark:text-stone-400">
+              {masterHeader?.description || headerData?.description}
+            </p>
+          )}
         </div>
 
         {loading ? (

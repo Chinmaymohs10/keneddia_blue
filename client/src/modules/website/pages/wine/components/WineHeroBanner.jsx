@@ -153,23 +153,22 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
   };
 
   const goToSlide = (index) => {
-    const list = desktopSlides.length > 0 ? desktopSlides : slides;
+    const list = desktopSlides.length > 0 ? desktopSlides : mobileSlides;
     if (list.length === 0) return;
     setActiveIndex((index + list.length) % list.length);
   };
 
   const activeSlide = useMemo(() => {
-    const list = desktopSlides.length > 0 ? desktopSlides : slides;
-    if (list.length === 0) return null;
-    return list[activeIndex % list.length];
-  }, [activeIndex, desktopSlides, slides]);
+    if (desktopSlides.length === 0) return null;
+    return desktopSlides[activeIndex % desktopSlides.length];
+  }, [activeIndex, desktopSlides]);
 
   const activeMobileSlide = useMemo(() => {
     if (mobileSlides.length > 0) {
       return mobileSlides[activeIndex % mobileSlides.length];
     }
-    return activeSlide;
-  }, [activeIndex, mobileSlides, activeSlide]);
+    return null;
+  }, [activeIndex, mobileSlides]);
 
   if (isLoading) {
     return (
@@ -179,7 +178,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
     );
   }
 
-  if (!activeSlide && !activeMobileSlide) {
+  if (!activeSlide && !activeMobileSlide && slides.length === 0) {
     return (
       <section className="relative h-svh w-full overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-neutral-700 via-neutral-800 to-neutral-950 opacity-80" />
@@ -205,9 +204,11 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
           transition={{ duration: 0.9, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          <div className="hidden md:block h-full w-full">
-            <HeroMedia slide={activeSlide} />
-          </div>
+          {activeSlide && (
+            <div className="hidden md:block h-full w-full">
+              <HeroMedia slide={activeSlide} />
+            </div>
+          )}
           <div className="md:hidden h-full w-full">
              <HeroMedia slide={activeMobileSlide} />
           </div>
@@ -224,7 +225,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
       <div className="relative z-10 hidden h-full items-center md:flex">
         <div className="container mx-auto flex h-full items-center px-8 md:px-16 lg:px-24">
           <div className="w-full md:w-[70%] xl:w-[60%]">
-            {activeSlide.title && (
+            {activeSlide?.title && (
               <motion.h1
                 key={`title-${activeSlide.id}`}
                 initial={{ opacity: 0, y: 30 }}
@@ -236,7 +237,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
               </motion.h1>
             )}
 
-            {activeSlide.desc && (
+            {activeSlide?.desc && (
               <motion.p
                 key={`desc-${activeSlide.id}`}
                 initial={{ opacity: 0, y: 20 }}
@@ -248,7 +249,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
               </motion.p>
             )}
 
-            {activeSlide.ctaText && (
+            {activeSlide?.ctaText && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.94 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -269,7 +270,7 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {activeSlide.ctaText}
+                    {activeSlide?.ctaText}
                   </span>
                 </button>
               </motion.div>
@@ -365,12 +366,12 @@ export default function WineHeroBanner({ initialSlides, onReady }) {
             </button>
 
             <div className="flex items-center gap-2">
-              {(desktopSlides.length > 0 ? desktopSlides : slides).map((_, index) => (
+              {(desktopSlides.length > 0 ? desktopSlides : mobileSlides).map((_, index) => (
                 <div
                   key={`mob-dot-${index}`}
                   onClick={() => goToSlide(index)}
                   className={`h-1 cursor-pointer rounded-full transition-all duration-500 ${
-                    activeIndex % (desktopSlides.length || slides.length) === index
+                    activeIndex % (desktopSlides.length || mobileSlides.length) === index
                       ? "w-10 bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]"
                       : "w-4 bg-white/20 hover:bg-white/40"
                   }`}
