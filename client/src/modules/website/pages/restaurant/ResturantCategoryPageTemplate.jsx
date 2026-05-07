@@ -1,7 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Sparkles } from "lucide-react";
+import {
+  Facebook,
+  ChevronLeft,
+  ChevronRight,
+  Linkedin,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Share2,
+  Sparkles,
+  Twitter,
+} from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
@@ -16,9 +27,8 @@ import PetPoojaMenu from "./components/shared/PetPoojaMenu";
 import { createCitySlug, createHotelSlug } from "@/lib/HotelSlug";
 import { useSsrData } from "@/ssr/SsrDataContext";
 import {
-  getAllGalleries,
   GetAllPropertyDetails,
-  getGalleryByPropertyId,
+  getDailyOffers,
   searchGallery,
 } from "@/Api/Api";
 
@@ -230,6 +240,331 @@ function OtherVerticalsSection({
   );
 }
 
+function formatOfferExpiry(expiresAt) {
+  if (!expiresAt) return "";
+
+  const parsed = new Date(`${expiresAt}T23:59:59`);
+  if (Number.isNaN(parsed.getTime())) return "";
+
+  return parsed.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId, citySlug }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showShareReactions, setShowShareReactions] = useState(false);
+  const total = offers.length;
+  const activeOffer = offers[activeIndex];
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const restaurantPath = `/${citySlug}/${createHotelSlug(
+    propertyData?.propertyName || propertyData?.name || "restaurant",
+    propertyId,
+  )}`;
+
+  const location = useMemo(() => {
+    if (!propertyData) return "";
+    return (
+      propertyData.fullAddress ??
+      propertyData.address ??
+      propertyData.location ??
+      ""
+    );
+  }, [propertyData]);
+
+  const city = useMemo(() => {
+    if (!propertyData) return "";
+    return propertyData.city ?? propertyData.locationName ?? "";
+  }, [propertyData]);
+
+  const mapsLink = useMemo(() => {
+    if (propertyData?.latitude && propertyData?.longitude) {
+      return `https://www.google.com/maps?q=${propertyData.latitude},${propertyData.longitude}`;
+    }
+    if (propertyData?.coordinates?.lat && propertyData?.coordinates?.lng) {
+      return `https://www.google.com/maps?q=${propertyData.coordinates.lat},${propertyData.coordinates.lng}`;
+    }
+    return "";
+  }, [propertyData]);
+
+  const socialPlatforms = [
+    {
+      name: "WhatsApp",
+      icon: <MessageCircle size={16} />,
+      color: "bg-[#25D366]",
+      link: `https://wa.me/?text=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "Facebook",
+      icon: <Facebook size={16} />,
+      color: "bg-[#1877F2]",
+      link: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "X",
+      icon: <Twitter size={15} />,
+      color: "bg-black",
+      link: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+    },
+    {
+      name: "LinkedIn",
+      icon: <Linkedin size={16} />,
+      color: "bg-[#0A66C2]",
+      link: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    },
+  ];
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [offers]);
+
+  if (!total) {
+    return null;
+  }
+
+  const prev = () => setActiveIndex((index) => (index - 1 + total) % total);
+  const next = () => setActiveIndex((index) => (index + 1) % total);
+
+  const positionStyles = {
+    center: { zIndex: 30, scale: 1, x: "0%", opacity: 1 },
+    left: { zIndex: 10, scale: 0.9, x: "-25%", opacity: 0.2 },
+    right: { zIndex: 10, scale: 0.9, x: "25%", opacity: 0.2 },
+    hidden: { zIndex: 0, scale: 0.72, opacity: 0 },
+  };
+
+  return (
+    <section className="relative overflow-hidden bg-white pt-24 pb-14 dark:bg-[#080808] md:pt-28 md:pb-20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(217,119,6,0.14),_transparent_42%)]" />
+      <div className="absolute inset-x-0 top-20 h-48 bg-primary/10 blur-[140px] pointer-events-none" />
+
+      <div className="max-w-[1280px] mx-auto px-6 md:px-12 lg:px-20 relative">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] gap-10 lg:gap-14 items-start">
+          <div className="pt-6 md:pt-8">
+            <nav className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-8">
+              <Link to="/" className="hover:text-primary transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <Link
+                to={restaurantPath}
+                className="hover:text-primary transition-colors font-medium"
+              >
+                Restaurant
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <span className="text-zinc-900 dark:text-white font-semibold truncate">
+                {currentCategory?.title}
+              </span>
+            </nav>
+
+            <div className="space-y-5 text-left max-w-xl">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-2 bg-primary/10 text-primary text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">
+                  <Sparkles size={12} className="animate-pulse" />
+                  {propertyData?.propertyName || propertyData?.name || "Restaurant"}
+                </span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight leading-tight text-zinc-900 dark:text-white">
+                {currentCategory?.title?.split(" ")[0] || "Restaurant"}{" "}
+                <span className="italic text-primary">
+                  {currentCategory?.title?.split(" ").slice(1).join(" ") || "Offers"}
+                </span>
+              </h1>
+
+              <div className="space-y-3">
+                {location ? (
+                  <div className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400">
+                    <MapPin className="w-4 h-4 text-primary mt-1 shrink-0" />
+                    <span className="text-sm md:text-base font-medium leading-relaxed">
+                      {location}
+                      {city && location !== city ? `, ${city}` : ""}
+                    </span>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  {mapsLink ? (
+                    <a
+                      href={mapsLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/60 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-200 hover:border-primary hover:text-primary transition-colors"
+                    >
+                      <Navigation className="w-4 h-4" />
+                      View Map
+                    </a>
+                  ) : null}
+
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setShowShareReactions(true)}
+                    onMouseLeave={() => setShowShareReactions(false)}
+                  >
+                    {showShareReactions ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                        animate={{ opacity: 1, y: -56, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                        className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/10 shadow-2xl rounded-full px-2.5 py-2 flex gap-2.5 z-50 backdrop-blur-md whitespace-nowrap"
+                      >
+                        {socialPlatforms.map((platform, index) => (
+                          <motion.a
+                            key={platform.name}
+                            href={platform.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: index * 0.04 }}
+                            whileHover={{ scale: 1.15, y: -2 }}
+                            className={`${platform.color} text-white p-2.5 rounded-full shadow-lg transition-transform flex items-center justify-center`}
+                            aria-label={platform.name}
+                          >
+                            {platform.icon}
+                          </motion.a>
+                        ))}
+                      </motion.div>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/60 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-200"
+                    >
+                      <Share2 className="w-4 h-4 text-primary" />
+                      Share
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative w-full flex flex-col items-center">
+            <div className="relative w-full h-[300px] md:h-[340px] lg:h-[360px] flex items-center justify-center overflow-hidden">
+            <div className="hidden md:block relative w-full h-full">
+              {offers.map((offer, index) => {
+                const pos =
+                  index === activeIndex
+                    ? "center"
+                    : index === (activeIndex - 1 + total) % total
+                      ? "left"
+                      : index === (activeIndex + 1) % total
+                        ? "right"
+                        : "hidden";
+
+                return (
+                  <motion.div
+                    key={offer.id || index}
+                    animate={positionStyles[pos]}
+                    transition={{ duration: 0.6, ease: "easeInOut" }}
+                    className={`absolute inset-0 m-auto w-[78%] lg:w-[70%] h-[92%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 bg-zinc-950 ${
+                      pos === "center" ? "pointer-events-auto" : "pointer-events-none"
+                    }`}
+                  >
+                    {offer.image?.type === "VIDEO" ? (
+                      <video
+                        src={offer.image.src}
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={offer.image?.src}
+                        alt={offer.image?.alt || offer.title}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            <div className="md:hidden w-full h-full px-4">
+              {activeOffer.image?.type === "VIDEO" ? (
+                <video
+                  src={activeOffer.image.src}
+                  className="w-full h-full object-cover rounded-3xl"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={activeOffer.image?.src}
+                  className="w-full h-full object-cover rounded-3xl"
+                  alt={activeOffer.image?.alt || activeOffer.title}
+                />
+              )}
+            </div>
+
+            {total > 1 ? (
+              <>
+                <button
+                  onClick={prev}
+                  className="absolute left-4 z-40 p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={next}
+                  className="absolute right-4 z-40 p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            ) : null}
+            </div>
+
+            <div className="w-full mt-8 px-4">
+              <motion.div
+                key={activeOffer.id || activeIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex flex-col items-center text-center space-y-3"
+              >
+                <div className="max-w-xl">
+                  <div className="mb-2 flex flex-wrap items-center justify-center gap-3">
+                    <h3 className="text-3xl font-serif dark:text-white uppercase tracking-tight">
+                      {activeOffer.title || "Restaurant Offer"}
+                    </h3>
+                  </div>
+                  {activeOffer.description ? (
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm italic font-light leading-relaxed line-clamp-2">
+                      {activeOffer.description}
+                    </p>
+                  ) : null}
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="flex justify-center gap-2 mt-6">
+              {offers.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    index === activeIndex
+                      ? "w-8 bg-primary"
+                      : "w-2 bg-zinc-200 dark:bg-zinc-800"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ── Main Template ─────────────────────────────────────────────────────────── */
 function ResturantCategoryPageTemplate() {
   const {
@@ -265,6 +600,7 @@ function ResturantCategoryPageTemplate() {
   );
   const [petpoojaCategories, setPetpoojaCategories] = useState([]);
   const [petpoojaItems, setPetpoojaItems] = useState([]);
+  const [propertyOffers, setPropertyOffers] = useState([]);
   const [loading, setLoading] = useState(ssrCategoryData ? false : true);
   const [notFound, setNotFound] = useState(ssrCategoryData?.notFound || false);
   const [citySlug, setCitySlug] = useState(
@@ -317,6 +653,81 @@ function ResturantCategoryPageTemplate() {
     fetchPetPooja();
     return () => { cancelled = true; };
   }, [currentCategory?.id, propertyId]);
+
+  useEffect(() => {
+    if (!propertyId) return;
+
+    let cancelled = false;
+
+    const fetchPropertyOffers = async () => {
+      try {
+        const res = await getDailyOffers({ page: 0, size: 100 });
+        const raw = res?.data?.content ?? res?.data ?? [];
+        const offersList = Array.isArray(raw) ? raw : [];
+        const now = Date.now();
+        const days = [
+          "SUNDAY",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+        ];
+        const todayName = days[new Date().getDay()];
+
+        const mapped = offersList
+          .filter((offer) => {
+            const expiry = offer.expiresAt
+              ? new Date(`${offer.expiresAt}T23:59:59`)
+              : null;
+            const notExpired = !expiry || expiry.getTime() >= now;
+            const isDayActive =
+              !offer.activeDays?.length || offer.activeDays.includes(todayName);
+
+            return (
+              Number(offer.propertyId) === Number(propertyId) &&
+              offer.isActive === true &&
+              offer.image?.url &&
+              notExpired &&
+              isDayActive
+            );
+          })
+          .sort(
+            (a, b) => (a.displayOrder ?? a.id ?? 0) - (b.displayOrder ?? b.id ?? 0),
+          )
+          .map((offer) => ({
+            id: offer.id,
+            title: offer.title || "Restaurant Offer",
+            description: offer.description || "",
+            couponCode: offer.couponCode || "",
+            ctaText: offer.ctaText || "",
+            ctaLink: offer.ctaUrl || offer.ctaLink || "",
+            expiresLabel: formatOfferExpiry(offer.expiresAt),
+            image: {
+              src: offer.image.url,
+              type: offer.image.type ?? "IMAGE",
+              alt: offer.title || "Offer",
+            },
+          }));
+
+        if (!cancelled) {
+          setPropertyOffers(mapped);
+        }
+      } catch (err) {
+        console.error("[CategoryPage] offers error:", err);
+        if (!cancelled) {
+          setPropertyOffers([]);
+        }
+      }
+    };
+
+    fetchPropertyOffers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -508,6 +919,7 @@ function ResturantCategoryPageTemplate() {
   }
 
   const resolvedMenu = buildMenuFromApi(apiMenuItems, currentCategory.id);
+  const hasPetPoojaMenu = petpoojaCategories.length > 0;
 
   /* ── Page ── */
   return (
@@ -575,19 +987,31 @@ function ResturantCategoryPageTemplate() {
         </div>
 
         {/* Hero */}
-        <CategoryHero
-          content={currentCategory}
-          propertyId={propertyId}
-          galleryData={galleryData}
-          propertyData={propertyData}
-        />
+        {hasPetPoojaMenu ? (
+          <PropertyOffersHero
+            offers={propertyOffers}
+            currentCategory={currentCategory}
+            propertyData={propertyData}
+            propertyId={propertyId}
+            citySlug={citySlug}
+          />
+        ) : (
+          <CategoryHero
+            content={currentCategory}
+            propertyId={propertyId}
+            galleryData={galleryData}
+            propertyData={propertyData}
+          />
+        )}
 
         {/* Menu */}
         <div id="menu">
-          {petpoojaCategories.length > 0 ? (
+          {hasPetPoojaMenu ? (
             <PetPoojaMenu
               categories={petpoojaCategories}
               items={petpoojaItems}
+              propertyId={propertyId}
+              propertyData={propertyData}
               themeColor={currentCategory.themeColor}
             />
           ) : resolvedMenu.length > 0 ? (
