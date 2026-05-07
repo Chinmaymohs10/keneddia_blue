@@ -193,6 +193,9 @@ export default function Navbar({
   const currentLightModeLogo: { src: string; alt: string } = shouldUseDarkLogoOnTransparentInLightMode
     ? darkLogo
     : lightLogo;
+  const hasCurrentLightLogo = Boolean(currentLightModeLogo?.src);
+  const hasDarkLogo = Boolean(darkLogo?.src);
+  const brandFallbackText = staticBrand.text || "Kennedia";
   const transparentTextClass = useWhiteTextOnTransparent
     ? "text-white hover:text-white/80"
     : "text-black hover:text-black/80 dark:text-white dark:hover:text-white/80";
@@ -328,18 +331,30 @@ export default function Navbar({
                 className="block rounded-lg p-2 !bg-transparent"
               >
                 {/* Light Mode Logo */}
-                <img
-                  src={currentLightModeLogo.src}
-                  alt={currentLightModeLogo.alt}
-                  className="h-12 xl:h-14 w-auto object-contain dark:hidden"
-                />
+                {hasCurrentLightLogo ? (
+                  <img
+                    src={currentLightModeLogo.src}
+                    alt={currentLightModeLogo.alt}
+                    className="h-12 xl:h-14 w-auto object-contain dark:hidden"
+                  />
+                ) : (
+                  <span className="text-lg font-semibold tracking-wide text-foreground dark:hidden">
+                    {brandFallbackText}
+                  </span>
+                )}
 
                 {/* Dark Mode Logo (fallback to light if not provided) */}
-                <img
-                  src={darkLogo.src}
-                  alt={darkLogo.alt}
-                  className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
-                />
+                {hasDarkLogo ? (
+                  <img
+                    src={darkLogo.src}
+                    alt={darkLogo.alt}
+                    className="h-12 xl:h-14 w-auto object-contain hidden dark:block"
+                  />
+                ) : (
+                  <span className="hidden text-lg font-semibold tracking-wide text-white dark:block">
+                    {brandFallbackText}
+                  </span>
+                )}
               </Link>
             </div>
           </div>
