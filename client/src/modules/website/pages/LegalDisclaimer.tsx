@@ -3,29 +3,6 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { AlertTriangle, Info, Gavel, Scale, ShieldCheck, Globe, CheckCircle2, FileText, ExternalLink } from "lucide-react";
 
-const LEGAL_RESPONSE = {
-  mainTitle: "Legal Disclaimer",
-  effectiveDate: "2025-01-01",
-  lastUpdated: "2025-04-01",
-  version: "1.3",
-  sections: [
-    {
-      title: "General Information",
-      description: "This is general info",
-      highlightText: "Important note",
-      active: true,
-      sequence: 1,
-    },
-    {
-      title: "Accuracy",
-      description: "We try to keep data accurate",
-      highlightText: null,
-      active: true,
-      sequence: 2,
-    },
-  ],
-};
-
 const disclaimers = [
   {
     icon: Info,
@@ -54,20 +31,6 @@ const disclaimers = [
 ];
 
 export default function LegalDisclaimer() {
-  const icons = [Info, AlertTriangle, Gavel, Scale];
-  const mappedDisclaimers =
-    LEGAL_RESPONSE?.sections?.length > 0
-      ? LEGAL_RESPONSE.sections
-          .filter((sec) => sec?.active)
-          .sort((a, b) => (a?.sequence ?? 0) - (b?.sequence ?? 0))
-          .map((sec, index) => ({
-            icon: icons[index % icons.length],
-            title: sec.title || `Section ${index + 1}`,
-            content: sec.description || "",
-            tags: sec.highlightText ? [sec.highlightText] : [],
-          }))
-      : disclaimers;
-
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-[#1a1a1a] dark:text-gray-100 selection:bg-primary/20 font-sans transition-colors duration-300">
       <Navbar />
@@ -98,9 +61,7 @@ export default function LegalDisclaimer() {
             className="text-5xl md:text-8xl font-serif text-white mb-8 leading-tight drop-shadow-md"
           >
             Legal <br />
-            <span className="text-primary italic font-light">
-              {LEGAL_RESPONSE.mainTitle || "Disclaimer"}
-            </span>
+            <span className="text-primary italic font-light">Disclaimer</span>
           </motion.h1>
           <motion.div
             initial={{ opacity: 0, width: 0 }}
@@ -144,7 +105,7 @@ export default function LegalDisclaimer() {
       <section className="py-32 px-6">
         <div className="container mx-auto max-w-[1400px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {mappedDisclaimers.map((item, index) => (
+            {disclaimers.map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -221,7 +182,7 @@ export default function LegalDisclaimer() {
               <p className="text-xs text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest mb-2">Last Modified</p>
               <p className="text-sm text-gray-500 dark:text-gray-500 font-medium italic">
                 Kennedia Blu reserves the right to modify these terms at any time. <br className="hidden md:block" />
-                Effective: {LEGAL_RESPONSE.effectiveDate || "-"} | Updated: {LEGAL_RESPONSE.lastUpdated || "-"} | Version: {LEGAL_RESPONSE.version || "-"}.
+                Updated: April 15, 2025.
               </p>
             </div>
           </motion.div>

@@ -30,12 +30,6 @@ const RESTAURANT_NAV_ITEMS = [
   { type: "link", label: "EVENTS", key: "events", href: "#events" },
   // { type: "link", label: "NEWS", key: "news", href: "#news" },
   // { type: "link", label: "REVIEWS", key: "reviews", href: "#reviews" },
-  {
-    type: "link",
-    label: "RESERVATION",
-    key: "reservation",
-    href: "#reservation",
-  },
   // { type: "link", label: "CONTACT", key: "contact", href: "#contact" },
 ];
 
@@ -68,7 +62,6 @@ export default function RestaurantHomepage() {
         navItems={RESTAURANT_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
         propertyTypeName="Restaurant"
-        quickBookOptions={[{ label: "Reserve Restaurant", category: "restaurant" }]}
       />
 
       {/* Main Content */}
