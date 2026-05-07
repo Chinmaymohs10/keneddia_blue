@@ -88,7 +88,7 @@ function BrandCard({ brand, onClick, clickable }) {
 }
 import { useSsrData } from "@/ssr/SsrDataContext";
 
-export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader }) {
+export default function WineTopBrands({ clickable = false, globalRoute = false, sectionHeader, masterHeader = null }) {
   const navigate = useNavigate();
   const { citySlug = "ghaziabad", propertySlug = "kennedia-blu" } = useParams();
   const { wineHomepage: ssr } = useSsrData();
@@ -122,11 +122,21 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
   });
   const [loading, setLoading] = useState(!ssrData);
   const [headerData, setHeaderData] = useState(ssr?.headerData || null);
+  const masterEyebrow = String(masterHeader?.tags || "")
+    .split(",")
+    .map((item) => item.trim())
+    .find(Boolean);
 
   // sectionHeader (from Events API, renamed "Brands") takes priority
   const resolvedHeader = sectionHeader
     ? { part1: sectionHeader.header1 || "", part2: sectionHeader.header2 || "", description: sectionHeader.description || "" }
-    : headerData;
+    : masterHeader
+      ? {
+          part1: masterEyebrow || "Curated Labels",
+          part2: "Top Brands",
+          description: masterHeader.description || "",
+        }
+      : headerData;
 
   useEffect(() => {
     if (ssrData && globalRoute) return; // Already have data for global route

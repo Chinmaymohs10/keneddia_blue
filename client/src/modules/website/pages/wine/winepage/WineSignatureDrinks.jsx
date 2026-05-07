@@ -123,7 +123,27 @@ function CategoryCard({ category, index, routeMode = "property" }) {
 import { useSsrData } from "@/ssr/SsrDataContext";
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
-export function WineCategoriesSection() {
+const getMasterEyebrow = (masterHeader, fallback) => {
+  const firstTag = String(masterHeader?.tags || "")
+    .split(",")
+    .map((item) => item.trim())
+    .find(Boolean);
+  return firstTag || fallback;
+};
+
+const getMasterHeading = (masterHeader, fallback) => {
+  const key = String(masterHeader?.name || "").trim().toLowerCase();
+  if (key === "category_header") return "Categories";
+  if (key) {
+    return key
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+  return fallback;
+};
+
+export function WineCategoriesSection({ masterHeader = null }) {
   const { wineHomepage: ssr } = useSsrData();
   const ssrData = ssr?.allWineData;
 
@@ -188,18 +208,20 @@ export function WineCategoriesSection() {
           <div className="mb-4 flex items-center gap-3">
             <div className="h-[1px] w-8 bg-[#8B1A2A]/40 md:w-12" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#8B1A2A]">
-              Categories
+              {getMasterEyebrow(masterHeader, "Categories")}
             </span>
           </div>
           <h2 className="font-serif text-3xl font-medium leading-[1.2] text-stone-900 md:text-5xl dark:text-stone-100">
-            {headerData?.part2 || (
+            {masterHeader ? (
+              getMasterHeading(masterHeader, "Explore by Categories")
+            ) : headerData?.part2 || (
               <>
                 Explore by <em className="not-italic text-[#8B1A2A] dark:text-[#C8956A]">Categories</em>
               </>
             )}
           </h2>
           <p className="mt-4 max-w-xl text-xs leading-relaxed text-stone-500 md:text-sm dark:text-stone-400">
-            {headerData?.description || "Browse whiskey, wine, beers, and tasting experiences across every location."}
+            {masterHeader?.description || headerData?.description || "Browse whiskey, wine, beers, and tasting experiences across every location."}
           </p>
         </div>
 

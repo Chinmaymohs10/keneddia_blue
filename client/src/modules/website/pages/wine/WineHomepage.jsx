@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { siteContent } from "@/data/siteContent";
 import { useSsrData } from "@/ssr/SsrDataContext";
+import { getAllWineMasters } from "@/Api/WineApi";
 import WineHeroBanner from "./components/WineHeroBanner";
 import WineNewsSection from "./components/WineNewsSection";
 import { WineCategoriesSection } from "./winepage/WineSignatureDrinks";
@@ -160,12 +161,57 @@ function SectionFallback({ height = "h-40", eyebrow, heading }) {
 export default function WineHomepage() {
   const { wineHomepage: ssr } = useSsrData();
   const [loaderDone, setLoaderDone] = useState(false);
+  const [wineMasters, setWineMasters] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const t = setTimeout(() => setLoaderDone(true), 2500);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchWineMasters = async () => {
+      try {
+        const res = await getAllWineMasters();
+        const raw = res?.data ?? res;
+        const list = Array.isArray(raw)
+          ? raw
+          : Array.isArray(raw?.content)
+            ? raw.content
+            : Array.isArray(raw?.data)
+              ? raw.data
+              : [];
+
+        if (!cancelled) {
+          setWineMasters(list.filter((item) => item?.isActive !== false));
+        }
+      } catch (error) {
+        console.error("Failed to fetch wine masters:", error);
+        if (!cancelled) {
+          setWineMasters([]);
+        }
+      }
+    };
+
+    fetchWineMasters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const wineSectionHeaders = useMemo(() => {
+    const byKey = new Map(
+      wineMasters.map((item) => [String(item?.name || "").trim().toLowerCase(), item]),
+    );
+
+    return {
+      categoryHeader: byKey.get("category_header") || null,
+      brandsHeader: byKey.get("brands_header") || null,
+    };
+  }, [wineMasters]);
 
   return (
     <>
@@ -184,7 +230,7 @@ export default function WineHomepage() {
           </div>
 
           <div id="categories" className="bg-[#F5F0EA] dark:bg-[#12070A]">
-            <WineCategoriesSection />
+            <WineCategoriesSection masterHeader={wineSectionHeaders.categoryHeader} />
           </div>
 
           {/* Collection */}
@@ -197,7 +243,7 @@ export default function WineHomepage() {
           {/* Brands */}
           <div id="brand" className="bg-[#F0EAE2] dark:bg-[#100609]">
             <Suspense fallback={<SectionFallback height="h-[24rem]" eyebrow="Curated Labels" heading="Top Brands" />}>
-              <WineTopBrands clickable globalRoute />
+              <WineTopBrands clickable globalRoute masterHeader={wineSectionHeaders.brandsHeader} />
             </Suspense>
           </div>
 
