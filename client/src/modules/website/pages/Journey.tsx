@@ -12,6 +12,8 @@ import {
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { ArrowUpRight, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getAllLocations } from "@/Api/Api";
 
 // ─── BRAND COLOURS (orange stays constant in both modes) ─────────────────────
 const ORANGE = "#FF8C00";
@@ -1185,6 +1187,30 @@ function ExpansionScroll() {
   const x = useTransform(scrollYProgress, [0, 1], ["8%", "-35%"]);
   const smoothX = useSpring(x, { stiffness: 55, damping: 18 });
 
+  const [locations, setLocations] = useState<{ id?: number; city: string; state: string }[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await getAllLocations();
+        if (res?.data && Array.isArray(res.data)) {
+          const active = res.data
+            .filter((loc: any) => loc.isActive)
+            .map((loc: any) => ({
+              id: loc.id,
+              city: loc.locationName,
+              state: loc.state,
+            }));
+          setLocations(active);
+        }
+      } catch (err) {
+        console.error("Error fetching locations:", err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
   return (
     <section ref={containerRef} className="py-16 overflow-hidden bg-[#faf9f6] dark:bg-[#0d0d10]">
       {/* Section label */}
@@ -1196,18 +1222,19 @@ function ExpansionScroll() {
           Availability
         </span>
         <span className="text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-white/30">
-          {CITIES.length} Locations
+          {locations.length} Locations
         </span>
       </div>
 
       {/* Scrolling text cards */}
       <div className="overflow-visible">
         <motion.div style={{ x: smoothX }} className="flex gap-4 px-6 w-max">
-          {CITIES.map((c, i) => (
+          {locations.map((c, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -6 }}
               transition={{ duration: 0.3 }}
+              onClick={() => c.id && navigate(`/destination/${c.id}`)}
               className="w-[220px] md:w-[260px] shrink-0 group cursor-pointer"
             >
               {/* Card */}
