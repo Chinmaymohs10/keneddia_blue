@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarClock,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { createJoiningUs } from "@/Api/RestaurantApi";
+import { filterFoodDeliveryLinks } from "@/Api/externalApi";
 import { validateReserveDialogForm } from "@/lib/validation/reservationValidation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,25 +71,22 @@ export default function PetPoojaMenu({
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
   const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const deliveryLinks = useMemo(
-    () => ({
-      swiggy: firstString(
-        propertyData?.swiggyUrl,
-        propertyData?.swiggyLink,
-        propertyData?.swiggy,
-        propertyData?.deliverySwiggyUrl,
-        propertyData?.delivery?.swiggy,
-      ),
-      zomato: firstString(
-        propertyData?.zomatoUrl,
-        propertyData?.zomatoLink,
-        propertyData?.zomato,
-        propertyData?.deliveryZomatoUrl,
-        propertyData?.delivery?.zomato,
-      ),
-    }),
-    [propertyData],
-  );
+  const [deliveryLinks, setDeliveryLinks] = useState({ swiggy: "", zomato: "" });
+
+  useEffect(() => {
+    if (!propertyId) return;
+    filterFoodDeliveryLinks({ propertyId })
+      .then((res) => {
+        const list = res?.data?.data ?? res?.data ?? res ?? [];
+        const record = Array.isArray(list) ? list[0] : list;
+        if (!record || !record.isActive) return;
+        setDeliveryLinks({
+          swiggy: record.isSwiggyActive ? (record.swiggyLink ?? "") : "",
+          zomato: record.isZomatoActive ? (record.zomatoLink ?? "") : "",
+        });
+      })
+      .catch(() => {});
+  }, [propertyId]);
 
   const scrollToTab = (index) => {
     const container = scrollRef.current;
