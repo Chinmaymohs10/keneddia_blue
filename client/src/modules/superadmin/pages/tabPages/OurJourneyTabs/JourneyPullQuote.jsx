@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Save, Upload, ImageIcon, Quote } from 'lucide-react';
+import { Save, Upload, ImageIcon, Quote, Loader2 } from 'lucide-react';
+import { getAllPullQuotes, savePullQuote, updatePullQuote, togglePullQuoteStatus } from "@/Api/OurJourneyApi";
+import { uploadMedia } from "@/Api/Api";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
 function Field({ label, type = 'text', value, onChange, placeholder, maxLength, rows }) {
   const [focused, setFocused] = useState(false);
@@ -53,16 +56,89 @@ function Field({ label, type = 'text', value, onChange, placeholder, maxLength, 
 
 export default function JourneyPullQuote() {
   const [data, setData] = useState({
-    roleTag: "Founder's Voice",
-    quote: "We don't build hotels. We build the places people come back to.",
-    description: "From a napkin sketch on the shores of Pondicherry to five properties across India, every decision has been guided by one belief — that hospitality, at its finest, is an act of love.",
-    attribution: "Arjun Mehta · Co-Founder, 2012",
+    id: null,
+    roleTag: "",
+    quote: "",
+    description: "",
+    attribution: "",
     image: null,
-    previewUrl: ""
+    previewUrl: "",
+    mediaId: null,
+    active: true
   });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const set = (field) => (e) => setData({ ...data, [field]: e.target.value });
-  const handleSave = () => console.log("Save pull quote", data);
+  useEffect(() => {
+    fetchQuote();
+  }, []);
+
+  const fetchQuote = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllPullQuotes();
+      const items = res.data?.data || res.data || [];
+      if (items.length > 0) {
+        // Select the latest one (assuming latest is the last in the array)
+        const item = items[items.length - 1];
+        setData({
+          id: item.id,
+          roleTag: item.roleTag || "",
+          quote: item.quote || "",
+          description: item.description || "",
+          attribution: item.attribution || "",
+          active: item.active !== false,
+          image: null,
+          previewUrl: item.portraitMediaDTO?.url || item.mediaDTO?.url || item.mediaUrl || item.media?.url || "",
+          mediaId: item.portraitMediaId || item.mediaId || null
+        });
+      }
+    } catch (error) {
+      showError("Failed to load pull quote");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const set = (field) => (e) => {
+    const val = e.target.value;
+    setData(prev => ({ ...prev, [field]: val }));
+  };
+  
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      let mediaId = data.mediaId;
+      if (data.image) {
+        const fd = new FormData();
+        fd.append("file", data.image);
+        const res = await uploadMedia(fd);
+        mediaId = typeof res.data === "number" ? res.data : (res.data?.id || res.data?.data?.id);
+      }
+      
+      const payload = {
+        roleTag: data.roleTag,
+        quote: data.quote,
+        description: data.description,
+        attribution: data.attribution,
+        portraitMediaId: mediaId,
+        active: data.active
+      };
+
+      if (data.id) {
+        payload.id = data.id;
+        await updatePullQuote(payload);
+      } else {
+        await savePullQuote(payload);
+      }
+      showSuccess("Pull quote saved");
+      fetchQuote();
+    } catch (error) {
+      showError("Failed to save pull quote");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -78,10 +154,29 @@ export default function JourneyPullQuote() {
         style={{ backgroundColor: colors.contentBg, borderColor: colors.border }}
       >
         <div
-          className="px-5 py-3"
+          className="px-5 py-3 flex items-center justify-between"
           style={{ backgroundColor: `${colors.primary}08`, borderBottom: `1px solid ${colors.border}` }}
         >
           <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Quote Details</span>
+          <button
+            onClick={async () => {
+              if (!data.id) return;
+              const next = !data.active;
+              setData(prev => ({ ...prev, active: next }));
+              try { await togglePullQuoteStatus(data.id, next); }
+              catch { setData(prev => ({ ...prev, active: !next })); showError("Failed to update status"); }
+            }}
+            disabled={!data.id}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+            style={{
+              backgroundColor: data.active ? '#dcfce7' : '#f3f4f6',
+              color: data.active ? '#16a34a' : colors.textSecondary,
+              border: `1px solid ${data.active ? '#86efac' : colors.border}`,
+            }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${data.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+            {data.active ? 'Active' : 'Inactive'}
+          </button>
         </div>
 
         <div className="p-5 grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -141,10 +236,12 @@ export default function JourneyPullQuote() {
                 type="file"
                 className="hidden"
                 accept="image/*"
+                onClick={(e) => e.stopPropagation()}
                 onChange={(e) => {
                   if (e.target.files?.[0]) {
                     const file = e.target.files[0];
-                    setData({ ...data, image: file, previewUrl: URL.createObjectURL(file) });
+                    setData(prev => ({ ...prev, image: file, previewUrl: URL.createObjectURL(file) }));
+                    e.target.value = null;
                   }
                 }}
               />
@@ -200,10 +297,11 @@ export default function JourneyPullQuote() {
         <p className="text-xs" style={{ color: colors.textLight }}>Changes are not saved automatically.</p>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: colors.success }}
         >
-          <Save size={15} /> Save Pull Quote
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Save Pull Quote
         </button>
       </div>
     </div>

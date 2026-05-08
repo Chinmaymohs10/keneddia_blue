@@ -15,6 +15,13 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getAllLocations, getActivePropertyTypes, GetAllPropertyDetails } from "@/Api/Api";
 import { createHotelSlug, createCitySlug } from "@/lib/HotelSlug";
+import {
+  getAllStoryHeroCards,
+  getAllMarquees,
+  getAllPullQuotes,
+  getAllTeamMembers,
+  getAllStickyChapters
+} from "@/Api/OurJourneyApi";
 
 // ─── BRAND COLOURS (orange stays constant in both modes) ─────────────────────
 const ORANGE = "#FF8C00";
@@ -159,16 +166,30 @@ const MARQUEE_ITEMS = [
 
 // ─── MARQUEE ─────────────────────────────────────────────────────────────────
 function Marquee() {
+  const [itemsList, setItemsList] = useState<string[]>(MARQUEE_ITEMS);
+
+  useEffect(() => {
+    getAllMarquees()
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        const activeItems = data.filter((item: any) => item.active).map((item: any) => item.text);
+        if (activeItems.length > 0) {
+          setItemsList(activeItems);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const x = useMotionValue(0);
   const ITEM_W = 220;
-  const total = MARQUEE_ITEMS.length * ITEM_W;
+  const total = itemsList.length * ITEM_W;
 
   useAnimationFrame(() => {
     const next = x.get() - 0.65;
     x.set(next <= -total ? 0 : next);
   });
 
-  const items = [...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS];
+  const items = [...itemsList, ...itemsList, ...itemsList];
 
   return (
     <div className="overflow-hidden py-4 border-y border-gray-200 bg-white dark:border-white/10 dark:bg-[#111114]">
@@ -216,15 +237,44 @@ const HERO_CARDS = [
 // ─── HORIZONTAL STORY HERO ────────────────────────────────────────────────────
 // Editorial split-panel: diagonal image clip + clean typographic text columns
 function HorizontalStoryHero() {
+  const [cards, setCards] = useState<any[]>([]);
+
+  useEffect(() => {
+    getAllStoryHeroCards()
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        const mapped = data
+          .filter((item: any) => item.active)
+          .map((item: any) => ({
+            title: item.title || "",
+            subtitle: item.subtitle || "",
+            text: item.description || item.text || "",
+            image: item.mediaDTO?.url || item.mediaUrl || item.media?.url || "",
+          }));
+        if (mapped.length > 0) {
+          setCards(mapped);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const targetRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: targetRef, offset: ["start start", "end end"] });
 
-  const totalPanels = 1 + HERO_CARDS.length;
-  // x % is relative to the track's own width (totalPanels × 100vw)
-  // so travelling (totalPanels-1) panels = (totalPanels-1)/totalPanels × 100 %
-  const travelPct = `${((totalPanels - 1) / totalPanels) * 100}%`;
+  // Intro panel counts as slide 1 (uses cards[0]), story cards use cards.slice(1)
+  const totalPanels = cards.length;
 
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", `-${travelPct}`]);
+  // Keep a ref so the transform function always reads the latest panel count
+  // without re-creating the motion value when cards load from the API.
+  const totalPanelsRef = useRef(totalPanels);
+  useEffect(() => { totalPanelsRef.current = totalPanels; }, [totalPanels]);
+
+  const x = useTransform(scrollYProgress, (v) => {
+    const panels = totalPanelsRef.current;
+    if (panels <= 1) return "0%";
+    const pct = ((panels - 1) / panels) * 100;
+    return `${-v * pct}%`;
+  });
   const smoothX = useSpring(x, { stiffness: 55, damping: 20 });
 
   // Orange progress line at bottom
@@ -234,10 +284,11 @@ function HorizontalStoryHero() {
   const [panelIdx, setPanelIdx] = useState(0);
   useEffect(() => {
     const unsub = scrollYProgress.on("change", (v) => {
-      setPanelIdx(Math.min(Math.floor(v * totalPanels), totalPanels - 1));
+      const panels = totalPanelsRef.current;
+      setPanelIdx(Math.min(Math.floor(v * panels), panels - 1));
     });
     return unsub;
-  }, [scrollYProgress, totalPanels]);
+  }, [scrollYProgress]);
 
   return (
     <section ref={targetRef} style={{ height: `${totalPanels * 100}vh` }} className="relative">
@@ -344,17 +395,19 @@ function HorizontalStoryHero() {
               </motion.div>
             </div>
 
-            {/* Right column — image with diagonal clip */}
+            {/* Right column — uses first API card's image */}
             <div className="w-1/2 h-full relative overflow-hidden">
               <div
                 className="absolute inset-0 z-0"
                 style={{ clipPath: "polygon(12% 0, 100% 0, 100% 100%, 0% 100%)" }}
               >
-                <img
-                  src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600"
-                  alt="Kennedia"
-                  className="w-full h-full object-cover"
-                />
+                {cards[0]?.image && (
+                  <img
+                    src={cards[0].image}
+                    alt={cards[0].title || "Kennedia"}
+                    className="w-full h-full object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#faf9f6] dark:from-black via-[#faf9f6]/30 dark:via-black/30 to-transparent" />
               </div>
               {/* Year tag */}
@@ -365,8 +418,8 @@ function HorizontalStoryHero() {
             </div>
           </div>
 
-          {/* ── PANELS 1–4: Story cards ── */}
-          {HERO_CARDS.map((card, i) => {
+          {/* ── Story panels: cards[1..n], card[0] is used by the intro panel above ── */}
+          {cards.slice(1).map((card, i) => {
             const isEven = i % 2 === 0;
             return (
               <div key={i} className="h-full relative shrink-0 flex overflow-hidden bg-[#faf9f6] dark:bg-black" style={{ width: `${100 / totalPanels}%` }}>
@@ -454,7 +507,7 @@ function HorizontalStoryHero() {
                   <div className="mt-10 flex items-center gap-3">
                     <div className="w-6 h-px bg-[#0A2357]/45 dark:bg-white/20" />
                     <span className="text-[10px] uppercase tracking-[0.3em] text-[#0A2357]/50 dark:text-white/20">
-                      {i + 1} of {HERO_CARDS.length}
+                      {i + 1} of {cards.length}
                     </span>
                   </div>
                 </div>
@@ -471,6 +524,30 @@ function HorizontalStoryHero() {
 // ─── STICKY CHAPTERS ─────────────────────────────────────────────────────────
 // Exactly 100vh — no dead scroll space. Chapters advance via wheel + auto-timer.
 function StickyChapters() {
+  const [chaptersList, setChaptersList] = useState<any[]>(CHAPTERS);
+
+  useEffect(() => {
+    getAllStickyChapters()
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        const mapped = data
+          .filter((item: any) => item.active)
+          .map((item: any) => ({
+            index: item.chapterIndex || item.index || "",
+            year: item.year || "",
+            label: item.label || "",
+            headline: item.headline || "",
+            body: item.body || "",
+            image: item.mediaDTO?.url || item.mediaUrl || item.media?.url || "",
+            accentColor: item.accentColor || "#0A2357",
+          }));
+        if (mapped.length > 0) {
+          setChaptersList(mapped);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const sectionRef = useRef<HTMLElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [locked, setLocked] = useState(false);
@@ -480,7 +557,7 @@ function StickyChapters() {
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setActiveIdx((p) => (p + 1) % CHAPTERS.length);
+      setActiveIdx((p) => (p + 1) % chaptersList.length);
     }, 5000);
   };
 
@@ -491,17 +568,18 @@ function StickyChapters() {
 
   useEffect(() => {
     startTimer();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, []);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [chaptersList]);
 
   // Lock / unlock page scroll based on section visibility
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-    const observer = new IntersectionObserver(
-      ([e]) => setLocked(e.intersectionRatio >= 0.85),
-      { threshold: 0.85 }
-    );
+    const observer = new IntersectionObserver(([e]) => setLocked(e.intersectionRatio >= 0.85), {
+      threshold: 0.85,
+    });
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
@@ -511,18 +589,20 @@ function StickyChapters() {
       if (!locked || wheelCooldown.current) return;
       const dir = e.deltaY > 0 ? 1 : -1;
       const next = activeIdx + dir;
-      if (next >= 0 && next < CHAPTERS.length) {
+      if (next >= 0 && next < chaptersList.length) {
         e.preventDefault();
         wheelCooldown.current = true;
-        setTimeout(() => { wheelCooldown.current = false; }, 700);
+        setTimeout(() => {
+          wheelCooldown.current = false;
+        }, 700);
         goTo(next);
       }
     };
     window.addEventListener("wheel", onWheel, { passive: false });
     return () => window.removeEventListener("wheel", onWheel);
-  }, [locked, activeIdx]);
+  }, [locked, activeIdx, chaptersList]);
 
-  const ch = CHAPTERS[activeIdx];
+  const ch = chaptersList[activeIdx] || CHAPTERS[0];
 
   return (
     <section ref={sectionRef} className="relative h-screen flex overflow-hidden">
@@ -562,10 +642,10 @@ function StickyChapters() {
 
         {/* Clickable dots */}
         <div className="absolute top-1/2 right-6 -translate-y-1/2 flex flex-col gap-3 z-10">
-          {CHAPTERS.map((_, i) => (
+          {chaptersList.map((_, i) => (
             <button key={i} onClick={() => goTo(i)} className="group flex items-center justify-end gap-2">
               <span className="text-[9px] uppercase tracking-widest text-white/0 group-hover:text-white/60 transition-all duration-300">
-                {CHAPTERS[i].year}
+                {chaptersList[i].year}
               </span>
               <motion.div
                 animate={{ height: i === activeIdx ? 28 : 6, opacity: i === activeIdx ? 1 : 0.3 }}
@@ -589,7 +669,7 @@ function StickyChapters() {
         <motion.div
           className="absolute top-0 left-0 h-0.5 z-10"
           style={{ background: ORANGE }}
-          animate={{ width: `${((activeIdx + 1) / CHAPTERS.length) * 100}%` }}
+          animate={{ width: `${((activeIdx + 1) / chaptersList.length) * 100}%` }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         />
 
@@ -628,7 +708,7 @@ function StickyChapters() {
 
             {/* Mobile dots */}
             <div className="flex gap-2 mt-10 lg:hidden">
-              {CHAPTERS.map((_, i) => (
+              {chaptersList.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goTo(i)}
@@ -652,8 +732,8 @@ function StickyChapters() {
           ].map(({ dir, path }) => (
             <button
               key={dir}
-              onClick={() => goTo(Math.max(0, Math.min(CHAPTERS.length - 1, activeIdx + dir)))}
-              disabled={dir === -1 ? activeIdx === 0 : activeIdx === CHAPTERS.length - 1}
+              onClick={() => goTo(Math.max(0, Math.min(chaptersList.length - 1, activeIdx + dir)))}
+              disabled={dir === -1 ? activeIdx === 0 : activeIdx === chaptersList.length - 1}
               className="w-10 h-10 rounded-full border border-[#0A2357]/20 dark:border-white/20 text-[#0A2357] dark:text-white flex items-center justify-center transition-all duration-300 disabled:opacity-20 hover:border-[#FF8C00] hover:text-[#FF8C00]"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -665,7 +745,7 @@ function StickyChapters() {
 
         {/* Counter */}
         <div className="absolute bottom-8 left-10 text-xs font-mono tracking-widest text-[#0A2357]/30 dark:text-white/25">
-          {String(activeIdx + 1).padStart(2, "0")} / {String(CHAPTERS.length).padStart(2, "0")}
+          {String(activeIdx + 1).padStart(2, "0")} / {String(chaptersList.length).padStart(2, "0")}
         </div>
       </div>
     </section>
@@ -677,10 +757,45 @@ function PullQuote() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-5% 0px" });
 
+  const [quoteData, setQuoteData] = useState({
+    roleTag: "Founder's Voice",
+    quote: "We don't build hotels. We build the places people come back to.",
+    description:
+      "From a napkin sketch on the shores of Pondicherry to five properties across India, every decision has been guided by one belief — that hospitality, at its finest, is an act of love.",
+    attribution: "Arjun Mehta · Co-Founder, 2012",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
+    name: "Arjun Mehta",
+    role: "Co-Founder & CEO",
+  });
+
+  useEffect(() => {
+    getAllPullQuotes()
+      .then((res) => {
+        const items = res.data?.data || res.data || [];
+        if (items.length > 0) {
+          const item = items[items.length - 1]; // Latest one
+          setQuoteData({
+            roleTag: item.roleTag || "Founder's Voice",
+            quote: item.quote || "",
+            description: item.description || "",
+            attribution: item.attribution || "",
+            image:
+              item.portraitMediaDTO?.url ||
+              item.mediaDTO?.url ||
+              item.mediaUrl ||
+              item.media?.url ||
+              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
+            name: item.attribution?.split("·")[0]?.trim() || "Arjun Mehta",
+            role: item.attribution?.split("·")[1]?.trim() || "Co-Founder",
+          });
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   return (
     <div ref={ref} className="overflow-hidden bg-white dark:bg-[#111114] px-6 md:px-10 lg:px-16 py-4">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 lg:gap-10 items-stretch">
-
         {/* Left — quote + content */}
         <motion.div
           className="flex flex-col justify-center px-8 md:px-14 lg:px-20 py-14 bg-white dark:bg-[#111114] relative"
@@ -696,7 +811,7 @@ function PullQuote() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Founder's Voice
+            {quoteData.roleTag}
           </motion.span>
 
           {/* Quote mark */}
@@ -717,7 +832,7 @@ function PullQuote() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
-            We don't build hotels. We build the places people come back to.
+            {quoteData.quote}
           </motion.p>
 
           {/* Orange rule */}
@@ -736,7 +851,7 @@ function PullQuote() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.6 }}
           >
-            From a napkin sketch on the shores of Pondicherry to five properties across India, every decision has been guided by one belief — that hospitality, at its finest, is an act of love.
+            {quoteData.description}
           </motion.p>
 
           {/* Attribution */}
@@ -748,7 +863,7 @@ function PullQuote() {
           >
             <div className="w-6 h-px" style={{ background: ORANGE }} />
             <span className="text-xs uppercase tracking-[0.3em] font-semibold text-gray-400 dark:text-white/35">
-              {TEAM[0].name} · Co-Founder, 2012
+              {quoteData.attribution}
             </span>
           </motion.div>
         </motion.div>
@@ -761,8 +876,8 @@ function PullQuote() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
           <motion.img
-            src={TEAM[0].image}
-            alt={TEAM[0].name}
+            src={quoteData.image}
+            alt={quoteData.name}
             className="w-full h-full object-cover object-top"
             initial={{ scale: 1.1 }}
             animate={inView ? { scale: 1 } : {}}
@@ -776,7 +891,10 @@ function PullQuote() {
             initial={{ scaleY: 0 }}
             animate={inView ? { scaleY: 1 } : {}}
             transition={{ duration: 0.9, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            style={{ background: `linear-gradient(to bottom, transparent, ${ORANGE} 30%, ${ORANGE} 70%, transparent)`, transformOrigin: "top" }}
+            style={{
+              background: `linear-gradient(to bottom, transparent, ${ORANGE} 30%, ${ORANGE} 70%, transparent)`,
+              transformOrigin: "top",
+            }}
           />
 
           {/* Name / role */}
@@ -786,12 +904,14 @@ function PullQuote() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.7 }}
           >
-            <div className="text-white font-serif text-2xl leading-tight mb-1 drop-shadow-lg">{TEAM[0].name}</div>
+            <div className="text-white font-serif text-2xl leading-tight mb-1 drop-shadow-lg">
+              {quoteData.name}
+            </div>
             <span
               className="inline-block text-[9px] uppercase tracking-[0.3em] font-semibold border px-2.5 py-1 rounded-full backdrop-blur-sm bg-white/10"
               style={{ color: ORANGE, borderColor: `${ORANGE}60` }}
             >
-              {TEAM[0].role}
+              {quoteData.role}
             </span>
           </motion.div>
         </motion.div>
@@ -863,6 +983,27 @@ function TeamSection() {
   const inView = useInView(ref, { once: true, margin: "-8% 0px" });
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
+  const [teamList, setTeamList] = useState<any[]>(TEAM);
+
+  useEffect(() => {
+    getAllTeamMembers()
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        const mapped = data
+          .filter((item: any) => item.active)
+          .map((item: any) => ({
+            name: item.name || "",
+            role: item.roleTitle || "",
+            quote: item.quote || "",
+            image: item.photo?.url || item.photo?.mediaUrl || item.photo?.media?.url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800",
+          }));
+        if (mapped.length > 0) {
+          setTeamList(mapped);
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const offsets = ["md:translate-y-0", "md:translate-y-6", "md:translate-y-3", "md:-translate-y-3"];
 
   return (
@@ -907,10 +1048,10 @@ function TeamSection() {
 
         {/* Staggered grid — all 4 visible at once */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 items-start">
-          {TEAM.map((member, i) => (
+          {teamList.map((member, i) => (
             <motion.div
               key={i}
-              className={`${offsets[i]} relative group cursor-pointer`}
+              className={`${offsets[i % offsets.length]} relative group cursor-pointer`}
               initial={{ opacity: 0, y: 40 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.15 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -930,10 +1071,10 @@ function TeamSection() {
           className="mt-8 pt-6 border-t border-gray-200 dark:border-white/8 flex items-center justify-between"
         >
           <span className="text-[10px] uppercase tracking-[0.35em] text-gray-400 dark:text-white/30">
-            {TEAM.length} Leaders · Building the Kennedia Vision
+            {teamList.length} Leaders · Building the Kennedia Vision
           </span>
           <div className="flex gap-2">
-            {TEAM.map((_, i) => (
+            {teamList.map((_, i) => (
               <motion.div
                 key={i}
                 className="h-[2px] rounded-full"
@@ -948,7 +1089,7 @@ function TeamSection() {
   );
 }
 
-function TeamCard({ member, isActive, index }: { member: typeof TEAM[0]; isActive: boolean; index: number }) {
+function TeamCard({ member, isActive, index }: { member: any; isActive: boolean; index: number }) {
   const heights = ["aspect-[3/4]", "aspect-[4/5]", "aspect-[3/4]", "aspect-[4/5]"];
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-md border border-black/5 dark:border-white/5 bg-white dark:bg-[#151518]">
@@ -1175,10 +1316,10 @@ function VerticalsSection() {
           >
             Our Verticals
           </span>
-          <h2 className="text-5xl md:text-6xl font-serif mt-4 leading-tight text-[#0A2357] dark:text-white">
+          {/* <h2 className="text-5xl md:text-6xl font-serif mt-4 leading-tight text-[#0A2357] dark:text-white">
             One vision,{" "}
             <span className="italic" style={{ color: ORANGE }}>many expressions.</span>
-          </h2>
+          </h2> */}
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-white/8 border-y border-gray-200 dark:border-white/8">

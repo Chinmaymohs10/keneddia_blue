@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Trash2, Save, Upload, ImageIcon, UserCircle2 } from 'lucide-react';
+import { Plus, Trash2, Save, Upload, ImageIcon, UserCircle2, Loader2 } from 'lucide-react';
+import { getAllTeamMembers, saveTeamMember, updateTeamMember, deleteTeamMember, toggleTeamMemberStatus } from "@/Api/OurJourneyApi";
+import { uploadMedia } from "@/Api/Api";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
-function MemberCard({ member, index, onRemove, onChange, canRemove }) {
+function MemberCard({ member, index, onRemove, onChange, onToggleActive, canRemove }) {
   const [focused, setFocused] = useState(null);
 
   const inputStyle = (field) => ({
@@ -37,14 +40,29 @@ function MemberCard({ member, index, onRemove, onChange, canRemove }) {
             </span>
           )}
         </div>
-        <button
-          onClick={onRemove}
-          disabled={!canRemove}
-          className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
-          style={{ color: colors.error }}
-        >
-          <Trash2 size={14} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onToggleActive}
+            disabled={member.isNew}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+            style={{
+              backgroundColor: member.active !== false ? '#dcfce7' : '#f3f4f6',
+              color: member.active !== false ? '#16a34a' : colors.textSecondary,
+              border: `1px solid ${member.active !== false ? '#86efac' : colors.border}`,
+            }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${member.active !== false ? 'bg-green-500' : 'bg-gray-400'}`} />
+            {member.active !== false ? 'Active' : 'Inactive'}
+          </button>
+          <button
+            onClick={onRemove}
+            disabled={!canRemove}
+            className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
+            style={{ color: colors.error }}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       <div className="p-4 flex gap-4 flex-1">
@@ -73,11 +91,13 @@ function MemberCard({ member, index, onRemove, onChange, canRemove }) {
               type="file"
               className="hidden"
               accept="image/*"
+              onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
                 if (e.target.files?.[0]) {
                   const file = e.target.files[0];
                   onChange('image', file);
                   onChange('previewUrl', URL.createObjectURL(file));
+                  e.target.value = null;
                 }
               }}
             />
@@ -149,18 +169,107 @@ function MemberCard({ member, index, onRemove, onChange, canRemove }) {
 }
 
 export default function JourneyTeamSection() {
-  const [members, setMembers] = useState([
-    { id: 1, name: '', role: '', quote: '', image: null, previewUrl: '' }
-  ]);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleAdd = () => setMembers([{ id: Date.now(), name: '', role: '', quote: '', image: null, previewUrl: '' }, ...members]);
-  const handleRemove = (id) => setMembers(members.filter(m => m.id !== id));
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllTeamMembers();
+      const data = response.data?.data || response.data || [];
+      const mapped = Array.isArray(data) ? data.map((d, index) => ({
+        id: d.id,
+        name: d.name || '',
+        role: d.roleTitle || d.role || '',
+        quote: d.quote || '',
+        mediaId: d.photo?.mediaId || d.mediaId || null,
+        previewUrl: d.photo?.url || d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
+        sequence: d.sequence || index + 1,
+        active: d.active !== false,
+        image: null,
+        isNew: false
+      })) : [];
+      setMembers(mapped);
+    } catch (error) {
+      showError("Failed to fetch team members");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleActive = async (id) => {
+    const member = members.find(m => m.id === id);
+    if (!member || member.isNew) return;
+    const next = !member.active;
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, active: next } : m));
+    try { await toggleTeamMemberStatus(id, next); }
+    catch { setMembers(prev => prev.map(m => m.id === id ? { ...m, active: !next } : m)); showError("Failed to update status"); }
+  };
+
+  const handleAdd = () => setMembers([{ id: Date.now(), name: '', role: '', quote: '', image: null, previewUrl: '', active: true, isNew: true }, ...members]);
+  
+  const handleRemove = async (id) => {
+    const member = members.find(m => m.id === id);
+    if (member && !member.isNew && member.id) {
+      try {
+        await deleteTeamMember(member.id);
+        showSuccess("Member deleted");
+      } catch (error) {
+        showError("Failed to delete member");
+        return;
+      }
+    }
+    setMembers(members.filter(m => m.id !== id));
+  };
+  
   const handleChange = (index, field, value) => {
     const newM = [...members];
     newM[index][field] = value;
     setMembers(newM);
   };
-  const handleSave = () => console.log("Save team", members);
+  
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (let i = 0; i < members.length; i++) {
+        const member = members[i];
+        let mediaId = member.mediaId;
+        
+        if (member.image) {
+          const fd = new FormData();
+          fd.append("file", member.image);
+          const res = await uploadMedia(fd);
+          mediaId = typeof res.data === "number" ? res.data : (res.data?.id || res.data?.data?.id);
+        }
+        
+        const payload = {
+          name: member.name,
+          roleTitle: member.role,
+          quote: member.quote,
+          photoMediaId: mediaId,
+          sequence: member.sequence,
+          active: true
+        };
+
+        if (member.id && !member.isNew) {
+           await updateTeamMember(member.id, payload);
+        } else {
+           await saveTeamMember(payload);
+        }
+      }
+      showSuccess("Team members saved successfully");
+      fetchMembers();
+    } catch (error) {
+      showError("Failed to save team members");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -186,8 +295,9 @@ export default function JourneyTeamSection() {
             key={member.id}
             member={member}
             index={index}
-            canRemove={members.length > 1}
+            canRemove={true}
             onRemove={() => handleRemove(member.id)}
+            onToggleActive={() => handleToggleActive(member.id)}
             onChange={(field, value) => handleChange(index, field, value)}
           />
         ))}
@@ -198,10 +308,11 @@ export default function JourneyTeamSection() {
         <p className="text-xs" style={{ color: colors.textLight }}>Changes are not saved automatically.</p>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: colors.success }}
         >
-          <Save size={15} /> Save Team
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Save Team
         </button>
       </div>
     </div>

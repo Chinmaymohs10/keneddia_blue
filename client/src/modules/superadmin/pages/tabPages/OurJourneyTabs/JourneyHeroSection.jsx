@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Trash2, Save, Upload, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Save, Upload, ImageIcon, Loader2 } from 'lucide-react';
+import { getAllStoryHeroCards, saveStoryHeroCard, updateStoryHeroCard, deleteStoryHeroCard, toggleStoryHeroCardStatus } from "@/Api/OurJourneyApi";
+import { uploadMedia } from "@/Api/Api";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
 const inputClass = "w-full px-3 py-2.5 border rounded-lg text-sm transition-colors focus:outline-none";
 const inputStyle = (focused) => ({
@@ -51,18 +54,68 @@ function CardField({ label, type = 'text', value, onChange, placeholder, maxLeng
 }
 
 export default function JourneyHeroSection() {
-  const [cards, setCards] = useState([
-    { id: 1, title: '', subtitle: '', text: '', image: null, previewUrl: '' }
-  ]);
+  const [cards, setCards] = useState([]);
   const topRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchCards();
+  }, []);
+
+  const fetchCards = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllStoryHeroCards();
+      const data = response.data?.data || response.data || [];
+      const mapped = Array.isArray(data) ? data.map(d => ({
+        id: d.id,
+        title: d.title || '',
+        subtitle: d.subtitle || '',
+        text: d.description || '',
+        mediaId: d.mediaId || null,
+        previewUrl: d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
+        image: null,
+        active: d.active !== false,
+        isNew: false
+      })) : [];
+      setCards(mapped);
+    } catch (error) {
+      showError("Failed to fetch hero cards");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleActive = async (id) => {
+    const card = cards.find(c => c.id === id);
+    if (!card || card.isNew) return;
+    const next = !card.active;
+    setCards(prev => prev.map(c => c.id === id ? { ...c, active: next } : c));
+    try {
+      await toggleStoryHeroCardStatus(id, next);
+    } catch {
+      setCards(prev => prev.map(c => c.id === id ? { ...c, active: !next } : c));
+      showError("Failed to update status");
+    }
+  };
 
   const handleAdd = () => {
-    setCards([{ id: Date.now(), title: '', subtitle: '', text: '', image: null, previewUrl: '' }, ...cards]);
+    setCards([{ id: Date.now(), title: '', subtitle: '', text: '', image: null, previewUrl: '', active: true, isNew: true }, ...cards]);
     setTimeout(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
-  const handleRemove = (id) => {
-    if (cards.length === 1) return;
+  const handleRemove = async (id) => {
+    const card = cards.find(c => c.id === id);
+    if (card && !card.isNew && card.id) {
+      try {
+        await deleteStoryHeroCard(card.id);
+        showSuccess("Card deleted");
+      } catch (error) {
+        showError("Failed to delete card");
+        return;
+      }
+    }
     setCards(cards.filter(c => c.id !== id));
   };
 
@@ -72,8 +125,42 @@ export default function JourneyHeroSection() {
     setCards(newCards);
   };
 
-  const handleSave = () => {
-    console.log("Save", cards);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        let mediaId = card.mediaId;
+        
+        if (card.image) {
+          const fd = new FormData();
+          fd.append("file", card.image);
+          const res = await uploadMedia(fd);
+          mediaId = typeof res.data === "number" ? res.data : (res.data?.id || res.data?.data?.id);
+        }
+        
+        const payload = {
+          title: card.title,
+          subtitle: card.subtitle,
+          description: card.text,
+          mediaId: mediaId,
+          active: true
+        };
+
+        if (card.id && !card.isNew) {
+           payload.id = card.id;
+           await updateStoryHeroCard(payload);
+        } else {
+           await saveStoryHeroCard(payload);
+        }
+      }
+      showSuccess("Cards saved successfully");
+      fetchCards();
+    } catch (error) {
+      showError("Failed to save cards");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -122,15 +209,29 @@ export default function JourneyHeroSection() {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => handleRemove(card.id)}
-              disabled={cards.length === 1}
-              className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
-              style={{ color: colors.error }}
-              title="Remove card"
-            >
-              <Trash2 size={15} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleToggleActive(card.id)}
+                disabled={card.isNew}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+                style={{
+                  backgroundColor: card.active ? '#dcfce7' : '#f3f4f6',
+                  color: card.active ? '#16a34a' : colors.textSecondary,
+                  border: `1px solid ${card.active ? '#86efac' : colors.border}`,
+                }}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${card.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+                {card.active ? 'Active' : 'Inactive'}
+              </button>
+              <button
+                onClick={() => handleRemove(card.id)}
+                className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
+                style={{ color: colors.error }}
+                title="Remove card"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
           </div>
 
           {/* Card Body */}
@@ -229,10 +330,11 @@ export default function JourneyHeroSection() {
         </p>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: colors.success }}
         >
-          <Save size={15} /> Save Changes
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Save Changes
         </button>
       </div>
     </div>
