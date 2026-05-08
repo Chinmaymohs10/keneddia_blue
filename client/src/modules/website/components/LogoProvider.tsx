@@ -36,8 +36,13 @@ interface ResolvedLogos {
   dark: LogoImage | null;
 }
 
+interface GetHeaderLogosOptions {
+  propertyTypeName?: string | null;
+  propertyId?: number | string | null;
+}
+
 interface LogoContextValue {
-  getHeaderLogos: (propertyTypeName?: string | null) => ResolvedLogos;
+  getHeaderLogos: (options?: GetHeaderLogosOptions | string | null) => ResolvedLogos;
   getFooterLogos: () => ResolvedLogos;
   loaded: boolean;
 }
@@ -80,9 +85,24 @@ export function LogoProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoaded(true));
   }, []);
 
-  const getHeaderLogos = (propertyTypeName?: string | null): ResolvedLogos => {
+  const getHeaderLogos = (options?: GetHeaderLogosOptions | string | null): ResolvedLogos => {
+    // Support legacy string call: getHeaderLogos("Restaurant")
+    const opts: GetHeaderLogosOptions = typeof options === "string"
+      ? { propertyTypeName: options }
+      : (options ?? {});
+
+    const { propertyTypeName, propertyId } = opts;
     const headerIcons = icons.filter((e) => e.showOnHeader === true);
 
+    // Priority 1: exact property match
+    if (propertyId != null) {
+      const propLogos = headerIcons.filter(
+        (e) => e.propertyId != null && Number(e.propertyId) === Number(propertyId)
+      );
+      if (propLogos.length > 0) return resolveLogos(propLogos);
+    }
+
+    // Priority 2: property-type match (no specific property)
     if (propertyTypeName) {
       const typeLogos = headerIcons.filter(
         (e) => e.propertyTypeName?.toLowerCase() === propertyTypeName.toLowerCase()
@@ -91,7 +111,7 @@ export function LogoProvider({ children }: { children: ReactNode }) {
       if (typeLogos.length > 0) return resolveLogos(typeLogos);
     }
 
-    // Fall back to homepage/global logos (no propertyType, no property)
+    // Priority 3: global/homepage logos (no propertyType, no property)
     const globalLogos = headerIcons.filter(
       (e) => e.propertyTypeId === null && e.propertyId === null
     );

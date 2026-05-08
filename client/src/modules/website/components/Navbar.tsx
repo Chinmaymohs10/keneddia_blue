@@ -123,18 +123,20 @@ export default function Navbar({
   navItems = NAV_ITEMS,
   logo,
   propertyTypeName,
+  propertyId,
   quickBookOptions,
   showQuickBook: showQuickBookProp,
 }: {
   navItems?: NavItem[];
   logo?: NavbarBrand;
   propertyTypeName?: string | null;
+  propertyId?: number | string | null;
   quickBookOptions?: QuickBookOption[];
   showQuickBook?: boolean;
 }) {
   const { getHeaderLogos } = useLogos();
 
-  const dynamicLogos = getHeaderLogos(propertyTypeName ?? null);
+  const dynamicLogos = getHeaderLogos({ propertyTypeName: propertyTypeName ?? null, propertyId: propertyId ?? null });
 
   const staticBrand = logo || siteContent.brand.logo;
   const staticDark = (staticBrand as any).darkImage || staticBrand.image;
