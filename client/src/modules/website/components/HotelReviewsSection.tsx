@@ -16,13 +16,13 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
-import { InstagramEmbed } from "react-social-media-embed";
 import {
   getGuestExperienceSection,
   createGuestExperienceByGuest,
   getGuestExperienceSectionHeader,
   getGuestExperineceRatingHeader,
   getPropertyTypes,
+  GetAllPropertyDetails,
 } from "@/Api/Api";
 
 import "swiper/css";
@@ -189,20 +189,37 @@ export default function HotelReviewsSection({
 
   const fetchExperiences = async (resolvedHotelTypeId: number | null) => {
     try {
-      const res = await getGuestExperienceSection({ size: 100 });
-      const rawData = res?.data?.data || res?.data || res || [];
-      const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
+      const [expRes, propsRes] = await Promise.all([
+        getGuestExperienceSection({ size: 100 }),
+        GetAllPropertyDetails(),
+      ]);
+
+      // Build propertyId -> propertyTypeId map so Google reviews (which have
+      // propertyId but no propertyTypeId) still resolve to the correct section.
+      const propTypeMap = new Map<number, number>();
+      const props = propsRes?.data || propsRes || [];
+      (Array.isArray(props) ? props : []).forEach((p: any) => {
+        if (p?.id != null && p?.propertyTypeId != null)
+          propTypeMap.set(Number(p.id), Number(p.propertyTypeId));
+      });
+
+      const rawData = expRes?.data?.data || expRes?.data || expRes || [];
+      const list: any[] = Array.isArray(rawData) ? rawData : rawData?.content || [];
+
       const filtered = list
-        .filter((item) =>
-          resolvedHotelTypeId != null
-            ? Number(item?.propertyTypeId) === Number(resolvedHotelTypeId)
-            : false,
-        )
-        .sort((a, b) => {
-          const dateA = new Date(a?.createdAt || 0).getTime();
-          const dateB = new Date(b?.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
+        .filter((item) => {
+          if (item?.isActive === false) return false;
+          if (resolvedHotelTypeId == null) return false;
+          const effectiveTypeId =
+            item?.propertyTypeId != null
+              ? Number(item.propertyTypeId)
+              : item?.propertyId != null
+              ? propTypeMap.get(Number(item.propertyId))
+              : undefined;
+          return effectiveTypeId === Number(resolvedHotelTypeId);
+        })
+        .sort((a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime());
+
       setGuestExperiences(filtered);
     } catch (err) {
       console.error(err);
@@ -308,38 +325,17 @@ export default function HotelReviewsSection({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
-        if (!isClient) {
-          return (
-            <div
-              key={idx}
-              className="relative flex h-full w-full items-center justify-center bg-black"
-            >
-              <a
-                href={m.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-white text-xs font-bold underline"
-              >
-                View on Instagram
-              </a>
-            </div>
-          );
-        }
-
         return (
-          <div
-            key={idx}
-            className="relative w-full h-full bg-black overflow-hidden flex items-center justify-center group"
-          >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
-              <InstagramEmbed
-                url={`https://www.instagram.com/p/${id}/`}
-                width={328}
-              />
-            </div>
-
-            <div className="absolute inset-0 z-0 pointer-events-none" />
-
+          <div key={idx} className="relative h-full w-full overflow-hidden bg-black group">
+            <iframe
+              src={`https://www.instagram.com/p/${id}/embed/`}
+              className="absolute inset-0 h-full w-full"
+              style={{ border: "none" }}
+              allowTransparency
+              scrolling="no"
+              loading="lazy"
+              title="Instagram reel"
+            />
             <a
               href={m.url}
               target="_blank"

@@ -15,13 +15,13 @@ import {
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
-import { InstagramEmbed } from "react-social-media-embed";
 import {
   createGuestExperienceByGuest,
   getGuestExperienceSection,
   getGuestExperienceSectionHeader,
   getGuestExperineceRatingHeader,
   getPropertyTypes,
+  GetAllPropertyDetails,
 } from "@/Api/Api";
 
 import "swiper/css";
@@ -155,22 +155,34 @@ export default function RestaurantGuestReviews({
 
   const fetchExperiences = async (resolvedRestaurantTypeId) => {
     try {
-      const res = await getGuestExperienceSection({ size: 100 });
-      const rawData = res?.data?.data || res?.data || res || [];
+      const [expRes, propsRes] = await Promise.all([
+        getGuestExperienceSection({ size: 100 }),
+        GetAllPropertyDetails(),
+      ]);
+
+      const propTypeMap = new Map();
+      const props = propsRes?.data || propsRes || [];
+      (Array.isArray(props) ? props : []).forEach((p) => {
+        if (p?.id != null && p?.propertyTypeId != null)
+          propTypeMap.set(Number(p.id), Number(p.propertyTypeId));
+      });
+
+      const rawData = expRes?.data?.data || expRes?.data || expRes || [];
       const list = Array.isArray(rawData) ? rawData : rawData?.content || [];
 
       const filtered = list
-        .filter((item) =>
-          item?.isActive !== false &&
-          (resolvedRestaurantTypeId != null
-            ? Number(item?.propertyTypeId) === Number(resolvedRestaurantTypeId)
-            : false),
-        )
-        .sort((a, b) => {
-          const dateA = new Date(a?.createdAt || 0).getTime();
-          const dateB = new Date(b?.createdAt || 0).getTime();
-          return dateB - dateA;
-        });
+        .filter((item) => {
+          if (item?.isActive === false) return false;
+          if (resolvedRestaurantTypeId == null) return false;
+          const effectiveTypeId =
+            item?.propertyTypeId != null
+              ? Number(item.propertyTypeId)
+              : item?.propertyId != null
+              ? propTypeMap.get(Number(item.propertyId))
+              : undefined;
+          return effectiveTypeId === Number(resolvedRestaurantTypeId);
+        })
+        .sort((a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime());
 
       setGuestExperiences(filtered);
     } catch (error) {
@@ -309,29 +321,22 @@ export default function RestaurantGuestReviews({
         const id = getInstagramId(m.url);
         if (!id) return null;
 
-        if (!isClient) {
-          return (
-            <div key={idx} className="relative flex h-full w-full items-center justify-center bg-black">
-              <a href={m.url} target="_blank" rel="noreferrer" className="text-white text-xs font-bold underline">
-                View on Instagram
-              </a>
-            </div>
-          );
-        }
-
         return (
-          <div
-            key={idx}
-            className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black group"
-          >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]">
-              <InstagramEmbed url={`https://www.instagram.com/p/${id}/`} width={328} />
-            </div>
-
+          <div key={idx} className="relative h-full w-full overflow-hidden bg-black group">
+            <iframe
+              src={`https://www.instagram.com/p/${id}/embed/`}
+              className="absolute inset-0 h-full w-full"
+              style={{ border: "none" }}
+              allowTransparency
+              scrolling="no"
+              loading="lazy"
+              title="Instagram reel"
+            />
             <a
               href={m.url}
               target="_blank"
               rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="absolute bottom-3 right-3 z-20 rounded-full bg-black/60 px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100"
             >
               Open
@@ -636,11 +641,17 @@ export default function RestaurantGuestReviews({
                         <PlayCircle className="h-8 w-8 text-white drop-shadow" />
                       </div>
                     </div>
-                  ) : instaId && isClient ? (
-                    <div className="relative h-44 w-full overflow-hidden bg-black flex justify-center items-center">
-                      <div className="absolute top-0 scale-[0.45] origin-top min-w-[328px] mt-2">
-                        <InstagramEmbed url={`https://www.instagram.com/p/${instaId}/`} width={328} />
-                      </div>
+                  ) : instaId ? (
+                    <div className="relative h-44 w-full overflow-hidden bg-black">
+                      <iframe
+                        src={`https://www.instagram.com/p/${instaId}/embed/`}
+                        className="absolute inset-0 h-full w-full"
+                        style={{ border: "none" }}
+                        allowTransparency
+                        scrolling="no"
+                        loading="lazy"
+                        title="Instagram preview"
+                      />
                     </div>
                   ) : null}
                 </div>

@@ -16,7 +16,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
-import { InstagramEmbed } from "react-social-media-embed";
 import {
   getLatestGuestExperiences,
   createGuestExperienceByGuest,
@@ -280,33 +279,16 @@ export default function OurStoryPreview({
         if (!id) return null;
 
         return (
-          <div
-            key={idx}
-            className="relative flex h-full w-full items-center justify-center bg-black overflow-hidden group"
-          >
-            {isClient ? (
-              <div
-                key={`ig-${id}`}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]"
-              >
-                <InstagramEmbed
-                  url={`https://www.instagram.com/p/${id}/`}
-                  width={328}
-                  placeholder={
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-900">
-                      <Loader2 className="animate-spin text-white/20" />
-                    </div>
-                  }
-                />
-              </div>
-            ) : (
-              <div className="text-white text-xs font-bold underline">
-                View on Instagram
-              </div>
-            )}
-
-            <div className="absolute inset-0 z-0 pointer-events-none" />
-
+          <div key={idx} className="relative h-full w-full overflow-hidden bg-black group">
+            <iframe
+              src={`https://www.instagram.com/p/${id}/embed/`}
+              className="absolute inset-0 h-full w-full"
+              style={{ border: "none" }}
+              allowTransparency
+              scrolling="no"
+              loading="lazy"
+              title="Instagram reel"
+            />
             <a
               href={m.url}
               target="_blank"
