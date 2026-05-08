@@ -10,6 +10,7 @@ import {
   Building2,
   Wrench,
   Wine,
+  ShieldCheck,
   LogOut,
   ChevronDown,
   ChevronLeft,
@@ -35,6 +36,7 @@ function Sidebar({ isOpen, onToggle }) {
     // Core management items
     const coreItems = [
       { icon: Home, label: "Homepage", path: "/Homepage-Dashboard" },
+      { icon: ShieldCheck, label: "Policies", path: "/Policies" },
       { icon: Compass, label: "Our Journey", path: "/Our-Journey" },
       { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },
