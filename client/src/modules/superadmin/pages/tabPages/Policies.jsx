@@ -29,6 +29,8 @@ const emptySection = {
 
 const emptyForm = {
   mainTitle: "",
+  mainTitleLine1: "",
+  mainTitleLine2: "",
   mainDescription: "",
   highlightTextDescription: "",
   effectiveDate: "",
@@ -97,11 +99,15 @@ export default function Policies() {
     setIsEditModalOpen(false);
   };
 
-  const handleEdit = (item) => {
-    setEditingItem(item);
-    setIsEditModalOpen(true);
+  const mapItemToForm = (item) => {
     setForm({
       mainTitle: item.mainTitle || "",
+      mainTitleLine1:
+        (item.mainTitle || "").trim().split(/\s+/).filter(Boolean)[0] || "",
+      mainTitleLine2:
+        item.highlightTextDescription ||
+        (item.mainTitle || "").trim().split(/\s+/).filter(Boolean).slice(1).join(" ") ||
+        "",
       mainDescription: item.mainDescription || "",
       highlightTextDescription: item.highlightTextDescription || "",
       effectiveDate: item.effectiveDate || "",
@@ -120,6 +126,12 @@ export default function Policies() {
             }))
           : [{ ...emptySection }],
     });
+  };
+
+  const handleEdit = (item) => {
+    setEditingItem(item);
+    setIsEditModalOpen(true);
+    mapItemToForm(item);
   };
 
   const handleFormChange = (key, value) => {
@@ -163,9 +175,12 @@ export default function Policies() {
     try {
       setSaving(true);
       const payload = {
-        mainTitle: form.mainTitle,
+        mainTitle: [form.mainTitleLine1, form.mainTitleLine2]
+          .filter(Boolean)
+          .join(" ")
+          .trim(),
         mainDescription: form.mainDescription,
-        highlightTextDescription: form.highlightTextDescription,
+        highlightTextDescription: form.mainTitleLine2 || form.highlightTextDescription,
         effectiveDate: form.effectiveDate,
         lastUpdated: form.lastUpdated,
         version: form.version,
@@ -262,8 +277,8 @@ export default function Policies() {
   const handleAddSectionToPolicy = async (policyId) => {
     try {
       await addPolicySection(policyId, {
-        title: "New Section",
-        description: "Add description",
+        title: "",
+        description: "",
         highlightTextDescription: null,
         highlightText: null,
       });
@@ -273,6 +288,14 @@ export default function Policies() {
       console.error(error);
       showError("Failed to add section");
     }
+  };
+
+  const getHeroTitleLines = (item) => {
+    const words = (item?.mainTitle || "").trim().split(/\s+/).filter(Boolean);
+    const line1 = words[0] || "--";
+    const line2 =
+      item?.highlightTextDescription || words.slice(1).join(" ") || "--";
+    return { line1, line2 };
   };
 
   return (
@@ -342,8 +365,15 @@ export default function Policies() {
           </div>
 
           {filteredItems.length > 0 && !editingItem ? (
-            <div className="rounded-lg border p-3 text-xs" style={{ borderColor: colors.border, color: colors.textSecondary }}>
-              One {policyTypeTab === "privacy" ? "privacy policy" : "legal disclaimer"} already exists. Edit the existing item/sections from the right panel.
+            <div
+              className="rounded-lg border px-3 py-2.5 text-sm font-semibold"
+              style={{
+                borderColor: "#FCA5A5",
+                backgroundColor: "#FEF2F2",
+                color: "#B91C1C",
+              }}
+            >
+              Warning: One {policyTypeTab === "privacy" ? "privacy policy" : "legal disclaimer"} already exists. Edit the existing item/sections from the right panel.
             </div>
           ) : null}
 
@@ -356,8 +386,8 @@ export default function Policies() {
                 className={inputBaseClass}
                 style={{ borderColor: colors.border }}
                 placeholder="e.g. Privacy"
-                value={form.mainTitle}
-                onChange={(e) => handleFormChange("mainTitle", e.target.value)}
+                value={form.mainTitleLine1}
+                onChange={(e) => handleFormChange("mainTitleLine1", e.target.value)}
               />
             </div>
             <div>
@@ -368,8 +398,8 @@ export default function Policies() {
                 className={inputBaseClass}
                 style={{ borderColor: colors.border }}
                 placeholder="e.g. Matters"
-                value={form.highlightTextDescription}
-                onChange={(e) => handleFormChange("highlightTextDescription", e.target.value)}
+                value={form.mainTitleLine2}
+                onChange={(e) => handleFormChange("mainTitleLine2", e.target.value)}
               />
             </div>
             <div>
@@ -428,18 +458,18 @@ export default function Policies() {
                       </label>
                       <textarea className="w-full border rounded-md px-2.5 py-1.5 text-xs" style={{ borderColor: colors.border }} rows={2} placeholder="Description" value={section.description} onChange={(e) => handleSectionChange(index, "description", e.target.value)} />
                     </div>
-                    <div className="grid grid-cols-3 gap-1">
+                    <div className="grid grid-cols-1 gap-1.5">
                       <div>
                         <label className={labelClass} style={{ color: colors.textPrimary }}>
                           Highlight Text Description
                         </label>
-                        <input className="border rounded-md px-2 py-1 text-xs w-full" style={{ borderColor: colors.border }} placeholder="Highlight text description" value={section.highlightTextDescription || ""} onChange={(e) => handleSectionChange(index, "highlightTextDescription", e.target.value)} />
+                        <textarea className="border rounded-md px-2 py-1 text-xs w-full" style={{ borderColor: colors.border }} rows={2} placeholder="Highlight text description" value={section.highlightTextDescription || ""} onChange={(e) => handleSectionChange(index, "highlightTextDescription", e.target.value)} />
                       </div>
                       <div>
                         <label className={labelClass} style={{ color: colors.textPrimary }}>
                           Sequence
                         </label>
-                        <input type="number" className="border rounded-md px-2 py-1 text-xs w-full" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
+                        <input type="number" className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px]" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
                       </div>
                       <label className="text-xs flex items-center gap-2 px-2 font-medium">
                         <input type="checkbox" checked={!!section.active} onChange={(e) => handleSectionChange(index, "active", e.target.checked)} /> Active
@@ -471,13 +501,14 @@ export default function Policies() {
             <p className="text-sm" style={{ color: colors.textSecondary }}>No policy pages found.</p>
           ) : (
             <div className="space-y-2.5 max-h-[600px] overflow-y-auto scrollbar-thin pr-1">
-              {filteredItems.map((item) => (
+              {filteredItems.map((item) => {
+                const { line1, line2 } = getHeroTitleLines(item);
+                return (
                 <div key={item.id} className="border rounded-xl p-3" style={{ borderColor: colors.border }}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold" style={{ color: colors.textPrimary }}>
                         {item.mainTitle}
-                        {item.highlightTextDescription ? ` ${item.highlightTextDescription}` : ""}
                         <span className="text-xs font-medium"> #{item.id}</span>
                       </p>
                       {item.mainDescription ? (
@@ -514,10 +545,10 @@ export default function Policies() {
                       <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-white/85" />
                       <div className="relative z-10 px-3 sm:px-4 py-3 sm:py-4 text-center">
                         <h4 className="text-2xl sm:text-4xl font-serif text-white leading-[0.95]">
-                          {item.mainTitle || "Main Title"}
+                          {line1}
                         </h4>
                         <p className="text-2xl sm:text-4xl font-serif italic text-primary leading-[0.95] mt-0.5">
-                          {item.highlightTextDescription || "Highlight"}
+                          {line2}
                         </p>
                         {item.mainDescription ? (
                           <p className="mt-2 text-[11px] sm:text-sm font-medium text-white/95 max-w-xl mx-auto">
@@ -545,13 +576,13 @@ export default function Policies() {
                                 {String(idx + 1).padStart(2, "0")}
                               </span>
                               <p className="text-sm sm:text-lg font-serif text-[#0A2357]">
-                                {section.title || "Section Title"}
+                                {section.title || "--"}
                               </p>
                             </div>
                             <div className="rounded-xl bg-[#f0f2f4] border border-[#e6e9ed] p-3 sm:p-4">
                               <div className="w-1.5 h-1.5 rounded-full bg-[#ea2e2e] mb-2" />
                               <p className="text-xs sm:text-sm text-[#344e6f] leading-relaxed">
-                                {section.description || "Section description preview."}
+                                {section.description || "--"}
                               </p>
                             </div>
                             {section.highlightTextDescription ? (
@@ -603,7 +634,8 @@ export default function Policies() {
                     ))}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -636,8 +668,8 @@ export default function Policies() {
             </div>
 
             <form onSubmit={onSubmit} className="space-y-3 p-4">
-              <input className={inputBaseClass} style={{ borderColor: colors.border }} placeholder="Main Title (Line 1)" value={form.mainTitle} onChange={(e) => handleFormChange("mainTitle", e.target.value)} />
-              <input className={inputBaseClass} style={{ borderColor: colors.border }} placeholder="Main Title (Line 2 / Highlight)" value={form.highlightTextDescription} onChange={(e) => handleFormChange("highlightTextDescription", e.target.value)} />
+              <input className={inputBaseClass} style={{ borderColor: colors.border }} placeholder="Main Title (Line 1)" value={form.mainTitleLine1} onChange={(e) => handleFormChange("mainTitleLine1", e.target.value)} />
+              <input className={inputBaseClass} style={{ borderColor: colors.border }} placeholder="Main Title (Line 2 / Highlight)" value={form.mainTitleLine2} onChange={(e) => handleFormChange("mainTitleLine2", e.target.value)} />
               <textarea className={inputBaseClass} style={{ borderColor: colors.border }} rows={3} placeholder="Main Description" value={form.mainDescription} onChange={(e) => handleFormChange("mainDescription", e.target.value)} />
               <div className="grid grid-cols-3 gap-2">
                 <input type="date" className={inputBaseClass} style={{ borderColor: colors.border }} value={form.effectiveDate} onChange={(e) => handleFormChange("effectiveDate", e.target.value)} />
@@ -657,10 +689,10 @@ export default function Policies() {
                     <div key={index} className="border rounded-lg p-2.5 space-y-1.5" style={{ borderColor: colors.border }}>
                       <input className="w-full border rounded-md px-2.5 py-1.5 text-xs" style={{ borderColor: colors.border }} placeholder="Title" value={section.title} onChange={(e) => handleSectionChange(index, "title", e.target.value)} />
                       <textarea className="w-full border rounded-md px-2.5 py-1.5 text-xs" style={{ borderColor: colors.border }} rows={2} placeholder="Description" value={section.description} onChange={(e) => handleSectionChange(index, "description", e.target.value)} />
-                      <div className="grid grid-cols-3 gap-1">
-                        <input className="border rounded-md px-2 py-1 text-xs" style={{ borderColor: colors.border }} placeholder="Highlight text description" value={section.highlightTextDescription || ""} onChange={(e) => handleSectionChange(index, "highlightTextDescription", e.target.value)} />
-                        <input type="number" className="border rounded-md px-2 py-1 text-xs" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
-                        <label className="text-xs flex items-center gap-2 px-2 font-medium">
+                      <div className="grid grid-cols-1 gap-1.5">
+                        <textarea className="border rounded-md px-2 py-1 text-xs" style={{ borderColor: colors.border }} rows={2} placeholder="Highlight text description" value={section.highlightTextDescription || ""} onChange={(e) => handleSectionChange(index, "highlightTextDescription", e.target.value)} />
+                        <input type="number" className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px]" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
+                        <label className="text-xs flex items-center gap-2 font-medium">
                           <input type="checkbox" checked={!!section.active} onChange={(e) => handleSectionChange(index, "active", e.target.checked)} /> Active
                         </label>
                       </div>
