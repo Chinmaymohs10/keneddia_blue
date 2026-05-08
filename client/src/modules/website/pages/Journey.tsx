@@ -12,6 +12,9 @@ import {
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { ArrowUpRight, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getAllLocations, getActivePropertyTypes, GetAllPropertyDetails } from "@/Api/Api";
+import { createHotelSlug, createCitySlug } from "@/lib/HotelSlug";
 
 // ─── BRAND COLOURS (orange stays constant in both modes) ─────────────────────
 const ORANGE = "#FF8C00";
@@ -998,12 +1001,22 @@ function TeamCard({ member, isActive, index }: { member: typeof TEAM[0]; isActiv
 }
 
 // ─── VERTICALS (ACCORDION) ───────────────────────────────────────────────────
-function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["properties"] }) {
+function PropertyCarousel({ properties }: { properties: any[] }) {
   const [active, setActive] = useState(0);
   const total = properties.length;
+  const navigate = useNavigate();
 
   const prev = () => setActive((a) => (a - 1 + total) % total);
   const next = () => setActive((a) => (a + 1) % total);
+
+  if (total === 0) return null;
+
+  const prop = properties[active];
+  const pName = prop?.name || "";
+  const city = prop?.city || "";
+  const propertyPath = `${createCitySlug(city || pName)}/${createHotelSlug(pName || city, prop?.id || 0)}`;
+  const pType = prop?.propertyType?.toLowerCase();
+  const localPath = pType === "wine" ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
 
   return (
     <div className="w-full md:w-[420px] shrink-0 relative">
@@ -1012,8 +1025,8 @@ function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["pro
         <AnimatePresence mode="wait">
           <motion.img
             key={active}
-            src={properties[active].image}
-            alt={properties[active].name}
+            src={prop?.image}
+            alt={prop?.name}
             className="absolute inset-0 w-full h-full object-cover"
             initial={{ opacity: 0, scale: 1.06 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1029,9 +1042,9 @@ function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["pro
         <AnimatePresence mode="wait">
           <motion.a
             key={`label-${active}`}
-            href={`/properties/${properties[active].slug}`}
-            onClick={(e) => e.preventDefault()}
-            className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between group/link"
+            href={localPath}
+            onClick={(e) => { e.preventDefault(); navigate(localPath); }}
+            className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between group/link cursor-pointer"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -1039,7 +1052,7 @@ function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["pro
           >
             <div>
               <div className="text-white font-serif text-lg leading-tight drop-shadow-md group-hover/link:underline decoration-[#FF8C00] underline-offset-4 transition-all">
-                {properties[active].name}
+                {prop?.name}
               </div>
               <div className="text-[10px] uppercase tracking-[0.3em] mt-1" style={{ color: ORANGE }}>
                 View Property →
@@ -1091,7 +1104,62 @@ function PropertyCarousel({ properties }: { properties: typeof VERTICALS[0]["pro
 }
 
 function VerticalsSection() {
-  const [open, setOpen] = useState<number[]>(VERTICALS.map((_, i) => i));
+  const [verticals, setVerticals] = useState<any[]>([]);
+  const [open, setOpen] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVerticals = async () => {
+      try {
+        const [typesRes, propsRes] = await Promise.all([
+          getActivePropertyTypes(),
+          GetAllPropertyDetails()
+        ]);
+
+        const types = typesRes?.data || [];
+        const allProps = propsRes?.data?.data || propsRes?.data || [];
+
+        const dynamicVerticals = types.map((t: any, index: number) => {
+          const matchedListings: any[] = [];
+
+          allProps.forEach((p: any) => {
+            const parent = p.propertyResponseDTO;
+            const listings = p.propertyListingResponseDTOS || [];
+            if (!parent || !parent.isActive) return;
+
+            listings.forEach((l: any) => {
+              if (l.isActive && (l.propertyType === t.typeName || parent.propertyTypes?.includes(t.typeName))) {
+                matchedListings.push({
+                  id: parent.id,
+                  name: l.propertyName || parent.propertyName,
+                  image: l.media?.[0]?.url || "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1600",
+                  city: parent.locationName,
+                  propertyType: l.propertyType || parent.propertyTypes?.[0]
+                });
+              }
+            });
+          });
+
+          return {
+            no: String(index + 1).padStart(2, "0"),
+            name: t.typeName,
+            stat: `${matchedListings.length} Properties`,
+            desc: t.description || `Explore our exquisite ${t.typeName} properties and destinations.`,
+            properties: matchedListings
+          };
+        });
+
+        const filtered = dynamicVerticals.filter(v => v.properties.length > 0);
+        setVerticals(filtered);
+        setOpen(filtered.map((_, i) => i));
+      } catch (e) {
+        console.error("Error fetching verticals:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVerticals();
+  }, []);
 
   const toggle = (i: number) => {
     setOpen((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
@@ -1114,7 +1182,9 @@ function VerticalsSection() {
         </div>
 
         <div className="divide-y divide-gray-200 dark:divide-white/8 border-y border-gray-200 dark:border-white/8">
-          {VERTICALS.map((v, i) => {
+          {loading ? (
+            <div className="py-20 flex justify-center"><div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: ORANGE, borderTopColor: 'transparent' }} /></div>
+          ) : verticals.map((v, i) => {
             const isOpen = open.includes(i);
             return (
               <div key={i}>
@@ -1185,6 +1255,30 @@ function ExpansionScroll() {
   const x = useTransform(scrollYProgress, [0, 1], ["8%", "-35%"]);
   const smoothX = useSpring(x, { stiffness: 55, damping: 18 });
 
+  const [locations, setLocations] = useState<{ id?: number; city: string; state: string }[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await getAllLocations();
+        if (res?.data && Array.isArray(res.data)) {
+          const active = res.data
+            .filter((loc: any) => loc.isActive)
+            .map((loc: any) => ({
+              id: loc.id,
+              city: loc.locationName,
+              state: loc.state,
+            }));
+          setLocations(active);
+        }
+      } catch (err) {
+        console.error("Error fetching locations:", err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
   return (
     <section ref={containerRef} className="py-16 overflow-hidden bg-[#faf9f6] dark:bg-[#0d0d10]">
       {/* Section label */}
@@ -1196,18 +1290,19 @@ function ExpansionScroll() {
           Availability
         </span>
         <span className="text-[10px] uppercase tracking-[0.3em] text-gray-400 dark:text-white/30">
-          {CITIES.length} Locations
+          {locations.length} Locations
         </span>
       </div>
 
       {/* Scrolling text cards */}
       <div className="overflow-visible">
         <motion.div style={{ x: smoothX }} className="flex gap-4 px-6 w-max">
-          {CITIES.map((c, i) => (
+          {locations.map((c, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -6 }}
               transition={{ duration: 0.3 }}
+              onClick={() => c.id && navigate(`/destination/${c.id}`)}
               className="w-[220px] md:w-[260px] shrink-0 group cursor-pointer"
             >
               {/* Card */}

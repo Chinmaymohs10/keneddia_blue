@@ -320,6 +320,8 @@ export const GetAllPropertyDetails = () =>
   API.get("api/v1/properties/showAllDetails");
 export const updatePropertyById = (propertyId, payload) =>
   API.put(`api/v1/properties/edit/${propertyId}`, payload);
+export const getPropertiesByLocationDetails = (locationId) =>
+  API.get(`api/v1/properties/byLocationDetails/${locationId}`);
 
 // properties/showAllDetails
 export const getPropertyListingMedia = (propertyListingId) =>

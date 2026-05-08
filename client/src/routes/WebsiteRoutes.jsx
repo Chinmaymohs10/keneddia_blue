@@ -35,6 +35,7 @@ import LegalDisclaimer from "@/modules/website/pages/LegalDisclaimer";
 
 // Lazy-loaded homepage routes — Suspense shows PageLoader while JS chunk loads
 const Home = lazy(() => import("@/modules/website/pages/Home"));
+const Destination = lazy(() => import("@/modules/website/pages/Destination"));
 const Hotels = lazy(() => import("@/modules/website/pages/Hotels"));
 const RestaurantHomepage = lazy(() => import("@/modules/website/pages/restaurant/RestaurantHomepage"));
 const CafeHomepage = lazy(() => import("@/modules/website/pages/cafe/CafeHomepage"));
@@ -157,6 +158,7 @@ const WebsiteRoutes = [
   // <Route key="home" path="/" element={withRouteSuspense(<WineHomepage />)} />,
 
   <Route key="hotels" path="/hotels" element={withRouteSuspense(<Hotels />)} />,
+  <Route key="destination" path="/destination/:locationId" element={withRouteSuspense(<Destination />)} />,
   <Route key="property-detail" path="/:citySlug/:propertySlug" element={<PropertyDetailRoute />} />,
   <Route key="room-selection" path="/hotels/:hotelId/rooms" element={withRouteSuspense(<RoomSelection />)} />,
   <Route key="events" path="/events" element={<Events />} />,

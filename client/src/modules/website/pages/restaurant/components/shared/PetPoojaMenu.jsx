@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarClock,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -12,9 +13,13 @@ import {
   Utensils,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { createJoiningUs } from "@/Api/RestaurantApi";
-import { filterFoodDeliveryLinks } from "@/Api/externalApi";
-import { validateReserveDialogForm } from "@/lib/validation/reservationValidation";
+import {
+  filterFoodDeliveryLinks,
+  getPropertyPetPoojaByPropertyId,
+  fetchPetPoojaMenus,
+  savePetPoojaOrder,
+} from "@/Api/externalApi";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,13 +37,30 @@ const EMPTY_TAKEAWAY_FORM = {
   guestName: "",
   contactNumber: "",
   emailAddress: "",
+  address: "",
   date: "",
   time: "",
-  totalGuest: "1",
+  orderType: "P",
+  tableNo: "",
 };
 
 const firstString = (...values) =>
   values.find((value) => typeof value === "string" && value.trim()) || "";
+
+function validateTakeawayForm(form) {
+  const errors = {};
+  if (!form.guestName.trim()) errors.guestName = "Name is required.";
+  if (!form.contactNumber.trim() || form.contactNumber.length !== 10)
+    errors.contactNumber = "Enter a valid 10-digit phone number.";
+  if (!form.emailAddress.trim() || !/\S+@\S+\.\S+/.test(form.emailAddress))
+    errors.emailAddress = "Enter a valid email address.";
+  if (!form.address.trim()) errors.address = "Address is required.";
+  if (!form.date) errors.date = "Date is required.";
+  if (!form.time) errors.time = "Time is required.";
+  if (form.orderType === "D" && !form.tableNo.trim())
+    errors.tableNo = "Table number is required for dine-in.";
+  return errors;
+}
 
 export default function PetPoojaMenu({
   categories = [],
@@ -54,6 +76,7 @@ export default function PetPoojaMenu({
   const [takeawayForm, setTakeawayForm] = useState(EMPTY_TAKEAWAY_FORM);
   const [takeawayErrors, setTakeawayErrors] = useState({});
   const [isSubmittingTakeaway, setIsSubmittingTakeaway] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(null); // { orderId, message }
   const scrollRef = useRef(null);
 
   const activeCategory = categories[activeTab];
@@ -72,6 +95,7 @@ export default function PetPoojaMenu({
   const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const [deliveryLinks, setDeliveryLinks] = useState({ swiggy: "", zomato: "" });
+  const [openDeliveryItemId, setOpenDeliveryItemId] = useState(null);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -128,15 +152,11 @@ export default function PetPoojaMenu({
   };
 
   const handlePrev = () => {
-    if (activeTab > 0) {
-      handleTabClick(activeTab - 1);
-    }
+    if (activeTab > 0) handleTabClick(activeTab - 1);
   };
 
   const handleNext = () => {
-    if (activeTab < categories.length - 1) {
-      handleTabClick(activeTab + 1);
-    }
+    if (activeTab < categories.length - 1) handleTabClick(activeTab + 1);
   };
 
   const handleTakeawayOpen = () => {
@@ -144,7 +164,6 @@ export default function PetPoojaMenu({
       toast.error("Select at least one item for takeaway.");
       return;
     }
-
     setShowTakeawayDialog(true);
     setTakeawayForm({
       ...EMPTY_TAKEAWAY_FORM,
@@ -174,7 +193,7 @@ export default function PetPoojaMenu({
     e.preventDefault();
     if (!propertyId || selectedTakeawayItems.length === 0) return;
 
-    const errors = validateReserveDialogForm(takeawayForm);
+    const errors = validateTakeawayForm(takeawayForm);
     if (Object.keys(errors).length > 0) {
       setTakeawayErrors(errors);
       return;
@@ -182,28 +201,111 @@ export default function PetPoojaMenu({
 
     setIsSubmittingTakeaway(true);
     try {
-      await createJoiningUs({
-        guestName: takeawayForm.guestName.trim(),
-        contactNumber: takeawayForm.contactNumber.trim(),
-        emailAddress: takeawayForm.emailAddress.trim(),
-        date: takeawayForm.date,
-        time: takeawayForm.time,
-        totalGuest: Number(takeawayForm.totalGuest),
-        propertyId,
-        propertyName: propertyData?.propertyName || propertyData?.name || "Restaurant",
-        phoneNumber: takeawayForm.contactNumber.trim(),
-        name: takeawayForm.guestName.trim(),
-        description: `Takeaway request | Category: ${activeCategory?.categoryname || "Menu"} | Items: ${selectedTakeawayItems
-          .map((item) => item.itemname)
-          .join(", ")}`,
-      });
+      const credRes = await getPropertyPetPoojaByPropertyId(propertyId);
+      const creds = credRes?.data?.data ?? credRes?.data ?? credRes;
 
-      toast.success("Takeaway request sent.");
-      setSelectedTakeawayItems([]);
-      handleTakeawayClose(false);
+      if (!creds || !creds["app-key"]) {
+        toast.error("PetPooja configuration not found for this property.");
+        return;
+      }
+
+      const orderID = `ORD-${Date.now()}`;
+      const preorderDate = takeawayForm.date;
+      const preorderTime = `${takeawayForm.time}:00`;
+
+      const orderItems = selectedTakeawayItems.map((item) => ({
+        id: String(item.itemid),
+        name: item.itemname,
+        price: String(parseFloat(item.price || "0").toFixed(2)),
+        final_price: String(parseFloat(item.price || "0").toFixed(2)),
+        quantity: "1",
+        description: item.itemdescription || "",
+        variation_name: "",
+        variation_id: "",
+        AddonItem: { details: [] },
+      }));
+
+      const total = selectedTakeawayItems
+        .reduce((sum, item) => sum + parseFloat(item.price || "0"), 0)
+        .toFixed(2);
+
+      const payload = {
+        appKey: creds["app-key"],
+        appSecret: creds["app-secret"],
+        accessToken: creds["access-token"],
+        orderinfo: {
+          OrderInfo: {
+            Restaurant: {
+              details: {
+                res_name:
+                  firstString(propertyData?.propertyName, propertyData?.name, "Restaurant"),
+                address: firstString(propertyData?.address, ""),
+                contact_information: firstString(propertyData?.phone, ""),
+                restID: creds.restID,
+              },
+            },
+            Customer: {
+              details: {
+                email: takeawayForm.emailAddress.trim(),
+                name: takeawayForm.guestName.trim(),
+                address: takeawayForm.address.trim(),
+                phone: takeawayForm.contactNumber.trim(),
+                latitude: "",
+                longitude: "",
+              },
+            },
+            Order: {
+              details: {
+                orderID,
+                preorder_date: preorderDate,
+                preorder_time: preorderTime,
+                order_type: takeawayForm.orderType,
+                payment_type: "COD",
+                table_no: takeawayForm.orderType === "D" ? takeawayForm.tableNo.trim() : "",
+                no_of_persons: "1",
+                total,
+                service_charge: "0",
+                sc_tax_amount: "0",
+                delivery_charges: "0",
+                dc_tax_percentage: "0",
+                dc_tax_amount: "0",
+                packing_charges: "0",
+                pc_tax_amount: "0",
+                pc_tax_percentage: "0",
+                discount_total: "0",
+                tax_total: "0",
+                description: "",
+                created_on: new Date()
+                  .toISOString()
+                  .replace("T", " ")
+                  .substring(0, 19),
+              },
+            },
+            OrderItem: {
+              details: orderItems,
+            },
+          },
+          udid: "",
+          device_type: "Web",
+        },
+      };
+
+      const res = await savePetPoojaOrder(payload);
+      const result = res?.data ?? res;
+
+      if (String(result?.success) === "1") {
+        setSelectedTakeawayItems([]);
+        handleTakeawayClose(false);
+        setOrderSuccess({
+          orderId: result?.clientOrderID || result?.orderID || orderID,
+          message: result?.message || "Your order is saved.",
+        });
+      } else {
+        toast.error(result?.message || "Failed to place order. Please try again.");
+      }
     } catch (error) {
-      console.error("Failed to send takeaway request", error);
-      toast.error("Failed to send takeaway request.");
+      console.error("Failed to place PetPooja order", error);
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setIsSubmittingTakeaway(false);
     }
@@ -228,62 +330,6 @@ export default function PetPoojaMenu({
           </div>
 
           <div className="flex items-center gap-3 relative">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowDeliveryOptions((prev) => !prev)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-200 dark:border-white/10 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all shadow-sm"
-              >
-                <Truck className="w-4 h-4 text-primary" />
-                Delivery
-              </button>
-
-              <AnimatePresence>
-                {showDeliveryOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    className="absolute right-0 top-[calc(100%+0.75rem)] z-20 flex gap-2 rounded-2xl border border-zinc-100 bg-white p-2 shadow-2xl dark:border-white/10 dark:bg-zinc-900"
-                  >
-                    {[
-                      {
-                        label: "Swiggy",
-                        href: deliveryLinks.swiggy,
-                        className: "bg-[#FC8019]",
-                      },
-                      {
-                        label: "Zomato",
-                        href: deliveryLinks.zomato,
-                        className: "bg-[#E23744]",
-                      },
-                    ].map((platform) =>
-                      platform.href ? (
-                        <a
-                          key={platform.label}
-                          href={platform.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`${platform.className} inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-transform hover:scale-105`}
-                        >
-                          {platform.label} <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      ) : (
-                        <button
-                          key={platform.label}
-                          type="button"
-                          disabled
-                          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed"
-                        >
-                          {platform.label}
-                        </button>
-                      ),
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             <button
               type="button"
               onClick={handleTakeawayOpen}
@@ -401,18 +447,79 @@ export default function PetPoojaMenu({
                           )}
 
                           {!outOfStock && (
-                            <button
-                              type="button"
-                              onClick={() => toggleTakeawaySelection(item)}
-                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 ${
-                                isItemSelected(item.itemid)
-                                  ? "bg-primary text-white"
-                                  : "bg-primary/10 hover:bg-primary text-primary hover:text-white"
-                              }`}
-                            >
-                              <ShoppingBag size={12} />
-                              {isItemSelected(item.itemid) ? "Selected" : "Select"}
-                            </button>
+                            <div className="flex items-center gap-2">
+                              {/* Order Online button with Swiggy/Zomato hover popup */}
+                              {(deliveryLinks.swiggy || deliveryLinks.zomato) && (
+                                <div
+                                  className="relative"
+                                  onMouseEnter={() => setOpenDeliveryItemId(item.itemid)}
+                                  onMouseLeave={() => setOpenDeliveryItemId(null)}
+                                >
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all"
+                                  >
+                                    <Truck size={12} />
+                                    Order Online
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {openDeliveryItemId === item.itemid && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute bottom-[calc(100%+0.5rem)] right-0 z-30 flex gap-2 rounded-2xl border border-zinc-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-2 shadow-2xl whitespace-nowrap"
+                                      >
+                                        {deliveryLinks.swiggy ? (
+                                          <a
+                                            href={deliveryLinks.swiggy}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#FC8019] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white transition-transform hover:scale-105"
+                                          >
+                                            Swiggy <ExternalLink size={10} />
+                                          </a>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-not-allowed">
+                                            Swiggy
+                                          </span>
+                                        )}
+                                        {deliveryLinks.zomato ? (
+                                          <a
+                                            href={deliveryLinks.zomato}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1.5 rounded-full bg-[#E23744] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white transition-transform hover:scale-105"
+                                          >
+                                            Zomato <ExternalLink size={10} />
+                                          </a>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 cursor-not-allowed">
+                                            Zomato
+                                          </span>
+                                        )}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              )}
+
+                              {/* Takeaway select button */}
+                              <button
+                                type="button"
+                                onClick={() => toggleTakeawaySelection(item)}
+                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 ${
+                                  isItemSelected(item.itemid)
+                                    ? "bg-primary text-white"
+                                    : "bg-primary/10 hover:bg-primary text-primary hover:text-white"
+                                }`}
+                              >
+                                <ShoppingBag size={12} />
+                                {isItemSelected(item.itemid) ? "Selected" : "Select"}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -500,16 +607,17 @@ export default function PetPoojaMenu({
         <DialogContent className="w-[calc(100%-1rem)] max-w-[560px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="font-serif text-xl sm:text-2xl">
-              Takeaway Request
+              Place Order
             </DialogTitle>
             <DialogDescription className="text-sm">
               {selectedTakeawayItems.length > 0
-                ? `Submit your takeaway request for ${selectedTakeawayItems.length} selected item${selectedTakeawayItems.length > 1 ? "s" : ""}.`
-                : "Submit your takeaway request."}
+                ? `Confirm your order for ${selectedTakeawayItems.length} selected item${selectedTakeawayItems.length > 1 ? "s" : ""}.`
+                : "Confirm your order."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleTakeawaySubmit} className="space-y-5">
+            {/* Selected items summary */}
             <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                 Selected Items
@@ -538,11 +646,52 @@ export default function PetPoojaMenu({
                   </div>
                 ))}
               </div>
+              <p className="mt-3 text-right text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                Total: Rs{" "}
+                {selectedTakeawayItems
+                  .reduce((sum, item) => sum + parseFloat(item.price || "0"), 0)
+                  .toFixed(0)}
+              </p>
             </div>
 
             <p className="text-[11px] text-muted-foreground">
               Fields marked <span className="text-red-500 font-semibold">*</span> are required.
             </p>
+
+            {/* Order type */}
+            <div className="space-y-1.5">
+              <Label htmlFor="takeaway-order-type">
+                Order Type <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="takeaway-order-type"
+                value={takeawayForm.orderType}
+                onChange={(e) => setTakeawayField("orderType", e.target.value)}
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="P">Parcel / Takeaway</option>
+                <option value="D">Dine In</option>
+              </select>
+            </div>
+
+            {/* Table no — only for dine in */}
+            {takeawayForm.orderType === "D" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="takeaway-table">
+                  Table Number <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="takeaway-table"
+                  value={takeawayForm.tableNo}
+                  onChange={(e) => setTakeawayField("tableNo", e.target.value)}
+                  placeholder="e.g. T-4"
+                  className={takeawayErrors.tableNo ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {takeawayErrors.tableNo && (
+                  <p className="text-xs text-red-500">{takeawayErrors.tableNo}</p>
+                )}
+              </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
@@ -598,6 +747,22 @@ export default function PetPoojaMenu({
                 )}
               </div>
 
+              <div className="space-y-1.5 md:col-span-2">
+                <Label htmlFor="takeaway-address">
+                  Address <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="takeaway-address"
+                  value={takeawayForm.address}
+                  onChange={(e) => setTakeawayField("address", e.target.value)}
+                  placeholder="Your delivery / billing address"
+                  className={takeawayErrors.address ? "border-red-500 focus-visible:ring-red-400" : ""}
+                />
+                {takeawayErrors.address && (
+                  <p className="text-xs text-red-500">{takeawayErrors.address}</p>
+                )}
+              </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="takeaway-date">
                   Date <span className="text-red-500">*</span>
@@ -630,25 +795,6 @@ export default function PetPoojaMenu({
                   <p className="text-xs text-red-500">{takeawayErrors.time}</p>
                 )}
               </div>
-
-              <div className="space-y-1.5 md:col-span-2">
-                <Label htmlFor="takeaway-guests">
-                  Quantity / Guests <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="takeaway-guests"
-                  type="number"
-                  min="1"
-                  max="500"
-                  value={takeawayForm.totalGuest}
-                  onChange={(e) => setTakeawayField("totalGuest", e.target.value)}
-                  placeholder="1"
-                  className={takeawayErrors.totalGuest ? "border-red-500 focus-visible:ring-red-400" : ""}
-                />
-                {takeawayErrors.totalGuest && (
-                  <p className="text-xs text-red-500">{takeawayErrors.totalGuest}</p>
-                )}
-              </div>
             </div>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
@@ -665,17 +811,59 @@ export default function PetPoojaMenu({
                 {isSubmittingTakeaway ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    Placing Order...
                   </>
                 ) : (
                   <>
                     <CalendarClock className="mr-2 h-4 w-4" />
-                    Request Takeaway
+                    Place Order
                   </>
                 )}
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Order success dialog */}
+      <Dialog open={!!orderSuccess} onOpenChange={(open) => { if (!open) setOrderSuccess(null); }}>
+        <DialogContent className="w-[calc(100%-1rem)] max-w-[420px] p-6 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30">
+              <CheckCircle2 className="w-9 h-9 text-green-600 dark:text-green-400" />
+            </div>
+
+            <div className="space-y-1">
+              <DialogTitle className="font-serif text-2xl text-zinc-900 dark:text-white">
+                Order Placed!
+              </DialogTitle>
+              <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+                {orderSuccess?.message}
+              </DialogDescription>
+            </div>
+
+            {orderSuccess?.orderId && (
+              <div className="w-full rounded-xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">
+                  Order ID
+                </p>
+                <p className="text-base font-bold text-zinc-900 dark:text-white tracking-wide">
+                  {orderSuccess.orderId}
+                </p>
+              </div>
+            )}
+
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              Please keep your Order ID handy for tracking your order.
+            </p>
+
+            <Button
+              className="w-full mt-1"
+              onClick={() => setOrderSuccess(null)}
+            >
+              Done
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </section>

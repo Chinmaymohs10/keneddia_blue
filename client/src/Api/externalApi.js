@@ -74,8 +74,8 @@ export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID }) =
 
 export const savePetPoojaOrder = ({ appKey, appSecret, accessToken, orderinfo }) =>
   axios.post(
-    "https://47pfzh5sf2.execute-api.ap-southeast-1.amazonaws.com/V1/save_order",
-    { "app-key": appKey, "app-secret": appSecret, "access-token": accessToken, orderinfo }
+    "http://192.168.0.135:6090/api/v1/order/save",
+    { app_key: appKey, app_secret: appSecret, access_token: accessToken, orderinfo }
   );
 
 // ─── FOOD DELIVERY LINKS ──────────────────────────────────────────────────────

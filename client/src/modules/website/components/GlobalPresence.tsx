@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { MapPin, Star, Award, Users, Sparkles, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { siteContent } from "@/data/siteContent";
 import { getAllLocations, getOurPresenceSection } from "@/Api/Api";
@@ -43,13 +44,14 @@ export default function GlobalPresence({
   initialData,
 }: {
   initialData?: {
-    locations: { state: string; city: string }[];
+    locations: { state: string; city: string; id?: number }[];
     sectionData: PresenceSectionData | null;
   };
 }) {
-  const [locations, setLocations] = useState<{ state: string; city: string }[]>(
+  const [locations, setLocations] = useState<{ state: string; city: string; id?: number }[]>(
     initialData?.locations || [],
   );
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(!initialData?.sectionData);
   const [sectionData, setSectionData] = useState<PresenceSectionData | null>(
     initialData?.sectionData || null,
@@ -67,6 +69,7 @@ export default function GlobalPresence({
           const activeLocations = locationsRes.data
             .filter((location: LocationData) => location.isActive)
             .map((location: LocationData) => ({
+              id: location.id,
               state: location.state,
               city: location.locationName,
             }));
@@ -168,6 +171,7 @@ export default function GlobalPresence({
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 + index * 0.05 }}
                   className="group cursor-pointer"
+                  onClick={() => location.id && navigate(`/destination/${location.id}`)}
                 >
                   <div className="flex items-start gap-2 p-2 rounded hover:bg-primary/5 transition-colors">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0 group-hover:scale-125 transition-transform" />

@@ -5,6 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 // Existing Pages
 import HomePageDashboard from '@/modules/superadmin/pages/Homepage/HomePageDashboard';
 import SuperAdminDashboard from '@/modules/superadmin/pages/Dashboard/SuperAdminDashboard';
+import OurJourney from '@/modules/superadmin/pages/OurJourney/OurJourney';
 
 // Top-Level Pages
 import Location from '@/modules/superadmin/pages/Location/Location';
@@ -67,6 +68,15 @@ const SuperAdminRoutes = [
     element={
       <ProtectedRoute>
         <HomePageDashboard />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="super-admin-our-journey"
+    path="/Our-Journey"
+    element={
+      <ProtectedRoute>
+        <OurJourney />
       </ProtectedRoute>
     }
   />,
