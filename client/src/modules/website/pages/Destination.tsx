@@ -134,7 +134,7 @@ export default function Destination() {
             <div className="p-2 bg-secondary rounded-full group-hover:bg-primary/10 transition-colors border border-border group-hover:border-primary/30">
               <ChevronLeft className="w-4 h-4" />
             </div>
-            <span className="text-sm tracking-widest uppercase font-medium">Back to Map</span>
+            <span className="text-sm tracking-widest uppercase font-medium">Back to Our Journey</span>
           </motion.button>
 
           <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-border/50 pb-8">
