@@ -285,10 +285,10 @@ export default function EventsListing() {
       <Navbar />
       <section className="bg-secondary/5 border-y border-border/50">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
+          <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr]">
             {/* Sidebar with all filters restored */}
             <aside
-              className={`fixed lg:sticky top-0 left-0 h-screen lg:h-[calc(100vh-80px)] lg:top-20 w-80 lg:w-full bg-card border-r border-border/50 p-6 z-50 lg:z-0 transition-transform overflow-y-scroll ${filterSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+              className={`fixed lg:sticky top-0 left-0 h-screen lg:h-[calc(100vh-80px)] lg:top-20 w-64 lg:w-full bg-card border-r border-border/50 p-6 z-50 lg:z-0 transition-transform overflow-y-scroll ${filterSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
               style={{ scrollbarGutter: "stable" }}
             >
               <div className="sticky top-0 z-10 -mx-6 mb-8 flex items-center justify-between bg-card px-6 pb-4 pt-1">
@@ -399,7 +399,7 @@ export default function EventsListing() {
             </aside>
 
             {/* Content Area */}
-            <div className="py-12 px-6 lg:pl-10">
+            <div className="py-12 px-4 sm:px-6 lg:pl-8">
               <div className="mb-8 mt-8">
                 <h2 className="text-3xl font-serif mb-2 mt-12">Events</h2>
                 <div className="flex gap-8 border-b">
@@ -470,7 +470,7 @@ export default function EventsListing() {
                 <div
                   className={
                     viewMode === "card"
-                      ? "grid min-h-[420px] grid-cols-2 gap-4 md:gap-6 justify-items-center"
+                      ? "grid min-h-[420px] grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 justify-items-center"
                       : "flex min-h-[420px] flex-col gap-6"
                   }
                 >
@@ -482,7 +482,7 @@ export default function EventsListing() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-9/16" : "flex-col md:flex-row h-auto md:min-h-64"}`}
+                        className={`group bg-card border rounded-xl overflow-hidden flex transition-all duration-300 hover:shadow-xl ${viewMode === "card" ? "flex-col w-full max-w-[320px] aspect-[9/16]" : "flex-col md:flex-row h-auto md:min-h-64"}`}
                       >
                         <EventMedia
                           event={event}

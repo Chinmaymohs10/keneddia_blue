@@ -853,9 +853,9 @@ export default function HotelDetail() {
             return {
               ...item,
               mediaSlides:
-                restaurantGallerySlides.length > 0
-                  ? restaurantGallerySlides
-                  : ownSlides,
+                ownSlides.length > 0
+                  ? ownSlides
+                  : restaurantGallerySlides,
             };
           } catch (error) {
             console.error("DINING RESTAURANT GALLERY FETCH ERROR:", error);
