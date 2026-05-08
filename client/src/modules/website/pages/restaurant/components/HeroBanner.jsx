@@ -7,7 +7,14 @@ import { getHotelHomepageHeroSection, getPropertyTypes } from "@/Api/Api";
 const transformApiDataToSlides = (content) =>
   (Array.isArray(content) ? content : [])
     .filter((item) => item.active === true)
-    .sort((a, b) => b.id - a.id)
+    .sort((a, b) => {
+      const aSeq = a.sequence ?? null;
+      const bSeq = b.sequence ?? null;
+      if (aSeq !== null && bSeq !== null) return aSeq - bSeq;
+      if (aSeq !== null) return -1;
+      if (bSeq !== null) return 1;
+      return b.id - a.id;
+    })
     .slice(0, 3)
     .map((item) => {
       const backgroundMedia =

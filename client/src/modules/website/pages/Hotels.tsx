@@ -121,7 +121,14 @@ const HOTEL_NAV_ITEMS = [
 
 const transformApiDataToSlides = (content: ApiHeroItem[]): HeroSlide[] => {
   const filteredContent = content.filter((item) => item.active === true);
-  const latestThree = filteredContent.sort((a, b) => b.id - a.id).slice(0, 3);
+  const latestThree = filteredContent.sort((a, b) => {
+    const aSeq = (a as any).sequence ?? null;
+    const bSeq = (b as any).sequence ?? null;
+    if (aSeq !== null && bSeq !== null) return aSeq - bSeq;
+    if (aSeq !== null) return -1;
+    if (bSeq !== null) return 1;
+    return b.id - a.id;
+  }).slice(0, 3);
 
   return latestThree.map((item) => {
     const mediaObj =

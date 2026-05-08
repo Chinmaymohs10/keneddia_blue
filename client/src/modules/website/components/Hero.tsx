@@ -44,6 +44,7 @@ interface ApiHeroItem {
   showOnHomepage: boolean;
   showOnMobilePage: boolean | null;
   active: boolean;
+  sequence: number | null;
 }
 
 interface HeroSlide {
@@ -128,7 +129,14 @@ const transformApiDataToSlides = (
   const filteredContent = content.filter(
     (item) => item.active === true && item.showOnHomepage === true,
   );
-  const homepageItems = filteredContent.sort((a, b) => b.id - a.id);
+  const homepageItems = filteredContent.sort((a, b) => {
+    const aSeq = a.sequence ?? null;
+    const bSeq = b.sequence ?? null;
+    if (aSeq !== null && bSeq !== null) return aSeq - bSeq;
+    if (aSeq !== null) return -1;
+    if (bSeq !== null) return 1;
+    return b.id - a.id;
+  });
 
   return homepageItems.map((item) => {
     const backgroundMedia = selectMediaByTheme(
@@ -195,7 +203,14 @@ const transformApiDataToMobileSlides = (
     (item) => item.active === true && item.showOnMobilePage === true,
   );
 
-  return mobileItems.sort((a, b) => b.id - a.id).map((item) => {
+  return mobileItems.sort((a, b) => {
+    const aSeq = a.sequence ?? null;
+    const bSeq = b.sequence ?? null;
+    if (aSeq !== null && bSeq !== null) return aSeq - bSeq;
+    if (aSeq !== null) return -1;
+    if (bSeq !== null) return 1;
+    return b.id - a.id;
+  }).map((item) => {
     const backgroundMedia = selectMediaByTheme(theme, item.backgroundAll, item.backgroundLight, item.backgroundDark);
     const subMedia = selectMediaByTheme(theme, item.subAll, item.subLight, item.subDark);
     const isBackgroundVideo = backgroundMedia?.type === "VIDEO";

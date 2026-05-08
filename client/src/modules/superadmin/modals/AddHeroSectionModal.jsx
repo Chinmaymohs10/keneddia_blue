@@ -97,6 +97,7 @@ function AddHeroSectionModal({
     showOnHomepage: false,
     showOnMobilePage: false,
     propertyTypeId: null,
+    sequence: null,
   });
 
   const [changedViewFlag, setChangedViewFlag] = useState(null); // "homepage" | "mobile" | null
@@ -188,6 +189,7 @@ function AddHeroSectionModal({
         showOnHomepage: false,
         showOnMobilePage: false,
         propertyTypeId: null,
+        sequence: null,
       });
       const resetMedia = {
         theme: "ALL",
@@ -226,6 +228,7 @@ function AddHeroSectionModal({
         showOnHomepage: false,
         showOnMobilePage: false,
         propertyTypeId: defaultPropertyTypeId,
+        sequence: null,
       });
     }
   }, [defaultPropertyTypeId, editData, isOpen]);
@@ -243,6 +246,7 @@ function AddHeroSectionModal({
         showOnHomepage: editData.showOnHomepage ?? false,
         showOnMobilePage: editData.showOnMobilePage ?? false,
         propertyTypeId: editData.propertyTypeId || null,
+        sequence: editData.sequence ?? null,
       });
 
       // Background Media Logic
@@ -581,7 +585,8 @@ function AddHeroSectionModal({
         (formData.subTitle || null) !== (editData.subTitle || null) ||
         (formData.ctaText || null) !== (editData.ctaText || null) ||
         (formData.ctaLink || null) !== (editData.ctaLink || null) ||
-        (formData.propertyTypeId || null) !== (editData.propertyTypeId || null);
+        (formData.propertyTypeId || null) !== (editData.propertyTypeId || null) ||
+        (formData.sequence ?? null) !== (editData.sequence ?? null);
 
       if (textChanged) return true;
 
@@ -685,6 +690,7 @@ function AddHeroSectionModal({
           showOnHomepage: formData.showOnHomepage,
           showOnMobilePage: formData.showOnMobilePage,
           propertyTypeId: formData.propertyTypeId,
+          sequence: formData.sequence != null ? Number(formData.sequence) : null,
           backgroundAll:
             backgroundMedia.theme === "ALL"
               ? [...backgroundMedia.allMediaIds, ...bgAll]
@@ -1004,6 +1010,27 @@ function AddHeroSectionModal({
                     placeholder="/hotels | https://example.com"
                     className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
                   />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                    Sequence <span className="text-gray-400 normal-case font-normal">(display order 1–4)</span>
+                  </label>
+                  <select
+                    value={formData.sequence ?? ""}
+                    onChange={(e) =>
+                      handleInputChange("sequence", e.target.value === "" ? null : Number(e.target.value))
+                    }
+                    className="px-4 py-2.5 border rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-primary/20 outline-none"
+                  >
+                    <option value="">No sequence</option>
+                    {[1, 2, 3, 4].map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-gray-400">
+                    Lower number = shown first in the slider.
+                  </p>
                 </div>
               </div>
 

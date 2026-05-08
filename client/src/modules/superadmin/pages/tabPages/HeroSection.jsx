@@ -149,6 +149,7 @@ function HeroSection() {
       showOnHomepage: section.showOnHomepage,
       showOnMobilePage: section.showOnMobilePage,
       propertyTypeId: section.propertyTypeId || null,
+      sequence: section.sequence ?? null,
       backgroundMediaAll: section.backgroundAll || [],
       backgroundMediaLight: section.backgroundLight || [],
       backgroundMediaDark: section.backgroundDark || [],
@@ -195,25 +196,14 @@ function HeroSection() {
       <table className="w-full border-collapse">
         <thead>
           <tr style={{ backgroundColor: colors.border }}>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Seq</th>
             <th className="text-left px-4 py-3 text-xs font-semibold">ID</th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">
-              Preview
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold">
-              Titles
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Active Status
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Desktop View
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Mobile View
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold">
-              Actions
-            </th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">Preview</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold">Titles</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Active Status</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Desktop View</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Mobile View</th>
+            <th className="text-center px-4 py-3 text-xs font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -227,6 +217,15 @@ function HeroSection() {
                 key={section.id}
                 style={{ borderBottom: `1px solid ${colors.border}` }}
               >
+                <td className="px-4 py-3 text-center">
+                  {section.sequence != null ? (
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-black text-white" style={{ backgroundColor: "#E53935" }}>
+                      {section.sequence}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-gray-300 font-mono">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-xs text-gray-400 font-mono">
                   #{section.id}
                 </td>
@@ -334,16 +333,25 @@ function HeroSection() {
             ))}
           </div>
         </div>
-        <button
-          onClick={() => {
-            setEditData(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-opacity hover:opacity-90 cursor-pointer"
-          style={{ backgroundColor: "#E53935", color: "#FFFFFF" }}
-        >
-          <Plus size={16} /> Add Hero
-        </button>
+        <div className="relative group/addbtn">
+          <button
+            onClick={() => {
+              if (activeTableData.length >= 4) return;
+              setEditData(null);
+              setIsModalOpen(true);
+            }}
+            disabled={activeTableData.length >= 4}
+            className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "#E53935", color: "#FFFFFF" }}
+          >
+            <Plus size={16} /> Add Hero
+          </button>
+          {activeTableData.length >= 4 && (
+            <div className="absolute right-0 top-full mt-2 z-10 w-52 bg-gray-900 text-white text-[11px] font-medium rounded-lg px-3 py-2 shadow-xl opacity-0 group-hover/addbtn:opacity-100 transition-opacity pointer-events-none">
+              Limit reached — max 4 hero slides per section. Edit an existing one instead.
+            </div>
+          )}
+        </div>
       </div>
 
       {fetching ? (
