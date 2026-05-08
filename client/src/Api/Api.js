@@ -220,6 +220,10 @@ export const addGuestExperienceSection = (data) =>
   API.post("api/v1/guest-experience/section", data);
 export const getGuestExperienceSection = () =>
   API.get("/api/v1/guest-experience");
+export const getLatestGuestExperiences = (limit = 10) =>
+  API.get(`/api/v1/guest-experience/latest-all?limit=${limit}`);
+// export const getLatestGuestExperiences = (limit = 10) =>
+//   API.get(`/api/v1/guest-experience/latest-all`);
 export const addGuestExperienceItem = (formData) =>
   API.post("api/v1/guest-experience", formData);
 export const updateGuestExperienceItem = (id, formData) =>

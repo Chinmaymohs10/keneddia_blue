@@ -480,7 +480,7 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
         return (
           <video
             autoPlay loop muted playsInline preload="metadata"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             key={mediaUrl}
             onLoadedData={() => markSlideLoaded(index)}
             onError={() => {
@@ -496,7 +496,7 @@ export default function Hero({ initialSlides = [], onReady }: { initialSlides?: 
         <img
           src={mediaUrl}
           alt={slide.title}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
           onLoad={() => markSlideLoaded(index)}
           onError={() => {
             logMediaError("mobile image", mediaUrl, slide.title);

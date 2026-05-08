@@ -310,15 +310,15 @@ export default function Destination() {
                             const localPath = pType === "wine" ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
 
                             // --- Base URL Navigation Logic ---
-                            // const baseUrl = pType === "cafe" 
-                            //   ? CAFE_BASE_URL 
-                            //   : (pType === "restaurant" || pType === "resturant") 
-                            //     ? RESTAURANT_BASE_URL 
-                            //     : pType === "wine" 
-                            //       ? WINE_BASE_URL 
-                            //       : HOTEL_BASE_URL;
-                            // const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
-                            // window.open(finalUrl, "_blank", "noopener,noreferrer");
+                            const baseUrl = pType === "cafe" 
+                              ? CAFE_BASE_URL 
+                              : (pType === "restaurant" || pType === "resturant") 
+                                ? RESTAURANT_BASE_URL 
+                                : pType === "wine" 
+                                  ? WINE_BASE_URL 
+                                  : HOTEL_BASE_URL;
+                            const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
+                            window.open(finalUrl, "_blank", "noopener,noreferrer");
 
                             navigate(localPath);
                           }}

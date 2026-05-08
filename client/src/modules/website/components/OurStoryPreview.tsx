@@ -18,12 +18,14 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
 import { InstagramEmbed } from "react-social-media-embed";
 import {
-  getGuestExperienceSection,
+  getLatestGuestExperiences,
   createGuestExperienceByGuest,
   getGuestExperienceSectionHeader,
   getGuestExperineceRatingHeader,
   getPropertyTypes,
 } from "@/Api/Api";
+
+const GUEST_EXPERIENCE_LIMIT = 5; // increase to 20 or 30 as needed
 
 const normalizeTypeName = (value = "") =>
   String(value).trim().toLowerCase().replace(/\s+/g, " ");
@@ -193,7 +195,7 @@ export default function OurStoryPreview({
 
   const fetchExperiences = async () => {
     try {
-      const res = await getGuestExperienceSection({ size: 20 });
+      const res = await getLatestGuestExperiences(GUEST_EXPERIENCE_LIMIT);
       const rawData = res?.data?.data || res?.data || res;
       setGuestExperiences(rawData || []);
     } catch (err) {
