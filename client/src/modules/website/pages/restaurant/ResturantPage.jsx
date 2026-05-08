@@ -181,6 +181,7 @@ export default function RestaurantHomepage() {
         navItems={RESTAURANT_NAV_ITEMS}
         logo={siteContent.brand.logo_restaurant}
         propertyTypeName="Restaurant"
+        propertyId={numericPropertyId}
       />
 
       <main>

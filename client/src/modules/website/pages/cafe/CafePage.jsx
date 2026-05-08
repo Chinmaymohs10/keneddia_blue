@@ -151,6 +151,7 @@ export default function CafePage() {
         navItems={CAFE_NAV_ITEMS}
         logo={siteContent.brand.logo_cafe}
         propertyTypeName="Cafe"
+        propertyId={resolvedPropertyId}
         showQuickBook={true}
         quickBookOptions={[{ label: "Reserve Cafe", href: "#reservation" }]}
       />

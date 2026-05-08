@@ -1026,7 +1026,7 @@ export default function HotelDetail() {
   return (
     <>
       <div className="min-h-screen bg-background text-foreground pt-20">
-        <Navbar logo={siteContent.brand.logo_hotel} propertyTypeName="Hotel" />
+        <Navbar logo={siteContent.brand.logo_hotel} propertyTypeName="Hotel" propertyId={propertyIdFromUrl} />
         <GalleryModal
           isOpen={isGalleryOpen}
           onClose={() => setIsGalleryOpen(false)}

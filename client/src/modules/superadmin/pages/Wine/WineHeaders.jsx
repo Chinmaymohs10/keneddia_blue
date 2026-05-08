@@ -127,6 +127,12 @@ export default function WineHeaders() {
     );
   }, [masters, search]);
 
+  const usedEntryNames = useMemo(() => new Set(masters.map(m => m.name)), [masters]);
+  const allEntryNamesFilled = ENTRY_NAME_OPTIONS.every(opt => usedEntryNames.has(opt.value));
+  const availableEntryOptions = editingItem
+    ? ENTRY_NAME_OPTIONS
+    : ENTRY_NAME_OPTIONS.filter(opt => !usedEntryNames.has(opt.value));
+
   const handleSave = async () => {
     if (!form.name.trim()) return showError("Name is required");
 
@@ -267,14 +273,16 @@ export default function WineHeaders() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button
-              onClick={openAdd}
-              className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Plus size={20} strokeWidth={3} />
-              Create Header
-            </button>
+            {!allEntryNamesFilled && (
+              <button
+                onClick={openAdd}
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <Plus size={20} strokeWidth={3} />
+                Create Header
+              </button>
+            )}
           </div>
         </div>
 
@@ -292,9 +300,11 @@ export default function WineHeaders() {
               <h3 className="text-xl font-bold" style={{ color: colors.textPrimary }}>No Headers Found</h3>
               <p className="text-sm mt-1" style={{ color: colors.textSecondary }}>Try adjusting your search or create a new header entry.</p>
             </div>
-            <button onClick={openAdd} className="font-bold text-primary hover:underline" style={{ color: colors.primary }}>
-              Add your first header
-            </button>
+            {!allEntryNamesFilled && (
+              <button onClick={openAdd} className="font-bold text-primary hover:underline" style={{ color: colors.primary }}>
+                Add your first header
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -332,7 +342,7 @@ export default function WineHeaders() {
                   </p>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/50 border border-gray-100">
+                    {/* <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/50 border border-gray-100">
                       <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm">
                         <Wine size={14} className="text-primary" style={{ color: colors.primary }} />
                       </div>
@@ -342,9 +352,9 @@ export default function WineHeaders() {
                           {types.find(t => String(t.id) === String(m.wineTypeId))?.wineTypeName || "—"} / {brands.find(b => String(b.id) === String(m.wineBrandId))?.name || "—"}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/50 border border-gray-100">
+                    {/* <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50/50 border border-gray-100">
                       <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white shadow-sm">
                         <Globe size={14} className="text-primary" style={{ color: colors.primary }} />
                       </div>
@@ -354,7 +364,7 @@ export default function WineHeaders() {
                           {propertyTypes.find(pt => String(pt.id) === String(m.propertyTypeId))?.typeName || propertyTypes.find(pt => String(pt.id) === String(m.propertyTypeId))?.name || "Global"}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -415,7 +425,7 @@ export default function WineHeaders() {
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                     >
                       <option value="">Select Homepage Header Section</option>
-                      {ENTRY_NAME_OPTIONS.map((option) => (
+                      {availableEntryOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
@@ -447,7 +457,7 @@ export default function WineHeaders() {
                   />
                 </FormField>
 
-                <div className="bg-gray-50 rounded-[32px] border border-gray-100 overflow-hidden">
+                {/* <div className="bg-gray-50 rounded-[32px] border border-gray-100 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setShowHierarchyScoping((prev) => !prev)}
@@ -554,7 +564,7 @@ export default function WineHeaders() {
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField label="Property Type Scoping">
