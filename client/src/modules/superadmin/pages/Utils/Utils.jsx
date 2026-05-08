@@ -277,6 +277,7 @@ function ImageUpload({ mediaId, previewUrl, onUpload, uploading }) {
 // ─── WhatsApp Tab ─────────────────────────────────────────────────────────────
 
 const WA_EMPTY = { phoneNumber: "", title: "", description: "", scope: "main", propertyTypeId: "", propertyId: "" };
+const WA_TITLE_REGEX = /^[A-Za-z\s]+$/;
 
 function WhatsAppTab({ propertyTypes, properties }) {
   const [items, setItems] = useState([]);
@@ -327,6 +328,8 @@ function WhatsAppTab({ propertyTypes, properties }) {
   const handleSave = async () => {
     if (!form.phoneNumber.trim()) return showError("Phone number is required");
     if (!form.title.trim()) return showError("Title is required");
+    if (!WA_TITLE_REGEX.test(form.title.trim())) return showError("Title should contain only letters and spaces");
+    if (!/^\d{10}$/.test(form.phoneNumber.trim())) return showError("Phone number must be exactly 10 digits");
     if (form.scope === "propertyType" && !form.propertyTypeId) return showError("Select a property type");
     if (form.scope === "property" && !form.propertyId) return showError("Select a property");
 
@@ -571,7 +574,10 @@ function WhatsAppTab({ propertyTypes, properties }) {
                   className={inputCls}
                   style={inputStyle}
                   value={form.title}
-                  onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                  onChange={(e) => {
+                    const cleanedTitle = e.target.value.replace(/[^A-Za-z\s]/g, "");
+                    setForm((p) => ({ ...p, title: cleanedTitle }));
+                  }}
                   placeholder="e.g. Main Support"
                 />
               </FormField>
@@ -580,8 +586,11 @@ function WhatsAppTab({ propertyTypes, properties }) {
                   className={inputCls}
                   style={inputStyle}
                   value={form.phoneNumber}
-                  onChange={(e) => setForm((p) => ({ ...p, phoneNumber: e.target.value }))}
-                  placeholder="+91 99999 99999"
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setForm((p) => ({ ...p, phoneNumber: digitsOnly }));
+                  }}
+                  placeholder="Enter 10 digit number"
                 />
               </FormField>
               <FormField label="Description">

@@ -279,16 +279,33 @@ export default function OurStoryPreview({
         if (!id) return null;
 
         return (
-          <div key={idx} className="relative h-full w-full overflow-hidden bg-black group">
-            <iframe
-              src={`https://www.instagram.com/p/${id}/embed/`}
-              className="absolute inset-0 h-full w-full"
-              style={{ border: "none" }}
-              allowTransparency
-              scrolling="no"
-              loading="lazy"
-              title="Instagram reel"
-            />
+          <div
+            key={idx}
+            className="relative flex h-full w-full items-center justify-center bg-black overflow-hidden group"
+          >
+            {isClient ? (
+              <div
+                key={`ig-${id}`}
+                className="h-full w-full max-w-[328px] mx-auto overflow-hidden"
+              >
+                <InstagramEmbed
+                  url={`https://www.instagram.com/p/${id}/`}
+                  width={"100%"}
+                  placeholder={
+                    <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                      <Loader2 className="animate-spin text-white/20" />
+                    </div>
+                  }
+                />
+              </div>
+            ) : (
+              <div className="text-white text-xs font-bold underline">
+                View on Instagram
+              </div>
+            )}
+
+            <div className="absolute inset-0 z-0 pointer-events-none" />
+
             <a
               href={m.url}
               target="_blank"

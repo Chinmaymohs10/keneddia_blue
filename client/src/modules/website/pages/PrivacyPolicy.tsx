@@ -5,6 +5,11 @@ import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
 import { getAllPolicyPages } from "@/Api/policypagesapi";
 
+const PRIVACY_NAV_ITEMS = [
+  { type: "link", label: "HOME", key: "home", href: "/" },
+  { type: "link", label: "CONTENTS", key: "policy-content", href: "#policy-content" },
+];
+
 export default function PrivacyPolicy() {
   const [policyData, setPolicyData] = useState<any>(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -90,9 +95,9 @@ export default function PrivacyPolicy() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans">
-      <Navbar />
+      <Navbar navItems={PRIVACY_NAV_ITEMS} />
 
-      <section className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
+      <section id="policy-overview" className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white dark:to-[#0A0A0A] z-10" />
           <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2000" alt="Data Security" className="w-full h-full object-cover" />
@@ -119,7 +124,7 @@ export default function PrivacyPolicy() {
         </div>
       </section>
 
-      <section className="py-14 md:py-20 px-4 sm:px-6">
+      <section id="policy-content" className="py-14 md:py-20 px-4 sm:px-6">
         <div className="container mx-auto max-w-[1400px]">
           <div className="flex flex-col lg:flex-row gap-10 md:gap-16">
             <div className="lg:hidden">
@@ -176,7 +181,9 @@ export default function PrivacyPolicy() {
         </div>
       </section>
 
-      <Footer />
+      <div id="contact">
+        <Footer />
+      </div>
     </div>
   );
 }

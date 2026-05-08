@@ -140,8 +140,8 @@ function WineShowcaseCard({ wine, index }) {
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-4 py-5 text-center">
           <div className="mb-3 flex flex-col items-center gap-2">
             <div className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
-              <Building2 size={10} className="shrink-0 text-[#8B1A2A]" />
-              <span className="truncate text-[8px] font-black uppercase tracking-[0.18em] text-[#8B1A2A]">
+              <Building2 size={10} className="shrink-0 text-[#8B1A2A] dark:text-[#C8956A]" />
+              <span className="truncate text-[8px] font-black uppercase tracking-[0.18em] text-[#8B1A2A] dark:text-[#C8956A]">
                 {wine.property}{wine.location && wine.location !== "_" ? ` · ${wine.location}` : ""}
               </span>
             </div>
@@ -526,3 +526,4 @@ export default function WinePage() {
     </>
   );
 }
+
