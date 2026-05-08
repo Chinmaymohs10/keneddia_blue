@@ -205,18 +205,41 @@ export function WineCategoriesSection({ masterHeader = null }) {
 
       <div className="relative mx-auto max-w-[1400px] px-6 md:px-12">
         <div className="mb-10 flex flex-col items-start text-left md:mb-14">
+          {/* Line 1 - tags */}
           <div className="mb-4 flex items-center gap-3">
             <div className="h-[1px] w-8 bg-[#8B1A2A]/40 md:w-12" />
             <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#8B1A2A]">
-              {masterHeader?.wineTypeName || headerData?.part1 || "Wine"}
+              {masterHeader?.tags || headerData?.part1 || "Wine"}
             </span>
           </div>
-          <h2 className="font-serif text-3xl font-medium leading-[1.2] text-stone-900 md:text-5xl dark:text-stone-100">
-            {masterHeader?.tags || headerData?.part2 || "Explore by Categories"}
+
+          {/* Line 2 - description (split in 2 colors) */}
+          <h2 className="font-serif text-3xl font-medium leading-[1.2] md:text-5xl">
+            {masterHeader?.description ? (
+              (() => {
+                const words = masterHeader.description.trim().split(/\s+/);
+                if (words.length <= 1) {
+                  return <span className="text-stone-900 dark:text-stone-100">{masterHeader.description}</span>;
+                }
+                const mid = Math.ceil(words.length / 2);
+                const firstHalf = words.slice(0, mid).join(" ");
+                const secondHalf = words.slice(mid).join(" ");
+                return (
+                  <>
+                    <span className="text-stone-900 dark:text-stone-100">{firstHalf} </span>
+                    <span className="text-[#8B1A2A]">{secondHalf}</span>
+                  </>
+                );
+              })()
+            ) : (
+              <span className="text-stone-900 dark:text-stone-100">{headerData?.part2 || "Explore by Categories"}</span>
+            )}
           </h2>
-          {(masterHeader?.description || headerData?.description) && (
+
+          {/* Line 3 - descriptionTwo */}
+          {(masterHeader?.descriptionTwo || headerData?.description) && (
             <p className="mt-4 max-w-xl text-xs leading-relaxed text-stone-500 md:text-sm dark:text-stone-400">
-              {masterHeader?.description || headerData?.description}
+              {masterHeader?.descriptionTwo || headerData?.description || ""}
             </p>
           )}
         </div>

@@ -97,14 +97,22 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
   const [brands, setBrands] = useState(() => {
     if (ssrData) {
       const brandsData = ssrData.brands || [];
-      const currentProp = (ssrData.properties || []).find(p => generateSlug(p.propertyName) === propertySlug);
+      const slugParts = propertySlug ? propertySlug.split("-") : [];
+      const slugId = Number(slugParts[slugParts.length - 1]);
+      const currentProp = (ssrData.properties || []).find(p => {
+        const pId = Number(p.id || p.propertyId);
+        if (!isNaN(slugId) && pId === slugId) return true;
+        const pSlug = generateSlug(p.propertyName || "");
+        return pSlug === propertySlug?.toLowerCase() || propertySlug?.toLowerCase().startsWith(pSlug + "-");
+      });
 
       return brandsData
         .filter(b => {
           if (!b.active) return false;
           if (propertySlug && currentProp && !globalRoute) {
             const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
-            return ids.map(Number).includes(Number(currentProp.id));
+            const currentPropId = Number(currentProp?.propertyResponseDTO?.id || currentProp?.id || currentProp?.propertyId);
+            return ids.map(Number).includes(currentPropId);
           }
           return true;
         })
@@ -145,15 +153,24 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
         ]);
 
         let brandsData = [];
+        let fetchedSpecific = false;
         if (globalRoute) {
           brandsData = toList(brandsRes);
         } else {
           const allProps = toList(propRes);
-          const currentProp = allProps.find(p => generateSlug(p.propertyName) === propertySlug);
+          const slugParts = propertySlug ? propertySlug.split("-") : [];
+          const slugId = Number(slugParts[slugParts.length - 1]);
+          const currentProp = allProps.find(p => {
+            const pId = Number(p.id || p.propertyId || p.propertyResponseDTO?.id);
+            if (!isNaN(slugId) && pId === slugId) return true;
+            const pSlug = generateSlug(p.propertyName || p.propertyResponseDTO?.propertyName || "");
+            return pSlug === propertySlug?.toLowerCase() || propertySlug?.toLowerCase().startsWith(pSlug + "-");
+          });
 
           if (currentProp) {
-            const res = await getWineBrandsByPropertyId(currentProp.id);
+            const res = await getWineBrandsByPropertyId(currentProp.id || currentProp.propertyId || currentProp.propertyResponseDTO?.id);
             brandsData = toList(res);
+            fetchedSpecific = true;
           } else {
             const res = await getAllWineBrands();
             brandsData = toList(res);
@@ -161,14 +178,22 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
         }
 
         const allProps = toList(propRes);
-        const currentProp = allProps.find(p => generateSlug(p.propertyResponseDTO?.propertyName || p.propertyName) === propertySlug);
+        const slugParts = propertySlug ? propertySlug.split("-") : [];
+        const slugId = Number(slugParts[slugParts.length - 1]);
+        const currentProp = allProps.find(p => {
+          const pId = Number(p.id || p.propertyId || p.propertyResponseDTO?.id);
+          if (!isNaN(slugId) && pId === slugId) return true;
+          const pSlug = generateSlug(p.propertyName || p.propertyResponseDTO?.propertyName || "");
+          return pSlug === propertySlug?.toLowerCase() || propertySlug?.toLowerCase().startsWith(pSlug + "-");
+        });
 
-        const mapped = brandsData
+        let mapped = brandsData
           .filter(b => {
             if (!b.active) return false;
-            if (propertySlug && currentProp) {
+            if (propertySlug && currentProp && !fetchedSpecific) {
               const ids = b.propertyIds && b.propertyIds.length > 0 ? b.propertyIds : [b.propertyId];
-              return ids.map(Number).includes(Number(currentProp.id));
+              const currentPropId = Number(currentProp?.propertyResponseDTO?.id || currentProp?.id || currentProp?.propertyId);
+              return ids.map(Number).includes(currentPropId);
             }
             return true;
           })
@@ -181,6 +206,22 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
             logo: b.media?.url || "",
             logoFit: "contain",
           }));
+
+        if (mapped.length === 0) {
+          const allRes = await getAllWineBrands();
+          const allBrands = toList(allRes);
+          mapped = allBrands
+            .filter(b => b.active)
+            .map((b, i) => ({
+              id: b.id,
+              name: b.name,
+              subLabel: b.wineTypeName || "Premium Selection",
+              accent: ACCENT_COLORS[i % ACCENT_COLORS.length],
+              detail: b.tags || "",
+              logo: b.media?.url || "",
+              logoFit: "contain",
+            }));
+        }
 
         setBrands(mapped);
 
@@ -218,20 +259,41 @@ export default function WineTopBrands({ clickable = false, globalRoute = false, 
 
       <div className="relative mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
         <div className="mb-6 flex flex-col items-start text-left">
-          {resolvedHeader?.part1 && (
-            <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
-              {resolvedHeader.part1}
-            </span>
-          )}
+          {/* Line 1 - tags */}
+          <span className="mb-2 text-[0.68rem] uppercase tracking-[0.45em] text-[#c9a25a]">
+            {masterHeader?.tags || resolvedHeader?.part1 || "Brands"}
+          </span>
+
+          {/* Line 2 - description (split in 2 colors) */}
           <h2
             className="text-3xl font-semibold sm:text-4xl"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}
           >
-            {resolvedHeader?.part2}
+            {masterHeader?.description ? (
+              (() => {
+                const words = masterHeader.description.trim().split(/\s+/);
+                if (words.length <= 1) {
+                  return <span className="text-zinc-950 dark:text-white">{masterHeader.description}</span>;
+                }
+                const mid = Math.ceil(words.length / 2);
+                const firstHalf = words.slice(0, mid).join(" ");
+                const secondHalf = words.slice(mid).join(" ");
+                return (
+                  <>
+                    <span className="text-zinc-950 dark:text-white">{firstHalf} </span>
+                    <span className="text-[#c9a25a]">{secondHalf}</span>
+                  </>
+                );
+              })()
+            ) : (
+              <span className="text-zinc-950 dark:text-white">{resolvedHeader?.part2 || "Top Brands"}</span>
+            )}
           </h2>
-          {resolvedHeader?.description && (
+
+          {/* Line 3 - descriptionTwo */}
+          {(masterHeader?.descriptionTwo || resolvedHeader?.description) && (
             <p className="mt-2 max-w-xl text-xs leading-relaxed text-zinc-500 dark:text-white/60">
-              {resolvedHeader.description}
+              {masterHeader?.descriptionTwo || resolvedHeader?.description || ""}
             </p>
           )}
           <div className="mt-2 h-px w-20 bg-gradient-to-r from-transparent via-[#c9a25a] to-transparent" />

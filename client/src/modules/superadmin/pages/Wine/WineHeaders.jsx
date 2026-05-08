@@ -31,10 +31,10 @@ function FormField({ label, children }) {
 }
 
 const inputCls = "w-full border rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 transition-all";
-const inputStyle = (hasError) => ({ 
-  borderColor: hasError ? colors.error : colors.border, 
+const inputStyle = (hasError) => ({
+  borderColor: hasError ? colors.error : colors.border,
   color: colors.textPrimary,
-  backgroundColor: colors.contentBg 
+  backgroundColor: colors.contentBg
 });
 const ENTRY_NAME_OPTIONS = [
   { label: "Category", value: "category_header" },
@@ -60,6 +60,7 @@ export default function WineHeaders() {
   const [form, setForm] = useState({
     name: "",
     description: "",
+    descriptionTwo: "",
     tags: "",
     wineTypeId: "",
     wineBrandId: "",
@@ -140,22 +141,23 @@ export default function WineHeaders() {
     try {
       const hierarchyPayload = showHierarchyScoping
         ? {
-            wineTypeId: form.wineTypeId || null,
-            wineBrandId: form.wineBrandId || null,
-            wineCategoryId: form.wineCategoryId || null,
-            wineSubCategoryId: form.wineSubCategoryId || null,
-          }
+          wineTypeId: form.wineTypeId || null,
+          wineBrandId: form.wineBrandId || null,
+          wineCategoryId: form.wineCategoryId || null,
+          wineSubCategoryId: form.wineSubCategoryId || null,
+        }
         : {
-            wineTypeId: null,
-            wineBrandId: null,
-            wineCategoryId: null,
-            wineSubCategoryId: null,
-          };
+          wineTypeId: null,
+          wineBrandId: null,
+          wineCategoryId: null,
+          wineSubCategoryId: null,
+        };
 
-      const payload = { 
+      const payload = {
         ...form,
         name: form.name.trim(),
         description: form.description.trim(),
+        descriptionTwo: (form.descriptionTwo || "").trim() || null,
         tags: form.tags.trim(),
         ...hierarchyPayload,
         propertyTypeId: form.propertyTypeId || null,
@@ -189,7 +191,7 @@ export default function WineHeaders() {
 
   const resetForm = () => {
     setForm({
-      name: "", description: "", tags: "",
+      name: "", description: "", descriptionTwo: "", tags: "",
       wineTypeId: "", wineBrandId: "", wineCategoryId: "", wineSubCategoryId: "",
       propertyTypeId: "", isActive: true,
       scopingLevel: "TYPE"
@@ -214,6 +216,7 @@ export default function WineHeaders() {
     setForm({
       name: item.name || "",
       description: item.description || "",
+      descriptionTwo: item.descriptionTwo || "",
       tags: item.tags || "",
       wineTypeId: item.wineTypeId || "",
       wineBrandId: item.wineBrandId || "",
@@ -309,8 +312,8 @@ export default function WineHeaders() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             {filteredMasters.map((m) => (
-              <div 
-                key={m.id} 
+              <div
+                key={m.id}
                 className="group bg-white rounded-[32px] border transition-all hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 flex flex-col"
                 style={{ borderColor: colors.border }}
               >
@@ -382,14 +385,14 @@ export default function WineHeaders() {
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <button 
-                      onClick={() => openEdit(m)} 
+                    <button
+                      onClick={() => openEdit(m)}
                       className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                     >
                       <Edit2 size={16} />
                     </button>
-                    <button 
-                      onClick={() => handleDelete(m.id)} 
+                    <button
+                      onClick={() => handleDelete(m.id)}
                       className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all"
                     >
                       <Trash2 size={16} />
@@ -454,6 +457,16 @@ export default function WineHeaders() {
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     placeholder="Provide a compelling description for this liquor entry..."
+                  />
+                </FormField>
+
+                <FormField label="Description Two">
+                  <textarea
+                    className={inputCls}
+                    style={{ ...inputStyle(), minHeight: '100px' }}
+                    value={form.descriptionTwo}
+                    onChange={(e) => setForm({ ...form, descriptionTwo: e.target.value })}
+                    placeholder="Provide a secondary description or detail..."
                   />
                 </FormField>
 
@@ -586,25 +599,25 @@ export default function WineHeaders() {
                     </p>
                   </FormField>
                   <FormField label="Visibility Status">
-                      <div className="flex items-center gap-6 mt-2">
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${form.isActive ? 'border-primary' : 'border-gray-300'}`}>
-                            {form.isActive && <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ backgroundColor: colors.primary }} />}
-                          </div>
-                          <input type="radio" className="hidden" checked={form.isActive} onChange={() => setForm({ ...form, isActive: true })} />
-                          <span className={`text-sm font-bold ${form.isActive ? 'text-gray-900' : 'text-gray-400'}`}>Active</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${!form.isActive ? 'border-primary' : 'border-gray-300'}`}>
-                            {!form.isActive && <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ backgroundColor: colors.primary }} />}
-                          </div>
-                          <input type="radio" className="hidden" checked={!form.isActive} onChange={() => setForm({ ...form, isActive: false })} />
-                          <span className={`text-sm font-bold ${!form.isActive ? 'text-gray-900' : 'text-gray-400'}`}>Inactive</span>
-                        </label>
-                      </div>
-                    </FormField>
-                  </div>
+                    <div className="flex items-center gap-6 mt-2">
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${form.isActive ? 'border-primary' : 'border-gray-300'}`}>
+                          {form.isActive && <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ backgroundColor: colors.primary }} />}
+                        </div>
+                        <input type="radio" className="hidden" checked={form.isActive} onChange={() => setForm({ ...form, isActive: true })} />
+                        <span className={`text-sm font-bold ${form.isActive ? 'text-gray-900' : 'text-gray-400'}`}>Active</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${!form.isActive ? 'border-primary' : 'border-gray-300'}`}>
+                          {!form.isActive && <div className="w-2.5 h-2.5 rounded-full bg-primary" style={{ backgroundColor: colors.primary }} />}
+                        </div>
+                        <input type="radio" className="hidden" checked={!form.isActive} onChange={() => setForm({ ...form, isActive: false })} />
+                        <span className={`text-sm font-bold ${!form.isActive ? 'text-gray-900' : 'text-gray-400'}`}>Inactive</span>
+                      </label>
+                    </div>
+                  </FormField>
                 </div>
+              </div>
 
               <div className="px-10 py-8 border-t bg-gray-50/50 flex items-center justify-end gap-4 shrink-0" style={{ borderColor: colors.border }}>
                 <button
