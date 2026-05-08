@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Linkedin,
+  Loader2,
   MapPin,
   MessageCircle,
   Navigation,
@@ -337,12 +338,12 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-24 pb-14 dark:bg-[#080808] md:pt-28 md:pb-20">
+    <section className="relative overflow-x-hidden bg-white pt-20 pb-12 dark:bg-[#080808] md:pt-28 md:pb-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(217,119,6,0.14),_transparent_42%)]" />
       <div className="absolute inset-x-0 top-20 h-48 bg-primary/10 blur-[140px] pointer-events-none" />
 
-      <div className="max-w-[1280px] mx-auto px-6 md:px-12 lg:px-20 relative">
-        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] gap-10 lg:gap-14 items-start">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 md:px-12 lg:px-20 relative">
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)] gap-8 md:gap-10 lg:gap-14 items-start">
           <div className="pt-6 md:pt-8">
             <nav className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-8">
               <Link to="/" className="hover:text-primary transition-colors">
@@ -451,8 +452,8 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
             </div>
           </div>
 
-          <div className="relative w-full flex flex-col items-center">
-            <div className="relative w-full h-[300px] md:h-[340px] lg:h-[360px] flex items-center justify-center overflow-hidden">
+          <div className="relative w-full max-w-full mx-auto flex flex-col items-center overflow-hidden">
+            <div className="relative w-full h-[430px] sm:h-[500px] md:h-[520px] flex items-center justify-center overflow-hidden">
             <div className="hidden md:block relative w-full h-full">
               {offers.map((offer, index) => {
                 const pos =
@@ -469,7 +470,7 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                     key={offer.id || index}
                     animate={positionStyles[pos]}
                     transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className={`absolute inset-0 m-auto w-[78%] lg:w-[70%] h-[92%] rounded-[32px] overflow-hidden shadow-2xl border border-white/10 bg-zinc-100 dark:bg-zinc-900 ${
+                    className={`absolute inset-0 m-auto w-[220px] sm:w-[280px] md:w-[300px] lg:w-[320px] aspect-[9/16] rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-100 dark:bg-zinc-900 ${
                       pos === "center" ? "pointer-events-auto" : "pointer-events-none"
                     }`}
                   >
@@ -495,11 +496,11 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
               })}
             </div>
 
-            <div className="md:hidden w-full h-full px-4 bg-zinc-100 dark:bg-zinc-900 rounded-3xl">
+            <div className="md:hidden mx-auto w-[min(280px,calc(100vw-2.5rem))] aspect-[9/16] bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden border border-white/10 shadow-2xl">
               {activeOffer.image?.type === "VIDEO" ? (
                 <video
                   src={activeOffer.image.src}
-                  className="w-full h-full object-contain rounded-3xl"
+                  className="w-full h-full object-contain"
                   autoPlay
                   muted
                   loop
@@ -508,7 +509,7 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
               ) : activeOfferHasMedia ? (
                 <img
                   src={activeOffer.image?.src}
-                  className="w-full h-full object-contain rounded-3xl"
+                  className="w-full h-full object-contain"
                   alt={activeOffer.image?.alt || activeOffer.title}
                 />
               ) : null}
@@ -518,13 +519,13 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
               <>
                 <button
                   onClick={prev}
-                  className="absolute left-4 z-40 p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
+                  className="absolute left-2 sm:left-4 z-40 p-2.5 sm:p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
                 >
                   <ChevronLeft size={20} />
                 </button>
                 <button
                   onClick={next}
-                  className="absolute right-4 z-40 p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
+                  className="absolute right-2 sm:right-4 z-40 p-2.5 sm:p-3 bg-white/90 dark:bg-zinc-800/90 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -541,11 +542,6 @@ function PropertyOffersHero({ offers, currentCategory, propertyData, propertyId,
                 className="flex flex-col items-center text-center space-y-3"
               >
                 <div className="max-w-xl">
-                  <div className="mb-2 flex flex-wrap items-center justify-center gap-3">
-                    <h3 className="text-3xl font-serif dark:text-white uppercase tracking-tight">
-                      {activeOffer.title || "Restaurant Offer"}
-                    </h3>
-                  </div>
                   {activeOffer.description ? (
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm italic font-light leading-relaxed line-clamp-2">
                       {activeOffer.description}
@@ -610,6 +606,7 @@ function ResturantCategoryPageTemplate() {
   const [petpoojaCategories, setPetpoojaCategories] = useState([]);
   const [petpoojaItems, setPetpoojaItems] = useState([]);
   const [petpoojaLoading, setPetpoojaLoading] = useState(false);
+  const [petpoojaMenuFetched, setPetpoojaMenuFetched] = useState(false);
   const [propertyOffers, setPropertyOffers] = useState([]);
   const [loading, setLoading] = useState(ssrCategoryData ? false : true);
   const [notFound, setNotFound] = useState(ssrCategoryData?.notFound || false);
@@ -629,6 +626,7 @@ function ResturantCategoryPageTemplate() {
     setPetpoojaCategories([]);
     setPetpoojaItems([]);
     setPetpoojaLoading(false);
+    setPetpoojaMenuFetched(false);
   }, [categoryType]);
 
   // Always sync showOrderButton from API — SSR data may not have it,
@@ -666,6 +664,7 @@ function ResturantCategoryPageTemplate() {
     let cancelled = false;
     const fetchPetPooja = async () => {
       setPetpoojaLoading(true);
+      setPetpoojaMenuFetched(false);
       try {
         const credRes = await getPropertyPetPoojaByPropertyId(propertyId);
         const creds = credRes?.data?.data ?? credRes?.data ?? credRes ?? null;
@@ -684,7 +683,10 @@ function ResturantCategoryPageTemplate() {
       } catch (err) {
         console.error("[PetPooja] fetch error:", err);
       } finally {
-        if (!cancelled) setPetpoojaLoading(false);
+        if (!cancelled) {
+          setPetpoojaLoading(false);
+          setPetpoojaMenuFetched(true);
+        }
       }
     };
 
@@ -1022,11 +1024,17 @@ function ResturantCategoryPageTemplate() {
         {/* Menu */}
         <div id="menu">
           {isPetPoojaVertical ? (
-            petpoojaLoading ? (
-              <section className="py-16 bg-white dark:bg-[#050505]">
+            !petpoojaMenuFetched || petpoojaLoading ? (
+              <section className="py-8 md:py-10 bg-white dark:bg-[#050505]">
                 <div className="container mx-auto px-6 max-w-[1200px]">
+                  <div className="mb-4 flex items-center justify-center gap-2 text-zinc-500 dark:text-zinc-400">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+                      Loading menu
+                    </span>
+                  </div>
                   {/* Header skeleton */}
-                  <div className="flex items-center justify-between mb-10">
+                  <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
                       <div className="w-40 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
@@ -1038,14 +1046,14 @@ function ResturantCategoryPageTemplate() {
                     </div>
                   </div>
                   {/* Tab chips skeleton */}
-                  <div className="flex gap-3 pb-8 overflow-hidden">
+                  <div className="flex gap-3 pb-5 overflow-hidden">
                     {[...Array(5)].map((_, i) => (
                       <div key={i} className="h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse shrink-0" style={{ width: `${80 + i * 20}px` }} />
                     ))}
                   </div>
                   {/* Menu item rows skeleton */}
                   <div className="space-y-3">
-                    {[...Array(6)].map((_, i) => (
+                    {[...Array(3)].map((_, i) => (
                       <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50">
                         <div className="w-20 h-20 rounded-xl bg-zinc-200 dark:bg-zinc-800 animate-pulse shrink-0" />
                         <div className="flex-1 space-y-2">

@@ -12,6 +12,20 @@ import {
   getPropertyContactById,
 } from "@/Api/contactusapi";
 
+const CONTACT_NAV_ITEMS = [
+  {
+    type: "dropdown",
+    label: "BUSINESSES",
+    key: "business",
+    items: [
+      { label: "Hotels & Resorts", href: "/hotels", external: true },
+      { label: "Restaurants", href: "/restaurant-homepage", external: true },
+      { label: "Cafes & Dining", href: "/cafe-homepage", external: true },
+      { label: "Wine", href: "/wine-homepage", external: true },
+    ],
+  },
+];
+
 export default function ContactUs() {
   type FormValues = {
     fullName: string;
@@ -377,7 +391,7 @@ export default function ContactUs() {
         </div>
       )}
 
-      <Navbar />
+      <Navbar navItems={CONTACT_NAV_ITEMS} />
 
       {/* Hero Header Section */}
       <section className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
