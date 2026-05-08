@@ -39,7 +39,7 @@ const footerSections = [
     title: "Support",
     links: [
       { label: "Contact Us",
-        //  href: "/contact" 
+         href: "/contact" 
         },
       { label: "Newsroom", href: "/news" },
     ],
