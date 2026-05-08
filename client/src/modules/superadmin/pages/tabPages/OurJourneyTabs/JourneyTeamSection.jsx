@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Plus, Trash2, Save, Upload, ImageIcon, UserCircle2, Loader2 } from 'lucide-react';
-import { getAllTeamMembers, saveTeamMember, updateTeamMember, deleteTeamMember } from "@/Api/OurJourneyApi";
+import { getAllTeamMembers, saveTeamMember, updateTeamMember, deleteTeamMember, toggleTeamMemberStatus } from "@/Api/OurJourneyApi";
 import { uploadMedia } from "@/Api/Api";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
-function MemberCard({ member, index, onRemove, onChange, canRemove }) {
+function MemberCard({ member, index, onRemove, onChange, onToggleActive, canRemove }) {
   const [focused, setFocused] = useState(null);
 
   const inputStyle = (field) => ({
@@ -40,14 +40,29 @@ function MemberCard({ member, index, onRemove, onChange, canRemove }) {
             </span>
           )}
         </div>
-        <button
-          onClick={onRemove}
-          disabled={!canRemove}
-          className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
-          style={{ color: colors.error }}
-        >
-          <Trash2 size={14} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onToggleActive}
+            disabled={member.isNew}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+            style={{
+              backgroundColor: member.active !== false ? '#dcfce7' : '#f3f4f6',
+              color: member.active !== false ? '#16a34a' : colors.textSecondary,
+              border: `1px solid ${member.active !== false ? '#86efac' : colors.border}`,
+            }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${member.active !== false ? 'bg-green-500' : 'bg-gray-400'}`} />
+            {member.active !== false ? 'Active' : 'Inactive'}
+          </button>
+          <button
+            onClick={onRemove}
+            disabled={!canRemove}
+            className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
+            style={{ color: colors.error }}
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       <div className="p-4 flex gap-4 flex-1">
@@ -77,21 +92,11 @@ function MemberCard({ member, index, onRemove, onChange, canRemove }) {
               className="hidden"
               accept="image/*"
               onClick={(e) => e.stopPropagation()}
-              onChange={async (e) => {
+              onChange={(e) => {
                 if (e.target.files?.[0]) {
                   const file = e.target.files[0];
+                  onChange('image', file);
                   onChange('previewUrl', URL.createObjectURL(file));
-                  try {
-                    const fd = new FormData();
-                    fd.append("file", file);
-                    const { uploadMedia } = await import('@/Api/Api');
-                    const res = await uploadMedia(fd);
-                    const newMediaId = typeof res.data === "number" ? res.data : (res.data?.id || res.data?.data?.id);
-                    onChange('image', file);
-                    onChange('mediaId', newMediaId);
-                  } catch (err) {
-                    console.error(err);
-                  }
                   e.target.value = null;
                 }
               }}
@@ -185,6 +190,7 @@ export default function JourneyTeamSection() {
         mediaId: d.photo?.mediaId || d.mediaId || null,
         previewUrl: d.photo?.url || d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
         sequence: d.sequence || index + 1,
+        active: d.active !== false,
         image: null,
         isNew: false
       })) : [];
@@ -196,7 +202,16 @@ export default function JourneyTeamSection() {
     }
   };
 
-  const handleAdd = () => setMembers([{ id: Date.now(), name: '', role: '', quote: '', image: null, previewUrl: '', isNew: true }, ...members]);
+  const handleToggleActive = async (id) => {
+    const member = members.find(m => m.id === id);
+    if (!member || member.isNew) return;
+    const next = !member.active;
+    setMembers(prev => prev.map(m => m.id === id ? { ...m, active: next } : m));
+    try { await toggleTeamMemberStatus(id, next); }
+    catch { setMembers(prev => prev.map(m => m.id === id ? { ...m, active: !next } : m)); showError("Failed to update status"); }
+  };
+
+  const handleAdd = () => setMembers([{ id: Date.now(), name: '', role: '', quote: '', image: null, previewUrl: '', active: true, isNew: true }, ...members]);
   
   const handleRemove = async (id) => {
     const member = members.find(m => m.id === id);
@@ -282,6 +297,7 @@ export default function JourneyTeamSection() {
             index={index}
             canRemove={true}
             onRemove={() => handleRemove(member.id)}
+            onToggleActive={() => handleToggleActive(member.id)}
             onChange={(field, value) => handleChange(index, field, value)}
           />
         ))}

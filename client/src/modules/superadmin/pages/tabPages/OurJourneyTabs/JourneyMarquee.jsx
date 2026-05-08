@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Plus, Trash2, Save, GripVertical, Eye, Loader2 } from 'lucide-react';
-import { getAllMarquees, saveMarquee, updateMarquee, deleteMarquee } from "@/Api/OurJourneyApi";
+import { getAllMarquees, saveMarquee, updateMarquee, deleteMarquee, toggleMarqueeStatus } from "@/Api/OurJourneyApi";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
 export default function JourneyMarquee() {
@@ -42,6 +42,19 @@ export default function JourneyMarquee() {
       }
     }
     setItems(items.filter((_, i) => i !== index));
+  };
+
+  const handleToggleActive = async (index) => {
+    const item = items[index];
+    if (!item || item.isNew) return;
+    const next = !item.active;
+    setItems(prev => prev.map((it, i) => i === index ? { ...it, active: next } : it));
+    try {
+      await toggleMarqueeStatus(item.id, next);
+    } catch {
+      setItems(prev => prev.map((it, i) => i === index ? { ...it, active: !next } : it));
+      showError("Failed to update status");
+    }
   };
 
   const handleChange = (index, val) => {
@@ -161,6 +174,19 @@ export default function JourneyMarquee() {
                 onFocus={e => e.target.style.borderColor = colors.primary}
                 onBlur={e => e.target.style.borderColor = colors.border}
               />
+              <button
+                onClick={() => handleToggleActive(index)}
+                disabled={item.isNew}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40 shrink-0"
+                style={{
+                  backgroundColor: item.active !== false ? '#dcfce7' : '#f3f4f6',
+                  color: item.active !== false ? '#16a34a' : colors.textSecondary,
+                  border: `1px solid ${item.active !== false ? '#86efac' : colors.border}`,
+                }}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${item.active !== false ? 'bg-green-500' : 'bg-gray-400'}`} />
+                {item.active !== false ? 'Active' : 'Inactive'}
+              </button>
               <button
                 onClick={() => handleRemove(index)}
                 className="p-2 rounded-lg transition-colors disabled:opacity-30"

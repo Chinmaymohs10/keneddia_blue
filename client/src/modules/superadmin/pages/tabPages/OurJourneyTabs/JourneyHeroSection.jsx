@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Plus, Trash2, Save, Upload, ImageIcon, Loader2 } from 'lucide-react';
-import { getAllStoryHeroCards, saveStoryHeroCard, updateStoryHeroCard, deleteStoryHeroCard } from "@/Api/OurJourneyApi";
+import { getAllStoryHeroCards, saveStoryHeroCard, updateStoryHeroCard, deleteStoryHeroCard, toggleStoryHeroCardStatus } from "@/Api/OurJourneyApi";
 import { uploadMedia } from "@/Api/Api";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
@@ -76,6 +76,7 @@ export default function JourneyHeroSection() {
         mediaId: d.mediaId || null,
         previewUrl: d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
         image: null,
+        active: d.active !== false,
         isNew: false
       })) : [];
       setCards(mapped);
@@ -86,8 +87,21 @@ export default function JourneyHeroSection() {
     }
   };
 
+  const handleToggleActive = async (id) => {
+    const card = cards.find(c => c.id === id);
+    if (!card || card.isNew) return;
+    const next = !card.active;
+    setCards(prev => prev.map(c => c.id === id ? { ...c, active: next } : c));
+    try {
+      await toggleStoryHeroCardStatus(id, next);
+    } catch {
+      setCards(prev => prev.map(c => c.id === id ? { ...c, active: !next } : c));
+      showError("Failed to update status");
+    }
+  };
+
   const handleAdd = () => {
-    setCards([{ id: Date.now(), title: '', subtitle: '', text: '', image: null, previewUrl: '', isNew: true }, ...cards]);
+    setCards([{ id: Date.now(), title: '', subtitle: '', text: '', image: null, previewUrl: '', active: true, isNew: true }, ...cards]);
     setTimeout(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
@@ -195,14 +209,29 @@ export default function JourneyHeroSection() {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => handleRemove(card.id)}
-              className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
-              style={{ color: colors.error }}
-              title="Remove card"
-            >
-              <Trash2 size={15} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleToggleActive(card.id)}
+                disabled={card.isNew}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+                style={{
+                  backgroundColor: card.active ? '#dcfce7' : '#f3f4f6',
+                  color: card.active ? '#16a34a' : colors.textSecondary,
+                  border: `1px solid ${card.active ? '#86efac' : colors.border}`,
+                }}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${card.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+                {card.active ? 'Active' : 'Inactive'}
+              </button>
+              <button
+                onClick={() => handleRemove(card.id)}
+                className="p-1.5 rounded-lg transition-colors disabled:opacity-30"
+                style={{ color: colors.error }}
+                title="Remove card"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
           </div>
 
           {/* Card Body */}

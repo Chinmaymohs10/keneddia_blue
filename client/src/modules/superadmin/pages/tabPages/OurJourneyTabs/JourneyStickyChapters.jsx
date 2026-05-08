@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Plus, Trash2, Save, Upload, Loader2 } from 'lucide-react';
-import { getAllStickyChapters, saveStickyChapter, updateStickyChapter, deleteStickyChapter } from "@/Api/OurJourneyApi";
+import { getAllStickyChapters, saveStickyChapter, updateStickyChapter, deleteStickyChapter, toggleStickyChapterStatus } from "@/Api/OurJourneyApi";
 import { uploadMedia } from "@/Api/Api";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
@@ -29,6 +29,7 @@ export default function JourneyStickyChapters() {
         accentColor: d.accentColor || '#0A2357',
         mediaId: d.mediaId || null,
         previewUrl: d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
+        active: d.active !== false,
         image: null,
         isNew: false
       })) : [];
@@ -40,9 +41,18 @@ export default function JourneyStickyChapters() {
     }
   };
 
+  const handleToggleActive = async (id) => {
+    const chapter = chapters.find(c => c.id === id);
+    if (!chapter || chapter.isNew) return;
+    const next = !chapter.active;
+    setChapters(prev => prev.map(c => c.id === id ? { ...c, active: next } : c));
+    try { await toggleStickyChapterStatus(id, next); }
+    catch { setChapters(prev => prev.map(c => c.id === id ? { ...c, active: !next } : c)); showError("Failed to update status"); }
+  };
+
   const handleAdd = () => {
     const newIdx = String(chapters.length + 1).padStart(2, '0');
-    setChapters([...chapters, { id: Date.now(), index: newIdx, year: '', label: '', headline: '', body: '', accentColor: '#0A2357', image: null, previewUrl: '', isNew: true }]);
+    setChapters([...chapters, { id: Date.now(), index: newIdx, year: '', label: '', headline: '', body: '', accentColor: '#0A2357', active: true, image: null, previewUrl: '', isNew: true }]);
   };
 
   const handleRemove = async (id) => {
@@ -120,9 +130,24 @@ export default function JourneyStickyChapters() {
           <div key={chapter.id} className="p-5 rounded-lg border bg-white shadow-sm" style={{ borderColor: colors.border }}>
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-medium">Chapter {i + 1}</h4>
-              <button onClick={() => handleRemove(chapter.id)} className="text-red-500 hover:text-red-700">
-                <Trash2 size={16} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleToggleActive(chapter.id)}
+                  disabled={chapter.isNew}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+                  style={{
+                    backgroundColor: chapter.active !== false ? '#dcfce7' : '#f3f4f6',
+                    color: chapter.active !== false ? '#16a34a' : '#6b7280',
+                    border: `1px solid ${chapter.active !== false ? '#86efac' : '#e5e7eb'}`,
+                  }}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${chapter.active !== false ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  {chapter.active !== false ? 'Active' : 'Inactive'}
+                </button>
+                <button onClick={() => handleRemove(chapter.id)} className="text-red-500 hover:text-red-700">
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

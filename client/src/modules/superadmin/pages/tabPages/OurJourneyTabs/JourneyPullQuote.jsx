@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
 import { Save, Upload, ImageIcon, Quote, Loader2 } from 'lucide-react';
-import { getAllPullQuotes, savePullQuote, updatePullQuote } from "@/Api/OurJourneyApi";
+import { getAllPullQuotes, savePullQuote, updatePullQuote, togglePullQuoteStatus } from "@/Api/OurJourneyApi";
 import { uploadMedia } from "@/Api/Api";
 import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
@@ -154,10 +154,29 @@ export default function JourneyPullQuote() {
         style={{ backgroundColor: colors.contentBg, borderColor: colors.border }}
       >
         <div
-          className="px-5 py-3"
+          className="px-5 py-3 flex items-center justify-between"
           style={{ backgroundColor: `${colors.primary}08`, borderBottom: `1px solid ${colors.border}` }}
         >
           <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: colors.textSecondary }}>Quote Details</span>
+          <button
+            onClick={async () => {
+              if (!data.id) return;
+              const next = !data.active;
+              setData(prev => ({ ...prev, active: next }));
+              try { await togglePullQuoteStatus(data.id, next); }
+              catch { setData(prev => ({ ...prev, active: !next })); showError("Failed to update status"); }
+            }}
+            disabled={!data.id}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40"
+            style={{
+              backgroundColor: data.active ? '#dcfce7' : '#f3f4f6',
+              color: data.active ? '#16a34a' : colors.textSecondary,
+              border: `1px solid ${data.active ? '#86efac' : colors.border}`,
+            }}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${data.active ? 'bg-green-500' : 'bg-gray-400'}`} />
+            {data.active ? 'Active' : 'Inactive'}
+          </button>
         </div>
 
         <div className="p-5 grid grid-cols-1 lg:grid-cols-5 gap-6">
