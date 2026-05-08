@@ -432,7 +432,7 @@ export default function CafeShowcaseSlider({
               return item?.slug ? `/events/${item.slug}` : `/events/${item?.id || ""}`;
             }
           })(),
-          ctaText: item?.ctaText || item?.buttonText || "Explore Event",
+          ctaText: item?.ctaText || item?.buttonText || "",
           ctaLink: item?.ctaLink || item?.ctaUrl || "",
         })).filter(i => getMediaSrc(i.image));
 
@@ -464,7 +464,7 @@ export default function CafeShowcaseSlider({
           date: offer.expiresAt ? `Valid until ${new Date(offer.expiresAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}` : "Limited Time",
           location: offer.locationName || "All Outlets",
           slug: offer.slug || `offer-${offer.id}`,
-          ctaText: offer?.ctaText || offer?.buttonText || "View Offer",
+          ctaText: offer?.ctaText || offer?.buttonText || "",
           ctaLink: offer?.ctaUrl || offer?.ctaLink || "",
         })).filter(i => getMediaSrc(i.image));
 
