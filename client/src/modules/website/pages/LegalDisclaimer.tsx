@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ShieldCheck, Globe } from "lucide-react";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { getAllPolicyPages } from "@/Api/policypagesapi";
+import {
+  getAllPolicyPages,
+  getLegalDisclaimerDocumentByLegalDisclaimerId,
+} from "@/Api/policypagesapi";
 
 export default function LegalDisclaimer() {
   const [policyData, setPolicyData] = useState<any>(null);
+  const [legalDocument, setLegalDocument] = useState<any>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -30,6 +34,25 @@ export default function LegalDisclaimer() {
     fetchPolicyPage();
   }, []);
 
+  useEffect(() => {
+    const fetchLegalDocument = async () => {
+      if (!policyData?.id) {
+        setLegalDocument(null);
+        return;
+      }
+      try {
+        const res = await getLegalDisclaimerDocumentByLegalDisclaimerId(policyData.id);
+        const data = res?.data;
+        const mapping = Array.isArray(data) ? data[0] : data;
+        setLegalDocument(mapping?.document || null);
+      } catch (error) {
+        setLegalDocument(null);
+      }
+    };
+
+    fetchLegalDocument();
+  }, [policyData?.id]);
+
   const sourceSections = Array.isArray(policyData?.sections) ? policyData.sections : [];
   const responseSections = sourceSections
     .filter((section) => section?.active !== false)
@@ -49,6 +72,9 @@ export default function LegalDisclaimer() {
   const effectiveDate = policyData?.effectiveDate || "--";
   const lastUpdated = policyData?.lastUpdated || "--";
   const version = policyData?.version || "--";
+  const lastModifiedTitle = policyData?.lastModifiedTitle || "--";
+  const disclaimerText = policyData?.disclaimerText || "--";
+  const updatedDateText = policyData?.updatedDate || "--";
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -113,6 +139,18 @@ export default function LegalDisclaimer() {
               <span className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />Updated: {lastUpdated}</span>
               <span className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" />Version: {version}</span>
             </div>
+
+            {legalDocument?.url && (
+              <div className="mt-6 flex items-center justify-center gap-2 sm:gap-3">
+                <a
+                  href={legalDocument.url}
+                  download={legalDocument?.originalName || "legal-disclaimer-document"}
+                  className="px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold bg-primary/90 hover:bg-primary text-white border border-primary/70 transition-colors"
+                >
+                  Download Legal Document
+                </a>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -171,6 +209,27 @@ export default function LegalDisclaimer() {
                 </div>
               ))}
             </main>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 sm:px-6 pb-16">
+        <div className="container mx-auto max-w-[1400px]">
+          <div className="border-t border-gray-100 dark:border-white/10 pt-10 md:pt-14 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+            <div className="flex items-center gap-4 md:gap-6 text-gray-300 dark:text-gray-700">
+              <ShieldCheck className="w-9 h-9 md:w-10 md:h-10" />
+              <Globe className="w-9 h-9 md:w-10 md:h-10" />
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-xs text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest mb-2">
+                {lastModifiedTitle}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 font-medium italic leading-relaxed">
+                {disclaimerText}
+                <br className="hidden md:block" />
+                Updated: {updatedDateText}
+              </p>
+            </div>
           </div>
         </div>
       </section>

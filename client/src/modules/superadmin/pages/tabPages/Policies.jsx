@@ -9,6 +9,9 @@ import {
   updatePolicySection,
   updatePolicySectionActive,
   reorderPolicySections,
+  saveOrUpdateDocument,
+  saveOrUpdateLegalDisclaimerDocument,
+  getLegalDisclaimerDocumentByLegalDisclaimerId,
 } from "@/Api/policypagesapi";
 import { showError, showSuccess } from "@/lib/toasters/toastUtils";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
@@ -33,6 +36,9 @@ const emptyForm = {
   mainTitleLine2: "",
   mainDescription: "",
   highlightTextDescription: "",
+  disclaimerText: "",
+  lastModifiedTitle: "",
+  updatedDate: "",
   effectiveDate: "",
   lastUpdated: "",
   version: "",
@@ -44,9 +50,12 @@ export default function Policies() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [legalDocumentFile, setLegalDocumentFile] = useState(null);
+  const [legalDocumentMap, setLegalDocumentMap] = useState({});
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => (b?.id || 0) - (a?.id || 0)),
@@ -93,8 +102,34 @@ export default function Policies() {
     fetchPolicies();
   }, []);
 
+  useEffect(() => {
+    const loadLegalDocs = async () => {
+      if (policyTypeTab !== "legal" || filteredItems.length === 0) {
+        setLegalDocumentMap({});
+        return;
+      }
+      const nextMap = {};
+      await Promise.all(
+        filteredItems.map(async (item) => {
+          try {
+            const res = await getLegalDisclaimerDocumentByLegalDisclaimerId(item.id);
+            const data = res?.data;
+            const mapping = Array.isArray(data) ? data[0] : data;
+            nextMap[item.id] = mapping || null;
+          } catch (error) {
+            nextMap[item.id] = null;
+          }
+        }),
+      );
+      setLegalDocumentMap(nextMap);
+    };
+
+    loadLegalDocs();
+  }, [policyTypeTab, filteredItems]);
+
   const resetForm = () => {
     setForm(emptyForm);
+    setLegalDocumentFile(null);
     setEditingItem(null);
     setIsEditModalOpen(false);
   };
@@ -110,6 +145,9 @@ export default function Policies() {
         "",
       mainDescription: item.mainDescription || "",
       highlightTextDescription: item.highlightTextDescription || "",
+      disclaimerText: item.disclaimerText || "",
+      lastModifiedTitle: item.lastModifiedTitle || "",
+      updatedDate: item.updatedDate || "",
       effectiveDate: item.effectiveDate || "",
       lastUpdated: item.lastUpdated || "",
       version: item.version || "",
@@ -181,6 +219,9 @@ export default function Policies() {
           .trim(),
         mainDescription: form.mainDescription,
         highlightTextDescription: form.mainTitleLine2 || form.highlightTextDescription,
+        disclaimerText: form.disclaimerText || null,
+        lastModifiedTitle: form.lastModifiedTitle || null,
+        updatedDate: form.updatedDate || null,
         effectiveDate: form.effectiveDate,
         lastUpdated: form.lastUpdated,
         version: form.version,
@@ -195,12 +236,52 @@ export default function Policies() {
         })),
       };
 
+      let savedPolicyId = editingItem?.id || null;
+
       if (editingItem?.id) {
-        await updatePolicyPage(editingItem.id, payload);
+        const updateRes = await updatePolicyPage(editingItem.id, payload);
+        savedPolicyId = updateRes?.data?.id || editingItem.id;
         showSuccess("Policy page updated");
       } else {
-        await createPolicyPage(payload);
+        const createRes = await createPolicyPage(payload);
+        savedPolicyId = createRes?.data?.id || null;
         showSuccess("Policy page created");
+      }
+
+      if (policyTypeTab === "legal" && legalDocumentFile && savedPolicyId) {
+        setUploadingDoc(true);
+        let mappingId = null;
+        let existingDocumentId = null;
+        try {
+          const existingMappingRes =
+            await getLegalDisclaimerDocumentByLegalDisclaimerId(savedPolicyId);
+          mappingId = existingMappingRes?.data?.id || null;
+          existingDocumentId =
+            existingMappingRes?.data?.documentId ||
+            existingMappingRes?.data?.document?.id ||
+            null;
+        } catch (mappingError) {
+          mappingId = null;
+          existingDocumentId = null;
+        }
+
+        const uploadRes = await saveOrUpdateDocument(
+          legalDocumentFile,
+          existingDocumentId || undefined,
+        );
+        const uploadedDocumentId =
+          uploadRes?.data?.id || uploadRes?.data?.documentId || null;
+
+        if (!uploadedDocumentId) {
+          throw new Error("Document uploaded but document id not found in response");
+        }
+
+        await saveOrUpdateLegalDisclaimerDocument({
+          ...(mappingId ? { id: mappingId } : {}),
+          legalDisclaimerId: savedPolicyId,
+          documentId: uploadedDocumentId,
+        });
+        showSuccess("Legal disclaimer document linked");
       }
 
       resetForm();
@@ -209,11 +290,17 @@ export default function Policies() {
       console.error(error);
       showError("Failed to save policy page");
     } finally {
+      setUploadingDoc(false);
       setSaving(false);
     }
   };
 
   const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this policy? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
     try {
       await deletePolicyPage(id);
       showSuccess("Policy page deleted");
@@ -436,6 +523,65 @@ export default function Policies() {
               </div>
             </div>
 
+            {policyTypeTab === "legal" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label className={labelClass} style={{ color: colors.textPrimary }}>
+                    Last Modified Title
+                  </label>
+                  <input
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    placeholder="e.g. LAST MODIFIED"
+                    value={form.lastModifiedTitle}
+                    onChange={(e) => handleFormChange("lastModifiedTitle", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass} style={{ color: colors.textPrimary }}>
+                    Updated Date (Display)
+                  </label>
+                  <input
+                    type="date"
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    value={form.updatedDate}
+                    onChange={(e) => handleFormChange("updatedDate", e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass} style={{ color: colors.textPrimary }}>
+                    Disclaimer Text
+                  </label>
+                  <textarea
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    rows={3}
+                    placeholder="Footer legal disclaimer text"
+                    value={form.disclaimerText}
+                    onChange={(e) => handleFormChange("disclaimerText", e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {policyTypeTab === "legal" && (
+              <div>
+                <label className={labelClass} style={{ color: colors.textPrimary }}>
+                  Legal Disclaimer Document
+                </label>
+                <input
+                  type="file"
+                  className={inputBaseClass}
+                  style={{ borderColor: colors.border }}
+                  onChange={(e) => setLegalDocumentFile(e.target.files?.[0] || null)}
+                />
+                <p className="text-[11px] mt-1" style={{ color: colors.textSecondary }}>
+                  Uploading a file will save/update document and link it to this legal disclaimer.
+                </p>
+              </div>
+            )}
+
             <div className="border rounded-xl p-3" style={{ borderColor: colors.border }}>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textPrimary }}>Sections</p>
@@ -481,8 +627,8 @@ export default function Policies() {
               </div>
             </div>
 
-            <button disabled={saving || (!editingItem && filteredItems.length > 0)} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white shadow-sm disabled:opacity-70" style={{ backgroundColor: colors.primary }}>
-              <Save size={15} /> {saving ? "Saving..." : editingItem ? "Update Policy" : "Create Policy"}
+            <button disabled={saving || uploadingDoc || (!editingItem && filteredItems.length > 0)} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white shadow-sm disabled:opacity-70" style={{ backgroundColor: colors.primary }}>
+              <Save size={15} /> {saving || uploadingDoc ? "Saving..." : editingItem ? "Update Policy" : "Create Policy"}
             </button>
           </form>
         </div>
@@ -597,6 +743,56 @@ export default function Policies() {
                     </div>
                   </div>
 
+                  {policyTypeTab === "legal" && (
+                    <div className="mt-2.5 rounded-lg border p-3" style={{ borderColor: colors.border }}>
+                      <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: colors.textPrimary }}>
+                        Attached Document
+                      </p>
+                      {legalDocumentMap[item.id]?.document?.url ? (
+                        <div className="space-y-2">
+                          <p className="text-xs" style={{ color: colors.textSecondary }}>
+                            {legalDocumentMap[item.id]?.document?.originalName || "Document"}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <a
+                              href={legalDocumentMap[item.id].document.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={mutedButtonClass}
+                              style={{ backgroundColor: colors.mainBg, color: colors.textPrimary }}
+                            >
+                              Open
+                            </a>
+                            <a
+                              href={legalDocumentMap[item.id].document.url}
+                              download={legalDocumentMap[item.id]?.document?.originalName || "document"}
+                              className={mutedButtonClass}
+                              style={{ backgroundColor: colors.mainBg, color: colors.textPrimary }}
+                            >
+                              Download
+                            </a>
+                          </div>
+                          {String(legalDocumentMap[item.id]?.document?.contentType || "").includes("pdf") ? (
+                            <iframe
+                              title={`legal-document-preview-${item.id}`}
+                              src={legalDocumentMap[item.id].document.url}
+                              className="w-full h-[320px] rounded-md border"
+                              style={{ borderColor: colors.border }}
+                            />
+                          ) : (
+                            <p className="text-[11px]" style={{ color: colors.textSecondary }}>
+                              Preview is available for PDF files only.
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-[11px]" style={{ color: colors.textSecondary }}>
+                          No document linked yet.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <div className="mt-2.5 space-y-1.5">
                     {(item.sections || []).map((section) => (
                       <div key={section.id} className="rounded-lg border px-2.5 py-2" style={{ borderColor: colors.border }}>
@@ -677,6 +873,50 @@ export default function Policies() {
                 <input className={inputBaseClass} style={{ borderColor: colors.border }} placeholder="Version" value={form.version} onChange={(e) => handleFormChange("version", e.target.value)} />
               </div>
 
+              {policyTypeTab === "legal" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <input
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    placeholder="Last Modified Title"
+                    value={form.lastModifiedTitle}
+                    onChange={(e) => handleFormChange("lastModifiedTitle", e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    value={form.updatedDate}
+                    onChange={(e) => handleFormChange("updatedDate", e.target.value)}
+                  />
+                  <textarea
+                    className={inputBaseClass + " md:col-span-2"}
+                    style={{ borderColor: colors.border }}
+                    rows={3}
+                    placeholder="Disclaimer Text"
+                    value={form.disclaimerText}
+                    onChange={(e) => handleFormChange("disclaimerText", e.target.value)}
+                  />
+                </div>
+              )}
+
+              {policyTypeTab === "legal" && (
+                <div>
+                  <label className={labelClass} style={{ color: colors.textPrimary }}>
+                    Legal Disclaimer Document
+                  </label>
+                  <input
+                    type="file"
+                    className={inputBaseClass}
+                    style={{ borderColor: colors.border }}
+                    onChange={(e) => setLegalDocumentFile(e.target.files?.[0] || null)}
+                  />
+                  <p className="text-[11px] mt-1" style={{ color: colors.textSecondary }}>
+                    Uploading a new file will update the linked legal disclaimer document.
+                  </p>
+                </div>
+              )}
+
               <div className="border rounded-xl p-3" style={{ borderColor: colors.border }}>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textPrimary }}>Sections</p>
@@ -703,8 +943,8 @@ export default function Policies() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button disabled={saving} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white shadow-sm disabled:opacity-70" style={{ backgroundColor: colors.primary }}>
-                  <Save size={15} /> {saving ? "Saving..." : "Update Policy"}
+                <button disabled={saving || uploadingDoc} className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg text-white shadow-sm disabled:opacity-70" style={{ backgroundColor: colors.primary }}>
+                  <Save size={15} /> {saving || uploadingDoc ? "Saving..." : "Update Policy"}
                 </button>
                 <button
                   type="button"
