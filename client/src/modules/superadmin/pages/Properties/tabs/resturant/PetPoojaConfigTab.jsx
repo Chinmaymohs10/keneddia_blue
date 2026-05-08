@@ -28,9 +28,10 @@ const CREDENTIAL_FIELDS = [
   { key: "appKey",        label: "App Key",        placeholder: "e.g. 4nzqmj6r5hk..." },
   { key: "appSecret",     label: "App Secret",     placeholder: "e.g. 6b7078d729..." },
   { key: "accessToken",   label: "Access Token",   placeholder: "e.g. dcd6f224d9..." },
+  { key: "baseUrl",       label: "Base URL",       placeholder: "e.g. https://api.petpooja.com (optional)", optional: false },
 ];
 
-const emptyForm = { restID: "", appKey: "", appSecret: "", accessToken: "" };
+const emptyForm = { restID: "", appKey: "", appSecret: "", accessToken: "", baseUrl: "" };
 
 // ─── Credential Section ───────────────────────────────────────────────────────
 function CredentialSection({ propertyId }) {
@@ -50,10 +51,11 @@ function CredentialSection({ propertyId }) {
       setConfig(data);
       if (data) {
         setForm({
-          restID:      data.restID      ?? "",
-          appKey:      data["app-key"]  ?? "",
-          appSecret:   data["app-secret"] ?? "",
+          restID:      data.restID          ?? "",
+          appKey:      data["app-key"]      ?? "",
+          appSecret:   data["app-secret"]   ?? "",
           accessToken: data["access-token"] ?? "",
+          baseUrl:     data.baseUrl         ?? "",
         });
       }
     } catch {
@@ -78,6 +80,7 @@ function CredentialSection({ propertyId }) {
         "app-key":        form.appKey,
         "app-secret":     form.appSecret,
         "access-token":   form.accessToken,
+        baseUrl:          form.baseUrl?.trim() || null,
         active:           config?.active ?? true,
       };
       if (config) {
@@ -166,7 +169,7 @@ function CredentialSection({ propertyId }) {
       {/* Display mode */}
       {config && !editing && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {CREDENTIAL_FIELDS.map(({ key, label }) => {
+          {CREDENTIAL_FIELDS.map(({ key, label, optional }) => {
             const value = key === "appKey"
               ? config["app-key"]
               : key === "appSecret"
@@ -175,8 +178,11 @@ function CredentialSection({ propertyId }) {
               ? config["access-token"]
               : config[key];
             return (
-              <div key={key} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>
+              <div key={key} className={`rounded-xl border bg-gray-50 p-4 ${key === "baseUrl" ? "sm:col-span-2 border-blue-100 bg-blue-50/40" : "border-gray-100"}`}>
+                <div className="mb-1 flex items-center gap-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>
+                  {optional && <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold text-gray-500 uppercase tracking-wider">Optional</span>}
+                </div>
                 <p className="truncate text-sm font-mono text-gray-800">{value || "—"}</p>
               </div>
             );
@@ -188,18 +194,34 @@ function CredentialSection({ propertyId }) {
       {(editing || !config) && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {CREDENTIAL_FIELDS.map(({ key, label, placeholder }) => (
-              <div key={key}>
-                <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-gray-500">
-                  {label}
-                </label>
+            {CREDENTIAL_FIELDS.map(({ key, label, placeholder, optional }) => (
+              <div key={key} className={key === "baseUrl" ? "sm:col-span-2" : ""}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  {/* <label className="text-[11px] font-black uppercase tracking-wider text-gray-500">
+                    {label}
+                  </label>
+                  {optional && (
+                    <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                      Optional
+                    </span>
+                  )} */}
+                </div>
                 <input
                   type="text"
                   value={form[key]}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className={`w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:ring-2 ${
+                    key === "baseUrl"
+                      ? "border-blue-200 focus:border-blue-400 focus:ring-blue-100"
+                      : "border-gray-200 focus:border-blue-400 focus:ring-blue-100"
+                  }`}
                 />
+                {key === "baseUrl" && (
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    Leave blank to use the default server URL. Only set this if Pet Pooja uses a custom endpoint.
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -274,6 +296,7 @@ function MenuSection({ propertyId }) {
         appSecret:   credentials["app-secret"],
         accessToken: credentials["access-token"],
         restID:      credentials.restID,
+        baseUrl:     credentials.baseUrl ?? null,
       });
       const raw = res?.data;
       const cats  = raw?.categories ?? [];

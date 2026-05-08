@@ -59,9 +59,14 @@ export const togglePropertyPetPoojaStatus = (propertyId, active) =>
     params: { active },
   });
 
-export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID }) =>
+const PETPOOJA_DEFAULT_BASE = "http://192.168.0.135:6090";
+
+const petPoojaBase = (baseUrl) =>
+  baseUrl?.trim() ? baseUrl.trim().replace(/\/$/, "") : PETPOOJA_DEFAULT_BASE;
+
+export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID, baseUrl }) =>
   axios.post(
-    "http://192.168.0.135:6090/api/v1/menu/fetch",
+    `${petPoojaBase(baseUrl)}/api/v1/menu/fetch`,
     { restID },
     {
       params: {
@@ -72,9 +77,9 @@ export const fetchPetPoojaMenus = ({ appKey, appSecret, accessToken, restID }) =
     }
   );
 
-export const savePetPoojaOrder = ({ appKey, appSecret, accessToken, orderinfo }) =>
+export const savePetPoojaOrder = ({ appKey, appSecret, accessToken, orderinfo, baseUrl }) =>
   axios.post(
-    "http://192.168.0.135:6090/api/v1/order/save",
+    `${petPoojaBase(baseUrl)}/api/v1/order/save`,
     { app_key: appKey, app_secret: appSecret, access_token: accessToken, orderinfo }
   );
 

@@ -675,6 +675,7 @@ function ResturantCategoryPageTemplate() {
           appSecret:   creds["app-secret"],
           accessToken: creds["access-token"],
           restID:      creds.restID,
+          baseUrl:     creds.baseUrl ?? null,
         });
         if (cancelled) return;
         const raw = ppRes?.data;

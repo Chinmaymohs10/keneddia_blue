@@ -240,6 +240,7 @@ export default function PetPoojaMenu({
         appKey: creds["app-key"],
         appSecret: creds["app-secret"],
         accessToken: creds["access-token"],
+        baseUrl: creds.baseUrl ?? null,
         orderinfo: {
           OrderInfo: {
             Restaurant: {
