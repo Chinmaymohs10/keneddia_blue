@@ -178,10 +178,22 @@ export default function Navbar({
     location.pathname.startsWith("/privacy-policy") ||
     location.pathname.startsWith("/legal-disclaimer");
 
-  const showQuickBook = showQuickBookProp !== undefined ? showQuickBookProp : isTransparentHeroRoute;
+  const isPolicyOrContactPage =
+    location.pathname.startsWith("/privacy-policy") ||
+    location.pathname.startsWith("/legal-disclaimer") ||
+    location.pathname.startsWith("/contact");
+  const isWinePage =
+    location.pathname.startsWith("/wine-homepage") ||
+    location.pathname.startsWith("/wine-detail") ||
+    location.pathname.startsWith("/wine-categories") ||
+    location.pathname.startsWith("/wine-subcategory") ||
+    location.pathname.startsWith("/wine");
+  const showQuickBook = showQuickBookProp !== undefined
+    ? showQuickBookProp
+    : (isTransparentHeroRoute || isPolicyOrContactPage) && !isWinePage;
   const effectiveQuickBookOptions: QuickBookOption[] = quickBookOptions
     ? quickBookOptions
-    : location.pathname === "/"
+    : location.pathname === "/" || isPolicyOrContactPage
       ? QUICK_BOOKING_OPTIONS
       : DEFAULT_NON_HOME_QUICK_BOOKING_OPTIONS;
   const useWhiteTextOnTransparent = isTransparentHeroRoute;
