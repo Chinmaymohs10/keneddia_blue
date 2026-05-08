@@ -240,7 +240,7 @@ export default function WineBestSellers() {
         const propTypesData = propTypesRes?.data ?? [];
 
         // Fetch Header Data
-        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase()?.includes("wine"));
         if (wineTypeObj) {
           const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
           const activeHeader = headerRes?.data?.find(h => h.isActive);

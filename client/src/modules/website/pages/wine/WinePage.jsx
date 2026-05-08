@@ -391,7 +391,7 @@ export default function WinePage() {
 
         // Header Integration
         const propTypesData = propTypesRes?.data ?? [];
-        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase() === "wine");
+        const wineTypeObj = propTypesData.find(t => t.typeName?.toLowerCase()?.includes("wine"));
         if (wineTypeObj) {
           const headerRes = await getMenuSectionsByPropertyTypeId(wineTypeObj.id);
           const headers = headerRes?.data || [];

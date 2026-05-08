@@ -1156,8 +1156,8 @@ function PropertyCarousel({ properties }: { properties: any[] }) {
   const pName = prop?.name || "";
   const city = prop?.city || "";
   const propertyPath = `${createCitySlug(city || pName)}/${createHotelSlug(pName || city, prop?.id || 0)}`;
-  const pType = prop?.propertyType?.toLowerCase();
-  const localPath = pType === "wine" ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
+  const pType = prop?.propertyType?.toLowerCase() || "";
+  const localPath = pType.includes("wine") ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
 
   return (
     <div className="w-full md:w-[420px] shrink-0 relative">

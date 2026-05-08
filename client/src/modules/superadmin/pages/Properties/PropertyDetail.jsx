@@ -197,6 +197,7 @@ const PropertyDetail = ({ property, onBack }) => {
   };
 
   const propertyType = data.overview.propertyType;
+  const resolvedType = propertyType?.toLowerCase()?.includes("wine") ? "Wine" : propertyType;
   // AFTER
   const tabsByPropertyType = {
     Hotel: [
@@ -213,14 +214,14 @@ const PropertyDetail = ({ property, onBack }) => {
     Cafe: ["overview", "config", "menu", "story", "about", "gallery", "offers section", "amenities", "Header items", "enquiries"],
     Wine: ["overview",
       //  "config",
-        // "menu",
-        // "about",
-        "gallery",
-        // "offers section",
-        // "amenities", 
-        "Header items", 
-        // "enquiries"
-      ],
+      // "menu",
+      // "about",
+      "gallery",
+      // "offers section",
+      // "amenities", 
+      "Header items",
+      // "enquiries"
+    ],
     Restaurant: [
       "overview",
       "config",
@@ -243,7 +244,7 @@ const PropertyDetail = ({ property, onBack }) => {
   };
 
   const currentTabs =
-    tabsByPropertyType[propertyType] || tabsByPropertyType["Hotel"];
+    tabsByPropertyType[resolvedType] || tabsByPropertyType["Hotel"];
 
   const getModalNameForTab = (tab) => {
     const map = {

@@ -665,7 +665,7 @@ export default function WineManagement() {
     try {
       const [ptRes, pRes] = await Promise.all([getPropertyTypes(), GetAllPropertyDetails()]);
       const allTypes = toList(ptRes);
-      const wineTypes = allTypes.filter((pt) => (pt.typeName || pt.name || "").toLowerCase() === "wine");
+      const wineTypes = allTypes.filter((pt) => (pt.typeName || pt.name || "").toLowerCase().includes("wine"));
       setPropertyTypes(wineTypes.length > 0 ? wineTypes : allTypes.filter((pt) => (pt.typeName || pt.name || "").toLowerCase().includes("wine")));
       const rawList = toList(pRes);
       const flatProps = rawList.map((item) => item.propertyResponseDTO ?? item).filter((p) => p && p.isActive === true);

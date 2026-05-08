@@ -128,7 +128,7 @@ export default function WineQuickBooking() {
       const filtered = (res.data ?? []).filter(
         (p) =>
           p.isActive &&
-          p.propertyTypes?.some((t) => t.toLowerCase() === "wine"),
+          p.propertyTypes?.some((t) => t.toLowerCase()?.includes("wine")),
       );
       setAllProperties(filtered);
       setLocationOptions(getLocationOptionsFromProperties(filtered));

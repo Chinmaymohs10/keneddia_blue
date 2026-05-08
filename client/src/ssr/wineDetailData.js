@@ -88,7 +88,7 @@ export async function fetchWineDetailPageData(pathname) {
     fetchSafe(() => getPrimaryConversionsHeader(), { data: [] }),
     fetchSafe(() => getEventsHeaderByProperty(propertyId), { data: {} }),
     (async () => {
-       const wineTypeObj = (propTypesRes?.data || []).find(t => t.typeName?.toLowerCase() === "wine");
+       const wineTypeObj = (propTypesRes?.data || []).find(t => t.typeName?.toLowerCase()?.includes("wine"));
        if (!wineTypeObj) return { data: [] };
        return fetchSafe(() => getMenuSectionsByPropertyTypeId(wineTypeObj.id), { data: [] });
     })()

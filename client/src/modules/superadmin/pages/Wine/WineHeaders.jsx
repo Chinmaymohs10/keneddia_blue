@@ -99,7 +99,7 @@ export default function WineHeaders() {
   // Automatically select "WINE" type if available
   useEffect(() => {
     if (types.length > 0 && !form.wineTypeId) {
-      const wineType = types.find(t => t.wineTypeName?.toUpperCase() === "WINE");
+      const wineType = types.find(t => t.wineTypeName?.toUpperCase().includes("WINE"));
       if (wineType) {
         setForm(prev => ({ ...prev, wineTypeId: String(wineType.id) }));
       }
@@ -109,7 +109,7 @@ export default function WineHeaders() {
   useEffect(() => {
     if (propertyTypes.length > 0 && !form.propertyTypeId) {
       const winePropertyType = propertyTypes.find(
-        (pt) => String(pt.typeName || pt.name || "").trim().toUpperCase() === "WINE",
+        (pt) => String(pt.typeName || pt.name || "").toUpperCase().includes("WINE"),
       );
       if (winePropertyType) {
         setForm((prev) => ({ ...prev, propertyTypeId: String(winePropertyType.id) }));
@@ -236,7 +236,7 @@ export default function WineHeaders() {
   const winePropertyTypes = useMemo(
     () =>
       propertyTypes.filter(
-        (pt) => String(pt.typeName || pt.name || "").trim().toUpperCase() === "WINE",
+        (pt) => String(pt.typeName || pt.name || "").toUpperCase().includes("WINE"),
       ),
     [propertyTypes],
   );

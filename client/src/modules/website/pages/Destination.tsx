@@ -306,15 +306,15 @@ export default function Destination() {
                             const pId = property.id;
                             const propertyPath = `${createCitySlug(city || pName)}/${createHotelSlug(pName || city, pId)}`;
 
-                            const pType = primaryType?.toLowerCase();
-                            const localPath = pType === "wine" ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
+                            const pType = primaryType?.toLowerCase() || "";
+                            const localPath = pType.includes("wine") ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
 
                             // --- Base URL Navigation Logic ---
                             const baseUrl = pType === "cafe" 
                               ? CAFE_BASE_URL 
                               : (pType === "restaurant" || pType === "resturant") 
                                 ? RESTAURANT_BASE_URL 
-                                : pType === "wine" 
+                                : pType.includes("wine") 
                                   ? WINE_BASE_URL 
                                   : HOTEL_BASE_URL;
                             const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;

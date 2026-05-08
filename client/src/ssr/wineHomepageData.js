@@ -199,7 +199,7 @@ export const fetchWineHomepageData = async () => {
 
   const wineAboutSections = await normalizeAboutSections(aboutRes);
 
-  const wineTypeObj = propertyTypes.find(t => t.typeName?.toLowerCase() === "wine");
+  const wineTypeObj = propertyTypes.find(t => t.typeName?.toLowerCase()?.includes("wine"));
   let headerData = null;
   if (wineTypeObj) {
     const headerRes = await fetchSafe(() => getMenuSectionsByPropertyTypeId(wineTypeObj.id), { data: [] });

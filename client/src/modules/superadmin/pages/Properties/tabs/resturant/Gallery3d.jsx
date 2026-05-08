@@ -893,7 +893,7 @@ const WINE_LABEL_OVERRIDES = {
 function Gallery3d({ propertyData }) {
   const propertyId = propertyData?.id ?? propertyData?.propertyId ?? "";
   const propertyType = (propertyData?.propertyType || "").toLowerCase();
-  const isWine = propertyType === "wine";
+  const isWine = propertyType.includes("wine");
   const [activeTab, setActiveTab] = useState("gallery");
 
   const tabs = BASE_TABS.map((tab) =>

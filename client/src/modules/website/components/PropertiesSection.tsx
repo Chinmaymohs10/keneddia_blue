@@ -75,10 +75,10 @@ const getPropertyUrls = (
   const propertyPath = `${createCitySlug(
     city || propertyName,
   )}/${createHotelSlug(propertyName || city || "", propertyId)}`;
-  const pType = propertyType?.toLowerCase();
+  const pType = propertyType?.toLowerCase() || "";
   const isRestaurant = pType === "restaurant";
   const isCafe = pType === "cafe";
-  const isWine = pType === "wine";
+  const isWine = pType.includes("wine");
 
   const baseUrl = isCafe
     ? CAFE_BASE_URL
@@ -452,10 +452,10 @@ export default function PropertiesSection({
   const active = filtered[activeIndex];
   const nextProperty =
     filtered.length > 1 ? filtered[(activeIndex + 1) % filtered.length] : null;
-  const _activeType = active?.propertyType?.toLowerCase();
+  const _activeType = active?.propertyType?.toLowerCase() || "";
   const isRestaurant = _activeType === "restaurant";
   const isCafe = _activeType === "cafe";
-  const isWine = _activeType === "wine";
+  const isWine = _activeType.includes("wine");
   const hotelStarCount =
     !isRestaurant && !isCafe && !isWine && active?.propertyRating
       ? Math.round(active.propertyRating)
