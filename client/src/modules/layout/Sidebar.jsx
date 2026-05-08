@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  PhoneCall,
 } from "lucide-react";
 import AuthService from "../auth/authService";
 
@@ -40,6 +41,7 @@ function Sidebar({ isOpen, onToggle }) {
       { icon: Compass, label: "Our Journey", path: "/Our-Journey" },
       { icon: Building2, label: "Properties", path: "/Properties" },
       { icon: MapPin, label: "Location", path: "/Location" },
+      { icon: PhoneCall, label: "Contact", path: "/Contact-Management" },
     ];
 
     if (isSuperAdmin) {
