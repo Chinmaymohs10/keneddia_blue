@@ -615,7 +615,7 @@ export default function Policies() {
                         <label className={labelClass} style={{ color: colors.textPrimary }}>
                           Sequence
                         </label>
-                        <input type="number" className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px]" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
+                      <input type="number" disabled className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px] bg-gray-100 cursor-not-allowed" style={{ borderColor: colors.border }} value={section.sequence} />
                       </div>
                       <label className="text-xs flex items-center gap-2 px-2 font-medium">
                         <input type="checkbox" checked={!!section.active} onChange={(e) => handleSectionChange(index, "active", e.target.checked)} /> Active
@@ -670,11 +670,6 @@ export default function Policies() {
                       <button onClick={() => handleEdit(item)} className="p-1.5 rounded-md" style={{ backgroundColor: colors.mainBg }}><Edit size={14} /></button>
                       <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded bg-red-50 text-red-600"><Trash2 size={14} /></button>
                     </div>
-                  </div>
-
-                  <div className="mt-2.5 flex gap-1.5 flex-wrap">
-                    <button onClick={() => handleAddSectionToPolicy(item.id)} className={mutedButtonClass} style={{ backgroundColor: colors.mainBg, color: colors.textPrimary }}>+ Section</button>
-                    <button onClick={() => handleQuickReorder(item)} className={mutedButtonClass} style={{ backgroundColor: colors.mainBg, color: colors.textPrimary }}>Sync Reorder</button>
                   </div>
 
                   <div className="mt-3 rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
@@ -812,17 +807,6 @@ export default function Policies() {
                             >
                               {section.active ? "Disable" : "Enable"}
                             </button>
-                            <button
-                              onClick={() => handleInlineSectionUpdate(section)}
-                              className="text-[10px] px-2 py-1 rounded-md font-semibold border"
-                              style={{
-                                borderColor: colors.border,
-                                backgroundColor: "#f3f4f6",
-                                color: "#111827",
-                              }}
-                            >
-                              Update
-                            </button>
                           </div>
                         </div>
                         <p className="text-[11px]" style={{ color: colors.textSecondary }}>{section.description}</p>
@@ -931,7 +915,7 @@ export default function Policies() {
                       <textarea className="w-full border rounded-md px-2.5 py-1.5 text-xs" style={{ borderColor: colors.border }} rows={2} placeholder="Description" value={section.description} onChange={(e) => handleSectionChange(index, "description", e.target.value)} />
                       <div className="grid grid-cols-1 gap-1.5">
                         <textarea className="border rounded-md px-2 py-1 text-xs" style={{ borderColor: colors.border }} rows={2} placeholder="Highlight text description" value={section.highlightTextDescription || ""} onChange={(e) => handleSectionChange(index, "highlightTextDescription", e.target.value)} />
-                        <input type="number" className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px]" style={{ borderColor: colors.border }} value={section.sequence} onChange={(e) => handleSectionChange(index, "sequence", e.target.value)} />
+                        <input type="number" disabled className="border rounded-md px-2 py-1 text-xs w-full max-w-[140px] bg-gray-100 cursor-not-allowed" style={{ borderColor: colors.border }} value={section.sequence} />
                         <label className="text-xs flex items-center gap-2 font-medium">
                           <input type="checkbox" checked={!!section.active} onChange={(e) => handleSectionChange(index, "active", e.target.checked)} /> Active
                         </label>

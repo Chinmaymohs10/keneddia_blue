@@ -15,6 +15,7 @@ import Reports from '@/modules/superadmin/pages/Reports/Reports';
 import ManageProperties from '@/modules/superadmin/pages/Properties/ManageProperties';
 import SeoManagement from '@/modules/superadmin/pages/Seo/SeoManagement';
 import PoliciesManagement from '@/modules/superadmin/pages/Policies/PoliciesManagement';
+import ContactManagement from '@/modules/superadmin/pages/Contact/ContactManagement';
 
 // Hotel Module
 import Hotel from '@/modules/superadmin/pages/Hotel/Hotel';
@@ -124,6 +125,15 @@ const SuperAdminRoutes = [
     element={
       <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
         <PoliciesManagement />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="super-admin-contact-management"
+    path="/Contact-Management"
+    element={
+      <ProtectedRoute allowedRoles={["ROLE_SUPERADMIN", "ROLE_ADMIN"]}>
+        <ContactManagement />
       </ProtectedRoute>
     }
   />,
