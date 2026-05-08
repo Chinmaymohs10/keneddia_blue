@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/modules/website/components/Navbar";
 import Footer from "@/modules/website/components/Footer";
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare, Clock, X } from "lucide-react";
 import { getAllProperties } from "@/Api/Api";
 import {
   createInquiry,
@@ -42,6 +42,7 @@ export default function ContactUs() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showThankYouModal, setShowThankYouModal] = useState(false);
   const [heroContent, setHeroContent] = useState({
     line1: "Contact",
     line2: "Us",
@@ -328,6 +329,7 @@ export default function ContactUs() {
         message: "",
       });
       setErrors({});
+      setShowThankYouModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -347,6 +349,34 @@ export default function ContactUs() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-gray-100 selection:bg-primary/20 font-sans transition-colors duration-300">
+      {showThankYouModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
+          <div className="w-full max-w-md bg-white dark:bg-[#121212] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 p-6 relative">
+            <button
+              type="button"
+              onClick={() => setShowThankYouModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-serif text-navy dark:text-white mb-3">
+              Thank You
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              Your message has been submitted successfully. Our team will get back to you shortly.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowThankYouModal(false)}
+              className="mt-6 w-full py-3 rounded-xl bg-primary text-white text-sm font-bold uppercase tracking-[0.12em] hover:bg-primary/90 transition-all"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <Navbar />
 
       {/* Hero Header Section */}
