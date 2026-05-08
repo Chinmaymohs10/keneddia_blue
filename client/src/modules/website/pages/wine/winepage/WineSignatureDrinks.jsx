@@ -92,7 +92,7 @@ function CategoryCard({ category, index, routeMode = "property" }) {
 
         <div className="min-w-0 flex-1">
           <h3
-            className="truncate whitespace-nowrap font-serif text-lg capitalize leading-tight text-stone-900 transition-colors duration-300 dark:text-stone-100"
+            className="font-serif text-lg capitalize leading-tight text-stone-900 transition-colors duration-300 dark:text-stone-100"
             style={{ color: hovered ? btn.from : undefined }}
           >
             {category.name}

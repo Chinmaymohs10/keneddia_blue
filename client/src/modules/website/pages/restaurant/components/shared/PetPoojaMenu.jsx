@@ -316,10 +316,10 @@ export default function PetPoojaMenu({
   return (
     <section
       id="menu"
-      className="py-16 bg-white dark:bg-[#050505] transition-colors duration-500"
+      className="pt-2 pb-6 sm:pt-4 sm:pb-8 md:pt-8 md:pb-10 bg-white dark:bg-[#050505] transition-colors duration-500"
     >
-      <div className="container mx-auto px-6 max-w-[1200px]">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+      <div className="container mx-auto px-4 sm:px-6 max-w-[1200px] overflow-x-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 sm:mb-6 md:mb-8 gap-4 sm:gap-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-full">
               <Utensils className="w-5 h-5 text-primary" />
@@ -329,12 +329,12 @@ export default function PetPoojaMenu({
             </h2>
           </div>
 
-          <div className="flex items-center gap-3 relative">
+          <div className="flex w-full md:w-auto flex-wrap items-center gap-2 sm:gap-3 relative">
             <button
               type="button"
               onClick={handleTakeawayOpen}
               disabled={selectedTakeawayItems.length === 0}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary/20 bg-primary/10 text-[11px] font-black uppercase tracking-[0.2em] text-primary disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary hover:text-white transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full border border-primary/20 bg-primary/10 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.16em] sm:tracking-[0.2em] text-primary disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary hover:text-white transition-all shadow-sm"
             >
               <ShoppingBag className="w-4 h-4" />
               Takeaway
@@ -361,15 +361,19 @@ export default function PetPoojaMenu({
           </div>
         </div>
 
+        <p className="mb-3 sm:mb-4 text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+          Tap <span className="font-semibold text-zinc-700 dark:text-zinc-200">Order Online</span> to get it delivered via Swiggy or Zomato.
+        </p>
+
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto no-scrollbar pb-8 snap-x"
+          className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-4 sm:pb-6 snap-x"
         >
           {categories.map((cat, idx) => (
             <motion.button
               key={cat.categoryid}
               onClick={() => handleTabClick(idx)}
-              className={`relative shrink-0 px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest transition-all snap-center ${
+              className={`relative shrink-0 px-4 sm:px-6 py-3 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] sm:tracking-widest transition-all snap-center ${
                 activeTab === idx
                   ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
                   : "bg-transparent border-zinc-100 dark:border-white/5 text-zinc-500 hover:border-primary/50"
@@ -403,7 +407,7 @@ export default function PetPoojaMenu({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
-                    className={`group flex items-start gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50 ${
+                    className={`group flex flex-col sm:flex-row items-start gap-4 sm:gap-5 p-4 rounded-2xl transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900/50 ${
                       outOfStock ? "opacity-50" : ""
                     }`}
                   >
@@ -411,8 +415,8 @@ export default function PetPoojaMenu({
                       <Utensils size={20} />
                     </div>
 
-                    <div className="flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
-                      <div className="flex items-center justify-between mb-1.5 gap-4">
+                    <div className="w-full min-w-0 flex-1 border-b border-zinc-100 dark:border-white/5 pb-4 group-last:border-none">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1.5 gap-3 sm:gap-4">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-base font-extrabold tracking-tight text-zinc-900 dark:text-white">
                             {item.itemname}
@@ -439,7 +443,7 @@ export default function PetPoojaMenu({
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex w-full sm:w-auto flex-wrap items-center gap-2 sm:gap-3">
                           {item.price && (
                             <span className="text-xs font-bold text-primary">
                               Rs {parseFloat(item.price).toFixed(0)}
@@ -447,7 +451,7 @@ export default function PetPoojaMenu({
                           )}
 
                           {!outOfStock && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
                               {/* Order Online button with Swiggy/Zomato hover popup */}
                               {(deliveryLinks.swiggy || deliveryLinks.zomato) && (
                                 <div
@@ -457,7 +461,7 @@ export default function PetPoojaMenu({
                                 >
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all"
+                                    className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.12em] sm:tracking-widest border border-zinc-200 dark:border-white/10 text-zinc-700 dark:text-zinc-200 bg-white dark:bg-zinc-900 hover:border-primary hover:text-primary transition-all"
                                   >
                                     <Truck size={12} />
                                     Order Online
@@ -470,7 +474,7 @@ export default function PetPoojaMenu({
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 6, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
-                                        className="absolute bottom-[calc(100%+0.5rem)] right-0 z-30 flex gap-2 rounded-2xl border border-zinc-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-2 shadow-2xl whitespace-nowrap"
+                                        className="absolute bottom-[calc(100%+0.5rem)] left-0 sm:left-auto sm:right-0 z-30 flex gap-2 rounded-2xl border border-zinc-100 dark:border-white/10 bg-white dark:bg-zinc-900 p-2 shadow-2xl whitespace-nowrap"
                                       >
                                         {deliveryLinks.swiggy ? (
                                           <a
@@ -510,7 +514,7 @@ export default function PetPoojaMenu({
                               <button
                                 type="button"
                                 onClick={() => toggleTakeawaySelection(item)}
-                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 ${
+                                className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.12em] sm:tracking-widest transition-all active:scale-95 ${
                                   isItemSelected(item.itemid)
                                     ? "bg-primary text-white"
                                     : "bg-primary/10 hover:bg-primary text-primary hover:text-white"

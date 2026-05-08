@@ -285,11 +285,11 @@ export default function OurStoryPreview({
             {isClient ? (
               <div
                 key={`ig-${id}`}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.6] min-w-[328px]"
+                className="h-full w-full max-w-[328px] mx-auto overflow-hidden"
               >
                 <InstagramEmbed
                   url={`https://www.instagram.com/p/${id}/`}
-                  width={328}
+                  width={"100%"}
                   placeholder={
                     <div className="w-full h-full flex items-center justify-center bg-zinc-900">
                       <Loader2 className="animate-spin text-white/20" />

@@ -124,10 +124,9 @@ function WineCard({ wine, index, typeAccents = {} }) {
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-5 py-6 text-center sm:px-4 sm:py-5">
           <div className="mb-3 flex flex-col items-center gap-2">
             <div className="flex max-w-full items-start gap-1.5">
-              <Building2 size={10} className="mt-[2px] shrink-0" style={{ color: accent.color }} />
+              <Building2 size={10} className="mt-[2px] shrink-0 text-[#8B1A2A] dark:text-[#C8956A]" />
               <span
-                className="line-clamp-2 text-[8px] font-black uppercase leading-[1.5] tracking-[0.18em]"
-                style={{ color: accent.color }}
+                className="line-clamp-2 text-[8px] font-black uppercase leading-[1.5] tracking-[0.18em] text-[#8B1A2A] dark:text-[#C8956A]"
               >
                 {wine.property}{wine.location && wine.location !== "_" ? ` · ${wine.location}` : ""}
               </span>
@@ -395,3 +394,4 @@ export default function WineBestSellers() {
     </section>
   );
 }
+

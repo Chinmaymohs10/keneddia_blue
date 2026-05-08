@@ -8,6 +8,11 @@ import {
   getLegalDisclaimerDocumentByLegalDisclaimerId,
 } from "@/Api/policypagesapi";
 
+const LEGAL_NAV_ITEMS = [
+  { type: "link", label: "HOME", key: "home", href: "/" },
+  { type: "link", label: "CONTENTS", key: "policy-content", href: "#policy-content" },
+];
+
 export default function LegalDisclaimer() {
   const [policyData, setPolicyData] = useState<any>(null);
   const [legalDocument, setLegalDocument] = useState<any>(null);
@@ -114,7 +119,7 @@ export default function LegalDisclaimer() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0A0A0A] text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans">
-      <Navbar />
+      <Navbar navItems={LEGAL_NAV_ITEMS} />
 
       <section className="relative min-h-[52vh] md:min-h-[60vh] pt-24 md:pt-32 pb-14 md:pb-20 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -155,7 +160,7 @@ export default function LegalDisclaimer() {
         </div>
       </section>
 
-      <section className="py-14 md:py-20 px-4 sm:px-6">
+      <section id="policy-content" className="py-14 md:py-20 px-4 sm:px-6">
         <div className="container mx-auto max-w-[1400px]">
           <div className="flex flex-col lg:flex-row gap-10 md:gap-16">
             <div className="lg:hidden">
