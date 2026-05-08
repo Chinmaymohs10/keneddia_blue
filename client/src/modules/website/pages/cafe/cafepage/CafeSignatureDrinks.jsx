@@ -362,7 +362,8 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
             exit={{ opacity: 0, x: -10 }}
             className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8"
           >
-            {/* LEFT: thumbnails — 1 per 4 items */}
+            {/* LEFT: thumbnails — only rendered when available */}
+            {displayThumbs.length > 0 && (
             <div className="lg:col-span-5 hidden lg:block">
               <div className="space-y-4">
                 {displayThumbs.map((thumb, i) => {
@@ -403,9 +404,10 @@ export default function CafeSignatureDrinks({ propertyId, propertyType, vertical
                 })}
               </div>
             </div>
+            )}
 
-            {/* RIGHT: item list */}
-            <div className="space-y-1 lg:col-span-7 sm:space-y-2">
+            {/* RIGHT: item list — full width when no thumbnails */}
+            <div className={`space-y-1 sm:space-y-2 ${displayThumbs.length > 0 ? "lg:col-span-7" : "lg:col-span-12"}`}>
               {activeSection.items.map((item, i) => (
                 <motion.div
                   key={item.id}

@@ -44,6 +44,12 @@ const EMPTY_TAKEAWAY_FORM = {
   tableNo: "",
 };
 
+// Returns "HH:MM" string for current time + 30 minutes
+const getEstimatedTime = () => {
+  const d = new Date(Date.now() + 30 * 60 * 1000);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+};
+
 const firstString = (...values) =>
   values.find((value) => typeof value === "string" && value.trim()) || "";
 
@@ -56,7 +62,8 @@ function validateTakeawayForm(form) {
     errors.emailAddress = "Enter a valid email address.";
   if (!form.address.trim()) errors.address = "Address is required.";
   if (!form.date) errors.date = "Date is required.";
-  if (!form.time) errors.time = "Time is required.";
+  // Time is auto-set for Parcel/Takeaway — only validate for Dine-In
+  if (form.orderType !== "P" && !form.time) errors.time = "Time is required.";
   if (form.orderType === "D" && !form.tableNo.trim())
     errors.tableNo = "Table number is required for dine-in.";
   return errors;
@@ -168,7 +175,7 @@ export default function PetPoojaMenu({
     setTakeawayForm({
       ...EMPTY_TAKEAWAY_FORM,
       date: new Date().toISOString().split("T")[0],
-      time: "19:00",
+      time: getEstimatedTime(), // auto-set for Parcel/Takeaway (default orderType)
     });
     setTakeawayErrors({});
   };
@@ -670,7 +677,15 @@ export default function PetPoojaMenu({
               <select
                 id="takeaway-order-type"
                 value={takeawayForm.orderType}
-                onChange={(e) => setTakeawayField("orderType", e.target.value)}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  setTakeawayForm((prev) => ({
+                    ...prev,
+                    orderType: type,
+                    // auto-set estimated time for Parcel, clear for Dine-In so user picks
+                    time: type === "P" ? getEstimatedTime() : "19:00",
+                  }));
+                }}
                 className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="P">Parcel / Takeaway</option>
@@ -785,18 +800,37 @@ export default function PetPoojaMenu({
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="takeaway-time">
-                  Time <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="takeaway-time"
-                  type="time"
-                  value={takeawayForm.time}
-                  onChange={(e) => setTakeawayField("time", e.target.value)}
-                  className={takeawayErrors.time ? "border-red-500 focus-visible:ring-red-400" : ""}
-                />
-                {takeawayErrors.time && (
-                  <p className="text-xs text-red-500">{takeawayErrors.time}</p>
+                {takeawayForm.orderType === "P" ? (
+                  <>
+                    <Label>Estimated Ready Time</Label>
+                    <div className="flex items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800/40 dark:bg-amber-900/20">
+                      <CalendarClock className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 leading-none mb-0.5">
+                          Ready in ~30 min
+                        </p>
+                        <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                          {takeawayForm.time}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Label htmlFor="takeaway-time">
+                      Time <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="takeaway-time"
+                      type="time"
+                      value={takeawayForm.time}
+                      onChange={(e) => setTakeawayField("time", e.target.value)}
+                      className={takeawayErrors.time ? "border-red-500 focus-visible:ring-red-400" : ""}
+                    />
+                    {takeawayErrors.time && (
+                      <p className="text-xs text-red-500">{takeawayErrors.time}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>

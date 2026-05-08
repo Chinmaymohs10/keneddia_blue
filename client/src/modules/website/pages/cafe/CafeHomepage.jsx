@@ -452,7 +452,7 @@ export default function CafeHomepage() {
           <CafeQuickBooking />
         </div>
         <div className="relative z-[9] shadow-sm">
-          <CafeCoffeeStory initialData={ssr?.coffeeStory} />
+          <CafeCoffeeStory initialData={ssr?.coffeeStory} cafeTypeId={ssr?.cafeTypeId} />
         </div>
         <div id="cafe-properties" className="relative z-[8] shadow-sm">
           <CafeProperties

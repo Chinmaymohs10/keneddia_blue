@@ -13,6 +13,8 @@ import { useEffect, useState, useMemo } from "react";
 import cafeImg from "@/assets/cafe_images/image.png";
 import cafeImg1 from "@/assets/cafe_images/image1.png";
 import cafeImg2 from "@/assets/cafe_images/image2.png";
+import { getCafeSectionsByPropertyType } from "@/Api/CafeApi";
+import { getPropertyTypes } from "@/Api/Api";
 
 
 const ICONS = [Coffee, Leaf, SunMedium, Waves, Sparkles, MoonStar];
@@ -153,13 +155,59 @@ function MobileStoryCard({ card }) {
   );
 }
 
-export default function CafeCoffeeStory({ initialData }) {
+const normalizeCoffeeStory = (storyRes) => {
+  const rawData = storyRes?.data || storyRes || [];
+  const activeSection = Array.isArray(rawData)
+    ? rawData.find((section) => section.active === true)
+    : null;
+  if (!activeSection) return null;
+  return {
+    heading: activeSection.heading,
+    highlight: activeSection.highlight,
+    description: activeSection.description,
+    entries: activeSection.entries || [],
+  };
+};
+
+export default function CafeCoffeeStory({ initialData, cafeTypeId: cafeTypeIdProp }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [fetchedData, setFetchedData] = useState(null);
 
-  // Determine cards: dynamic from props or static fallback
+  // Client-side fallback fetch when SSR didn't provide data
+  useEffect(() => {
+    if (initialData) return;
+    const fetchStory = async () => {
+      try {
+        let typeId = cafeTypeIdProp;
+        if (!typeId) {
+          const typesRes = await getPropertyTypes();
+          const types = typesRes?.data || typesRes || [];
+          const cafeType = Array.isArray(types)
+            ? types.find(
+                (t) =>
+                  t?.isActive &&
+                  String(t?.typeName).trim().toLowerCase() === "cafe",
+              )
+            : null;
+          typeId = cafeType?.id ? Number(cafeType.id) : null;
+        }
+        if (!typeId) return;
+        const res = await getCafeSectionsByPropertyType(typeId);
+        const normalized = normalizeCoffeeStory(res);
+        if (normalized) setFetchedData(normalized);
+      } catch (err) {
+        console.error("CafeCoffeeStory client fetch failed:", err);
+      }
+    };
+    fetchStory();
+  }, [initialData, cafeTypeIdProp]);
+
+  const data = initialData || fetchedData;
+
+  // Determine cards: dynamic from props/fetched or empty
   const cards = useMemo(() => {
-    const entries = initialData?.entries || initialData?.cards;
+    const entries = data?.entries || data?.cards;
     if (entries && entries.length > 0) {
       return entries.filter((c) => c.active !== false).map((c, i) => ({
         ...c,
@@ -175,15 +223,15 @@ export default function CafeCoffeeStory({ initialData }) {
       }));
     }
     return [];
-  }, [initialData]);
+  }, [data]);
 
   const sectionInfo = useMemo(() => {
     return {
-      heading: initialData?.heading || "The Art of Slow Brewing",
-      highlight: initialData?.highlight || "Discovery",
-      description: initialData?.description || "Each chapter unfolds a new texture. Browse the vertical story list and explore the finer details without scroll-based transitions.",
+      heading: data?.heading || "The Art of Slow Brewing",
+      highlight: data?.highlight || "Discovery",
+      description: data?.description || "Each chapter unfolds a new texture. Browse the vertical story list and explore the finer details without scroll-based transitions.",
     };
-  }, [initialData]);
+  }, [data]);
 
   useEffect(() => {
     if (isPaused || cards.length === 0) {
