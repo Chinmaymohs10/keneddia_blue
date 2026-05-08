@@ -1,18 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Trash2, Save, Upload } from 'lucide-react';
+import { Plus, Trash2, Save, Upload, Loader2 } from 'lucide-react';
+import { getAllStickyChapters, saveStickyChapter, updateStickyChapter, deleteStickyChapter } from "@/Api/OurJourneyApi";
+import { uploadMedia } from "@/Api/Api";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
 export default function JourneyStickyChapters() {
-  const [chapters, setChapters] = useState([
-    { id: 1, index: '01', year: '2012', label: 'The Idea', headline: 'A belief before\na building.', body: '', accentColor: '#FF8C00', image: null, previewUrl: '' }
-  ]);
+  const [chapters, setChapters] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchChapters();
+  }, []);
+
+  const fetchChapters = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllStickyChapters();
+      const data = response.data?.data || response.data || [];
+      const mapped = Array.isArray(data) ? data.map(d => ({
+        id: d.id,
+        index: d.chapterIndex || d.index || '',
+        year: d.year || '',
+        label: d.label || '',
+        headline: d.headline || '',
+        body: d.body || '',
+        accentColor: d.accentColor || '#0A2357',
+        mediaId: d.mediaId || null,
+        previewUrl: d.mediaDTO?.url || d.mediaUrl || d.media?.url || '',
+        image: null,
+        isNew: false
+      })) : [];
+      setChapters(mapped);
+    } catch (error) {
+      showError("Failed to fetch sticky chapters");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     const newIdx = String(chapters.length + 1).padStart(2, '0');
-    setChapters([...chapters, { id: Date.now(), index: newIdx, year: '', label: '', headline: '', body: '', accentColor: '#0A2357', image: null, previewUrl: '' }]);
+    setChapters([...chapters, { id: Date.now(), index: newIdx, year: '', label: '', headline: '', body: '', accentColor: '#0A2357', image: null, previewUrl: '', isNew: true }]);
   };
 
-  const handleRemove = (id) => {
+  const handleRemove = async (id) => {
+    const chapter = chapters.find(c => c.id === id);
+    if (chapter && !chapter.isNew && chapter.id) {
+      try {
+        await deleteStickyChapter(chapter.id);
+        showSuccess("Chapter deleted");
+      } catch (error) {
+        showError("Failed to delete chapter");
+        return;
+      }
+    }
     setChapters(chapters.filter(c => c.id !== id));
   };
 
@@ -22,8 +65,45 @@ export default function JourneyStickyChapters() {
     setChapters(newChapters);
   };
 
-  const handleSave = () => {
-    console.log("Save sticky chapters", chapters);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (let i = 0; i < chapters.length; i++) {
+        const chapter = chapters[i];
+        let mediaId = chapter.mediaId;
+        
+        if (chapter.image) {
+          const fd = new FormData();
+          fd.append("file", chapter.image);
+          const res = await uploadMedia(fd);
+          mediaId = typeof res.data === "number" ? res.data : (res.data?.id || res.data?.data?.id);
+        }
+        
+        const payload = {
+          chapterIndex: chapter.index,
+          year: chapter.year,
+          label: chapter.label,
+          accentColor: chapter.accentColor,
+          headline: chapter.headline,
+          body: chapter.body,
+          mediaId: mediaId,
+          active: true
+        };
+
+        if (chapter.id && !chapter.isNew) {
+           payload.id = chapter.id;
+           await updateStickyChapter(payload);
+        } else {
+           await saveStickyChapter(payload);
+        }
+      }
+      showSuccess("Chapters saved successfully");
+      fetchChapters();
+    } catch (error) {
+      showError("Failed to save chapters");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -80,7 +160,7 @@ export default function JourneyStickyChapters() {
               {/* Image Upload */}
               <div className="md:col-span-4">
                 <label className="block text-xs font-medium mb-1 text-gray-700">Cover Image</label>
-                <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 h-full min-h-[220px]" style={{ borderColor: colors.border }} onClick={() => document.getElementById(`chapter-img-${chapter.id}`).click()}>
+                <div className="relative overflow-hidden border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 h-full min-h-[220px]" style={{ borderColor: colors.border }} onClick={() => document.getElementById(`chapter-img-${chapter.id}`).click()}>
                   {!chapter.previewUrl ? (
                     <>
                       <Upload size={24} className="mb-2 text-gray-400" />
@@ -106,8 +186,8 @@ export default function JourneyStickyChapters() {
       </div>
 
       <div className="flex justify-end pt-4 border-t" style={{ borderColor: colors.border }}>
-        <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2 text-white rounded-md text-sm transition-colors" style={{ backgroundColor: colors.success }}>
-          <Save size={16} /> Save Chapters
+        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2 text-white rounded-md text-sm transition-colors disabled:opacity-50" style={{ backgroundColor: colors.success }}>
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Chapters
         </button>
       </div>
     </div>

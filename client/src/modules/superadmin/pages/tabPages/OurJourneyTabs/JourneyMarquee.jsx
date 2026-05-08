@@ -1,22 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { colors } from "@/lib/colors/colors";
-import { Plus, Trash2, Save, GripVertical, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, GripVertical, Eye, Loader2 } from 'lucide-react';
+import { getAllMarquees, saveMarquee, updateMarquee, deleteMarquee } from "@/Api/OurJourneyApi";
+import { showSuccess, showError } from "@/lib/toasters/toastUtils";
 
 export default function JourneyMarquee() {
-  const [items, setItems] = useState(["+ Team", "5 Hotels", "12 Outlets", "10+ Years", "25,000+ Events"]);
+  const [items, setItems] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleAdd = () => setItems(["", ...items]);
-  const handleRemove = (index) => {
-    if (items.length === 1) return;
+  useEffect(() => {
+    fetchMarquees();
+  }, []);
+
+  const fetchMarquees = async () => {
+    setLoading(true);
+    try {
+      const response = await getAllMarquees();
+      const data = response.data?.data || response.data || [];
+      const sorted = Array.isArray(data) ? [...data].sort((a, b) => (a.sequenceNo || 0) - (b.sequenceNo || 0)) : [];
+      setItems(sorted);
+    } catch (error) {
+      showError("Failed to fetch marquees");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = () => setItems([...items, { text: "", sequenceNo: items.length + 1, active: true, isNew: true }]);
+  
+  const handleRemove = async (index) => {
+    const item = items[index];
+    if (!item.isNew && item.id) {
+      try {
+        await deleteMarquee(item.id);
+        showSuccess("Item deleted");
+      } catch (error) {
+        showError("Failed to delete item");
+        return;
+      }
+    }
     setItems(items.filter((_, i) => i !== index));
   };
+
   const handleChange = (index, val) => {
     const newItems = [...items];
-    newItems[index] = val;
+    newItems[index].text = val;
     setItems(newItems);
   };
-  const handleSave = () => console.log("Save marquee", items);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const validItems = items.filter(item => item.text.trim() !== "");
+      for (let i = 0; i < validItems.length; i++) {
+        const payload = {
+          text: validItems[i].text,
+          sequenceNo: i + 1,
+          active: validItems[i].active !== undefined ? validItems[i].active : true
+        };
+        
+        if (validItems[i].id && !validItems[i].isNew) {
+          payload.id = validItems[i].id;
+          await updateMarquee(payload);
+        } else {
+          await saveMarquee(payload);
+        }
+      }
+      showSuccess("Marquee saved successfully");
+      fetchMarquees();
+    } catch (error) {
+      showError("Failed to save marquee");
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   return (
     <div className="space-y-5">
@@ -57,9 +117,9 @@ export default function JourneyMarquee() {
           <p className="text-xs mb-3 font-medium" style={{ color: colors.textLight }}>Live Preview</p>
           <div className="overflow-hidden whitespace-nowrap">
             <span className="inline-block animate-marquee-slow text-sm font-semibold" style={{ color: '#ffffff' }}>
-              {[...items, ...items].filter(Boolean).map((item, i) => (
+              {[...items, ...items].filter(item => item && item.text).map((item, i) => (
                 <span key={i}>
-                  <span style={{ color: colors.primary }}>{item}</span>
+                  <span style={{ color: colors.primary }}>{item.text}</span>
                   <span className="mx-4 opacity-30">·</span>
                 </span>
               ))}
@@ -96,14 +156,13 @@ export default function JourneyMarquee() {
                 className="flex-1 px-3 py-2 border rounded-lg text-sm transition-colors focus:outline-none"
                 style={{ borderColor: colors.border, color: colors.textPrimary }}
                 placeholder="e.g. 5 Hotels"
-                value={item}
+                value={item.text || ""}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onFocus={e => e.target.style.borderColor = colors.primary}
                 onBlur={e => e.target.style.borderColor = colors.border}
               />
               <button
                 onClick={() => handleRemove(index)}
-                disabled={items.length === 1}
                 className="p-2 rounded-lg transition-colors disabled:opacity-30"
                 style={{ color: colors.error, backgroundColor: `${colors.error}10` }}
               >
@@ -123,10 +182,11 @@ export default function JourneyMarquee() {
         <p className="text-xs" style={{ color: colors.textLight }}>Changes are not saved automatically.</p>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90"
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: colors.success }}
         >
-          <Save size={15} /> Save Marquee
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />} Save Marquee
         </button>
       </div>
     </div>
