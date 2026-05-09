@@ -320,7 +320,7 @@ export default function Destination() {
                             const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
                             window.open(finalUrl, "_blank", "noopener,noreferrer");
 
-                            navigate(localPath);
+                            // navigate(localPath);
                           }}
                           className="relative z-10 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary hover:bg-primary text-foreground hover:text-primary-foreground font-medium transition-all duration-300 border border-border hover:border-transparent group/btn shadow-sm"
                         >
