@@ -13,15 +13,15 @@ import { ThemeToggle } from "./ThemeToggle";
 // import logoHotelLight from "@assets/logo/kb-hotel-light.png";
 // Business Dropdown Items
 const BUSINESS_ITEMS = [
-  { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
-  { label: "Restaurants", href: "https://restaurants.kennediablu.com",external: true },
-  { label: "Cafes & Dining", href: "https://cafes.kennediablu.com/",external: true },
-   { label: "Wine", href: "https://onenight.kennediablu.com/",external: true },
+  // { label: "Hotels & Resorts", href: "https://hotels.kennediablu.com", external: true },
+  // { label: "Restaurants", href: "https://restaurants.kennediablu.com",external: true },
+  // { label: "Cafes & Dining", href: "https://cafes.kennediablu.com/",external: true },
+  //  { label: "Wine", href: "https://onenight.kennediablu.com/",external: true },
 
-  // { label: "Hotels & Resorts", href: "/hotels", external: true },
-  // { label: "Restaurants", href: "/restaurant-homepage", external: true },
-  // { label: "Cafes & Dining", href: "/cafe-homepage", external: true },
-  // { label: "Wine", href: "/wine-homepage", external: true },
+  { label: "Hotels & Resorts", href: "/hotels", external: true },
+  { label: "Restaurants", href: "/restaurant-homepage", external: true },
+  { label: "Cafes & Dining", href: "/cafe-homepage", external: true },
+  { label: "Wine", href: "/wine-homepage", external: true },
 ];
 
 // Join Us Dropdown Items

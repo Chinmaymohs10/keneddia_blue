@@ -310,17 +310,17 @@ export default function Destination() {
                             const localPath = pType.includes("wine") ? `/wine-detail/${propertyPath}` : `/${propertyPath}`;
 
                             // --- Base URL Navigation Logic ---
-                            const baseUrl = pType === "cafe" 
-                              ? CAFE_BASE_URL 
-                              : (pType === "restaurant" || pType === "resturant") 
-                                ? RESTAURANT_BASE_URL 
-                                : pType.includes("wine") 
-                                  ? WINE_BASE_URL 
-                                  : HOTEL_BASE_URL;
-                            const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
-                            window.open(finalUrl, "_blank", "noopener,noreferrer");
+                            // const baseUrl = pType === "cafe" 
+                            //   ? CAFE_BASE_URL 
+                            //   : (pType === "restaurant" || pType === "resturant") 
+                            //     ? RESTAURANT_BASE_URL 
+                            //     : pType.includes("wine") 
+                            //       ? WINE_BASE_URL 
+                            //       : HOTEL_BASE_URL;
+                            // const finalUrl = `${baseUrl.replace(/\/$/, "")}${localPath}`;
+                            // window.open(finalUrl, "_blank", "noopener,noreferrer");
 
-                            // navigate(localPath);
+                            navigate(localPath);
                           }}
                           className="relative z-10 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary hover:bg-primary text-foreground hover:text-primary-foreground font-medium transition-all duration-300 border border-border hover:border-transparent group/btn shadow-sm"
                         >

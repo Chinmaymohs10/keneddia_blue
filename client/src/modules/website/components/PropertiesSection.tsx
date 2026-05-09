@@ -290,18 +290,18 @@ const CarouselItem = ({
               e.preventDefault();
 
               const _pType = property.propertyType?.toLowerCase();
-              // navigate(localPath);
+              navigate(localPath);
 
-              const _base = _pType === "cafe"
-                ? CAFE_BASE_URL
-                : _pType === "restaurant"
-                  ? RESTAURANT_BASE_URL
-                  : _pType === "wine"
-                    ? WINE_BASE_URL
-                    : HOTEL_BASE_URL;
-              const finalUrl = `${_base.replace(/\/$/, "")}/${propertyPath}`;
+              // const _base = _pType === "cafe"
+              //   ? CAFE_BASE_URL
+              //   : _pType === "restaurant"
+              //     ? RESTAURANT_BASE_URL
+              //     : _pType === "wine"
+              //       ? WINE_BASE_URL
+              //       : HOTEL_BASE_URL;
+              // const finalUrl = `${_base.replace(/\/$/, "")}/${propertyPath}`;
 
-              window.open(finalUrl, "_blank", "noopener,noreferrer");
+              // window.open(finalUrl, "_blank", "noopener,noreferrer");
             }}
             className="inline-flex items-center gap-3 uppercase text-xs font-bold tracking-widest group cursor-pointer"
           >
@@ -834,25 +834,25 @@ transition-all cursor-pointer"
                               activePropertyUrls?.isRestaurant ?? pType === "restaurant";
                             const isCafe =
                               activePropertyUrls?.isCafe ?? pType === "cafe";
-                            // navigate(
-                            //   activePropertyUrls?.localPath ||
-                            //   `/${propertyPath}`,
-                            // );
-
-                            const baseUrl = isCafe
-                              ? CAFE_BASE_URL
-                              : isRestaurant
-                                ? RESTAURANT_BASE_URL
-                                : isWine
-                                  ? WINE_BASE_URL
-                                  : HOTEL_BASE_URL;
-                            const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
-
-                            window.open(
-                              finalUrl,
-                              "_blank",
-                              "noopener,noreferrer",
+                            navigate(
+                              activePropertyUrls?.localPath ||
+                              `/${propertyPath}`,
                             );
+
+                            // const baseUrl = isCafe
+                            //   ? CAFE_BASE_URL
+                            //   : isRestaurant
+                            //     ? RESTAURANT_BASE_URL
+                            //     : isWine
+                            //       ? WINE_BASE_URL
+                            //       : HOTEL_BASE_URL;
+                            // const finalUrl = `${baseUrl.replace(/\/$/, "")}/${propertyPath}`;
+
+                            // window.open(
+                            //   finalUrl,
+                            //   "_blank",
+                            //   "noopener,noreferrer",
+                            // );
                           }}
                           className="w-full py-2.5 md:py-3.5 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 uppercase text-xs md:text-sm tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity cursor-pointer"
                         >
